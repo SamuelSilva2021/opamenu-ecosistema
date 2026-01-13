@@ -44,7 +44,7 @@ public class AuthenticationService(
     private const string USER_CACHE_KEY_PREFIX = "user_";
 
     /// <summary>
-    /// Autentica um usuÃ¡rio com username/email e senha
+    /// Autentica um usuário com username/email e senha
     /// </summary>
     /// <param name="usernameOrEmail"></param>
     /// <param name="password"></param>
@@ -60,18 +60,18 @@ public class AuthenticationService(
 
             if (user == null)
             {
-                _logger.LogWarning("UsuÃ¡rio nÃ£o encontrado: {UsernameOrEmail}", usernameOrEmail);
+                _logger.LogWarning("Usuário não encontrado: {UsernameOrEmail}", usernameOrEmail);
                return ResponseBuilder<LoginResponse>
-                    .Fail(new ErrorDTO { Message = "Credenciais invÃ¡lidas" }).WithCode(401).Build();
+                    .Fail(new ErrorDTO { Message = "Credenciais inválidas" }).WithCode(401).Build();
             }
 
             if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
             {
-                _logger.LogWarning("Senha incorreta para usuÃ¡rio: {UserId}", user.Id);
-                return ResponseBuilder<LoginResponse> .Fail(new ErrorDTO { Message = "Credenciais invÃ¡lidas" }).WithCode(401).Build();
+                _logger.LogWarning("Senha incorreta para usuário: {UserId}", user.Id);
+                return ResponseBuilder<LoginResponse> .Fail(new ErrorDTO { Message = "Credenciais inválidas" }).WithCode(401).Build();
             }
 
-            var tenant = _multiTenantContext.Tenants.Where(t => t.Id == user.TenantId).FirstOrDefault();
+            var tenant = _multiTenantContext.Tenants.FirstOrDefault(t => t.Id == user.TenantId);
 
             var accessGroups = await GetUserAccessGroupsAsync(user.Id);
             var roles = await GetUserRolesAsync(accessGroups);
@@ -104,7 +104,7 @@ public class AuthenticationService(
                 //                  (subscription != null && subscription.Status != ESubscriptionStatus.Ativo && subscription.Status != ESubscriptionStatus.Trial)
             };
 
-            _logger.LogInformation("Login bem-sucedido para usuÃ¡rio: {UserId}", user.Id);
+            _logger.LogInformation("Login bem-sucedido parausuário: {UserId}", user.Id);
             return ResponseBuilder<LoginResponse>.Ok(loginResponse).Build();
         }
         catch (Exception ex)
@@ -124,13 +124,13 @@ public class AuthenticationService(
     {
         try
         {
-            _logger.LogInformation("Tentativa de renovaÃ§Ã£o de token");
+            _logger.LogInformation("Tentativa de renovação de token");
 
             var tokenData = await GetRefreshTokenDataAsync(refreshToken);
             if (tokenData == null)
             {
-                _logger.LogWarning("Refresh token invÃ¡lido ou expirado");
-                return ResponseBuilder<LoginResponse>.Fail(new ErrorDTO { Message = "Token de renovaÃ§Ã£o invÃ¡lido" }).WithCode(401).Build();
+                _logger.LogWarning("Refresh token invalido ou expirado");
+                return ResponseBuilder<LoginResponse>.Fail(new ErrorDTO { Message = "Token de renovação inválido" }).WithCode(401).Build();
             }
 
             var user = await _accessControlContext.UserAccounts
@@ -139,8 +139,8 @@ public class AuthenticationService(
 
             if (user == null)
             {
-                _logger.LogWarning("UsuÃ¡rio nÃ£o encontrado para refresh token: {UserId}", tokenData.UserId);
-                return ResponseBuilder<LoginResponse>.Fail(new ErrorDTO { Message = "UsuÃ¡rio nÃ£o encontrado" }).WithCode(401).Build();
+                _logger.LogWarning("Usuário não encontrado para refresh token: {UserId}", tokenData.UserId);
+                return ResponseBuilder<LoginResponse>.Fail(new ErrorDTO { Message = "Usuário não encontrado." }).WithCode(401).Build();
             }
 
             TenantEntity? tenant = null;
@@ -182,12 +182,12 @@ public class AuthenticationService(
                                   (subscription != null && subscription.Status != ESubscriptionStatus.Ativo && subscription.Status != ESubscriptionStatus.Trial)
             };
 
-            _logger.LogInformation("Token renovado com sucesso para usuÃ¡rio: {UserId}", user.Id);
+            _logger.LogInformation("Token renovado com sucesso para usuário: {UserId}", user.Id);
             return ResponseBuilder<LoginResponse>.Ok(loginResponse).Build();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro durante renovaÃ§Ã£o de token");
+            _logger.LogError(ex, "Erro durante renovação de token");
             return ResponseBuilder<LoginResponse>.Fail(new ErrorDTO { Message = "Erro interno do servidor" }).WithCode(401).Build();
         }
     }
@@ -233,8 +233,8 @@ public class AuthenticationService(
 
             if (user == null)
             {
-                _logger.LogWarning("UsuÃ¡rio nÃ£o encontrado: {UserId}", userId);
-                return ResponseBuilder<UserInfo>.Fail(new ErrorDTO { Message = "UsuÃ¡rio nÃ£o encontrado" }).WithCode(404).Build();
+                _logger.LogWarning("Usuário não encontrado: {UserId}", userId);
+                return ResponseBuilder<UserInfo>.Fail(new ErrorDTO { Message = "Usuário não encontrado." }).WithCode(404).Build();
             }
 
             TenantEntity? tenant = null;
@@ -269,7 +269,7 @@ public class AuthenticationService(
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao obter informaÃ§Ãµes do usuÃ¡rio: {UserId}", userId);
+            _logger.LogError(ex, "Erro ao obter informações do usuário: {UserId}", userId);
             return ResponseBuilder<UserInfo>.Fail(new ErrorDTO { Message = "Erro interno do servidor" }).WithCode(500).Build();
         }
     }
@@ -316,7 +316,7 @@ public class AuthenticationService(
     }
 
     /// <summary>
-    /// ObtÃ©m as permissÃµes do usuÃ¡rio com base nas roles
+    /// Obtém as permissões do usuário com base nas roles
     /// </summary>
     /// <param name="roles"></param>
     /// <returns></returns>
@@ -334,7 +334,7 @@ public class AuthenticationService(
     }
 
     /// <summary>
-    /// ObtÃ©m as permissÃµes detalhadas do usuÃ¡rio (mÃ³dulos e operaÃ§Ãµes)
+    /// Obtém permissões detalhadas do usuário
     /// </summary>
     /// <param name="UserId"></param>
     /// <returns></returns>
@@ -370,7 +370,7 @@ public class AuthenticationService(
     }
 
     /// <summary>
-    /// ObtÃ©m os dados do refresh token do cache
+    /// Obtém dados do refresh token do cache
     /// </summary>
     /// <param name="refreshToken"></param>
     /// <returns></returns>

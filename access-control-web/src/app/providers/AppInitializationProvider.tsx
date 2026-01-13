@@ -45,11 +45,6 @@ export const AppInitializationProvider: React.FC<AppInitializationProviderProps>
       await initializeAuth();
 
       const currentState = useAuthStore.getState();
-      console.log('👤 Estado da autenticação:', {
-        isAuthenticated: currentState.isAuthenticated,
-        hasUser: !!currentState.user,
-      });
-
       if (currentState.isAuthenticated && currentState.user) {
 
         const storedUserData = getStoredUser();
@@ -67,12 +62,8 @@ export const AppInitializationProvider: React.FC<AppInitializationProviderProps>
         isInitialized: true,
         error: null,
       });
-
-      console.log('🎉 Aplicação inicializada com sucesso!');
       
-    } catch (error) {
-      console.error('❌ Erro durante inicialização:', error);
-      
+    } catch (error) {      
       setState({
         isLoading: false,
         isInitialized: false,
@@ -104,11 +95,9 @@ export const AppInitializationProvider: React.FC<AppInitializationProviderProps>
       if (currentState.isAuthenticated && currentState.user) {
         const storedUserData = getStoredUser();
         if (storedUserData && storedUserData.permissions) {
-          console.log('🔄 Reconfigurando permissões após login...');
           setPermissions(storedUserData.permissions);
         }
       } else {
-        console.log('🔄 Limpando permissões após logout...');
         clearPermissions();
       }
     }
