@@ -5,43 +5,43 @@ export const API_BASE_URL = config.api.baseUrl;
 
 export const API_ENDPOINTS = {
   // Auth
-  LOGIN: '/api/auth/login',
-  REFRESH: '/api/auth/refresh',
-  LOGOUT: '/api/auth/logout',
-  VALIDATE: '/api/auth/validate',
-  ME: '/api/auth/me',
-  USER_PERMISSIONS: '/api/auth/permissions',
+  LOGIN: '/auth/login',
+  REFRESH: '/auth/refresh',
+  LOGOUT: '/auth/logout',
+  VALIDATE: '/auth/validate',
+  ME: '/auth/me',
+  USER_PERMISSIONS: '/auth/permissions',
   
   // Users
-  USERS: '/api/users',
-  USER_BY_ID: (id: string) => `/api/users/${id}`,
+  USERS: '/users',
+  USER_BY_ID: (id: string) => `/users/${id}`,
   
   // Tenants
-  TENANTS: '/api/tenants',
-  TENANT_BY_ID: (id: string) => `/api/tenants/${id}`,
-  TENANT_BY_SLUG: (slug: string) => `/api/tenants/slug/${slug}`,
+  TENANTS: '/tenants',
+  TENANT_BY_ID: (id: string) => `/tenants/${id}`,
+  TENANT_BY_SLUG: (slug: string) => `/tenants/slug/${slug}`,
   
   // Access Groups
-  ACCESS_GROUPS: '/api/access-group',
-  ACCESS_GROUP_BY_ID: (id: string) => `/api/access-group/${id}`,
-  GROUP_TYPES: '/api/access-group/group-types',
-  GROUP_TYPE_BY_ID: (id: string) => `/api/access-group/group-types/${id}`,
+  ACCESS_GROUPS: '/access-group',
+  ACCESS_GROUP_BY_ID: (id: string) => `/access-group/${id}`,
+  GROUP_TYPES: '/access-group/group-types',
+  GROUP_TYPE_BY_ID: (id: string) => `/access-group/group-types/${id}`,
   
   // Roles
-  ROLES: '/api/roles',
-  ROLE_BY_ID: (id: string) => `/api/roles/${id}`,
+  ROLES: '/roles',
+  ROLE_BY_ID: (id: string) => `/roles/${id}`,
   
   // Permissions
-  PERMISSIONS: '/api/permissions',
-  PERMISSION_BY_ID: (id: string) => `/api/permissions/${id}`,
+  PERMISSIONS: '/permissions',
+  PERMISSION_BY_ID: (id: string) => `/permissions/${id}`,
   
   // Modules
-  MODULES: '/api/modules',
-  MODULE_BY_ID: (id: string) => `/api/modules/${id}`,
+  MODULES: '/modules',
+  MODULE_BY_ID: (id: string) => `/modules/${id}`,
   
   // Applications
-  APPLICATIONS: '/api/applications',
-  APPLICATION_BY_ID: (id: string) => `/api/applications/${id}`,
+  APPLICATIONS: '/applications',
+  APPLICATION_BY_ID: (id: string) => `/applications/${id}`,
 } as const;
 
 export const HTTP_STATUS = {
