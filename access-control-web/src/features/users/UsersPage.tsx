@@ -12,7 +12,6 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  Container
 } from '@mui/material';
 import { ResponsiveContainer } from '../../shared/components';
 import {
