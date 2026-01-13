@@ -1,0 +1,4 @@
+{
+  "VITE_API_URL": "https://opamenu-production.up.railway.app/api",
+  "VITE_API_URL_AUTH": "https://saas-authentication-api-production-b819.up.railway.app/api"
+}

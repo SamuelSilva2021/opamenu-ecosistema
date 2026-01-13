@@ -1,0 +1,30 @@
+class AppStrings {
+  static const String appName = 'Opamenu Gestor';
+  static const String specialMenuForYou = 'Menu especial para você';
+  static const String welcomeBack = 'Bem vindo de volta!';
+  static const String loginSubtitle = 'Por favor, insira seus detalhes para fazer login.';
+  static const String emailHint = 'Endereço de email';
+  static const String passwordHint = 'Senha';
+  static const String forgotPassword = 'Esqueceu a senha?';
+  static const String loginButton = 'Login';
+  static const String or = 'Ou';
+  static const String google = 'Google';
+  static const String facebook = 'Facebook';
+  static const String placeOrder = 'Criar pedido';
+  static const String noItemsInCart = 'Nenhum item no carrinho';
+  static const String subtotal = 'Subtotal';
+  static const String deliveryFee = 'Taxa de entrega';
+  static const String discount = 'Desconto';
+  static const String total = 'Total';
+  static const String currency = 'R\$';
+  static const String confirmOrder = 'Confirmar pedido';
+  static const String orderConfirmed = 'Pedido confirmado!';
+  static const String orderConfirmedSubtitle = 'Seu pedido foi confirmado com sucesso!';
+  static const String orderNumber = 'Número:';
+  static const String orderDate = 'Data do pedido: ';
+  static const String unknownErrorFromApi = 'Erro desconhecido da API';
+  static const String unexpectedResponseFormat = 'Formato de resposta inesperado';
+  static const String failedToLoadProducts = 'Falha ao carregar produtos';
+  static const String noProductsFound = 'Nenhum produto encontrado';
+  static const String searchProduct = 'Buscar produto';
+}

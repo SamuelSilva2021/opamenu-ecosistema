@@ -1,0 +1,182 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Opamenu Digital Menu Design System - Modern Food Delivery Interface
+Paleta baseada na logo: Laranja (#F37021) + Verde (#6BBE45)
+All colors MUST be HSL for proper theming.
+*/
+
+@layer base {
+  :root {
+    /* Base colors - Modern food delivery theme */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 20%;
+
+    /* Opamenu brand colors - Nova paleta baseada na logo */
+    --opamenu-orange: 20 92% 54%;     /* #F37021 - Cor principal da logo */
+    --opamenu-orange-light: 20 92% 65%; /* #FF8C42 - Variação clara */
+    --opamenu-orange-dark: 20 82% 48%;   /* #D95F1D - Hover/Active */
+    
+    --opamenu-green: 101 47% 51%;      /* #6BBE45 - Verde secundário */
+    --opamenu-green-light: 101 57% 61%; /* #85D266 - Variação clara */  
+    --opamenu-green-dark: 101 47% 43%;   /* #58A23A - Escuro */
+
+    /* Neutral colors */
+    --neutral-light: 0 0% 90%;        /* #E6E6E6 */
+    --neutral-dark: 0 0% 20%;         /* #333333 */
+    --neutral-medium: 0 0% 40%;       /* #666666 */
+
+    /* Card and surfaces */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 20%;
+    --card-hover: 0 0% 98%;
+
+    /* Interactive elements - Laranja como primário */
+    --primary: 20 92% 54%;            /* #F37021 */
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 20 82% 48%;      /* #D95F1D */
+
+    /* Secondary - Verde */
+    --secondary: 101 47% 51%;         /* #6BBE45 */
+    --secondary-foreground: 0 0% 100%;
+    --secondary-hover: 101 47% 43%;   /* #58A23A */
+
+    /* Accent - Usar o laranja claro */
+    --accent: 20 92% 65%;             /* #FF8C42 */
+    --accent-foreground: 0 0% 100%;
+    --accent-light: 20 92% 96%;
+
+    /* Text colors */
+    --muted: 0 0% 90%;                /* #E6E6E6 */
+    --muted-foreground: 0 0% 40%;     /* #666666 */
+    --text-secondary: 0 0% 40%;       /* #666666 */
+
+    /* Border and inputs */
+    --border: 0 0% 90%;               /* #E6E6E6 */
+    --input: 0 0% 98%;
+    --input-border: 0 0% 85%;
+    --ring: 20 92% 54%;               /* #F37021 */
+
+    /* Feedback states */
+    --destructive: 354 70% 54%;       /* #E63946 */
+    --destructive-foreground: 0 0% 100%;
+    --success: 101 47% 51%;           /* #6BBE45 - Verde como sucesso */
+    --warning: 45 94% 64%;            /* #F9C74F */
+
+    /* Layout */
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-lg: 16px;
+
+    /* Gradients - Nova paleta */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--opamenu-orange)), hsl(var(--opamenu-orange-light)));
+    --gradient-accent: linear-gradient(135deg, hsl(var(--opamenu-green)), hsl(var(--opamenu-green-light)));
+    --gradient-card: linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)));
+
+    /* Shadows - Com tom laranja */
+    --shadow-sm: 0 2px 4px -1px hsl(var(--opamenu-orange) / 0.1);
+    --shadow-md: 0 4px 6px -1px hsl(var(--opamenu-orange) / 0.1), 0 2px 4px -1px hsl(var(--opamenu-orange) / 0.06);
+    --shadow-lg: 0 10px 15px -3px hsl(var(--opamenu-orange) / 0.1), 0 4px 6px -2px hsl(var(--opamenu-orange) / 0.05); 
+    --shadow-cart: 0 20px 25px -5px hsl(var(--foreground) / 0.1), 0 10px 10px -5px hsl(var(--foreground) / 0.04);
+
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  .dark {
+    --background: 0 0% 8%;
+    --foreground: 0 0% 95%;
+
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 95%;
+
+    --primary: 20 92% 54%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 101 47% 51%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 60%;
+
+    --accent: 20 92% 65%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 354 70% 54%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 20 92% 54%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Melhorias para dispositivos móveis */
+@layer utilities {
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+  
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  /* Modal responsivo overrides */
+  @media (max-width: 640px) {
+    [data-radix-dialog-content] {
+      min-height: auto !important;
+      max-height: 95vh !important;
+      height: auto !important;
+      margin: 0.5rem !important;
+      padding: 1rem !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+  }
+  
+  @media (min-width: 641px) and (max-width: 1024px) {
+    [data-radix-dialog-content] {
+      max-height: 90vh !important;
+      height: auto !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+  }
+  
+  /* Melhor área de toque para botões */
+  @media (max-width: 768px) {
+    button {
+      min-height: 44px;
+    }
+    
+    button[class*="h-8"] {
+      min-height: 36px;
+    }
+    
+    button[class*="h-9"] {
+      min-height: 44px;
+    }
+  }
+  
+  /* Garantir que o footer sempre seja visível */
+  @media (max-height: 700px) {
+    [data-radix-dialog-content] {
+      max-height: 98vh !important;
+    }
+  }
+}
