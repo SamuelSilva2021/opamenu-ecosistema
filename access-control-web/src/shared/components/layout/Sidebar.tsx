@@ -414,13 +414,16 @@ export const Sidebar = ({ open, onClose, onToggle }: SidebarProps) => {
       sx={{
         width: open ? layout.sidebarWidth : 0,
         flexShrink: 0,
+        whiteSpace: 'nowrap',
+        boxSizing: 'border-box',
+        transition: theme.transitions.create('width', {
+          easing: theme.transitions.easing.sharp,
+          duration: theme.transitions.duration.enteringScreen,
+        }),
         '& .MuiDrawer-paper': {
           width: layout.sidebarWidth,
           boxSizing: 'border-box',
-          transition: theme.transitions.create(['width'], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
-          }),
+          borderRight: '1px solid rgba(0, 0, 0, 0.12)',
         },
       }}
     >

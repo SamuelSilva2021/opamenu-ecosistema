@@ -15,7 +15,7 @@ export interface ResponsiveContainerProps {
  */
 export const ResponsiveContainer = ({
   children,
-  maxWidth = 'lg',
+  maxWidth = false,
   disableGutters = false,
   fullHeight = false
 }: ResponsiveContainerProps) => {

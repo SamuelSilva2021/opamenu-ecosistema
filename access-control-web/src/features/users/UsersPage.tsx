@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import {
-  Container,
   Typography,
   Button,
   Box,
@@ -12,8 +11,10 @@ import {
   DialogTitle,
   DialogContent,
   DialogContentText,
-  DialogActions
+  DialogActions,
+  Container
 } from '@mui/material';
+import { ResponsiveContainer } from '../../shared/components';
 import {
   Add as AddIcon,
   Search as SearchIcon,
@@ -200,7 +201,7 @@ export function UsersPage() {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ py: 3 }}>
+    <ResponsiveContainer>
       {/* Cabeçalho */}
       <Box sx={{ mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -331,6 +332,6 @@ export function UsersPage() {
         onClose={handleCloseAccessGroups}
         user={selectedUserForGroups}
       />
-    </Container>
+    </ResponsiveContainer>
   );
 }

@@ -20,8 +20,11 @@ import {
   ToggleOn as ActiveIcon,
   AdminPanelSettings as RoleIcon,
   Security as SecurityIcon,
-  Key as PermissionIcon
+  Key as PermissionIcon,
+  ContentCopy as CopyIcon,
+  Check as CheckIcon
 } from '@mui/icons-material';
+import { useState } from 'react';
 import type { Role } from '../../../shared/types';
 
 interface RolesListProps {
@@ -63,9 +66,16 @@ export const RolesList = ({
   pageSize,
   onPageChange,
 }: RolesListProps) => {
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const handlePageChange = (_: unknown, newPage: number) => {
     onPageChange(newPage + 1); // MUI usa 0-indexed, nossa API usa 1-indexed
+  };
+
+  const handleCopyId = (id: string) => {
+    navigator.clipboard.writeText(id);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
   if (roles.length === 0 && !loading) {
@@ -89,6 +99,7 @@ export const RolesList = ({
           <TableHead>
             <TableRow>
               <TableCell>Nome</TableCell>
+              <TableCell>ID</TableCell>
               <TableCell>Descrição</TableCell>
               <TableCell>Código</TableCell>
               <TableCell>Status</TableCell>
@@ -112,6 +123,23 @@ export const RolesList = ({
                     <Typography variant="body2" fontWeight="medium">
                       {role.name}
                     </Typography>
+                  </Box>
+                </TableCell>
+                
+                <TableCell>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>
+                      {role.id.substring(0, 8)}...
+                    </Typography>
+                    <Tooltip title={copiedId === role.id ? "Copiado!" : "Copiar ID"}>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleCopyId(role.id)}
+                        color={copiedId === role.id ? "success" : "default"}
+                      >
+                        {copiedId === role.id ? <CheckIcon fontSize="small" /> : <CopyIcon fontSize="small" />}
+                      </IconButton>
+                    </Tooltip>
                   </Box>
                 </TableCell>
                 

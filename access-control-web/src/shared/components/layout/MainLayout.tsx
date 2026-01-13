@@ -56,17 +56,8 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
           flexDirection: 'column',
           minHeight: '100vh',
           backgroundColor: theme.palette.background.default,
-          transition: theme.transitions.create(['margin'], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.leavingScreen,
-          }),
-          ...(sidebarOpen && !isMobile && {
-            marginLeft: `${layout.sidebarWidth}px`,
-            transition: theme.transitions.create(['margin'], {
-              easing: theme.transitions.easing.easeOut,
-              duration: theme.transitions.duration.enteringScreen,
-            }),
-          }),
+          width: '100%', // Garante que o container ocupe a largura disponível
+          overflow: 'hidden', // Evita scroll horizontal indesejado
         }}
       >
         {/* Toolbar spacer */}

@@ -9,6 +9,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../shared/hooks';
 import { ROUTES } from '../../shared/constants';
+import { ResponsiveContainer } from '../../shared/components';
 
 export const DashboardPage = () => {
   const { user, logout } = useAuth();
@@ -57,7 +58,7 @@ export const DashboardPage = () => {
   ];
 
   return (
-    <Box sx={{ p: 3 }}>
+    <ResponsiveContainer>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" component="h1">
           Acesso Rápido
@@ -139,6 +140,6 @@ export const DashboardPage = () => {
           </Card>
         ))}
       </Box>
-    </Box>
+    </ResponsiveContainer>
   );
 };
