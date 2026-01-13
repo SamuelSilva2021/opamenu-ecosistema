@@ -40,6 +40,6 @@ COPY access-control-web/nginx.conf /etc/nginx/conf.d/default.conf
 # Copy build artifacts
 COPY --from=builder /app/access-control-web/dist /usr/share/nginx/html
 
-EXPOSE 80
+ENV PORT=80
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["/bin/sh", "-c", "sed -i 's/__PORT__/'\"$PORT\"'/g' /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
