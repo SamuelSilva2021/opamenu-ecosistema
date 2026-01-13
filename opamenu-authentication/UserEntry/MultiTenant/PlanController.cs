@@ -11,7 +11,7 @@ namespace Authenticator.API.UserEntry.MultiTenant;
 public class PlanController(IPlanService planService) : BaseController
 {
     [HttpPost]
-    [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
+    [Authorize(Roles = "SUPER_ADMIN")]
     public async Task<ActionResult<ResponseDTO<PlanDTO>>> Create([FromBody] CreatePlanDTO dto)
     {
         var result = await planService.CreateAsync(dto);
@@ -19,7 +19,7 @@ public class PlanController(IPlanService planService) : BaseController
     }
 
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
+    [Authorize(Roles = "SUPER_ADMIN")]
     public async Task<ActionResult<ResponseDTO<PlanDTO>>> Update(Guid id, [FromBody] UpdatePlanDTO dto)
     {
         var result = await planService.UpdateAsync(id, dto);
@@ -27,7 +27,7 @@ public class PlanController(IPlanService planService) : BaseController
     }
 
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
+    [Authorize(Roles = "SUPER_ADMIN")]
     public async Task<ActionResult<ResponseDTO<bool>>> Delete(Guid id)
     {
         var result = await planService.DeleteAsync(id);
