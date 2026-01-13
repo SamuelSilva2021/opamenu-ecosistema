@@ -27,7 +27,7 @@ import {
   Lock as LockIcon,
   Business as BusinessIcon
 } from '@mui/icons-material';
-import type { UserAccount, CreateUserAccountRequest, UpdateUserAccountRequest, UserAccountStatus } from '../../../shared/types';
+import { type UserAccount, type CreateUserAccountRequest, type UpdateUserAccountRequest, UserAccountStatus } from '../../../shared/types';
 
 interface UserFormProps {
   open: boolean;
@@ -61,10 +61,10 @@ interface FormErrors {
 }
 
 const USER_STATUS_OPTIONS = [
-  { value: 'Active', label: 'Ativo' },
-  { value: 'Inactive', label: 'Inativo' },
-  { value: 'Pending', label: 'Pendente' },
-  { value: 'Suspended', label: 'Suspenso' },
+  { value: UserAccountStatus.Active, label: 'Ativo' },
+  { value: UserAccountStatus.Inactive, label: 'Inativo' },
+  { value: UserAccountStatus.Pending, label: 'Pendente' },
+  { value: UserAccountStatus.Suspended, label: 'Suspenso' },
 ];
 
 export function UserForm({
@@ -84,7 +84,7 @@ export function UserForm({
     lastName: '',
     phoneNumber: '',
     tenantId: '',
-    status: 'Active'
+    status: UserAccountStatus.Active
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -105,7 +105,7 @@ export function UserForm({
           lastName: user.lastName || '',
           phoneNumber: user.phoneNumber || '',
           tenantId: user.tenantId || '',
-          status: user.status || 'Active'
+          status: user.status || UserAccountStatus.Active
         });
       } else {
         setFormData({
@@ -116,7 +116,7 @@ export function UserForm({
           lastName: '',
           phoneNumber: '',
           tenantId: '',
-          status: 'Active'
+          status: UserAccountStatus.Active
         });
       }
       setErrors({});

@@ -20,7 +20,7 @@ export const usePermissionStore = create<PermissionState>((set, get) => ({
 
   clearPermissions: () => set({ permissions: null, isInitialized: true }),
 
-  hasModuleAccess: (moduleKey: string): boolean => {
+  hasModuleAccess: (_moduleKey: string): boolean => {
     return true;
     /*
     const { permissions } = get();
@@ -34,7 +34,7 @@ export const usePermissionStore = create<PermissionState>((set, get) => ({
     */
   },
 
-  canPerformOperation: (moduleKey: string, operation: OperationType): boolean => {
+  canPerformOperation: (_moduleKey: string, _operation: OperationType): boolean => {
     return true; 
     
     /* 

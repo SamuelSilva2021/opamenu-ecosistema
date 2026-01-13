@@ -5,7 +5,6 @@ import {
   People as PeopleIcon,
   Security as SecurityIcon,
   Settings as SettingsIcon,
-  BugReport as BugReportIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../shared/hooks';
