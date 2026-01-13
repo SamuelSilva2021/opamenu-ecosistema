@@ -213,7 +213,7 @@ public class AuthenticationService(
     }
 
     /// <summary>
-    /// ObtÃ©m informaÃ§Ãµes do usuÃ¡rio pelo token JWT
+    /// ObtÃ©m informaÃ§Ãµes do usuário pelo token JWT
     /// </summary>
     /// <param name="userId"></param>
     /// <param name="tenantSlug"></param>
@@ -285,7 +285,7 @@ public class AuthenticationService(
     #region MÃ©todos auxiliares privados
 
     /// <summary>
-    /// ObtÃ©m os grupos de acesso do usuÃ¡rio
+    /// ObtÃ©m os grupos de acesso do usuário
     /// </summary>
     /// <param name="userId"></param>
     /// <returns></returns>
@@ -300,7 +300,7 @@ public class AuthenticationService(
     }
 
     /// <summary>
-    /// ObtÃ©m as roles do usuÃ¡rio com base nos grupos de acesso
+    /// ObtÃ©m as roles do usuário com base nos grupos de acesso
     /// </summary>
     /// <param name="accessGroups"></param>
     /// <returns></returns>

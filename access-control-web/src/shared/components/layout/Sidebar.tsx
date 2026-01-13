@@ -75,7 +75,7 @@ export const Sidebar = ({ open, onClose, onToggle }: SidebarProps) => {
   const menuSections: MenuSection[] = [
     {
       id: 'dashboard',
-      title: 'Dashboard',
+      title: 'Acesso Rápido',
       icon: <DashboardIcon />,
       path: '/dashboard',
       // Dashboard não precisa de permissão específica - sempre visível

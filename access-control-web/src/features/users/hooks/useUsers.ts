@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { UserService } from '../../../shared/services';
+import { UserAccountStatus } from '../../../shared/types';
 import type { UserAccount, CreateUserAccountRequest, UpdateUserAccountRequest } from '../../../shared/types';
 import type { AccessGroup } from '../../../shared/types';
 
@@ -199,7 +200,7 @@ export const useUsers = (options: UseUsersOptions = {}): UseUsersResult => {
     setError(null);
 
     try {
-      console.log('🔄 useUsers: Alterando status do usuário:', user.id, 'para:', user.status === 'Active' ? 'Inactive' : 'Active');
+      console.log('🔄 useUsers: Alterando status do usuário:', user.id, 'para:', user.status === UserAccountStatus.Active ? UserAccountStatus.Inactive : UserAccountStatus.Active);
       
       const updatedUser = await UserService.toggleUserStatus(user);
       

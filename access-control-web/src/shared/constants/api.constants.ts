@@ -42,6 +42,13 @@ export const API_ENDPOINTS = {
   // Applications
   APPLICATIONS: '/applications',
   APPLICATION_BY_ID: (id: string) => `/applications/${id}`,
+
+  // Operations
+  OPERATIONS: '/operation',
+  OPERATION_BY_ID: (id: string) => `/operation/${id}`,
+
+  // Permission Operations
+  PERMISSION_OPERATIONS: '/permission-operations',
 } as const;
 
 export const HTTP_STATUS = {

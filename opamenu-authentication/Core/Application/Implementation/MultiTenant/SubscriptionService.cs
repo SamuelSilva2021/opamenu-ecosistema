@@ -27,7 +27,7 @@ public class SubscriptionService(
             var tenantId = userContext.CurrentUser?.TenantId;
             if (tenantId == null || tenantId == Guid.Empty)
             {
-                return StaticResponseBuilder<string>.BuildError("Tenant nÃ£o identificado no contexto do usuÃ¡rio");
+                return StaticResponseBuilder<string>.BuildError("Tenant nÃ£o identificado no contexto do usuário");
             }
 
             var subscription = await subscriptionRepository.GetByTenantIdAsync(tenantId.Value);
@@ -79,7 +79,7 @@ public class SubscriptionService(
         {
             var tenantId = userContext.CurrentUser?.TenantId;
             if (tenantId == null || tenantId == Guid.Empty)
-                StaticResponseBuilder<string>.BuildError("Tenant nÃ£o identificado no contexto do usuÃ¡rio");
+                StaticResponseBuilder<string>.BuildError("Tenant nÃ£o identificado no contexto do usuário");
 
             var subscription = await subscriptionRepository.GetByTenantIdAsync(tenantId.Value);
 
@@ -141,7 +141,7 @@ public class SubscriptionService(
     {
         var tenantId = userContext.CurrentUser?.TenantId;
         if (tenantId == null || tenantId == Guid.Empty)
-            return StaticResponseBuilder<SubscriptionDTO>.BuildError("Tenant nÃ£o identificado no contexto do usuÃ¡rio");
+            return StaticResponseBuilder<SubscriptionDTO>.BuildError("Tenant nÃ£o identificado no contexto do usuário");
 
         var subscription = await subscriptionRepository.GetByTenantIdAsync(tenantId.Value);
         if (subscription == null)

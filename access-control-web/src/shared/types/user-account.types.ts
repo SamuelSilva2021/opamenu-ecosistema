@@ -1,9 +1,9 @@
 // Tipos baseados na API saas-authentication-api
 export const UserAccountStatus = {
-  Active: 'Active',
-  Inactive: 'Inactive',
-  Pending: 'Pending',
-  Suspended: 'Suspended'
+  Active: 'Ativo',
+  Inactive: 'Inativo',
+  Pending: 'Pendente',
+  Suspended: 'Suspenso'
 } as const;
 
 export type UserAccountStatus = typeof UserAccountStatus[keyof typeof UserAccountStatus];

@@ -10,11 +10,11 @@ namespace Authenticator.API.Core.Application.Interfaces;
 public interface IJwtTokenService
 {
     /// <summary>
-    /// Gera um token JWT para o usuÃ¡rio
+    /// Gera um token JWT para o usuário
     /// </summary>
-    /// <param name="user">UsuÃ¡rio autenticado</param>
+    /// <param name="user">usuário autenticado</param>
     /// <param name="tenant">Tenant (opcional)</param>
-    /// <param name="roles">Lista de roles do usuÃ¡rio</param>
+    /// <param name="roles">Lista de roles do usuário</param>
     /// <returns>Token JWT gerado</returns>
     string GenerateAccessToken(UserAccountEntity user, TenantEntity? tenant, IList<string> roles);
 

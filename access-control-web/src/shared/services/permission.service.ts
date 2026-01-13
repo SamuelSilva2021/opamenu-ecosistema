@@ -1,6 +1,7 @@
 import type { PaginatedResponse } from '../types';
 import type { Permission, CreatePermissionRequest, UpdatePermissionRequest } from '../types/permission.types';
 import { httpClient } from '../utils/http-client';
+import { API_ENDPOINTS } from '../constants';
 
 // Interface para ErrorDTO da API
 interface ErrorDTO {
@@ -60,7 +61,7 @@ interface PermissionApiResponse {
  * Centraliza todas as chamadas à API de permissões
  */
 export class PermissionService {
-  private static readonly BASE_URL = '/api/permissions';
+  private static readonly BASE_URL = API_ENDPOINTS.PERMISSIONS;
 
   /**
    * Lista todas as permissões com paginação

@@ -5,7 +5,6 @@ export const ROUTES = {
   DASHBOARD: '/dashboard',
   
   // Test/Debug
-  GROUP_TYPES_TEST: '/group-types-test',
   OPERATIONS_TEST: '/operations-test',
   
   // Users

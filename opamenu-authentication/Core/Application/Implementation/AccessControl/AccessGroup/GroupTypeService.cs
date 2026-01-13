@@ -28,7 +28,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Access
 
                 if (existingGroupType is not null && existingGroupType.Any())
                     return ResponseBuilder<GroupTypeDTO>
-                        .Fail(new ErrorDTO { Message = "JÃ¡ existe um tipo de grupo com esse nome." }).WithCode(400).Build();
+                        .Fail(new ErrorDTO { Message = "já existe um tipo de grupo com esse nome." }).WithCode(400).Build();
 
                 var groupTypeEntity = _mapper.Map<GroupTypeEntity>(groupType);
 
@@ -98,8 +98,8 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Access
         /// <summary>
         /// Recupera tipos de grupo paginados
         /// </summary>
-        /// <param name="page">NÃºmero da pÃ¡gina (>=1)</param>
-        /// <param name="limit">Itens por pÃ¡gina (1-100)</param>
+        /// <param name="page">Número da página (>=1)</param>
+        /// <param name="limit">Itens por página (1-100)</param>
         /// <returns></returns>
         public async Task<ResponseDTO<PagedResponseDTO<GroupTypeDTO>>> GetPagedAsync(int page, int limit)
         {
@@ -180,7 +180,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Access
 
                 if (duplicateGroupType is not null && duplicateGroupType.Any())
                     return ResponseBuilder<GroupTypeDTO?>
-                        .Fail(new ErrorDTO { Message = "JÃ¡ existe um tipo de grupo com esse nome." }).WithCode(400).Build();
+                        .Fail(new ErrorDTO { Message = "já existe um tipo de grupo com esse nome." }).WithCode(400).Build();
 
                 var updatedGroupType = _mapper.Map(groupType, existingGroupType);
                 await _groupTypeRepository.UpdateAsync(updatedGroupType);

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Authenticator.API.Infrastructure.Repositories.AccessControl.AccountAccessGroups
 {
     /// <summary>
-    /// RepositÃ³rio para vÃ­nculos de grupos de acesso com usuÃ¡rios
+    /// RepositÃ³rio para vÃ­nculos de grupos de acesso com usuários
     /// </summary>
     public class AccountAccessGroupRepository : BaseRepository<AccountAccessGroupEntity>, IAccountAccessGroupRepository
     {

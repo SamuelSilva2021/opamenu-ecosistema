@@ -18,7 +18,7 @@ public class PlanService(
         {
             var existingSlug = await planRepository.FirstOrDefaultAsync(p => p.Slug == dto.Slug);
             if (existingSlug != null)
-                return StaticResponseBuilder<PlanDTO>.BuildError("JÃ¡ existe um plano com este slug.");
+                return StaticResponseBuilder<PlanDTO>.BuildError("já existe um plano com este slug.");
 
             var entity = mapper.Map<PlanEntity>(dto);
 
@@ -47,7 +47,7 @@ public class PlanService(
             {
                 var existingSlug = await planRepository.FirstOrDefaultAsync(p => p.Slug == dto.Slug && p.Id != id);
                 if (existingSlug != null)
-                    return StaticResponseBuilder<PlanDTO>.BuildError("JÃ¡ existe um plano com este slug.");
+                    return StaticResponseBuilder<PlanDTO>.BuildError("já existe um plano com este slug.");
             }
 
             mapper.Map(dto, entity);

@@ -21,6 +21,8 @@ export const usePermissionStore = create<PermissionState>((set, get) => ({
   clearPermissions: () => set({ permissions: null, isInitialized: true }),
 
   hasModuleAccess: (moduleKey: string): boolean => {
+    return true;
+    /*
     const { permissions } = get();
     if (!permissions) return false;
 
@@ -29,9 +31,14 @@ export const usePermissionStore = create<PermissionState>((set, get) => ({
         role.modules.some(module => module.key === moduleKey)
       )
     );
+    */
   },
 
   canPerformOperation: (moduleKey: string, operation: OperationType): boolean => {
+    return true; 
+    
+    /* 
+    Lógica antiga removida temporariamente para simplificação
     const { permissions } = get();
     if (!permissions) return false;
 
@@ -42,6 +49,7 @@ export const usePermissionStore = create<PermissionState>((set, get) => ({
         )
       )
     );
+    */
   },
 
   getAccessibleModules: (): string[] => {

@@ -1,6 +1,7 @@
 import type { PaginatedResponse, AccessGroupApiResponse } from '../types';
 import type { Module, CreateModuleRequest, UpdateModuleRequest } from '../types/permission.types';
 import { httpClient } from '../utils/http-client';
+import { API_ENDPOINTS } from '../constants';
 
 interface QueryParams {
   page?: number;
@@ -12,7 +13,7 @@ interface QueryParams {
 }
 
 export class ModuleService {
-  private static readonly BASE_URL = '/api/modules';
+  private static readonly BASE_URL = API_ENDPOINTS.MODULES;
 
   static async getModules(params?: QueryParams): Promise<PaginatedResponse<Module>> {
     const response = await httpClient.get<AccessGroupApiResponse<Module>>(

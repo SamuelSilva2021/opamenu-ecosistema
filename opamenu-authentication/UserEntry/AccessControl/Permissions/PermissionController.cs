@@ -11,7 +11,7 @@ namespace Authenticator.API.UserEntry.AccessControl.Permissions
     /// <param name="permissionService"></param>
     [Route("api/permissions")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = "SUPER_ADMIN")]
     public class PermissionController(IPermissionService permissionService) : ControllerBase
     {
         private readonly IPermissionService _permissionService = permissionService;

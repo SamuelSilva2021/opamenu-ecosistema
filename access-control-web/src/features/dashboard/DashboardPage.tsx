@@ -55,20 +55,13 @@ export const DashboardPage = () => {
       path: '/settings',
       color: 'warning',
     },
-    {
-      title: '🧪 Teste Group Types',
-      description: 'Testar API de tipos de grupo',
-      icon: BugReportIcon,
-      path: ROUTES.GROUP_TYPES_TEST,
-      color: 'info',
-    },
   ];
 
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" component="h1">
-          Dashboard
+          Acesso Rápido
         </Typography>
         <Button
           variant="outlined"
@@ -112,7 +105,7 @@ export const DashboardPage = () => {
       
       <Box sx={{ 
         display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
+        gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)' },
         gap: 3 
       }}>
         {quickActions.map((action) => (

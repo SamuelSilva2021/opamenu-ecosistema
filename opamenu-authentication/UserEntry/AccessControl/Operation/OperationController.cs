@@ -1,4 +1,4 @@
-﻿using Authenticator.API.Core.Application.Interfaces.AccessControl.Operation;
+using Authenticator.API.Core.Application.Interfaces.AccessControl.Operation;
 using Authenticator.API.Core.Domain.AccessControl.Operations.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -12,7 +12,7 @@ namespace Authenticator.API.UserEntry.AccessControl.Operation
     /// <param name="operationService"></param>
     [Route("api/operation")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = "SUPER_ADMIN")]
     public class OperationController(IOperationService operationService) : ControllerBase
     {
         private readonly IOperationService _operationService = operationService;

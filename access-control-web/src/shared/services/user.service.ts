@@ -1,3 +1,4 @@
+import { UserAccountStatus } from '../types';
 import type { 
   UserAccount, 
   CreateUserAccountRequest, 
@@ -308,7 +309,7 @@ export class UserService {
    * Toggle status do usuário (ativo/inativo)
    */
   static async toggleUserStatus(user: UserAccount): Promise<UserAccount> {
-    const newStatus = user.status === 'Active' ? 'Inactive' : 'Active';
+    const newStatus = user.status === UserAccountStatus.Active ? UserAccountStatus.Inactive : UserAccountStatus.Active;
     
     return this.updateUser(user.id, {
       status: newStatus

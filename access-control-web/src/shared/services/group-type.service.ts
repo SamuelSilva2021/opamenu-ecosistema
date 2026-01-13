@@ -1,6 +1,7 @@
 import type { PaginatedResponse } from '../types';
 import type { GroupType, CreateGroupTypeRequest, UpdateGroupTypeRequest } from '../types/access-group.types';
 import { httpClient } from '../utils/http-client';
+import { API_ENDPOINTS } from '../constants';
 
 interface QueryParams {
   page?: number;
@@ -21,7 +22,7 @@ interface GroupTypesApiResponse {
 }
 
 export class GroupTypeService {
-  private static readonly BASE_URL = '/api/access-group/group-types';
+  private static readonly BASE_URL = API_ENDPOINTS.GROUP_TYPES;
 
   /**
    * Lista todos os tipos de grupos com paginação

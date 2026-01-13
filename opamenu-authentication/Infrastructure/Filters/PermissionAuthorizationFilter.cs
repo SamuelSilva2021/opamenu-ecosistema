@@ -16,10 +16,10 @@ namespace Authenticator.API.Infrastructure.Filters
     /// <summary>
     /// Filtro global de autorizaÃ§Ã£o baseado em permissÃµes.
     /// LÃª o atributo [MapPermission(module, operation)] aplicado em actions ou controladores
-    /// e valida se o usuÃ¡rio autenticado possui a permissÃ£o necessÃ¡ria.
+    /// e valida se o usuário autenticado possui a permissÃ£o necessÃ¡ria.
     /// 
     /// EstratÃ©gia:
-    /// 1) Busca o usuÃ¡rio e suas permissÃµes via cache usando IAuthenticationService.GetUserInfoAsync
+    /// 1) Busca o usuário e suas permissÃµes via cache usando IAuthenticationService.GetUserInfoAsync
     /// 2) Caso o cache/serviÃ§o falhe, realiza fallback para os claims do JWT ("permission")
     /// 3) Atualmente as permissÃµes no token representam o nome do mÃ³dulo (Permission.Name).
     ///    Assim, a validaÃ§Ã£o considera o mÃ³dulo informado em [MapPermission]. A operaÃ§Ã£o
@@ -122,7 +122,7 @@ namespace Authenticator.API.Infrastructure.Filters
                 if (!hasPermissionModule)
                 {
                     _logger.LogWarning(
-                        "Acesso negado. UsuÃ¡rio {UserId} nÃ£o possui permissÃ£o para {Module}/{Operation} no tenant {Tenant}",
+                        "Acesso negado. usuário {UserId} nÃ£o possui permissÃ£o para {Module}/{Operation} no tenant {Tenant}",
                         userId, requiredModuleName, requiredOperation, tenantSlug);
                     context.Result = new ForbidResult();
                     return;
@@ -131,7 +131,7 @@ namespace Authenticator.API.Infrastructure.Filters
                 if(!hasPermissionOperation)
                 {
                     _logger.LogWarning(
-                        "Acesso negado. UsuÃ¡rio {UserId} nÃ£o possui permissÃ£o para operaÃ§Ã£o {Operation} no mÃ³dulo {Module} no tenant {Tenant}",
+                        "Acesso negado. usuário {UserId} nÃ£o possui permissÃ£o para operaÃ§Ã£o {Operation} no mÃ³dulo {Module} no tenant {Tenant}",
                         userId, requiredOperation, requiredModuleName, tenantSlug);
                     context.Result = new ForbidResult();
                     return;
@@ -139,14 +139,14 @@ namespace Authenticator.API.Infrastructure.Filters
 
                 // Log informativo (auditoria)
                 _logger.LogInformation(
-                    "Acesso permitido. UsuÃ¡rio {UserId} possui permissÃ£o para {Module}/{Operation} no tenant {Tenant}",
+                    "Acesso permitido. usuário {UserId} possui permissÃ£o para {Module}/{Operation} no tenant {Tenant}",
                     userId, requiredModuleName, requiredOperation, tenantSlug);
 
                 await next();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao validar permissÃ£o {Module}/{Operation} para usuÃ¡rio {UserId}", requiredModuleName, requiredOperation, userId);
+                _logger.LogError(ex, "Erro ao validar permissÃ£o {Module}/{Operation} para usuário {UserId}", requiredModuleName, requiredOperation, userId);
                 context.Result = new ObjectResult(ResponseBuilder<bool>
                         .Fail(new ErrorDTO { Message = "Erro na validaÃ§Ã£o de permissÃ£o" })
                         .WithException(ex)

@@ -34,9 +34,9 @@ public class RegisterController(
     private readonly ILogger<RegisterController> _logger = logger;
 
     /// <summary>
-    /// Registra um novo tenant (cliente/empresa) com usuÃ¡rio administrador
+    /// Registra um novo tenant (cliente/empresa) com usuário administrador
     /// </summary>
-    /// <param name="request">Dados do tenant e usuÃ¡rio administrador</param>
+    /// <param name="request">Dados do tenant e usuário administrador</param>
     /// <returns>InformaÃ§Ãµes do tenant criado com tokens de autenticaÃ§Ã£o</returns>
     [HttpPost]
     public async Task<ActionResult<ResponseDTO<RegisterTenantResponseDTO>>> Register([FromBody] CreateTenantDTO request)

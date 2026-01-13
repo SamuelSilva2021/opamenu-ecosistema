@@ -1,6 +1,7 @@
 import type { PaginatedResponse } from '../types';
 import type { Operation, CreateOperationRequest, UpdateOperationRequest } from '../types/permission.types';
 import { httpClient } from '../utils/http-client';
+import { API_ENDPOINTS } from '../constants';
 
 // Interface para ErrorDTO da API
 interface ErrorDTO {
@@ -45,7 +46,7 @@ interface OperationsApiResponse {
  * Centraliza todas as chamadas à API de operações
  */
 export class OperationService {
-  private static readonly BASE_URL = '/api/operation';
+  private static readonly BASE_URL = API_ENDPOINTS.OPERATIONS;
 
   /**
    * Lista todas as operações (não paginado)

@@ -1,4 +1,4 @@
-﻿using Authenticator.API.Core.Application.Interfaces.AccessControl.Module;
+using Authenticator.API.Core.Application.Interfaces.AccessControl.Module;
 using Authenticator.API.Core.Domain.AccessControl.Modules.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -8,7 +8,7 @@ namespace Authenticator.API.UserEntry.AccessControl.Module
 {
     [Route("api/modules")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = "SUPER_ADMIN")]
     public class ModuleController(IModuleService moduleTypeService) : ControllerBase
     {
         private readonly IModuleService _moduleService = moduleTypeService;

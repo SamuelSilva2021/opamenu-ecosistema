@@ -15,7 +15,7 @@ namespace Authenticator.API.Infrastructure.Services.Payment
 
         public Task<bool> VerifyPaymentAsync(string sessionId)
         {
-            // Simula verificaÃ§Ã£o de pagamento sempre bem sucedida
+            // Simula verificação de pagamento sempre bem sucedida
             return Task.FromResult(true);
         }
     }

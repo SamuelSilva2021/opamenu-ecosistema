@@ -32,4 +32,4 @@ docker-compose.override.yml
 
 # Logs
 *.log
-scripts/Criar_usuario_admin.sql
+scripts/AccessControl.sql

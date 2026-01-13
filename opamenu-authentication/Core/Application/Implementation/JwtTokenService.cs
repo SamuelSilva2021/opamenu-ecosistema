@@ -26,7 +26,7 @@ public class JwtTokenService : IJwtTokenService
     }
 
     /// <summary>
-    /// Gera um token de acesso JWT para o usuÃ¡rio e tenant informados
+    /// Gera um token de acesso JWT para o usuário e tenant informados
     /// </summary>
     /// <param name="user"></param>
     /// <param name="tenant"></param>
@@ -72,7 +72,7 @@ public class JwtTokenService : IJwtTokenService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao gerar token de acesso para usuÃ¡rio {UserId}", user.Id);
+            _logger.LogError(ex, "Erro ao gerar token de acesso para usuário {UserId}", user.Id);
             throw;
         }
     }

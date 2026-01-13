@@ -25,6 +25,7 @@ namespace Authenticator.API.UserEntry.Users
         /// Lista usuários do tenant atual com paginação
         /// </summary>
         [HttpGet]
+        [Authorize(Roles = "SUPER_ADMIN")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

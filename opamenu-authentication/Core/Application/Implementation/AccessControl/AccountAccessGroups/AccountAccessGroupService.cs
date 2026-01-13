@@ -12,7 +12,7 @@ using System.Linq.Expressions;
 namespace Authenticator.API.Core.Application.Implementation.AccessControl.AccountAccessGroups
 {
     /// <summary>
-    /// ServiÃ§o para gerenciamento de vÃ­nculos de grupos de acesso de usuÃ¡rios
+    /// ServiÃ§o para gerenciamento de vÃ­nculos de grupos de acesso de usuários
     /// </summary>
     public class AccountAccessGroupService(
         IAccountAccessGroupRepository accountAccessGroupRepository,
@@ -47,7 +47,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Accoun
                 if (user == null || user.TenantId != tenantId)
                 {
                     return ResponseBuilder<IEnumerable<AccessGroupDTO>>
-                        .Fail(new ErrorDTO { Message = "UsuÃ¡rio nÃ£o encontrado no tenant" })
+                        .Fail(new ErrorDTO { Message = "usuário nÃ£o encontrado no tenant" })
                         .WithCode(404)
                         .Build();
                 }
@@ -63,7 +63,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Accoun
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao listar grupos do usuÃ¡rio");
+                _logger.LogError(ex, "Erro ao listar grupos do usuário");
                 return ResponseBuilder<IEnumerable<AccessGroupDTO>>
                     .Fail(new ErrorDTO { Message = ex.Message })
                     .WithException(ex)
@@ -97,7 +97,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Accoun
                 if (user == null || user.TenantId != tenantId)
                 {
                     return ResponseBuilder<bool>
-                        .Fail(new ErrorDTO { Message = "UsuÃ¡rio nÃ£o encontrado no tenant" })
+                        .Fail(new ErrorDTO { Message = "usuário nÃ£o encontrado no tenant" })
                         .WithCode(404)
                         .Build();
                 }
@@ -124,7 +124,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Accoun
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao atribuir grupos ao usuÃ¡rio");
+                _logger.LogError(ex, "Erro ao atribuir grupos ao usuário");
                 return ResponseBuilder<bool>
                     .Fail(new ErrorDTO { Message = ex.Message })
                     .WithException(ex)
@@ -150,7 +150,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Accoun
                 if (user == null || user.TenantId != tenantId)
                 {
                     return ResponseBuilder<bool>
-                        .Fail(new ErrorDTO { Message = "UsuÃ¡rio nÃ£o encontrado no tenant" })
+                        .Fail(new ErrorDTO { Message = "usuário nÃ£o encontrado no tenant" })
                         .WithCode(404)
                         .Build();
                 }
@@ -177,7 +177,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Accoun
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao revogar grupo do usuÃ¡rio");
+                _logger.LogError(ex, "Erro ao revogar grupo do usuário");
                 return ResponseBuilder<bool>
                     .Fail(new ErrorDTO { Message = ex.Message })
                     .WithException(ex)

@@ -86,9 +86,9 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Access
                 var currentUser = _userContext.CurrentUser;
                 if (currentUser == null)
                 {
-                    _logger.LogWarning("UsuÃ¡rio nÃ£o autenticado ao tentar buscar grupos de acesso");
+                    _logger.LogWarning("usuário nÃ£o autenticado ao tentar buscar grupos de acesso");
                     return ResponseBuilder<IEnumerable<AccessGroupDTO>>
-                        .Fail(new ErrorDTO { Message = "UsuÃ¡rio nÃ£o autenticado" })
+                        .Fail(new ErrorDTO { Message = "usuário nÃ£o autenticado" })
                         .WithCode(401)
                         .Build();
                 }
@@ -102,7 +102,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Access
                         return ResponseBuilder<IEnumerable<AccessGroupDTO>>
                             .Ok(Enumerable.Empty<AccessGroupDTO>())
                             .Build();
-                    //_logger.LogWarning("TenantId nÃ£o encontrado para o usuÃ¡rio: {UserId}", currentUser.UserId);
+                    //_logger.LogWarning("TenantId nÃ£o encontrado para o usuário: {UserId}", currentUser.UserId);
                     //return ResponseBuilder<IEnumerable<AccessGroupDTO>>
                     //    .Fail(new ErrorDTO { Message = "Tenant nÃ£o identificado" })
                     //    .WithCode(400)
@@ -110,7 +110,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Access
                 }
                 else
                 {
-                    // Filtra grupos de acesso pelo TenantId do usuÃ¡rio
+                    // Filtra grupos de acesso pelo TenantId do usuário
                     entities = await _accessGroupRepository.GetAllAsyncByTenantId(currentUser.TenantId);
                     if (entities == null || !entities.Any())
                         return ResponseBuilder<IEnumerable<AccessGroupDTO>>

@@ -57,7 +57,7 @@ namespace Authenticator.API.Core.Application.Implementation.MultiTenant
         private readonly IGroupTypeRepository _groupTypeRepository = groupTypeRepository;
 
         /// <summary>
-        /// Adiciona um novo tenant e cria o usuÃ¡rio administrador associado
+        /// Adiciona um novo tenant e cria o usuário administrador associado
         /// </summary>
         /// <param name="tenant"></param>
         /// <returns></returns>
@@ -68,12 +68,12 @@ namespace Authenticator.API.Core.Application.Implementation.MultiTenant
                 var existingUser = await _userAccountsRepository.GetByEmailAsync(tenant.Email);
                 if (existingUser != null)
                     return ResponseBuilder<RegisterTenantResponseDTO>
-                        .Fail(new ErrorDTO { Message = "Email jÃ¡ estÃ¡ em uso." }).WithCode(400).Build();
+                        .Fail(new ErrorDTO { Message = "Email já está em uso." }).WithCode(400).Build();
 
                 var existingDocument = await _tenantRepository.GetByDocumentAsync(tenant.Document!);
                 if (existingDocument != null)
                     return ResponseBuilder<RegisterTenantResponseDTO>
-                        .Fail(new ErrorDTO { Message = "CNPJ/CPF jÃ¡ estÃ¡ em uso." }).WithCode(400).Build();
+                        .Fail(new ErrorDTO { Message = "CNPJ/CPF já está em uso." }).WithCode(400).Build();
 
                 
                 var tenantEntity = _mapper.Map<TenantEntity>(tenant);
@@ -93,7 +93,7 @@ namespace Authenticator.API.Core.Application.Implementation.MultiTenant
                 var tenantDTO = _mapper.Map<TenantDTO>(createdTenant);
                 _logger.LogInformation("Tenant criado com sucesso: {TenantId}", createdTenant.Id);
 
-                // 2. Criar o UsuÃ¡rio Administrador
+                // 2. Criar o usuário Administrador
                 var passwordHash = BCrypt.Net.BCrypt.HashPassword(tenant.Password);
                 var userName = await GenerateUniqueUsernameAsync(tenant.Email);
 
@@ -111,7 +111,7 @@ namespace Authenticator.API.Core.Application.Implementation.MultiTenant
                     IsEmailVerified = false
                 };
                 await _userAccountsRepository.AddAsync(adminUser);
-                _logger.LogInformation("UsuÃ¡rio administrador criado com sucesso: {UserId}", adminUser.Id);
+                _logger.LogInformation("usuário administrador criado com sucesso: {UserId}", adminUser.Id);
 
                 // 3. Configurar PermissÃµes (Roles e AccessGroups)
                 try 
@@ -157,7 +157,7 @@ namespace Authenticator.API.Core.Application.Implementation.MultiTenant
                     };
                     await _roleAccessGroupRepository.AddAsync(roleGroup);
 
-                    // Vincular UsuÃ¡rio ao Grupo
+                    // Vincular usuário ao Grupo
                     var userGroup = new AccountAccessGroupEntity
                     {
                         Id = Guid.NewGuid(),
@@ -169,7 +169,7 @@ namespace Authenticator.API.Core.Application.Implementation.MultiTenant
                     };
                     await _accountAccessGroupRepository.AddAsync(userGroup);
 
-                    _logger.LogInformation("PermissÃµes de administrador configuradas para o usuÃ¡rio: {UserId}", adminUser.Id);
+                    _logger.LogInformation("PermissÃµes de administrador configuradas para o usuário: {UserId}", adminUser.Id);
                 }
                 catch (Exception ex)
                 {
@@ -199,7 +199,7 @@ namespace Authenticator.API.Core.Application.Implementation.MultiTenant
                     RefreshToken = refreshToken,
                     ExpiresIn = expiresIn,
                     CreatedAt = createdTenant.CreatedAt,
-                    Message = "Empresa e usuÃ¡rio administrador criados com sucesso!"
+                    Message = "Empresa e usuário administrador criados com sucesso!"
                 };
 
                 return ResponseBuilder<RegisterTenantResponseDTO>.Ok(dto).WithCode(201).Build();
@@ -213,7 +213,7 @@ namespace Authenticator.API.Core.Application.Implementation.MultiTenant
         }
 
         /// <summary>
-        /// Gera um nome de usuÃ¡rio Ãºnico baseado no email
+        /// Gera um nome de usuário Ãºnico baseado no email
         /// </summary>
         /// <param name="email"></param>
         /// <returns></returns>
@@ -246,7 +246,7 @@ namespace Authenticator.API.Core.Application.Implementation.MultiTenant
             var originalSlug = slug;
             var counter = 1;
 
-            // Verificar se o slug jÃ¡ existe
+            // Verificar se o slug já existe
             while (await _tenantRepository.ExistingSlug(slug))
             {
                 slug = $"{originalSlug}_{counter}";

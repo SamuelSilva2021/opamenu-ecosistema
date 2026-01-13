@@ -6,6 +6,7 @@ import type {
   PermissionOperationBulkRequest 
 } from '../types/permission.types';
 import { httpClient } from '../utils/http-client';
+import { API_ENDPOINTS } from '../constants';
 
 interface QueryParams {
   page?: number;
@@ -32,7 +33,7 @@ interface PermissionOperationsApiResponse {
  * Centraliza todas as chamadas à API de permission operations
  */
 export class PermissionOperationService {
-  private static readonly BASE_URL = '/api/permission-operations';
+  private static readonly BASE_URL = API_ENDPOINTS.PERMISSION_OPERATIONS;
 
   /**
    * Lista todas as relações permissão-operação com paginação

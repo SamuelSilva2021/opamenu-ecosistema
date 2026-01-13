@@ -150,13 +150,13 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
                         .WithCode(404)
                         .Build();
 
-                // Verificar se a relaÃ§Ã£o jÃ¡ existe
+                // Verificar se a relaÃ§Ã£o já existe
                 var existingRelation = await _permissionOperationRepository.GetByPermissionAndOperationAsync(
                     permissionOperation.PermissionId, permissionOperation.OperationId);
                 
                 if (existingRelation != null)
                     return ResponseBuilder<PermissionOperationDTO>
-                        .Fail(new ErrorDTO { Message = "RelaÃ§Ã£o jÃ¡ existe entre a permissÃ£o e operaÃ§Ã£o" })
+                        .Fail(new ErrorDTO { Message = "RelaÃ§Ã£o já existe entre a permissÃ£o e operaÃ§Ã£o" })
                         .WithCode(409)
                         .Build();
 
@@ -204,12 +204,12 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
                     if (operation == null)
                         continue; // Pular operaÃ§Ãµes que nÃ£o existem
 
-                    // Verificar se a relaÃ§Ã£o jÃ¡ existe
+                    // Verificar se a relaÃ§Ã£o já existe
                     var existingRelation = await _permissionOperationRepository.GetByPermissionAndOperationAsync(
                         permissionOperations.PermissionId, operationId);
                     
                     if (existingRelation != null)
-                        continue; // Pular relaÃ§Ãµes que jÃ¡ existem
+                        continue; // Pular relaÃ§Ãµes que já existem
 
                     var entity = new PermissionOperationEntity
                     {

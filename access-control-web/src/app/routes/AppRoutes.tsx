@@ -2,7 +2,6 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from '../../features/auth';
 import { DashboardPage } from '../../features/dashboard';
 import { AccessGroupsPage } from '../../features/access-groups';
-import { GroupTypesTestPage, GroupTypesPage } from '../../features/groups';
 import { ModulesPage } from '../../features/modules';
 import { OperationsPage, OperationsTestPage } from '../../features/operations';
 import { PermissionsPage } from '../../features/permissions';
@@ -11,6 +10,7 @@ import { UsersPage } from '../../features/users';
 import { ProtectedRoute } from './ProtectedRoute';
 import { MainLayout } from '../../shared/components';
 import { ROUTES } from '../../shared/constants';
+import { GroupTypesPage } from '../../features/group-types';
 
 export const AppRoutes = () => {
   return (
@@ -52,18 +52,6 @@ export const AppRoutes = () => {
           <ProtectedRoute>
             <MainLayout>
               <GroupTypesPage />
-            </MainLayout>
-          </ProtectedRoute>
-        } 
-      />
-      
-      {/* Rota de teste para Group Types */}
-      <Route 
-        path={ROUTES.GROUP_TYPES_TEST} 
-        element={
-          <ProtectedRoute>
-            <MainLayout>
-              <GroupTypesTestPage />
             </MainLayout>
           </ProtectedRoute>
         } 

@@ -26,7 +26,7 @@ import {
   Cancel as UnverifiedIcon,
   Security as SecurityIcon
 } from '@mui/icons-material';
-import type { UserAccount } from '../../../shared/types';
+import { type UserAccount, UserAccountStatus } from '../../../shared/types';
 
 interface UsersListProps {
   users: UserAccount[];
@@ -75,10 +75,10 @@ export function UsersList({
    */
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Active': return 'success';
-      case 'Inactive': return 'default';
-      case 'Pending': return 'warning';
-      case 'Suspended': return 'error';
+      case UserAccountStatus.Active: return 'success';
+      case UserAccountStatus.Inactive: return 'default';
+      case UserAccountStatus.Pending: return 'warning';
+      case UserAccountStatus.Suspended: return 'error';
       default: return 'default';
     }
   };
@@ -87,13 +87,7 @@ export function UsersList({
    * Retorna texto do status em português
    */
   const getStatusText = (status: string) => {
-    switch (status) {
-      case 'Active': return 'Ativo';
-      case 'Inactive': return 'Inativo';
-      case 'Pending': return 'Pendente';
-      case 'Suspended': return 'Suspenso';
-      default: return status;
-    }
+    return status;
   };
 
   /**
@@ -167,7 +161,7 @@ export function UsersList({
                 hover
                 sx={{ 
                   '&:hover': { backgroundColor: 'action.hover' },
-                  opacity: user.status === 'Active' ? 1 : 0.7
+                  opacity: user.status === 'Ativo' ? 1 : 0.7
                 }}
               >
                 {/* Coluna Usuário */}
@@ -177,7 +171,7 @@ export function UsersList({
                       sx={{ 
                         width: 40, 
                         height: 40,
-                        bgcolor: user.status === 'Active' ? 'primary.main' : 'grey.400',
+                        bgcolor: user.status === 'Ativo' ? 'primary.main' : 'grey.400',
                         fontSize: '0.875rem'
                       }}
                     >
@@ -188,7 +182,7 @@ export function UsersList({
                         variant="subtitle2" 
                         fontWeight={600}
                         sx={{ 
-                          color: user.status === 'Active' ? 'text.primary' : 'text.secondary'
+                          color: user.status === 'Ativo' ? 'text.primary' : 'text.secondary'
                         }}
                       >
                         {user.fullName || `${user.firstName} ${user.lastName}`.trim()}
@@ -237,7 +231,7 @@ export function UsersList({
                     label={getStatusText(user.status)}
                     color={getStatusColor(user.status) as any}
                     size="small"
-                    variant={user.status === 'Active' ? 'filled' : 'outlined'}
+                    variant={user.status === 'Ativo' ? 'filled' : 'outlined'}
                   />
                 </TableCell>
 
@@ -272,13 +266,13 @@ export function UsersList({
                 <TableCell align="center">
                   <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
                     {/* Toggle Status */}
-                    <Tooltip title={user.status === 'Active' ? 'Desativar usuário' : 'Ativar usuário'}>
+                    <Tooltip title={user.status === 'Ativo' ? 'Desativar usuário' : 'Ativar usuário'}>
                       <IconButton
                         size="small"
                         onClick={() => onToggleStatus(user)}
-                        color={user.status === 'Active' ? 'success' : 'default'}
+                        color={user.status === 'Ativo' ? 'success' : 'default'}
                       >
-                        {user.status === 'Active' ? <ActiveIcon /> : <InactiveIcon />}
+                        {user.status === 'Ativo' ? <ActiveIcon /> : <InactiveIcon />}
                       </IconButton>
                     </Tooltip>
 

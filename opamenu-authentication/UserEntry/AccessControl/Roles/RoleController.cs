@@ -15,7 +15,7 @@ namespace Authenticator.API.UserEntry.AccessControl.Roles
     [ApiController]
     [Produces("application/json")]
     [Tags("Roles")]
-    [Authorize]
+    [Authorize(Roles = "SUPER_ADMIN")]
     public class RoleController(
         ILogger<RoleController> logger,
         IRoleService roleService
