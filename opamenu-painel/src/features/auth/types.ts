@@ -13,11 +13,18 @@ export interface LoginResponse {
   requiresPayment?: boolean;
 }
 
+export interface ErrorDTO {
+  code: string;
+  message: string;
+  property?: string;
+  details?: string[];
+}
+
 export interface AuthResponse {
   data: LoginResponse;
   succeeded: boolean;
   message?: string;
-  errors?: string[];
+  errors?: ErrorDTO[];
 }
 
 export interface RegisterTenantRequest {
@@ -88,5 +95,5 @@ export interface PermissionsResponse {
   data: UserInfo;
   succeeded: boolean;
   message?: string;
-  errors?: string[];
+  errors?: ErrorDTO[];
 }

@@ -39,6 +39,7 @@ interface UserFormProps {
 }
 
 interface FormData {
+  username: string;
   email: string;
   password: string;
   confirmPassword: string;
@@ -50,6 +51,7 @@ interface FormData {
 }
 
 interface FormErrors {
+  username?: string;
   email?: string;
   password?: string;
   confirmPassword?: string;
@@ -77,6 +79,7 @@ export function UserForm({
 }: UserFormProps) {
   
   const [formData, setFormData] = useState<FormData>({
+    username: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -98,6 +101,7 @@ export function UserForm({
     if (open) {
       if (user) {
         setFormData({
+          username: user.username || '',
           email: user.email || '',
           password: '',
           confirmPassword: '',
@@ -109,6 +113,7 @@ export function UserForm({
         });
       } else {
         setFormData({
+          username: '',
           email: '',
           password: '',
           confirmPassword: '',
@@ -133,6 +138,11 @@ export function UserForm({
 
   const validateField = async (field: keyof FormData, value: string): Promise<string | undefined> => {
     switch (field) {
+      case 'username':
+        if (!value.trim()) return 'Username é obrigatório';
+        if (value.length > 100) return 'Username não pode exceder 100 caracteres';
+        break;
+
       case 'email':
         if (!value.trim()) return 'Email é obrigatório';
         if (value.length > 255) return 'Email não pode exceder 255 caracteres';
@@ -207,11 +217,14 @@ export function UserForm({
     try {
       if (isEditMode) {
         const updateData: UpdateUserAccountRequest = {
+          username: formData.username,
           email: formData.email,
           firstName: formData.firstName,
           lastName: formData.lastName,
           phoneNumber: formData.phoneNumber || undefined,
-          status: formData.status
+          status: formData.status,
+          isEmailVerified: user?.isEmailVerified,
+          tenantId: formData.tenantId || undefined
         };
 
         await onSubmit(updateData);
@@ -274,15 +287,33 @@ export function UserForm({
         )}
 
         <Stack spacing={3}>
-          <Box>
-            <Typography variant="subtitle1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <PersonIcon fontSize="small" />
-              Informações Básicas
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-          </Box>
+            <Box>
+              <Typography variant="subtitle1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <PersonIcon fontSize="small" />
+                Informações Básicas
+              </Typography>
+              <Divider sx={{ mb: 2 }} />
+            </Box>
 
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            <TextField
+              fullWidth
+              label="Username *"
+              value={formData.username}
+              onChange={(e) => handleFieldChange('username', e.target.value)}
+              onBlur={() => handleBlur('username')}
+              error={Boolean(errors.username)}
+              helperText={errors.username}
+              disabled={loading || validating}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <PersonIcon />
+                  </InputAdornment>
+                )
+              }}
+            />
+
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <TextField
               fullWidth
               label="Nome *"

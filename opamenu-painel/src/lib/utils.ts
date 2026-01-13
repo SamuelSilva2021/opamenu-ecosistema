@@ -1,9 +1,16 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { AxiosError } from "axios"
+import type { ErrorDTO } from "@/features/auth/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
+}
+export function extractErrorCode(error: ErrorDTO): string {
+  if (error.code) {
+    return error.code;
+  }
+  return "";
 }
 
 export function getErrorMessage(error: unknown): string {
@@ -30,7 +37,12 @@ export function getErrorMessage(error: unknown): string {
     if (data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
         return data.errors.map((e: any) => {
             if (typeof e === 'string') return e;
-            return e.message || String(e);
+            
+            // Tratamento para ErrorDTO (code, message, property, details)
+            if (e.message) 
+                return e.message;
+            
+            return String(e);
         }).join(", ");
     }
 
@@ -59,6 +71,29 @@ export function getErrorMessage(error: unknown): string {
   }
   
   return "Ocorreu um erro inesperado";
+}
+
+export function getErrorDetail(error: unknown): string {
+  if (error instanceof AxiosError) {
+    const data = error.response?.data;
+
+    // Se não houver dados de resposta, retorna string vazia para detalhe
+    if (!data) {
+      return "";
+    }
+    // Case 2: ResponseDTO with errors property
+    if (data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
+        return data.errors.map((e: any) => {
+            if (typeof e === 'string') return e;
+            if (e.details && Array.isArray(e.details) && e.details.length > 0) 
+              return e.details.join(", ");
+            else
+              return "";
+        }).join(", ");
+    }
+  }
+  
+  return "";
 }
 
 export function formatDocument(value: string) {

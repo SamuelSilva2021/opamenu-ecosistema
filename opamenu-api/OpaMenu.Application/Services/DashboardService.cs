@@ -22,7 +22,7 @@ public class DashboardService(
         {
             var tenantId = _currentUserService.GetTenantGuid();
             if (tenantId == null)
-                return StaticResponseBuilder<DashboardSummaryDto>.BuildError("Tenant nÃ£o identificado.");
+                return StaticResponseBuilder<DashboardSummaryDto>.BuildError("Tenant não identificado.");
 
             var now = DateTime.UtcNow;
             var startOfMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);

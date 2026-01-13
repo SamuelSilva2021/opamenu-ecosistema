@@ -81,12 +81,13 @@ namespace Authenticator.API.UserEntry.Users
         /// Atualiza dados de um usuário
         /// </summary>
         [HttpPut("{id:guid}")]
+        [Authorize(Roles = "SUPER_ADMIN")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ResponseDTO<UserAccountDTO>>> Update([FromRoute] Guid id, [FromBody] UserAccountUpdateDTO request)
+        public async Task<ActionResult<ResponseDTO<UserAccountDTO>>> Update([FromRoute] Guid id, [FromBody] UserAccountUpdateDto request)
         {
             var response = await _userService.UpdateUserAccountAsync(id, request);
             return StatusCode(response.Code, response);

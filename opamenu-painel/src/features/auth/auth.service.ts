@@ -1,5 +1,5 @@
 import { apiAuth } from "@/lib/axios";
-import type { AuthResponse, LoginRequest, PermissionsResponse, RegisterTenantRequest, PlanDto, ActivateTrialRequest } from "./types";
+import type { AuthResponse, LoginRequest, PermissionsResponse, RegisterTenantRequest, PlanDto } from "./types";
 import type { RegisterFormData } from "./validation";
 
 export const authService = {

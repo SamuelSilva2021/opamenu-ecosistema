@@ -31,7 +31,7 @@ namespace Authenticator.API.Core.Application.Interfaces.AccessControl.UserAccoun
         /// <summary>
         /// Atualiza dados de um usuário
         /// </summary>
-        Task<ResponseDTO<UserAccountDTO>> UpdateUserAccountAsync(Guid id, UserAccountUpdateDTO dto);
+        Task<ResponseDTO<UserAccountDTO>> UpdateUserAccountAsync(Guid id, UserAccountUpdateDto dto);
 
         /// <summary>
         /// Remove (hard delete) um usuário

@@ -9,6 +9,7 @@ using Authenticator.API.Infrastructure.Data;
 using Authenticator.API.Core.Domain.MultiTenant.Tenant.DTOs;
 using Authenticator.API.Infrastructure.Data.Context;
 using Authenticator.API.Core.Application.Interfaces.AccessControl.Module;
+using Authenticator.API.Core.Application.Interfaces.Auth;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
 using Authenticator.API.Core.Domain.AccessControl.Modules.DTOs;
 using Authenticator.API.Core.Domain.AccessControl.UserAccounts.DTOs;
@@ -28,7 +29,8 @@ public class AuthenticationService(
     ILogger<AuthenticationService> logger,
     IUserAccountsRepository userAccountsRepository,
     IModuleRepository moduleRepository,
-    ISubscriptionRepository subscriptionRepository
+    ISubscriptionRepository subscriptionRepository,
+    IUserValidation loginValidation
         ) : IAuthenticationService
 {
     private readonly AccessControlDbContext _accessControlContext = accessControlContext;
@@ -39,6 +41,7 @@ public class AuthenticationService(
     private readonly IUserAccountsRepository _userAccountsRepository = userAccountsRepository;
     private readonly IModuleRepository _moduleRepository = moduleRepository;
     private readonly ISubscriptionRepository _subscriptionRepository = subscriptionRepository;
+    private readonly IUserValidation _loginValidation = loginValidation;
 
     private const string REFRESH_TOKENS_CACHE_KEY = "refresh_tokens";
     private const string USER_CACHE_KEY_PREFIX = "user_";
@@ -55,20 +58,90 @@ public class AuthenticationService(
         {
             _logger.LogInformation("Tentativa de login para: {UsernameOrEmail}", usernameOrEmail);
             var user = await _userAccountsRepository.FirstOrDefaultAsync(u =>
-                (u.Username.Equals(usernameOrEmail) || u.Email.Equals(usernameOrEmail)) &&
-                    u.Status == EUserAccountStatus.Ativo && u.DeletedAt == null);
+                (u.Username.Equals(usernameOrEmail) || u.Email.Equals(usernameOrEmail)) && u.DeletedAt == null);
+
 
             if (user == null)
             {
                 _logger.LogWarning("Usuário não encontrado: {UsernameOrEmail}", usernameOrEmail);
-               return ResponseBuilder<LoginResponse>
+                return ResponseBuilder<LoginResponse>
                     .Fail(new ErrorDTO { Message = "Credenciais inválidas" }).WithCode(401).Build();
+            }
+
+            var validationResult =  _loginValidation.LoginValidation(user, password);
+            if (validationResult.Any())
+                return ResponseBuilder<LoginResponse>.Fail(validationResult.ToArray()).WithCode(401).Build();
+
+            var tenant = _multiTenantContext.Tenants.FirstOrDefault(t => t.Id == user.TenantId);
+
+            var accessGroups = await GetUserAccessGroupsAsync(user.Id);
+            var roles = await GetUserRolesAsync(accessGroups);
+            var permissions = await GetUserPermissionsAsync(roles);
+
+            var accessToken = _jwtTokenService.GenerateAccessToken(user, tenant, roles);
+            var refreshToken = _jwtTokenService.GenerateRefreshToken();
+
+            await StoreRefreshTokenAsync(refreshToken, user.Id, tenant?.Id);
+
+            user.LastLoginAt = DateTime.UtcNow;
+            user.UpdatedAt = DateTime.UtcNow;
+            await _accessControlContext.SaveChangesAsync();
+
+            // Verificar assinatura
+            SubscriptionEntity? subscription = null;
+            if (tenant != null)
+                subscription = await _subscriptionRepository.GetActiveByTenantIdAsync(tenant.Id);
+
+            var loginResponse = new LoginResponse
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                ExpiresIn = _jwtTokenService.GetTokenExpirationTime(),
+                TenantStatus = tenant?.Status.ToString(),
+                //SubscriptionStatus = subscription!.Status,
+                //// Requer pagamento se status for pendente ou suspenso, ou se assinatura nÃ£o estiver ativa/trial
+                //RequiresPayment = tenant?.Status == ETenantStatus.Pendente || 
+                //                  tenant?.Status == ETenantStatus.Suspenso ||
+                //                  (subscription != null && subscription.Status != ESubscriptionStatus.Ativo && subscription.Status != ESubscriptionStatus.Trial)
+            };
+
+            _logger.LogInformation("Login bem-sucedido parausuário: {UserId}", user.Id);
+            return ResponseBuilder<LoginResponse>.Ok(loginResponse).Build();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro durante o login para: {UsernameOrEmail}", usernameOrEmail);
+            return ResponseBuilder<LoginResponse>
+                .Fail(new ErrorDTO { Message = "Erro interno do servidor" }).WithCode(500).Build();
+        }
+    }
+
+    public async Task<ResponseDTO<LoginResponse>> LoginClient(string usernameOrEmail, string password)  
+    {
+        try
+        {
+            _logger.LogInformation("Tentativa de login para: {UsernameOrEmail}", usernameOrEmail);
+            var user = await _userAccountsRepository.FirstOrDefaultAsync(u =>
+                (u.Username.Equals(usernameOrEmail) || u.Email.Equals(usernameOrEmail)) && u.DeletedAt == null);
+            if (user == null)
+            {
+                _logger.LogWarning("Usuário não encontrado: {UsernameOrEmail}", usernameOrEmail);
+                return ResponseBuilder<LoginResponse>
+                    .Fail(new ErrorDTO { Message = "Credenciais inválidas" }).WithCode(401).Build();
+            }
+
+            if (user!.Status != EUserAccountStatus.Ativo)
+            {
+                _logger.LogWarning("Usuário inativo ou suspenso: {UsernameOrEmail}", usernameOrEmail);
+                return ResponseBuilder<LoginResponse>
+                    .Fail(new ErrorDTO { Message = "Usuário inativo", Code = "USUARIO_INATIVO" }).WithCode(401).Build();
             }
 
             if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
             {
                 _logger.LogWarning("Senha incorreta para usuário: {UserId}", user.Id);
-                return ResponseBuilder<LoginResponse> .Fail(new ErrorDTO { Message = "Credenciais inválidas" }).WithCode(401).Build();
+                return ResponseBuilder<LoginResponse>.Fail(new ErrorDTO { Message = "Credenciais inválidas" })
+                    .WithCode(401).Build();
             }
 
             var tenant = _multiTenantContext.Tenants.FirstOrDefault(t => t.Id == user.TenantId);

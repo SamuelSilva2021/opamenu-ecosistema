@@ -37,7 +37,7 @@ namespace Authenticator.API.Infrastructure.Mapper.AccessControl.UserAccount
                 .ForMember(dest => dest.AccountAccessGroups, opt => opt.Ignore());
 
             // UpdateDTO para Entity
-            CreateMap<UserAccountUpdateDTO, UserAccountEntity>()
+            CreateMap<UserAccountUpdateDto, UserAccountEntity>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Username, opt => opt.Condition(src => src.Username != null))
                 .ForMember(dest => dest.Email, opt => opt.Condition(src => src.Email != null))

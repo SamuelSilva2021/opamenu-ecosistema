@@ -6,7 +6,7 @@ namespace Authenticator.API.Core.Domain.AccessControl.UserAccounts.DTOs
     /// <summary>
     /// DTO para atualização de uma conta de usuário existente
     /// </summary>
-    public class UserAccountUpdateDTO
+    public class UserAccountUpdateDto
     {
         [MaxLength(100, ErrorMessage = "O nome de usuário não pode exceder 100 caracteres")]
         public string? Username { get; set; }

@@ -18,10 +18,12 @@ import { Input } from "@/components/ui/input";
 import { authService } from "../auth.service";
 import { type LoginFormData, loginSchema } from "../validation";
 import { useAuthStore } from "@/store/auth.store";
+import { AuthErrorAlert } from "./AuthErrorAlert";
+import type { ErrorDTO } from "../types";
 
 export function LoginForm() {
   const navigate = useNavigate();
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
   const { setAccessToken, setUser } = useAuthStore();
 
   const form = useForm<LoginFormData>({
@@ -37,7 +39,7 @@ export function LoginForm() {
       // 1. Login
       const loginResponse = await authService.login(data);
       if (!loginResponse.succeeded) {
-        throw new Error(loginResponse.message || "Falha ao realizar login");
+        throw loginResponse;
       }
       
       // 2. Set Token immediately to be available for the next request
@@ -60,7 +62,7 @@ export function LoginForm() {
     },
     onError: (err) => {
       setAccessToken(""); // Clear token if anything fails
-      setError(err instanceof Error ? err.message : "Ocorreu um erro inesperado.");
+      setError(err);
     },
   });
 
@@ -99,16 +101,14 @@ export function LoginForm() {
               </FormItem>
             )}
           />
-          {error && (
-            <div className="text-sm text-red-500 font-medium">{error}</div>
-          )}
+          <AuthErrorAlert error={error as ErrorDTO} />
           <Button type="submit" className="w-full" disabled={isPending}>
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Entrar com E-mail
           </Button>
         </form>
       </Form>
-      <div className="relative">
+      {/* <div className="relative">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t" />
         </div>
@@ -120,7 +120,7 @@ export function LoginForm() {
       </div>
       <Button variant="outline" type="button" disabled={isPending}>
         Google (Em breve)
-      </Button>
+      </Button> */}
     </div>
   );
 }

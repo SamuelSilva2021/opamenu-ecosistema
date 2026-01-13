@@ -162,7 +162,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.UserAc
             }
         }
 
-        public async Task<ResponseDTO<UserAccountDTO>> UpdateUserAccountAsync(Guid id, UserAccountUpdateDTO dto)
+        public async Task<ResponseDTO<UserAccountDTO>> UpdateUserAccountAsync(Guid id, UserAccountUpdateDto dto)
         {
             try
             {

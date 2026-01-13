@@ -41,6 +41,8 @@ export interface UpdateUserAccountRequest {
   lastName?: string;
   phoneNumber?: string;
   status?: UserAccountStatus;
+  isEmailVerified?: boolean;
+  tenantId?: string;
 }
 
 // Tipos para associação de grupos a usuários
