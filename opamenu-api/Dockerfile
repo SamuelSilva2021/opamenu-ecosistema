@@ -2,16 +2,23 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-COPY ["OpaMenu.Web/OpaMenu.Web.csproj", "OpaMenu.Web/"]
-COPY ["OpaMenu.Application/OpaMenu.Application.csproj", "OpaMenu.Application/"]
-COPY ["OpaMenu.Domain/OpaMenu.Domain.csproj", "OpaMenu.Domain/"]
-COPY ["OpaMenu.Infrastructure/OpaMenu.Infrastructure.csproj", "OpaMenu.Infrastructure/"]
+# Copiar csproj do projeto compartilhado
+COPY ["opamenu-shared-infrastructure/OpaMenu.Infrastructure.Shared/OpaMenu.Infrastructure.Shared.csproj", "opamenu-shared-infrastructure/OpaMenu.Infrastructure.Shared/"]
 
-RUN dotnet restore "OpaMenu.Web/OpaMenu.Web.csproj"
+# Copiar csprojs do opamenu-api
+COPY ["opamenu-api/OpaMenu.Web/OpaMenu.Web.csproj", "opamenu-api/OpaMenu.Web/"]
+COPY ["opamenu-api/OpaMenu.Application/OpaMenu.Application.csproj", "opamenu-api/OpaMenu.Application/"]
+COPY ["opamenu-api/OpaMenu.Domain/OpaMenu.Domain.csproj", "opamenu-api/OpaMenu.Domain/"]
+COPY ["opamenu-api/OpaMenu.Infrastructure/OpaMenu.Infrastructure.csproj", "opamenu-api/OpaMenu.Infrastructure/"]
 
+# Restaurar dependências
+RUN dotnet restore "opamenu-api/OpaMenu.Web/OpaMenu.Web.csproj"
+
+# Copiar todo o código fonte (Build Context deve ser a raiz do repositório)
 COPY . .
 
-WORKDIR "/src/OpaMenu.Web"
+# Build
+WORKDIR "/src/opamenu-api/OpaMenu.Web"
 RUN dotnet build "OpaMenu.Web.csproj" -c Release -o /app/build
 
 FROM build AS publish
