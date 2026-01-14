@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Api" />
+    <Folder Include="Api\Commons" />
+    <Folder Include="Api\Contracts" />
+    <Folder Include="Api\DTOs" />
+    <Folder Include="Api\Exceptions" />
+    <Folder Include="Api\Pagination" />
+    <Folder Include="Api\Results" />
+    <Folder Include="Api\Validation" />
+  </ItemGroup>
+
+</Project>
