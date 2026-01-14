@@ -7,8 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Api" />
-    <Folder Include="Api\Commons" />
     <Folder Include="Api\Contracts" />
     <Folder Include="Api\DTOs" />
     <Folder Include="Api\Exceptions" />
