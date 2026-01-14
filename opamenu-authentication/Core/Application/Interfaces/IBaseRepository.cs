@@ -3,7 +3,7 @@
 namespace Authenticator.API.Core.Application.Interfaces
 {
     /// <summary>
-    /// Repositório base genérico para operaciones CRUD y consultas comunes.
+    /// Repositório base genérico para operações CRUD.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public interface IBaseRepository<T> where T : class

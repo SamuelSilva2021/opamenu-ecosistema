@@ -1,11 +1,9 @@
-﻿using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts.Enum;
-using Authenticator.API.Core.Application.Interfaces;
-using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts;
-using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
-using Authenticator.API.Infrastructure.Data;
-using Authenticator.API.Infrastructure.Data.Context;
-using Authenticator.API.Infrastructure.Providers;
 using Authenticator.API.Infrastructure.Repositories;
+using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts;
+using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts.Enum;
+using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
+using OpaMenu.Infrastructure.Shared.Data.Context;
+using Authenticator.API.Infrastructure.Providers;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -14,21 +12,25 @@ namespace Authenticator.API.Tests
 {
     public class RepositoryTests
     {
-        private AccessControlDbContext GetAccessControlInMemoryContext()
+        private static AccessControlDbContext GetAccessControlInMemoryContext()
         {
             var options = new DbContextOptionsBuilder<AccessControlDbContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
-            return new AccessControlDbContext(options);
+            return new TestAccessControlDbContext(options);
         }
 
-        private MultiTenantDbContext GetMultiTenantInMemoryContext()
+        protected virtual MultiTenantDbContext GetMultiTenantInMemoryContext()
         {
             var options = new DbContextOptionsBuilder<MultiTenantDbContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
-            return new MultiTenantDbContext(options);
+            return new TestMultiTenantDbContext(options);
         }
+
+
+
+
 
         [Fact]
         public void DbContextProvider_Should_Return_AccessControlContext_For_UserAccountEntity()
@@ -42,7 +44,7 @@ namespace Authenticator.API.Tests
             var context = provider.GetContext<UserAccountEntity>();
 
             // Assert
-            context.Should().BeOfType<AccessControlDbContext>();
+            context.Should().BeAssignableTo<AccessControlDbContext>();
         }
 
         [Fact]
@@ -57,7 +59,7 @@ namespace Authenticator.API.Tests
             var context = provider.GetContext<TenantEntity>();
 
             // Assert
-            context.Should().BeOfType<MultiTenantDbContext>();
+            context.Should().BeAssignableTo<MultiTenantDbContext>();
         }
 
         [Fact]
@@ -349,6 +351,36 @@ namespace Authenticator.API.Tests
             entity.Should().NotBeNull();
             entity!.DeletedAt.Should().NotBeNull();
             entity.DeletedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+        }
+    }
+
+    public class TestAccessControlDbContext : AccessControlDbContext
+    {
+        public TestAccessControlDbContext(DbContextOptions<AccessControlDbContext> options) : base(options)
+        {
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            
+            // Ignore property that causes issues with InMemory provider
+            modelBuilder.Entity<TenantEntity>().Ignore(e => e.Settings);
+        }
+    }
+
+    public class TestMultiTenantDbContext : MultiTenantDbContext
+    {
+        public TestMultiTenantDbContext(DbContextOptions<MultiTenantDbContext> options) : base(options)
+        {
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            
+            // Ignore property that causes issues with InMemory provider
+            modelBuilder.Entity<TenantEntity>().Ignore(e => e.Settings);
         }
     }
 }

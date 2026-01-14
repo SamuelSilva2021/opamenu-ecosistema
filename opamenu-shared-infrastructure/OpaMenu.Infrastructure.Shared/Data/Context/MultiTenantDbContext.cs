@@ -1,10 +1,12 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Plan;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Subscription;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.TenantProduct;
+using OpaMenu.Infrastructure.Shared.Enums.MultiTenant;
 using OpaMenu.Infrastructure.Shared.Helpers;
 using System;
 using System.Collections.Generic;
@@ -52,9 +54,13 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context
                     .HasColumnName("settings")
                     .HasColumnType("jsonb")
                     .HasConversion(
-                        v => JsonSerializer.Serialize(v, new JsonSerializerOptions()),
-                        v => JsonSerializer.Deserialize<Dictionary<string, object>>(v, new JsonSerializerOptions()) ?? new Dictionary<string, object>())
-                    .Metadata.SetValueComparer(JsonComparerHelper.GetDictionaryComparer());
+                        v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                        v => JsonSerializer.Deserialize<Dictionary<string, object>>(v, (JsonSerializerOptions?)null) ?? new Dictionary<string, object>(),
+                        new ValueComparer<Dictionary<string, object>>(
+                            (c1, c2) => JsonSerializer.Serialize(c1, (JsonSerializerOptions?)null) == JsonSerializer.Serialize(c2, (JsonSerializerOptions?)null),
+                            c => c == null ? 0 : JsonSerializer.Serialize(c, (JsonSerializerOptions?)null).GetHashCode(),
+                            c => JsonSerializer.Deserialize<Dictionary<string, object>>(JsonSerializer.Serialize(c, (JsonSerializerOptions?)null), (JsonSerializerOptions?)null) ?? new Dictionary<string, object>()
+                        ));
 
                 entity.Property(e => e.ActiveSubscriptionId).HasColumnName("active_subscription_id");
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("NOW()");
@@ -120,7 +126,7 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context
                 entity.Property(e => e.Status).HasColumnName("status").HasConversion<string>().HasColumnType("varchar(20)");
                 entity.Property(e => e.ConfigurationSchema).HasColumnName("configuration_schema").HasColumnType("jsonb");
                 entity.Property(e => e.PricingModel).HasColumnName("pricing_model").HasConversion<string>();
-                entity.Property(e => e.BasePrice).HasColumnName("base_price").HasPrecision(10, 2);
+            entity.Property(e => e.BasePrice).HasColumnName("base_price").HasPrecision(10, 2);
                 entity.Property(e => e.SetupFee).HasColumnName("setup_fee").HasPrecision(10, 2);
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("NOW()");
                 entity.Property(e => e.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone");

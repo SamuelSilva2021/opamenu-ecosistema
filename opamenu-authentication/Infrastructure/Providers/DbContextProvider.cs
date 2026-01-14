@@ -1,12 +1,11 @@
-﻿using Authenticator.API.Core.Application.Interfaces;
+using Authenticator.API.Core.Application.Interfaces;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Plan;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Subscription;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.TenantProduct;
-using Authenticator.API.Infrastructure.Data;
-using Authenticator.API.Infrastructure.Data.Context;
+using OpaMenu.Infrastructure.Shared.Data.Context;
 using Microsoft.EntityFrameworkCore;
 
 namespace Authenticator.API.Infrastructure.Providers;

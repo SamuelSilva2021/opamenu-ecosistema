@@ -5,6 +5,6 @@ namespace Authenticator.API.Core.Application.Interfaces.Auth
 {
     public interface IUserValidation
     {
-        IList<ErrorDTO> LoginValidation(UserAccountEntity user, string password);
+        IList<ErrorDTO> LoginValidation(UserAccountEntity user, string password, List<string> roles);
     }
 }

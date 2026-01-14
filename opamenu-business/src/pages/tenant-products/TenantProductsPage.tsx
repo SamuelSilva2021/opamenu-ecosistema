@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, Box } from 'lucide-react';
 import { tenantProductService } from '../../services/tenant-product.service';
 import { TenantProductForm } from './components/TenantProductForm';
 import type { TenantProduct } from '../../types/tenant-product.types';
+import { EProductStatus } from '../../types/tenant-product.types';
 
 export const TenantProductsPage = () => {
   const [products, setProducts] = useState<TenantProduct[]>([]);
@@ -58,23 +59,18 @@ export const TenantProductsPage = () => {
   const handleSubmit = async (data: any) => {
     try {
       setSaving(true);
-      let response;
+      let response: TenantProduct;
       if (editingProduct) {
         response = await tenantProductService.update(editingProduct.id, data);
       } else {
         response = await tenantProductService.create(data);
       }
 
-      // Check if response has data (success) or is the data itself depending on service return
-      // Our service returns response.data directly. 
-      // But let's check if the service wrapper returns the data or the full response.
-      // In tenant-product.service.ts: return response.data; which is ApiResponse<T>
-      
-      if (response && response.succeeded) {
+      if (response && response.id) {
         setShowModal(false);
         loadProducts();
       } else {
-        alert('Erro ao salvar produto: ' + (response?.errors?.map(e => e.message).join(', ') || 'Erro desconhecido'));
+        alert('Erro ao salvar produto: Resposta inesperada da API');
       }
     } catch (error) {
       console.error('Erro ao salvar produto:', error);
@@ -148,12 +144,10 @@ export const TenantProductsPage = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                      ${product.status === 'active' ? 'bg-green-100 text-green-800' : 
-                        product.status === 'inactive' ? 'bg-red-100 text-red-800' : 
+                      ${product.status === EProductStatus.Ativo ? 'bg-green-100 text-green-800' : 
+                        product.status === EProductStatus.Inativo ? 'bg-red-100 text-red-800' : 
                         'bg-yellow-100 text-yellow-800'}`}>
-                      {product.status === 'active' ? 'Ativo' : 
-                       product.status === 'inactive' ? 'Inativo' : 
-                       product.status}
+                      {product.status}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

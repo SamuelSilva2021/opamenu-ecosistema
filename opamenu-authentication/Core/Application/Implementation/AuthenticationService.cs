@@ -1,4 +1,4 @@
-﻿using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts.Enum;
+using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts.Enum;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using BCrypt.Net;
@@ -7,7 +7,7 @@ using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
 using Authenticator.API.Core.Application.Interfaces;
 using Authenticator.API.Infrastructure.Data;
 using Authenticator.API.Core.Domain.MultiTenant.Tenant.DTOs;
-using Authenticator.API.Infrastructure.Data.Context;
+using OpaMenu.Infrastructure.Shared.Data.Context;
 using Authenticator.API.Core.Application.Interfaces.AccessControl.Module;
 using Authenticator.API.Core.Application.Interfaces.Auth;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
@@ -68,15 +68,15 @@ public class AuthenticationService(
                     .Fail(new ErrorDTO { Message = "Credenciais inválidas" }).WithCode(401).Build();
             }
 
-            var validationResult =  _loginValidation.LoginValidation(user, password);
+            var accessGroups = await GetUserAccessGroupsAsync(user.Id);
+            var roles = await GetUserRolesAsync(accessGroups);
+            var permissions = await GetUserPermissionsAsync(roles);
+
+            var validationResult =  _loginValidation.LoginValidation(user, password, roles);
             if (validationResult.Any())
                 return ResponseBuilder<LoginResponse>.Fail(validationResult.ToArray()).WithCode(401).Build();
 
             var tenant = _multiTenantContext.Tenants.FirstOrDefault(t => t.Id == user.TenantId);
-
-            var accessGroups = await GetUserAccessGroupsAsync(user.Id);
-            var roles = await GetUserRolesAsync(accessGroups);
-            var permissions = await GetUserPermissionsAsync(roles);
 
             var accessToken = _jwtTokenService.GenerateAccessToken(user, tenant, roles);
             var refreshToken = _jwtTokenService.GenerateRefreshToken();

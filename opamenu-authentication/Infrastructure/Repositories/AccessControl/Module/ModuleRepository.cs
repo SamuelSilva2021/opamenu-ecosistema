@@ -1,35 +1,33 @@
-﻿using Authenticator.API.Core.Application.Interfaces;
+using OpaMenu.Infrastructure.Shared.Data.Context;
+using Authenticator.API.Core.Application.Interfaces;
 using Authenticator.API.Core.Application.Interfaces.AccessControl.Module;
-using Authenticator.API.Core.Domain.AccessControl.AccessGroup.DTOs;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
-using Authenticator.API.Core.Domain.AccessControl.Modules.DTOs;
-using Authenticator.API.Core.Domain.AccessControl.Roles.DTOs;
-using Authenticator.API.Core.Domain.AccessControl.UserAccounts.DTOs;
-using Authenticator.API.Core.Domain.Api;
-using Authenticator.API.Infrastructure.Data.Context;
-using Authenticator.API.Infrastructure.Repositories.AccessControl.AccessGroup;
-using Dapper;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Authenticator.API.Core.Domain.AccessControl.Modules.DTOs;
+using Dapper;
 using Npgsql;
 using System.Data;
+using Authenticator.API.Core.Domain.AccessControl.UserAccounts.DTOs;
+using Authenticator.API.Core.Domain.AccessControl.AccessGroup.DTOs;
+using Authenticator.API.Core.Domain.AccessControl.Roles.DTOs;
 
 namespace Authenticator.API.Infrastructure.Repositories.AccessControl.Module
 {
-    /// <summary>
-    /// Implementação específica do repositório para tipos de módulo
-    /// </summary>
-    /// <param name="dbContextProvider"></param>
-    /// <param name="logger"></param>
-    public class ModuleRepository(
-        IDbContextProvider dbContextProvider,
-        AccessControlDbContext context,
-        IConfiguration configuration
-        ) : BaseRepository<ModuleEntity>(dbContextProvider), IModuleRepository
+    public class ModuleRepository(IDbContextProvider dbContextProvider, AccessControlDbContext context, IConfiguration configuration) : BaseRepository<ModuleEntity>(dbContextProvider), IModuleRepository
     {
-        private readonly IDbContextProvider _dbContextProvider = dbContextProvider;
         private readonly AccessControlDbContext _context = context;
         private readonly IConfiguration _configuration = configuration;
+
+        private class FlatRowDTO
+        {
+            public Guid GroupId { get; set; }
+            public string? GroupCode { get; set; }
+            public Guid RoleId { get; set; }
+            public string? RoleCode { get; set; }
+            public Guid ModuleId { get; set; }
+            public string? ModuleKey { get; set; }
+            public string? Operations { get; set; }
+        }
 
         public async Task<UserPermissionsDTO> GetModulesByUserAsync(Guid userId)
         {

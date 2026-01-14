@@ -1,7 +1,8 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { type TenantProduct, TenantProductStatus } from '../../../types/tenant-product.types';
+import type { TenantProduct } from '../../../types/tenant-product.types';
+import { EProductStatus, ETenantProductCategory, ETenantProductPricingModel } from '../../../types/tenant-product.types';
 import { useEffect } from 'react';
 import { JsonInput } from '../../../shared/components/inputs/JsonInput';
 
@@ -9,11 +10,11 @@ const schema = z.object({
   name: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
   slug: z.string().min(3, 'Slug deve ter no mínimo 3 caracteres').regex(/^[a-z0-9-]+$/, 'Slug deve conter apenas letras minúsculas, números e hífens'),
   description: z.string().optional(),
-  category: z.string().min(1, 'Categoria é obrigatória'),
+  category: z.nativeEnum(ETenantProductCategory),
   version: z.string().min(1, 'Versão é obrigatória').default('1.0.0'),
-  status: z.coerce.number().pipe(z.nativeEnum(TenantProductStatus)).default(TenantProductStatus.Ativo),
+  status: z.nativeEnum(EProductStatus).default(EProductStatus.Ativo),
   configurationSchema: z.string().optional(),
-  pricingModel: z.string().default('subscription'),
+  pricingModel: z.nativeEnum(ETenantProductPricingModel).default(ETenantProductPricingModel.Assinatura),
   basePrice: z.coerce.number().min(0, 'Preço base não pode ser negativo'),
   setupFee: z.coerce.number().min(0, 'Taxa de configuração não pode ser negativa'),
 });
@@ -34,11 +35,11 @@ export const TenantProductForm = ({ initialData, onSubmit, onCancel, isLoading }
       name: '',
       slug: '',
       description: '',
-      category: '',
+      category: ETenantProductCategory.WebApp,
       version: '1.0.0',
-      status: TenantProductStatus.Ativo,
+      status: EProductStatus.Ativo,
       configurationSchema: '{}',
-      pricingModel: 'subscription',
+      pricingModel: ETenantProductPricingModel.Assinatura,
       basePrice: 0,
       setupFee: 0,
     }
@@ -90,10 +91,16 @@ export const TenantProductForm = ({ initialData, onSubmit, onCancel, isLoading }
 
         <div>
           <label className="block text-sm font-medium text-slate-700">Categoria</label>
-          <input
+          <select
             {...register('category')}
             className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
-          />
+          >
+            {Object.values(ETenantProductCategory).map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
           {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category.message}</p>}
         </div>
 
@@ -112,9 +119,11 @@ export const TenantProductForm = ({ initialData, onSubmit, onCancel, isLoading }
             {...register('status')}
             className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
           >
-            <option value={TenantProductStatus.Ativo}>Ativo</option>
-            <option value={TenantProductStatus.Inativo}>Inativo</option>
-            <option value={TenantProductStatus.Descontinuado}>Descontinuado</option>
+            {Object.values(EProductStatus).map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
           </select>
           {errors.status && <p className="text-red-500 text-xs mt-1">{errors.status.message}</p>}
         </div>
@@ -125,9 +134,11 @@ export const TenantProductForm = ({ initialData, onSubmit, onCancel, isLoading }
             {...register('pricingModel')}
             className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
           >
-            <option value="subscription">Assinatura</option>
-            <option value="one_time">Pagamento Único</option>
-            <option value="usage_based">Baseado em Uso</option>
+            {Object.values(ETenantProductPricingModel).map((model) => (
+              <option key={model} value={model}>
+                {model}
+              </option>
+            ))}
           </select>
           {errors.pricingModel && <p className="text-red-500 text-xs mt-1">{errors.pricingModel.message}</p>}
         </div>

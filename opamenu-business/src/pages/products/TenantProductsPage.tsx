@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Plus, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { type TenantProduct, TenantProductStatus } from '../../types/tenant-product.types';
+import { type TenantProduct, EProductStatus, ETenantProductPricingModel } from '../../types/tenant-product.types';
 import { tenantProductService } from '../../services/tenant-product.service';
 import { TenantProductForm } from './components/TenantProductForm';
 import { SearchFilter } from '../../shared/components/data-display/SearchFilter';
@@ -128,17 +128,17 @@ export const TenantProductsPage = () => {
       cell: (product) => (
         <>
           R$ {product.basePrice.toFixed(2)}
-          {product.pricingModel === 'subscription' && <span className="text-xs">/mês</span>}
+          {product.pricingModel === ETenantProductPricingModel.Assinatura && <span className="text-xs">/mês</span>}
         </>
       )
     },
     {
       header: 'Status',
       cell: (product) => {
-        const statusMap: Record<TenantProductStatus, { label: string; className: string }> = {
-          [TenantProductStatus.Ativo]: { label: 'Ativo', className: 'bg-green-100 text-green-800' },
-          [TenantProductStatus.Inativo]: { label: 'Inativo', className: 'bg-red-100 text-red-800' },
-          [TenantProductStatus.Descontinuado]: { label: 'Descontinuado', className: 'bg-yellow-100 text-yellow-800' },
+        const statusMap: Record<EProductStatus, { label: string; className: string }> = {
+          [EProductStatus.Ativo]: { label: 'Ativo', className: 'bg-green-100 text-green-800' },
+          [EProductStatus.Inativo]: { label: 'Inativo', className: 'bg-red-100 text-red-800' },
+          [EProductStatus.Descontinuado]: { label: 'Descontinuado', className: 'bg-yellow-100 text-yellow-800' },
         };
         const status = statusMap[product.status] || { label: 'Desconhecido', className: 'bg-gray-100 text-gray-800' };
         

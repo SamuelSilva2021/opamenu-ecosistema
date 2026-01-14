@@ -1,4 +1,4 @@
-﻿using Authenticator.API.Core.Domain.MultiTenant.Plan.DTOs;
+using Authenticator.API.Core.Domain.MultiTenant.Plan.DTOs;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Plan;
 using AutoMapper;
 using System.Text.Json;
@@ -41,7 +41,7 @@ namespace Authenticator.API.Infrastructure.Mapper.MultiTenant
                 .ForMember(dest => dest.Features, opt => opt.MapFrom(src =>
                     string.IsNullOrEmpty(src.Features)
                         ? new List<string>()
-                        : JsonSerializer.Deserialize<List<string>>(src.Features, new JsonSerializerOptions()).ToList() ?? new List<string>()));
+                        : JsonSerializer.Deserialize<List<string>>(src.Features, new JsonSerializerOptions()) ?? new List<string>()));
 
             // PlanEntity -> PlanWithFeaturesDto  
             CreateMap<PlanEntity, PlanWithFeaturesDTO>()
@@ -52,7 +52,7 @@ namespace Authenticator.API.Infrastructure.Mapper.MultiTenant
                 .ForMember(dest => dest.FeatureList, opt => opt.MapFrom(src =>
                     string.IsNullOrEmpty(src.Features)
                         ? new List<string>()
-                        : JsonSerializer.Deserialize<List<string>>(src.Features, new JsonSerializerOptions()).ToList() ?? new List<string>()));
+                        : JsonSerializer.Deserialize<List<string>>(src.Features, new JsonSerializerOptions()) ?? new List<string>()));
 
         }
     }

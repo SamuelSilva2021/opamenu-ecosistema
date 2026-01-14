@@ -1,14 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Text.RegularExpressions;
-using Authenticator.API.Core.Domain.Api;
 using Authenticator.API.Core.Application.Interfaces;
-using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
-using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts;
-using Authenticator.API.Infrastructure.Data;
-using Authenticator.API.Core.Domain.MultiTenant.Tenant.DTOs;
+using Authenticator.API.Core.Application.Interfaces.Auth;
 using Authenticator.API.Core.Application.Interfaces.MultiTenant;
-using Authenticator.API.Infrastructure.Data.Context;
+using Authenticator.API.Core.Domain.Api;
+using Authenticator.API.Core.Domain.MultiTenant.Tenant.DTOs;
+using OpaMenu.Infrastructure.Shared.Data.Context;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Authenticator.API.UserEntry.Register;
 

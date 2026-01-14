@@ -1,7 +1,7 @@
-﻿using Authenticator.API.Core.Application.Interfaces;
+using Authenticator.API.Core.Application.Interfaces;
 using Authenticator.API.Core.Application.Interfaces.AccessControl.AccountAccessGroups;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
-using Authenticator.API.Infrastructure.Data.Context;
+using OpaMenu.Infrastructure.Shared.Data.Context;
 using Authenticator.API.Infrastructure.Providers;
 using Microsoft.EntityFrameworkCore;
 

@@ -1,9 +1,10 @@
-﻿using Authenticator.API.Core.Application.Implementation;
+using Authenticator.API.Core.Application.Implementation;
 using Authenticator.API.Core.Application.Interfaces;
 using Authenticator.API.Core.Domain.Api;
 using Authenticator.API.Infrastructure.Configurations;
 using Authenticator.API.Infrastructure.Data;
 using Authenticator.API.Infrastructure.Data.Context;
+using OpaMenu.Infrastructure.Shared.Data.Context;
 using OpaMenu.Infrastructure.Shared.Interfaces;
 using Authenticator.API.Infrastructure.Data.Interceptors;
 using Authenticator.API.Infrastructure.Providers;

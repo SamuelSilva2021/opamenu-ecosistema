@@ -1,5 +1,5 @@
 import { Edit, Trash2 } from 'lucide-react';
-import { ComponentProps } from 'react';
+import type { ComponentProps } from 'react';
 
 interface ActionButtonProps extends ComponentProps<'button'> {
   title?: string;
