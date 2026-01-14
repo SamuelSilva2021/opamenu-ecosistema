@@ -70,9 +70,6 @@ export function UsersList({
   onPageSizeChange
 }: UsersListProps) {
 
-  /**
-   * Retorna cor do chip baseado no status
-   */
   const getStatusColor = (status: string) => {
     switch (status) {
       case UserAccountStatus.Active: return 'success';
@@ -83,9 +80,6 @@ export function UsersList({
     }
   };
 
-  /**
-   * Retorna texto do status em português
-   */
   const getStatusText = (status: string) => {
     return status;
   };

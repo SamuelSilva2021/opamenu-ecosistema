@@ -59,7 +59,7 @@ namespace OpaMenu.Infrastructure.Shared.Entities.AccessControl
         /// <summary>
         /// Data de criação
         /// </summary>
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Data de atualização

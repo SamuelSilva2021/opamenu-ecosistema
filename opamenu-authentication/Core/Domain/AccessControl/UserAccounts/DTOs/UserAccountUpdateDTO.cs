@@ -28,6 +28,7 @@ namespace Authenticator.API.Core.Domain.AccessControl.UserAccounts.DTOs
         public EUserAccountStatus? Status { get; set; }
         public bool? IsEmailVerified { get; set; }
         public Guid? TenantId { get; set; }
+        public DateTime CreatedAt {  get; set; } = DateTime.UtcNow;
     }
 }
 

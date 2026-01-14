@@ -379,13 +379,13 @@ public class AuthenticationService(
     /// <returns></returns>
     private async Task<List<string>> GetUserRolesAsync(List<string> accessGroups)
     {
-        return await _accessControlContext.RoleAccessGroups
+        return (await _accessControlContext.RoleAccessGroups
             .Where(rag => accessGroups.Contains(rag.AccessGroup.Name) && rag.IsActive)
             .Include(rag => rag.Role)
             .Where(rag => rag.Role.IsActive)
             .Select(rag => rag.Role.Code)
             .Distinct()
-            .ToListAsync();
+            .ToListAsync())!;
     }
 
     /// <summary>

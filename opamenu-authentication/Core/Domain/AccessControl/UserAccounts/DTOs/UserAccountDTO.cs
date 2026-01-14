@@ -13,7 +13,7 @@ namespace Authenticator.API.Core.Domain.AccessControl.UserAccounts.DTOs
         public string? PhoneNumber { get; set; }
         public EUserAccountStatus Status { get; set; }
         public bool IsEmailVerified { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
         public DateTime? LastLoginAt { get; set; }
         public string FullName => $"{FirstName} {LastName}".Trim();

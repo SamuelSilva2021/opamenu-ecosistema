@@ -12,6 +12,7 @@ export * from './layout/Sidebar';
 export * from './feedback/LoadingSpinner';
 export * from './feedback/ErrorDisplay';
 export * from './feedback/GlobalLoading';
+export * from './feedback/ConfirmDialog';
 
 // Data Display Components
 export * from './data-display/DataTable';

@@ -19,6 +19,7 @@ export interface AccessGroupFormData {
   code: string;
   groupTypeId: string;
   isActive: boolean;
+  createdAt?: string;
 }
 
 export interface AccessGroupFormProps {
@@ -44,6 +45,7 @@ export const AccessGroupForm = ({
     code: '',
     groupTypeId: '',
     isActive: true,
+    createdAt: undefined,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -57,6 +59,7 @@ export const AccessGroupForm = ({
         code: initialData.code || '',
         groupTypeId: initialData.groupTypeId || '',
         isActive: initialData.isActive,
+        createdAt: initialData.createdAt,
       });
     }
   }, [initialData]);
@@ -111,7 +114,6 @@ export const AccessGroupForm = ({
   };
 
   const handleSubmit = () => {
-    // Validate all fields
     const newErrors: Record<string, string> = {};
     
     newErrors.name = validateField('name', formData.name);
@@ -134,6 +136,7 @@ export const AccessGroupForm = ({
         code: formData.code.trim() || undefined,
         groupTypeId: formData.groupTypeId,
         isActive: formData.isActive,
+        createdAt: formData.createdAt || undefined,
       });
     }
   };

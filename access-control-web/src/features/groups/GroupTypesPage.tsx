@@ -43,9 +43,7 @@ export const GroupTypesPage = () => {
   };
 
   const handleDeleteGroupType = async (groupType: GroupType) => {
-    if (window.confirm(`Tem certeza que deseja excluir o tipo "${groupType.name}"?`)) {
-      await deleteGroupType(groupType.id);
-    }
+    await deleteGroupType(groupType.id);
   };
 
   const handleToggleStatus = async (groupType: GroupType) => {
@@ -55,11 +53,9 @@ export const GroupTypesPage = () => {
   const handleDialogSubmit = async (data: CreateGroupTypeRequest | UpdateGroupTypeRequest) => {
     try {
       if (editingGroupType) {
-        const result = await updateGroupType(editingGroupType.id, data as UpdateGroupTypeRequest);
-        console.log('✅ Update result:', result);
+				await updateGroupType(editingGroupType.id, data as UpdateGroupTypeRequest);
       } else {
-        const result = await createGroupType(data as CreateGroupTypeRequest);
-        console.log('✅ Create result:', result);
+				await createGroupType(data as CreateGroupTypeRequest);
       }
       // Se chegou até aqui, a operação foi bem-sucedida
       setDialogOpen(false);
@@ -67,7 +63,6 @@ export const GroupTypesPage = () => {
       clearError();
     } catch (error) {
       console.error('❌ Erro na operação:', error);
-      // O erro já foi tratado pelo hook, não precisamos fechar o dialog
     }
   };
 

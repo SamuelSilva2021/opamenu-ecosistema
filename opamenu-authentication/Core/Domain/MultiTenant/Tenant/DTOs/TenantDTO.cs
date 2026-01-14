@@ -1,4 +1,5 @@
 ﻿using Authenticator.API.Core.Domain.MultiTenant.Subscriptions.DTOs;
+using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
 
 namespace Authenticator.API.Core.Domain.MultiTenant.Tenant.DTOs
 {
@@ -8,7 +9,7 @@ namespace Authenticator.API.Core.Domain.MultiTenant.Tenant.DTOs
         public string Name { get; set; } = string.Empty;
         public string Slug { get; set; } = string.Empty;
         public string? Domain { get; set; }
-        public string Status { get; set; } = "active";
+        public ETenantStatus Status { get; set; } = ETenantStatus.Ativo;
         public string? CnpjCpf { get; set; }
         public string? RazaoSocial { get; set; }
         public string? InscricaoEstadual { get; set; }

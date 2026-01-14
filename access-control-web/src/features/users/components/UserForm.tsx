@@ -48,6 +48,7 @@ interface FormData {
   phoneNumber: string;
   tenantId: string;
   status: UserAccountStatus;
+  createdAt?: string;
 }
 
 interface FormErrors {
@@ -60,6 +61,7 @@ interface FormErrors {
   phoneNumber?: string;
   tenantId?: string;
   general?: string;
+  createdAt?: string;
 }
 
 const USER_STATUS_OPTIONS = [
@@ -87,7 +89,8 @@ export function UserForm({
     lastName: '',
     phoneNumber: '',
     tenantId: '',
-    status: UserAccountStatus.Active
+    status: UserAccountStatus.Active,
+    createdAt: undefined
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -109,7 +112,8 @@ export function UserForm({
           lastName: user.lastName || '',
           phoneNumber: user.phoneNumber || '',
           tenantId: user.tenantId || '',
-          status: user.status || UserAccountStatus.Active
+          status: user.status || UserAccountStatus.Active,
+          createdAt: user.createdAt || undefined
         });
       } else {
         setFormData({
@@ -121,7 +125,8 @@ export function UserForm({
           lastName: '',
           phoneNumber: '',
           tenantId: '',
-          status: UserAccountStatus.Active
+          status: UserAccountStatus.Active,
+          createdAt: undefined
         });
       }
       setErrors({});
@@ -252,8 +257,7 @@ export function UserForm({
   };
 
   const handleBlur = async (field: keyof FormData) => {
-    const value = formData[field];
-    const error = await validateField(field, value);
+    const error = await validateField(field, formData[field] || '');
     
     if (error) {
       setErrors(prev => ({ ...prev, [field]: error }));

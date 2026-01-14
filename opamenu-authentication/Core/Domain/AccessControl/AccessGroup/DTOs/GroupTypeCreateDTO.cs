@@ -21,5 +21,6 @@
         /// Indica se o tipo de grupo de acesso está ativo
         /// </summary>
         public bool IsActive { get; set; } = true;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

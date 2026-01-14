@@ -1,4 +1,4 @@
-﻿using Authenticator.API.Core.Domain.AccessControl.AccessGroup.DTOs;
+using Authenticator.API.Core.Domain.AccessControl.AccessGroup.DTOs;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
 using Authenticator.API.Core.Domain.AccessControl.AccessGroups.DTOs;
 using Authenticator.API.Core.Domain.Api;
@@ -23,14 +23,14 @@ namespace Authenticator.API.Infrastructure.Mapper.AccessControl.AccessGroup
             CreateMap<GroupTypeCreateDTO, GroupTypeEntity>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(_ => Guid.NewGuid()))
                 .ForMember(dest => dest.IsActive, opt => opt.MapFrom(_ => true))
-                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.Now))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.AccessGroups, opt => opt.Ignore());
 
             // UpdateDTO → Entidade (para atualização)
             CreateMap<GroupTypeUpdateDTO, GroupTypeEntity>()
-                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(_ => DateTime.Now))
-                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.SpecifyKind(src.CreatedAt, DateTimeKind.Utc)))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow))
                 .ForMember(dest => dest.AccessGroups, opt => opt.Ignore());
         }
     }

@@ -1,9 +1,12 @@
 ﻿using Authenticator.API.Core.Application.Interfaces;
-using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts;
+using Authenticator.API.Core.Domain.AccessControl.UserAccounts.DTOs;
 using Authenticator.API.Core.Domain.Api;
-using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using OpaMenu.Infrastructure.Shared.Entities;
+using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts;
+using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -161,6 +164,51 @@ public class JwtTokenService : IJwtTokenService
     /// ObtÃ©m o tempo de expiraÃ§Ã£o configurado para tokens (em segundos)
     /// </summary>
     /// <returns></returns>
-    public int GetTokenExpirationTime() =>  _jwtSettings.AccessTokenExpirationMinutes * 60; 
+    public int GetTokenExpirationTime() =>  _jwtSettings.AccessTokenExpirationMinutes * 60;
+
+    public string GenerateAccessToken(UserAccountDTO? user, TenantEntity tenant, List<string> roles)
+    {
+        try
+        {
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new(ClaimTypes.Name, user.Username),
+                new(ClaimTypes.Email, user.Email),
+                new("full_name", $"{user.FirstName} {user.LastName}".Trim()),
+                new("user_id", user.Id.ToString()),
+                new("username", user.Username),
+                new("email", user.Email)
+            };
+
+            foreach (var role in roles)
+                claims.Add(new Claim(ClaimTypes.Role, role));
+
+            if (tenant != null)
+            {
+                claims.Add(new Claim("tenant_id", tenant.Id.ToString()));
+                claims.Add(new Claim("tenant_slug", tenant.Slug));
+                claims.Add(new Claim("tenant_name", tenant.Name));
+            }
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: _jwtSettings.Issuer,
+                audience: _jwtSettings.Audience,
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpirationMinutes),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao gerar token de acesso para usuário {UserId}", user.Id);
+            throw;
+        }
+    }
 }
 

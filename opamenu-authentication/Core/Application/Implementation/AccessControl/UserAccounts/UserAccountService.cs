@@ -1,10 +1,14 @@
-﻿using Authenticator.API.Core.Application.Interfaces;
+using Authenticator.API.Core.Application.Interfaces;
 using Authenticator.API.Core.Application.Interfaces.AccessControl.UserAccounts;
 using Authenticator.API.Core.Application.Interfaces.Auth;
-using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts;
 using Authenticator.API.Core.Domain.AccessControl.UserAccounts.DTOs;
 using Authenticator.API.Core.Domain.Api;
+using Authenticator.API.Core.Domain.MultiTenant.Tenant.DTOs;
+using Authenticator.API.Infrastructure.Repositories.AccessControl.UserAccount;
 using AutoMapper;
+using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts;
+using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts.Enum;
+using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
 
 namespace Authenticator.API.Core.Application.Implementation.AccessControl.UserAccounts
 {
@@ -166,38 +170,25 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.UserAc
         {
             try
             {
-                var existing = await _userRepository.GetByIdAsync(id);
+                var userAccountEntity = await _userRepository.GetByIdAsync(id);
 
                 if (!string.IsNullOrWhiteSpace(dto.Email))
                 {
                     var emailExists = await _userRepository.EmailExistsAsync(dto.Email, id);
                     if (emailExists)
-                    {
-                        return ResponseBuilder<UserAccountDTO>
-                            .Fail(new ErrorDTO { Message = "Email já está em uso." })
-                            .WithCode(400)
-                            .Build();
-                    }
+                        return ResponseBuilder<UserAccountDTO>.Fail(new ErrorDTO { Message = "Email já está em uso." }).WithCode(400).Build();
                 }
 
                 if (!string.IsNullOrWhiteSpace(dto.Username))
                 {
                     var usernameExists = await _userRepository.UsernameExistsAsync(dto.Username, id);
                     if (usernameExists)
-                    {
-                        return ResponseBuilder<UserAccountDTO>
-                            .Fail(new ErrorDTO { Message = "Username já está em uso." })
-                            .WithCode(400)
-                            .Build();
-                    }
+                        return ResponseBuilder<UserAccountDTO>.Fail(new ErrorDTO { Message = "Username já está em uso." }).WithCode(400).Build();
                 }
 
-                var updatedEntity = _mapper.Map(dto, existing);
+                var updatedEntity = _mapper.Map(dto, userAccountEntity);
 
-                if(dto.TenantId == Guid.Empty || dto.TenantId == null)
-                    updatedEntity.TenantId = null;
-
-                await _userRepository.UpdateAsync(updatedEntity);
+                await _userRepository.UpdateAsync(updatedEntity!);
                 var updatedDto = _mapper.Map<UserAccountDTO>(updatedEntity);
                 return ResponseBuilder<UserAccountDTO>.Ok(updatedDto).Build();
             }
@@ -345,6 +336,61 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.UserAc
                     .WithCode(500)
                     .Build();
             }
+        }
+
+        public async Task<ResponseDTO<UserAccountDTO>> CreateUserAccountAdminAsync(Guid tenantId, CreateTenantDTO tenantDto)
+        {
+            try
+            {
+                //Criar o usuário Administrador
+                var passwordHash = BCrypt.Net.BCrypt.HashPassword(tenantDto.Password);
+                var userName = await GenerateUniqueUsernameAsync(tenantDto.Email);
+
+                var adminUser = new UserAccountEntity
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = tenantId,
+                    Username = userName,
+                    Email = tenantDto.Email.ToLower().Trim(),
+                    PasswordHash = passwordHash,
+                    FirstName = tenantDto.FirstName.Trim(),
+                    LastName = tenantDto.LastName.Trim(),
+                    PhoneNumber = tenantDto.UserPhone?.Trim(),
+                    Status = EUserAccountStatus.Inativo,
+                    IsEmailVerified = false,
+                    CreatedAt = DateTime.UtcNow,
+                };
+                await _userRepository.AddAsync(adminUser);
+                _logger.LogInformation("usuário administrador criado com sucesso: {UserId}", adminUser.Id);
+
+                var adminDto = _mapper.Map<UserAccountDTO>(adminUser);
+                return ResponseBuilder<UserAccountDTO>.Ok(adminDto).WithCode(201).Build();
+            }
+            catch (Exception ex)
+            {
+                return ResponseBuilder<UserAccountDTO>.Fail(new ErrorDTO { Message = ex.Message }).WithException(ex).WithCode(500).Build();
+            }
+            
+        }
+
+        /// <summary>
+        /// Gera um nome de usuário Único baseado no email
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        private async Task<string> GenerateUniqueUsernameAsync(string email)
+        {
+            var baseUsername = email.Split('@')[0].ToLower();
+            var username = baseUsername;
+            var counter = 1;
+
+            while (await _userRepository.AnyAsync(u => u.Username == username))
+            {
+                username = $"{baseUsername}{counter}";
+                counter++;
+            }
+
+            return username;
         }
     }
 }

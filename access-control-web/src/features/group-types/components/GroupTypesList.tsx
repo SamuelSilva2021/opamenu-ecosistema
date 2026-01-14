@@ -22,6 +22,7 @@ import { DataTable } from '../../../shared/components/data-display/DataTable';
 import type { DataTableColumn } from '../../../shared/components/data-display/DataTable';
 import type { GroupType } from '../../../shared/types';
 import { formatDate } from '../../../shared/utils/date.utils';
+import { ConfirmDialog } from '../../../shared/components';
 
 export interface GroupTypesListProps {
   groupTypes: GroupType[];
@@ -46,6 +47,7 @@ export const GroupTypesList = ({
 }: GroupTypesListProps) => {
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const [selectedGroupType, setSelectedGroupType] = useState<GroupType | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, groupType: GroupType) => {
     event.stopPropagation();
@@ -67,9 +69,20 @@ export const GroupTypesList = ({
 
   const handleDelete = () => {
     if (selectedGroupType) {
+      setConfirmOpen(true);
+    }
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedGroupType) {
       onDelete(selectedGroupType);
     }
+    setConfirmOpen(false);
     handleMenuClose();
+  };
+
+  const handleCancelDelete = () => {
+    setConfirmOpen(false);
   };
 
   const handleToggle = () => {
@@ -228,6 +241,20 @@ export const GroupTypesList = ({
           <ListItemText>Excluir</ListItemText>
         </MenuItem>
       </Menu>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Confirmar exclusão"
+        description={
+          selectedGroupType
+            ? `Tem certeza que deseja excluir o tipo de grupo "${selectedGroupType.name}"?`
+            : 'Tem certeza que deseja excluir este tipo de grupo?'
+        }
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
     </>
   );
 };

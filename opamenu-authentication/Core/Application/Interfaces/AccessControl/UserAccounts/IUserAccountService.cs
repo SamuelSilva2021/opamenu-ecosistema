@@ -1,5 +1,7 @@
-using Authenticator.API.Core.Domain.Api;
 using Authenticator.API.Core.Domain.AccessControl.UserAccounts.DTOs;
+using Authenticator.API.Core.Domain.Api;
+using Authenticator.API.Core.Domain.MultiTenant.Tenant.DTOs;
+using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
 
 namespace Authenticator.API.Core.Application.Interfaces.AccessControl.UserAccounts
 {
@@ -27,6 +29,7 @@ namespace Authenticator.API.Core.Application.Interfaces.AccessControl.UserAccoun
         /// Cria um novo usuário (no tenant atual)
         /// </summary>
         Task<ResponseDTO<UserAccountDTO>> AddUserAccountAsync(UserAccountCreateDTO dto);
+        Task<ResponseDTO<UserAccountDTO>> CreateUserAccountAdminAsync(Guid tenantId, CreateTenantDTO tenantDto);
 
         /// <summary>
         /// Atualiza dados de um usuário

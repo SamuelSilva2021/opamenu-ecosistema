@@ -31,7 +31,7 @@ export interface CreateUserAccountRequest {
   firstName: string;
   lastName: string;
   phoneNumber?: string;
-  tenantId?: string; // Será preenchido automaticamente pelo contexto do usuário logado
+  tenantId?: string;
 }
 
 export interface UpdateUserAccountRequest {
@@ -43,6 +43,7 @@ export interface UpdateUserAccountRequest {
   status?: UserAccountStatus;
   isEmailVerified?: boolean;
   tenantId?: string;
+  createdAt?: string;
 }
 
 // Tipos para associação de grupos a usuários

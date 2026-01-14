@@ -95,10 +95,10 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Access
 
                 IEnumerable<AccessGroupEntity> entities;
 
-                if (currentUser.TenantId == Guid.Empty || currentUser.TenantId == null)
+                if (currentUser.TenantId == Guid.Empty)
                 {
                     entities = await _accessGroupRepository.GetAllAsync();
-                    if (entities == null || !entities.Any())
+                    if (!entities.Any())
                         return ResponseBuilder<IEnumerable<AccessGroupDTO>>
                             .Ok(Enumerable.Empty<AccessGroupDTO>())
                             .Build();
@@ -165,7 +165,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Access
                 IEnumerable<AccessGroupEntity> entities;
                 IEnumerable<AccessGroupDTO> items;
 
-                if (currentUser.TenantId == Guid.Empty || currentUser.TenantId == null)
+                if (currentUser != null && currentUser.TenantId == Guid.Empty)
                 {
                     total = await _accessGroupRepository.CountAsync();
 

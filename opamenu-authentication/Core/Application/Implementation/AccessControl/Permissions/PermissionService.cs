@@ -409,7 +409,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
                 await _permissionOperationRepository.AddRangeAsync(permissionOperations);
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }

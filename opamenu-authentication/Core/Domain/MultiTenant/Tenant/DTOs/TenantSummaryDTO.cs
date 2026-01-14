@@ -1,4 +1,6 @@
-﻿namespace Authenticator.API.Core.Domain.MultiTenant.Tenant.DTOs
+﻿using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
+
+namespace Authenticator.API.Core.Domain.MultiTenant.Tenant.DTOs
 {
     public class TenantSummaryDTO
     {
@@ -6,7 +8,7 @@
         public string Name { get; set; } = string.Empty;
         public string Slug { get; set; } = string.Empty;
         public string? Domain { get; set; }
-        public string Status { get; set; } = "active";
+        public ETenantStatus Status { get; set; } = ETenantStatus.Ativo;
         public string? Email { get; set; }
         public string? Phone { get; set; }
         public DateTime CreatedAt { get; set; }

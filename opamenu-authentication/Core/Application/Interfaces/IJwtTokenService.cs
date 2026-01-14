@@ -1,4 +1,5 @@
-﻿using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts;
+﻿using Authenticator.API.Core.Domain.AccessControl.UserAccounts.DTOs;
+using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
 using System.Security.Claims;
 
@@ -43,5 +44,6 @@ public interface IJwtTokenService
     /// </summary>
     /// <returns>Tempo de expiraÃ§Ã£o em segundos</returns>
     int GetTokenExpirationTime();
+    string GenerateAccessToken(UserAccountDTO? data, TenantEntity createdTenant, List<string> list);
 }
 

@@ -1,4 +1,4 @@
-﻿using Authenticator.API.Core.Application.Interfaces.AccessControl.AccessGroup;
+using Authenticator.API.Core.Application.Interfaces.AccessControl.AccessGroup;
 using Authenticator.API.Core.Domain.AccessControl.AccessGroup.DTOs;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
 using Authenticator.API.Core.Domain.AccessControl.AccessGroups.DTOs;

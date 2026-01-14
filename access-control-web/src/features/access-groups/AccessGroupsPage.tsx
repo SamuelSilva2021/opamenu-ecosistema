@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import {
-  PageHeader,
-  ResponsiveContainer,
-  StyledCard,
-} from '../../shared/components';
+	PageHeader,
+	ResponsiveContainer,
+	StyledCard,
+	ConfirmDialog,
+	} from '../../shared/components';
 import { Add as AddIcon, Groups as GroupsIcon } from '@mui/icons-material';
 import { Typography, Box, CircularProgress, Alert } from '@mui/material';
 import { useAccessGroups } from '../../shared/hooks';
@@ -16,6 +17,8 @@ import type { AccessGroup, CreateAccessGroupRequest, UpdateAccessGroupRequest } 
 export const AccessGroupsPage = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAccessGroup, setEditingAccessGroup] = useState<AccessGroup | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [accessGroupToDelete, setAccessGroupToDelete] = useState<AccessGroup | null>(null);
 
   const { canRead, canCreate, canUpdate, canDelete } = useAccessGroupOperations();
 
@@ -84,11 +87,22 @@ export const AccessGroupsPage = () => {
       alert('Você não tem permissão para excluir grupos de acesso.');
       return;
     }
-    if (window.confirm(`Tem certeza que deseja excluir o grupo "${accessGroup.name}"?`)) {
-      await deleteAccessGroup(accessGroup.id);
-      await refreshData();
-    }
+		setAccessGroupToDelete(accessGroup);
+		setConfirmOpen(true);
   };
+
+	const handleConfirmDelete = async () => {
+		if (!accessGroupToDelete) return;
+		await deleteAccessGroup(accessGroupToDelete.id);
+		setConfirmOpen(false);
+		setAccessGroupToDelete(null);
+		await refreshData();
+	};
+
+	const handleCancelDelete = () => {
+		setConfirmOpen(false);
+		setAccessGroupToDelete(null);
+	};
 
   const handleToggleStatus = async (accessGroup: AccessGroup) => {
     console.log(`🔄 Toggle status: ${accessGroup.name}`);
@@ -182,6 +196,20 @@ export const AccessGroupsPage = () => {
           />
         )}
       </StyledCard>
+
+			<ConfirmDialog
+				open={confirmOpen}
+				title="Confirmar exclusão"
+				description={
+					accessGroupToDelete
+						? `Tem certeza que deseja excluir o grupo "${accessGroupToDelete.name}"?`
+						: 'Tem certeza que deseja excluir este grupo?'
+				}
+				confirmLabel="Excluir"
+				cancelLabel="Cancelar"
+				onConfirm={handleConfirmDelete}
+				onCancel={handleCancelDelete}
+			/>
 
       <AccessGroupDialog
         open={dialogOpen}

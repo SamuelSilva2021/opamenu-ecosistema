@@ -13,6 +13,7 @@ export interface GroupTypeFormData {
   description: string;
   code: string;
   isActive: boolean;
+  createdAt?: string;
 }
 
 export interface GroupTypeFormProps {
@@ -35,6 +36,7 @@ export const GroupTypeForm = ({
     description: '',
     code: '',
     isActive: true,
+    createdAt: undefined,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -47,6 +49,7 @@ export const GroupTypeForm = ({
         description: initialData.description || '',
         code: initialData.code,
         isActive: initialData.isActive,
+        createdAt: initialData.createdAt,
       });
     }
   }, [initialData]);
@@ -115,12 +118,25 @@ export const GroupTypeForm = ({
 
     // Submit if no errors
     if (Object.keys(newErrors).length === 0) {
-      onSubmit({
+      const basePayload = {
         name: formData.name.trim(),
         description: formData.description.trim() || undefined,
         code: formData.code.trim().toUpperCase(),
         isActive: formData.isActive,
-      });
+      };
+
+      if (initialData) {
+        const payload: UpdateGroupTypeRequest = {
+          ...basePayload,
+          createdAt: formData.createdAt,
+        };
+        onSubmit(payload);
+      } else {
+        const payload: CreateGroupTypeRequest = {
+          ...basePayload,
+        };
+        onSubmit(payload);
+      }
     }
   };
 

@@ -1,4 +1,3 @@
-﻿using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts.Enum;
 using Authenticator.API.Core.Application.Interfaces;
 using Authenticator.API.Core.Application.Interfaces.AccessControl.AccessGroup;
 using Authenticator.API.Core.Application.Interfaces.AccessControl.AccountAccessGroups;
@@ -8,22 +7,18 @@ using Authenticator.API.Core.Application.Interfaces.MultiTenant;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts;
 using Authenticator.API.Core.Domain.Api;
-using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Subscription;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
 using Authenticator.API.Core.Domain.MultiTenant.Tenant.DTOs;
 using AutoMapper;
 using System.Text.RegularExpressions;
+using Authenticator.API.Core.Application.Interfaces.AccessControl.UserAccounts;
+using Authenticator.API.Core.Domain.AccessControl.UserAccounts.DTOs;
 
 namespace Authenticator.API.Core.Application.Implementation.MultiTenant
 {
     /// <summary>
-    /// ServiÃ§o para gerenciamento de tenants (empresas)
+    /// Serviço para gerenciamento de tenants (empresas)
     /// </summary>
-    /// <param name="tenantRepository"></param>
-    /// <param name="mapper"></param>
-    /// <param name="logger"></param>
-    /// <param name="userAccountsRepository"></param>
-    /// <param name="jwtTokenService"></param>
     public class TenantService(
         ITenantRepository tenantRepository,
         IMapper mapper,
@@ -38,7 +33,8 @@ namespace Authenticator.API.Core.Application.Implementation.MultiTenant
         IAccountAccessGroupRepository accountAccessGroupRepository,
         IRoleRepository roleRepository,
         IRoleAccessGroupRepository roleAccessGroupRepository,
-        IGroupTypeRepository groupTypeRepository
+        IGroupTypeRepository groupTypeRepository,
+        IUserAccountService userAccountService
         ) : ITenantService
     {
         private readonly ITenantRepository _tenantRepository = tenantRepository;
@@ -55,181 +51,198 @@ namespace Authenticator.API.Core.Application.Implementation.MultiTenant
         private readonly IRoleRepository _roleRepository = roleRepository;
         private readonly IRoleAccessGroupRepository _roleAccessGroupRepository = roleAccessGroupRepository;
         private readonly IGroupTypeRepository _groupTypeRepository = groupTypeRepository;
+        private readonly IUserAccountService _userAccountService = userAccountService;
 
-        /// <summary>
-        /// Adiciona um novo tenant e cria o usuário administrador associado
-        /// </summary>
-        /// <param name="tenant"></param>
-        /// <returns></returns>
         public async Task<ResponseDTO<RegisterTenantResponseDTO>> AddTenantAsync(CreateTenantDTO tenant)
         {
             try
             {
-                var existingUser = await _userAccountsRepository.GetByEmailAsync(tenant.Email);
-                if (existingUser != null)
-                    return ResponseBuilder<RegisterTenantResponseDTO>
-                        .Fail(new ErrorDTO { Message = "Email já está em uso." }).WithCode(400).Build();
-
-                var existingDocument = await _tenantRepository.GetByDocumentAsync(tenant.Document!);
-                if (existingDocument != null)
-                    return ResponseBuilder<RegisterTenantResponseDTO>
-                        .Fail(new ErrorDTO { Message = "CNPJ/CPF já está em uso." }).WithCode(400).Build();
-
-                
-                var tenantEntity = _mapper.Map<TenantEntity>(tenant);
-                tenantEntity.Slug = await GenerateUniqueSlugAsync(tenant.CompanyName);
-                tenantEntity.Status = ETenantStatus.Pendente;
-
-                var createdTenant = await _tenantRepository.AddAsync(tenantEntity);
-
-                var tenantBusinessEntity = new TenantBusinessEntity
+                var validationResult = await ValidateNewTenantAsync(tenant);
+                if (!validationResult.Success)
                 {
-                    Id = Guid.NewGuid(),
-                    TenantId = createdTenant.Id,
-                };
+                    return ResponseBuilder<RegisterTenantResponseDTO>
+                        .Fail(new ErrorDTO { Message = validationResult.Message })
+                        .WithCode(400)
+                        .Build();
+                }
 
-                await _tenantBusinessRepository.AddAsync(tenantBusinessEntity);
+                TenantEntity? createdTenant = null;
+                UserAccountDTO? userAdmin = null;
 
-                var tenantDTO = _mapper.Map<TenantDTO>(createdTenant);
+                createdTenant = await CreateTenantEntityAsync(tenant);
+
+                await CreateTenantBusinessAsync(createdTenant.Id);
+
                 _logger.LogInformation("Tenant criado com sucesso: {TenantId}", createdTenant.Id);
 
-                // 2. Criar o usuário Administrador
-                var passwordHash = BCrypt.Net.BCrypt.HashPassword(tenant.Password);
-                var userName = await GenerateUniqueUsernameAsync(tenant.Email);
-
-                var adminUser = new UserAccountEntity
+                var userAdminResponse = await _userAccountService.CreateUserAccountAdminAsync(createdTenant.Id, tenant);
+                if (!userAdminResponse.Succeeded || userAdminResponse.Data == null)
                 {
-                    Id = Guid.NewGuid(),
-                    TenantId = createdTenant.Id,
-                    Username = await GenerateUniqueUsernameAsync(tenant.Email),
-                    Email = tenant.Email.ToLower().Trim(),
-                    PasswordHash = passwordHash,
-                    FirstName = tenant.FirstName.Trim(),
-                    LastName = tenant.LastName.Trim(),
-                    PhoneNumber = tenant.UserPhone?.Trim(),
-                    Status = EUserAccountStatus.Inativo,
-                    IsEmailVerified = false
-                };
-                await _userAccountsRepository.AddAsync(adminUser);
-                _logger.LogInformation("usuário administrador criado com sucesso: {UserId}", adminUser.Id);
-
-                // 3. Configurar PermissÃµes (Roles e AccessGroups)
-                try 
-                {
-                    // Buscar GroupType "Tenant"
-                    var tenantGroupTypes = await _groupTypeRepository.FindAsync(gt => gt.Code == "TENANT");
-                    var tenantGroupType = tenantGroupTypes.FirstOrDefault();
-                    var groupTypeId = tenantGroupType?.Id ?? Guid.Parse("00000000-0000-0000-0000-000000000002");
-
-                    // Criar Grupo "Administradores"
-                    var adminGroup = new AccessGroupEntity
-                    {
-                        Id = Guid.NewGuid(),
-                        Name = "Administradores",
-                        Description = "Grupo de administradores do tenant",
-                        TenantId = createdTenant.Id,
-                        GroupTypeId = groupTypeId,
-                        IsActive = true,
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    await _accessGroupRepository.AddAsync(adminGroup);
-
-                    var adminRole = new RoleEntity
-                    {
-                        Id = Guid.NewGuid(),
-                        Name = "Admin",
-                        Code = "ADMIN",
-                        Description = "Administrador do Tenant",
-                        TenantId = createdTenant.Id,
-                        IsActive = true,
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    await _roleRepository.AddAsync(adminRole);
-
-                    // Vincular Role ao Grupo
-                    var roleGroup = new RoleAccessGroupEntity
-                    {
-                        Id = Guid.NewGuid(),
-                        RoleId = adminRole.Id,
-                        AccessGroupId = adminGroup.Id,
-                        IsActive = true,
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    await _roleAccessGroupRepository.AddAsync(roleGroup);
-
-                    // Vincular usuário ao Grupo
-                    var userGroup = new AccountAccessGroupEntity
-                    {
-                        Id = Guid.NewGuid(),
-                        UserAccountId = adminUser.Id,
-                        AccessGroupId = adminGroup.Id,
-                        IsActive = true,
-                        CreatedAt = DateTime.UtcNow,
-                        GrantedBy = adminUser.Id 
-                    };
-                    await _accountAccessGroupRepository.AddAsync(userGroup);
-
-                    _logger.LogInformation("PermissÃµes de administrador configuradas para o usuário: {UserId}", adminUser.Id);
+                    throw new InvalidOperationException($"Erro ao criar usuário admin: {userAdminResponse.Errors?.FirstOrDefault()?.Message ?? "Erro desconhecido"}");
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Erro ao configurar permissÃµes iniciais para o tenant {TenantId}", createdTenant.Id);
-                    //Fazer rollback das operaÃ§Ãµes anteriores
-                }
+                userAdmin = userAdminResponse.Data;
 
-                var accessToken = _jwtTokenService.GenerateAccessToken(adminUser, createdTenant, new List<string> { "Admin" });
-                var refreshToken = _jwtTokenService.GenerateRefreshToken();
-                var expiresIn = _jwtTokenService.GetTokenExpirationTime();
+                await ConfigureInitialPermissionsAsync(createdTenant, userAdmin);
 
-                if (!string.IsNullOrWhiteSpace(tenant.LeadSource))
-                {
-                    _logger.LogInformation("Lead registrado - Fonte: {LeadSource}, UTM: {UtmSource}/{UtmCampaign}/{UtmMedium}",
-                        tenant.LeadSource, tenant.UtmSource, tenant.UtmCampaign, tenant.UtmMedium);
-                }
-
-                var dto = new RegisterTenantResponseDTO
-                {
-                    TenantId = createdTenant.Id,
-                    UserId = adminUser.Id,
-                    CompanyName = createdTenant.Name,
-                    Slug = createdTenant.Slug,
-                    Email = adminUser.Email,
-                    FullName = $"{adminUser.FirstName} {adminUser.LastName}",
-                    AccessToken = accessToken,
-                    RefreshToken = refreshToken,
-                    ExpiresIn = expiresIn,
-                    CreatedAt = createdTenant.CreatedAt,
-                    Message = "Empresa e usuário administrador criados com sucesso!"
-                };
-
-                return ResponseBuilder<RegisterTenantResponseDTO>.Ok(dto).WithCode(201).Build();
+                return await GenerateSuccessResponseAsync(createdTenant, userAdmin, tenant);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao criar novo tenant: {Message}", ex.Message);
+                await TryRollbackTenantCreationAsync(ex, tenant);
+
+                var baseException = ex.GetBaseException();
+
+                _logger.LogError(ex, "Erro ao criar novo tenant: {Message}", baseException.Message);
                 return ResponseBuilder<RegisterTenantResponseDTO>
-                    .Fail(new ErrorDTO { Message = ex.Message }).WithException(ex).WithCode(500).Build();
+                    .Fail(new ErrorDTO { Message = baseException.Message })
+                    .WithException(ex)
+                    .WithCode(500)
+                    .Build();
             }
         }
 
-        /// <summary>
-        /// Gera um nome de usuário Ãºnico baseado no email
-        /// </summary>
-        /// <param name="email"></param>
-        /// <returns></returns>
-        private async Task<string> GenerateUniqueUsernameAsync(string email)
+        private async Task TryRollbackTenantCreationAsync(Exception originalException, CreateTenantDTO tenant)
         {
-            var baseUsername = email.Split('@')[0].ToLower();
-            var username = baseUsername;
-            var counter = 1;
-
-            while (await _userAccountsRepository.AnyAsync(u => u.Username == username))
+            try
             {
-                username = $"{baseUsername}{counter}";
-                counter++;
+                var createdTenant = await _tenantRepository.GetByDocumentAsync(tenant.Document!);
+                if (createdTenant != null)
+                {
+                    var tenantBusiness = await _tenantBusinessRepository.GetByTenantIdAsync(createdTenant.Id);
+                    if (tenantBusiness != null)
+                    {
+                        await _tenantBusinessRepository.DeleteAsync(createdTenant.Id);
+                    }
+
+                    await _tenantRepository.DeleteAsync(createdTenant);
+                }
+            }
+            catch (Exception rollbackEx)
+            {
+                _logger.LogError(rollbackEx, "Erro ao tentar fazer rollback da criação de tenant após falha: {Message}", originalException.Message);
+            }
+        }
+
+        private async Task<(bool Success, string Message)> ValidateNewTenantAsync(CreateTenantDTO tenant)
+        {
+            var existingUser = await _userAccountsRepository.GetByEmailAsync(tenant.Email);
+            if (existingUser != null)
+                return (false, "Email já está em uso.");
+
+            var existingDocument = await _tenantRepository.GetByDocumentAsync(tenant.Document!);
+            if (existingDocument != null)
+                return (false, "CNPJ/CPF já está em uso.");
+
+            return (true, string.Empty);
+        }
+
+        private async Task<TenantEntity> CreateTenantEntityAsync(CreateTenantDTO tenantDto)
+        {
+            var tenantEntity = _mapper.Map<TenantEntity>(tenantDto);
+            tenantEntity.Slug = await GenerateUniqueSlugAsync(tenantDto.CompanyName);
+            tenantEntity.Status = ETenantStatus.Pendente;
+            
+            return await _tenantRepository.AddAsync(tenantEntity);
+        }
+
+        private async Task CreateTenantBusinessAsync(Guid tenantId)
+        {
+            var tenantBusinessEntity = new TenantBusinessEntity
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenantId,
+            };
+
+            await _tenantBusinessRepository.AddAsync(tenantBusinessEntity);
+        }
+
+        private async Task ConfigureInitialPermissionsAsync(TenantEntity createdTenant, UserAccountDTO userAdmin)
+        {
+            try
+            {
+                // Buscar GroupType "TENANT"
+                var tenantGroupType = await _groupTypeRepository.FirstOrDefaultAsync(gt => gt.Code == "TENANT");
+                if (tenantGroupType == null)
+                    throw new InvalidOperationException("Tipo de grupo TENANT não encontrado.");
+
+                var adminRole = (await _roleRepository.FindAsync(r => r.Code == "ADMIN")).FirstOrDefault();
+                if (adminRole == null)
+                    throw new InvalidOperationException("Role ADMIN não encontrada.");
+
+                // Criar Grupo "Administradores para a loja"
+                var adminGroup = new AccessGroupEntity
+                {
+                    Id = Guid.NewGuid(),
+                    Name = createdTenant.Slug,
+                    Code = "TENANT_ADMINS",
+                    Description = "Grupo de administradores do tenant",
+                    TenantId = createdTenant.Id,
+                    GroupTypeId = tenantGroupType.Id,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _accessGroupRepository.AddAsync(adminGroup);
+
+                // Vincular Role ao Grupo
+                var roleGroup = new RoleAccessGroupEntity
+                {
+                    Id = Guid.NewGuid(),
+                    RoleId = adminRole.Id,
+                    AccessGroupId = adminGroup.Id,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _roleAccessGroupRepository.AddAsync(roleGroup);
+
+                // Vincular usuário ao Grupo
+                var userGroup = new AccountAccessGroupEntity
+                {
+                    Id = Guid.NewGuid(),
+                    UserAccountId = userAdmin.Id,
+                    AccessGroupId = adminGroup.Id,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow,
+                    GrantedBy = userAdmin.Id,
+                };
+                await _accountAccessGroupRepository.AddAsync(userGroup);
+
+                _logger.LogInformation("Permissões de administrador configuradas para o usuário: {UserId}", userAdmin.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao configurar permissões iniciais para o tenant {TenantId}", createdTenant.Id);
+                throw; // Re-throw para acionar o rollback
+            }
+        }
+
+        private async Task<ResponseDTO<RegisterTenantResponseDTO>> GenerateSuccessResponseAsync(TenantEntity createdTenant, UserAccountDTO userAdmin, CreateTenantDTO tenantDto)
+        {
+            var accessToken = _jwtTokenService.GenerateAccessToken(userAdmin, createdTenant, new List<string> { "Admin" });
+            var refreshToken = _jwtTokenService.GenerateRefreshToken();
+            var expiresIn = _jwtTokenService.GetTokenExpirationTime();
+
+            if (!string.IsNullOrWhiteSpace(tenantDto.LeadSource))
+            {
+                _logger.LogInformation("Lead registrado - Fonte: {LeadSource}, UTM: {UtmSource}/{UtmCampaign}/{UtmMedium}",
+                    tenantDto.LeadSource, tenantDto.UtmSource, tenantDto.UtmCampaign, tenantDto.UtmMedium);
             }
 
-            return username;
+            var dto = new RegisterTenantResponseDTO
+            {
+                TenantId = createdTenant.Id,
+                UserId = userAdmin.Id,
+                CompanyName = createdTenant.Name,
+                Slug = createdTenant.Slug,
+                Email = userAdmin.Email,
+                FullName = $"{userAdmin.FirstName} {userAdmin.LastName}",
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                ExpiresIn = expiresIn,
+                CreatedAt = createdTenant.CreatedAt,
+                Message = "Empresa e usuário administrador criados com sucesso!"
+            };
+
+            return ResponseBuilder<RegisterTenantResponseDTO>.Ok(dto).WithCode(201).Build();
         }
 
         /// <summary>

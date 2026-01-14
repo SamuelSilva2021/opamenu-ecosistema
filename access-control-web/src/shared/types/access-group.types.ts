@@ -26,6 +26,7 @@ export interface UpdateAccessGroupRequest {
   code?: string;
   groupTypeId?: string;
   isActive?: boolean;
+  createdAt: string;
 }
 
 export interface GroupType {
@@ -50,4 +51,5 @@ export interface UpdateGroupTypeRequest {
   description?: string;
   code?: string;
   isActive?: boolean;
+  createdAt?: string;
 }

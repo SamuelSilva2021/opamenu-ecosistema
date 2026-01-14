@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
 
 namespace Authenticator.API.Core.Domain.MultiTenant.Tenant.DTOs
 {
@@ -14,7 +15,7 @@ namespace Authenticator.API.Core.Domain.MultiTenant.Tenant.DTOs
         public string? Domain { get; set; }
 
         [MaxLength(20)]
-        public string? Status { get; set; }
+        public ETenantStatus Status { get; set; }
 
         [MaxLength(18)]
         public string? CnpjCpf { get; set; }
