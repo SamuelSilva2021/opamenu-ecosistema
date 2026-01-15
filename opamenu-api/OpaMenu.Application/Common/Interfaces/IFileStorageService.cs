@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Http;
 using OpaMenu.Application.Common.Models;
 using OpaMenu.Application.DTOs;
+using OpaMenu.Commons.Api.Commons;
+using OpaMenu.Commons.Api.DTOs;
 
 namespace OpaMenu.Application.Common.Interfaces;
 

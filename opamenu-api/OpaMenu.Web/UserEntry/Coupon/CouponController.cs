@@ -4,6 +4,7 @@ using OpaMenu.Application.Services.Interfaces;
 using OpaMenu.Domain.DTOs.Coupon;
 using OpaMenu.Application.DTOs;
 using OpaMenu.Web.UserEntry;
+using OpaMenu.Commons.Api.DTOs;
 
 namespace OpaMenu.Web.UserEntry.Coupon;
 

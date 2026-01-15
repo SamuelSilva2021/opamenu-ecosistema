@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace OpaMenu.Commons.Api.Commons
+namespace OpaMenu.Commons.Api.DTOs
 {
     /// <summary>
     /// Detalhes de um erro ocorrido na API

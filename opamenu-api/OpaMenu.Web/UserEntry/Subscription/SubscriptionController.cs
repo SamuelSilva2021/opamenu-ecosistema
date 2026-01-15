@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OpaMenu.Application.DTOs;
 using OpaMenu.Application.Services.Interfaces;
+using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Domain.DTOs.Subscription;
 using OpaMenu.Web.UserEntry;
 

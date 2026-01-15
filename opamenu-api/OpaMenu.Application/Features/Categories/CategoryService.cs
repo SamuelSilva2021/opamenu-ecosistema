@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
-using OpaMenu.Application.Common.Builders;
 using OpaMenu.Application.Common.Interfaces;
-using OpaMenu.Application.DTOs;
 using OpaMenu.Domain.DTOs.Category;
 using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Domain.Interfaces;
+using OpaMenu.Commons.Api.Commons;
+using OpaMenu.Commons.Api.DTOs;
 
 namespace OpaMenu.Application.Features.Categories;
 

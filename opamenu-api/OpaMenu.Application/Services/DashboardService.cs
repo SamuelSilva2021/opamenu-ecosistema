@@ -1,9 +1,9 @@
-﻿using OpaMenu.Application.Common.Builders;
-using OpaMenu.Application.DTOs;
-using OpaMenu.Application.DTOs.Dashboard;
+﻿using OpaMenu.Application.DTOs.Dashboard;
 using OpaMenu.Application.Interfaces;
 using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Domain.Interfaces;
+using OpaMenu.Commons.Api.DTOs;
+using OpaMenu.Commons.Api.Commons;
 
 namespace OpaMenu.Application.Services;
 

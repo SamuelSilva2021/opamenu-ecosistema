@@ -1,4 +1,5 @@
 using OpaMenu.Application.DTOs;
+using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Domain.DTOs.Subscription;
 using System.Threading.Tasks;
 

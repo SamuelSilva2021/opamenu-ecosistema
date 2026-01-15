@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\opamenu-shared-infrastructure\OpaMenu.Infrastructure.Shared\OpaMenu.Infrastructure.Shared.csproj" />
+    <ProjectReference Include="..\..\opamenu-commons\OpaMenu.Infrastructure.Shared\OpaMenu.Infrastructure.Shared.csproj" />
   </ItemGroup>
 
 </Project>

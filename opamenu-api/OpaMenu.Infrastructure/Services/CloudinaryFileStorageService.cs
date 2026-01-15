@@ -2,10 +2,11 @@
 using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using OpaMenu.Application.Common.Builders;
 using OpaMenu.Application.Common.Interfaces;
 using OpaMenu.Application.Common.Models;
 using OpaMenu.Application.DTOs;
+using OpaMenu.Commons.Api.Commons;
+using OpaMenu.Commons.Api.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;

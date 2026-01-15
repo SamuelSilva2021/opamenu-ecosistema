@@ -6,6 +6,7 @@ using OpaMenu.Application.Services.Interfaces;
 using OpaMenu.Domain.DTOs;
 using OpaMenu.Domain.DTOs.Table;
 using OpaMenu.Domain.DTOs.Order;
+using OpaMenu.Commons.Api.DTOs;
 
 namespace OpaMenu.Web.UserEntry.Tables
 {

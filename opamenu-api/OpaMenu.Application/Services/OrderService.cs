@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using OpaMenu.Application.Common.Builders;
 using OpaMenu.Application.DTOs;
 using OpaMenu.Application.Services.Interfaces;
 using OpaMenu.Domain.DTOs;
@@ -10,6 +9,8 @@ using OpaMenu.Infrastructure.Shared.Enums;
 using OpaMenu.Domain.Interfaces;
 using OpaMenu.Web.Models.DTOs;
 using System.Threading.Tasks;
+using OpaMenu.Commons.Api.DTOs;
+using OpaMenu.Commons.Api.Commons;
 
 namespace OpaMenu.Application.Services;
 

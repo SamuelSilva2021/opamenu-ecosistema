@@ -1,12 +1,11 @@
-using OpaMenu.Commons.Api.Exceptions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OpaMenu.Application.Common.Exceptions
+namespace OpaMenu.Commons.Api.Exceptions
 {
     public class RedirectionException : ApiException
     {

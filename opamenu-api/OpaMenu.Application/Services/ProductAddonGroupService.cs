@@ -1,7 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
-using OpaMenu.Application.Common.Builders;
-using OpaMenu.Application.DTOs;
 using OpaMenu.Application.Services.Interfaces;
 using OpaMenu.Domain.DTOs;
 using OpaMenu.Domain.DTOs.AddonGroup;
@@ -9,6 +7,8 @@ using OpaMenu.Domain.DTOs.Addons;
 using OpaMenu.Domain.DTOs.Product;
 using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Domain.Interfaces;
+using OpaMenu.Commons.Api.DTOs;
+using OpaMenu.Commons.Api.Commons;
 
 namespace OpaMenu.Application.Services;
 

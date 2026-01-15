@@ -1,5 +1,5 @@
-using OpaMenu.Application.DTOs;
 using OpaMenu.Application.DTOs.Dashboard;
+using OpaMenu.Commons.Api.DTOs;
 
 namespace OpaMenu.Application.Interfaces;
 

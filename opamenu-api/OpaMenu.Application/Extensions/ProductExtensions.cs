@@ -4,7 +4,7 @@ using OpaMenu.Infrastructure.Shared.Entities;
 namespace OpaMenu.Application.Extensions;
 
 /// <summary>
-/// Extension methods para operaÃ§Ãµes elegantes com produtos
+/// Extension methods para operações elegantes com produtos
 /// Utiliza recursos modernos do C# 13 e .NET 9
 /// </summary>
 public static class ProductExtensions

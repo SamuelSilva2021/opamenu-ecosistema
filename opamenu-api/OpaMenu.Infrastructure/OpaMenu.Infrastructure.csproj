@@ -23,9 +23,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\opamenu-commons\OpaMenu.Infrastructure.Shared\OpaMenu.Infrastructure.Shared.csproj" />
     <ProjectReference Include="..\OpaMenu.Application\OpaMenu.Application.csproj" />
     <ProjectReference Include="..\OpaMenu.Domain\OpaMenu.Domain.csproj" />
-    <ProjectReference Include="..\..\opamenu-shared-infrastructure\OpaMenu.Infrastructure.Shared\OpaMenu.Infrastructure.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

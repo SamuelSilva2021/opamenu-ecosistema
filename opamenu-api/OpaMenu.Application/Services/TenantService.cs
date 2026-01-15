@@ -1,7 +1,7 @@
 using AutoMapper;
-using OpaMenu.Application.Common.Builders;
-using OpaMenu.Application.DTOs;
 using OpaMenu.Application.Services.Interfaces;
+using OpaMenu.Commons.Api.Commons;
+using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Domain.DTOs.Tenant;
 using OpaMenu.Domain.Interfaces;
 

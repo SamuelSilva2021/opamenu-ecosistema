@@ -1,11 +1,13 @@
-using OpaMenu.Application.Interfaces;
-using OpaMenu.Application.Implementation;
-using OpaMenu.Application.CrossCutting;
-using OpaMenu.Domain.DTOs;
+﻿using OpaMenu.Commons.Api.Commons;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
-namespace OpaMenu.Application.DTOs
+namespace OpaMenu.Commons.Api.DTOs
 {
     /// <summary>
     /// Response DTO
@@ -90,5 +92,4 @@ namespace OpaMenu.Application.DTOs
         public Exception? Exception { get; set; }
 
     }
-
 }

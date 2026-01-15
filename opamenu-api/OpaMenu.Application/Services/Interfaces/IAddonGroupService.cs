@@ -3,6 +3,7 @@ using OpaMenu.Domain.DTOs;
 using OpaMenu.Application.DTOs;
 using OpaMenu.Domain.DTOs.AddonGroup;
 using OpaMenu.Infrastructure.Shared.Entities;
+using OpaMenu.Commons.Api.DTOs;
 
 namespace OpaMenu.Application.Services.Interfaces;
 

@@ -1,15 +1,15 @@
-using FluentValidation;
-using OpaMenu.Application.Common.Exceptions;
-using OpaMenu.Application.Common.Localization;
-using OpaMenu.Domain.DTOs;
-using OpaMenu.Application.DTOs;
+﻿using FluentValidation;
+using OpaMenu.Commons.Api.DTOs;
+using OpaMenu.Commons.Api.Exceptions;
+using OpaMenu.Commons.Api.Localization;
+using OpaMenu.Commons.Api.Resources;
 using Serilog;
 using System.Net;
 using System.Text.Json;
 
 using ValidationFailure = FluentValidation.Results.ValidationFailure;
 
-namespace OpaMenu.Application.Common.Builders
+namespace OpaMenu.Commons.Api.Commons
 {
     public class StaticResponseBuilder<T>
     {
@@ -98,7 +98,7 @@ namespace OpaMenu.Application.Common.Builders
         public static PagedResponseDTO<TItem> BuildPagedOk<TItem>(IEnumerable<TItem> data, int totalItems, int pageNumber, int pageSize)
         {
             var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
-            
+
             return new PagedResponseDTO<TItem>
             {
                 Succeeded = true,
@@ -155,7 +155,7 @@ namespace OpaMenu.Application.Common.Builders
                 var details = new List<string>();
                 if (!string.IsNullOrEmpty(exception.Message)) details.Add(exception.Message);
                 if (exception.InnerException != null && !string.IsNullOrEmpty(exception.InnerException.Message)) details.Add(exception.InnerException.Message);
-                
+
                 if (details.Any()) errorDto.Details = details;
 
                 responseError.Errors.Add(errorDto);
@@ -206,7 +206,11 @@ namespace OpaMenu.Application.Common.Builders
                 });
             }
         }
-
+        /// <summary>
+        /// Constrói uma lista de erros a partir de uma JsonException
+        /// </summary>
+        /// <param name="jsonException"></param>
+        /// <param name="errors"></param>
         private static void BuildJsonExceptionError(JsonException jsonException, IList<ErrorDTO> errors)
         {
             var jsonExceptionErrors = ParseJsonExceptionMessage(jsonException.Message);
@@ -248,7 +252,11 @@ namespace OpaMenu.Application.Common.Builders
                 }
             }
         }
-
+        /// <summary>
+        /// Faz o parse da mensagem de exceção JSON para extrair erros específicos
+        /// </summary>
+        /// <param name="jsonExceptionMessage"></param>
+        /// <returns></returns>
         public static IList<ErrorDTO> ParseJsonExceptionMessage(string jsonExceptionMessage)
         {
             var errors = new List<ErrorDTO>();
@@ -257,14 +265,10 @@ namespace OpaMenu.Application.Common.Builders
 
             if (containsRequiredErrors is true)
             {
-                // JsonException required properties message pattern: "JSON deserialization for type CLASS
-                //    was missing required properties, including the following: Property1; Property2; Property3"
                 var split = jsonExceptionMessage!.Split(':', ';');
 
                 if (split.Length > 1)
                 {
-
-                    // Ignores first item describing the error, the next ones are the property names
                     for (var i = 1; i < split.Length; i++)
                     {
                         var property = split[i].Trim();

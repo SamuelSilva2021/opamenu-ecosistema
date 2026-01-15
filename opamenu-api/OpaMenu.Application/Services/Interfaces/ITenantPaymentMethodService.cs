@@ -1,4 +1,5 @@
 using OpaMenu.Application.DTOs;
+using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Domain.DTOs.TenantPaymentMethod;
 
 namespace OpaMenu.Application.Services.Interfaces;

@@ -1,6 +1,5 @@
-using OpaMenu.Application.Common.Localization;
-using OpaMenu.Application.Interfaces;
-using OpaMenu.Domain.DTOs;
+﻿using OpaMenu.Commons.Api.DTOs;
+using OpaMenu.Commons.Api.Localization;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -10,21 +9,22 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OpaMenu.Application.Common.Exceptions
+namespace OpaMenu.Commons.Api.Exceptions
 {
     /// <summary>
-    /// ApiException Class
+    /// Representa uma exceção personalizada para erros de API.
     /// </summary>
     public class ApiException : Exception
     {
         /// <summary>
-        /// ApiException Blank Constructor
+        /// Inicializa uma nova instância da classe <see cref="ApiException"/>.
         /// </summary>
+
         [ExcludeFromCodeCoverage]
         public ApiException() { }
 
         /// <summary>
-        /// ApiException Constructor
+        /// Inicializa uma nova instância da classe <see cref="ApiException"/>.
         /// </summary>
         /// <param name="httpStatusCodeResponse"></param>
         /// <param name="code"></param>
@@ -34,9 +34,8 @@ namespace OpaMenu.Application.Common.Exceptions
             HttpStatusCodeResponse = httpStatusCodeResponse;
             Code = code;
         }
-
         /// <summary>
-        /// ApiException constructor
+        /// Inicializa uma nova instância da classe <see cref="ApiException"/>.
         /// </summary>
         /// <param name="httpStatusCodeResponse"></param>
         /// <param name="code"></param>
@@ -47,9 +46,8 @@ namespace OpaMenu.Application.Common.Exceptions
             HttpStatusCodeResponse = httpStatusCodeResponse;
             Code = code;
         }
-
         /// <summary>
-        /// ApiException constructor using LocalizationManager to initialize the error message
+        /// Inicializa uma nova instância da classe <see cref="ApiException"/>.
         /// </summary>
         /// <param name="httpStatusCodeResponse"></param>
         /// <param name="localizationManager"></param>
@@ -61,9 +59,8 @@ namespace OpaMenu.Application.Common.Exceptions
             HttpStatusCodeResponse = httpStatusCodeResponse;
             Code = resourceCode;
         }
-
         /// <summary>
-        /// ApiException Constructor that receives a errorList that can be thrown as a group of errors.
+        /// Inicializa uma nova instância da classe <see cref="ApiException"/>.
         /// </summary>
         /// <param name="httpStatusCodeResponse"></param>
         /// <param name="code"></param>
@@ -77,12 +74,17 @@ namespace OpaMenu.Application.Common.Exceptions
         }
 
         #region Internal CommonLocalization constructor
+
         /// <summary>
-        /// ApiException constructor using CommonLocalization to initialize the error message
+        /// Initializes a new instance of the ApiException class with a localized error message, HTTP status code, and
+        /// optional formatting arguments.
         /// </summary>
-        /// <param name="httpStatusCodeResponse"></param>
-        /// <param name="commonResourceCode"></param>
-        /// <param name="args"></param>
+        /// <remarks>This constructor is intended for internal use to create exceptions with standardized,
+        /// localized messages based on resource codes. The error message is generated using the specified resource code
+        /// and formatting arguments.</remarks>
+        /// <param name="httpStatusCodeResponse">The HTTP status code associated with the API error response.</param>
+        /// <param name="commonResourceCode">The resource code used to retrieve the localized error message.</param>
+        /// <param name="args">An array of objects containing formatting arguments to be applied to the localized error message.</param>
         internal ApiException(HttpStatusCode httpStatusCodeResponse, string commonResourceCode, params object[] args) :
             base(CommonLocalization.Get(commonResourceCode, culture: null, args))
         {
@@ -90,13 +92,7 @@ namespace OpaMenu.Application.Common.Exceptions
             Code = commonResourceCode;
         }
 
-        /// <summary>
-        /// ApiException constructor using CommonLocalization to initialize the error message
-        /// </summary>
-        /// <param name="httpStatusCodeResponse"></param>
-        /// <param name="cultureInfo"></param>
-        /// <param name="commonResourceCode"></param>
-        /// <param name="args"></param>
+
         internal ApiException(HttpStatusCode httpStatusCodeResponse, CultureInfo cultureInfo, string commonResourceCode,
             params object[] args) :
             base(CommonLocalization.Get(commonResourceCode, cultureInfo, args))
@@ -105,14 +101,7 @@ namespace OpaMenu.Application.Common.Exceptions
             Code = commonResourceCode;
         }
 
-        /// <summary>
-        /// ApiException constructor using CommonLocalization to initialize the error message
-        /// </summary>
-        /// <param name="innerException"></param>
-        /// <param name="httpStatusCodeResponse"></param>
-        /// <param name="cultureInfo"></param>
-        /// <param name="commonResourceCode"></param>
-        /// <param name="args"></param>
+
         internal ApiException(Exception innerException, HttpStatusCode httpStatusCodeResponse, CultureInfo cultureInfo,
             string commonResourceCode, params object[] args) : base(
             CommonLocalization.Get(commonResourceCode, cultureInfo, args), innerException)
@@ -122,19 +111,10 @@ namespace OpaMenu.Application.Common.Exceptions
         }
         #endregion Internal CommonLocalization constructor
 
-        /// <summary>
-        /// ApiException StatusCodeResponse
-        /// </summary>
         public HttpStatusCode HttpStatusCodeResponse { get; set; }
 
-        /// <summary>
-        /// Code propertie
-        /// </summary>
         public string Code { get; set; }
 
-        /// <summary>
-        /// List of errors
-        /// </summary>
         public IEnumerable<ErrorDTO> Errors { get; set; }
     }
 }

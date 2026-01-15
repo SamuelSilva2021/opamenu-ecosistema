@@ -1,6 +1,5 @@
 
-using OpaMenu.Application.DTOs;
-using OpaMenu.Application.Features.Categories;
+using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Domain.DTOs.Category;
 
 namespace OpaMenu.Application.Common.Interfaces;

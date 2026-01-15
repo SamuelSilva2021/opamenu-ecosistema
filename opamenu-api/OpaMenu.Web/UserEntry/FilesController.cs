@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using OpaMenu.Application.Common.Interfaces;
 using OpaMenu.Application.Common.Models;
 using OpaMenu.Application.DTOs;
+using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Domain.DTOs;
 
 namespace OpaMenu.Web.UserEntry;

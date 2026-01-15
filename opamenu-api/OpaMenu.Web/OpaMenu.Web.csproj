@@ -1,10 +1,17 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Models\Enuns\**" />
+    <Content Remove="Models\Enuns\**" />
+    <EmbeddedResource Remove="Models\Enuns\**" />
+    <None Remove="Models\Enuns\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CloudinaryDotNet" Version="1.27.9" />
@@ -26,11 +33,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\Enuns\" />
     <Folder Include="wwwroot\uploads\" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\opamenu-commons\OpaMenu.Commons\OpaMenu.Commons.csproj" />
+    <ProjectReference Include="..\..\opamenu-commons\OpaMenu.Infrastructure.Shared\OpaMenu.Infrastructure.Shared.csproj" />
     <ProjectReference Include="..\OpaMenu.Application\OpaMenu.Application.csproj" />
     <ProjectReference Include="..\OpaMenu.Domain\OpaMenu.Domain.csproj" />
     <ProjectReference Include="..\OpaMenu.Infrastructure\OpaMenu.Infrastructure.csproj" />

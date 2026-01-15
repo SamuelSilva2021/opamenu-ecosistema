@@ -14,7 +14,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\opamenu-commons\OpaMenu.Commons\OpaMenu.Commons.csproj" />
+    <ProjectReference Include="..\..\opamenu-commons\OpaMenu.Infrastructure.Shared\OpaMenu.Infrastructure.Shared.csproj" />
     <ProjectReference Include="..\OpaMenu.Domain\OpaMenu.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Common\Builders\" />
   </ItemGroup>
 
   <PropertyGroup>

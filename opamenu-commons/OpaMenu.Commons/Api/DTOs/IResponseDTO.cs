@@ -1,6 +1,10 @@
-using OpaMenu.Domain.DTOs;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace OpaMenu.Application.Interfaces
+namespace OpaMenu.Commons.Api.DTOs
 {
     public interface IResponseDTO
     {

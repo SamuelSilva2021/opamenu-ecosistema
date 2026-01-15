@@ -1,7 +1,4 @@
 ﻿using AutoMapper;
-using OpaMenu.Application.Common.Builders;
-using OpaMenu.Application.Common.Interfaces;
-using OpaMenu.Application.DTOs;
 using OpaMenu.Application.Services.Interfaces;
 using OpaMenu.Domain.DTOs.Category;
 using OpaMenu.Domain.DTOs.Coupon;
@@ -10,6 +7,8 @@ using OpaMenu.Domain.DTOs.Product;
 using OpaMenu.Domain.DTOs.Tenant;
 using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Domain.Interfaces;
+using OpaMenu.Commons.Api.DTOs;
+using OpaMenu.Commons.Api.Commons;
 
 namespace OpaMenu.Application.Services
 {

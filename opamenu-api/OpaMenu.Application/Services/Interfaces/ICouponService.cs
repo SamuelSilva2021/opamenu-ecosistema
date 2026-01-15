@@ -1,6 +1,7 @@
 using OpaMenu.Domain.DTOs.Coupon;
 using OpaMenu.Domain.DTOs.Coupon;
 using OpaMenu.Application.DTOs;
+using OpaMenu.Commons.Api.DTOs;
 
 namespace OpaMenu.Application.Services.Interfaces;
 

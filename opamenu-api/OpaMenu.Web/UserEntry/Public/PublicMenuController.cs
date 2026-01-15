@@ -4,6 +4,7 @@ using OpaMenu.Application.Common.Interfaces;
 using OpaMenu.Application.DTOs;
 using OpaMenu.Application.Services;
 using OpaMenu.Application.Services.Interfaces;
+using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Domain.DTOs;
 using OpaMenu.Domain.DTOs.Category;
 using OpaMenu.Domain.DTOs.Coupon;
