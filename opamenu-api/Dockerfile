@@ -3,7 +3,8 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
 # Copiar csproj do projeto compartilhado
-COPY ["opamenu-shared-infrastructure/OpaMenu.Infrastructure.Shared/OpaMenu.Infrastructure.Shared.csproj", "opamenu-shared-infrastructure/OpaMenu.Infrastructure.Shared/"]
+COPY ["opamenu-commons/OpaMenu.Infrastructure.Shared/OpaMenu.Infrastructure.Shared.csproj", "opamenu-commons/OpaMenu.Infrastructure.Shared/"]
+COPY ["opamenu-commons/OpaMenu.Commons/OpaMenu.Commons.csproj", "opamenu-commons/OpaMenu.Commons/"]
 
 # Copiar csprojs do opamenu-api
 COPY ["opamenu-api/OpaMenu.Web/OpaMenu.Web.csproj", "opamenu-api/OpaMenu.Web/"]
