@@ -51,8 +51,6 @@ export const useAuthStore = create<AuthStore>()(
         isLoading: false,
 
         initialize: async () => {
-          console.log('🔧 Store: initialize() chamado (versão limpa)');
-          
           try {
             const storedToken = getToken();
             const storedUser = getStoredUser();
@@ -79,7 +77,6 @@ export const useAuthStore = create<AuthStore>()(
               if (storedUser.permissions) {
                 usePermissionStore.getState().setPermissions(storedUser.permissions);
               } else {
-                console.log('⚠️ Usuário armazenado sem permissões');
                 usePermissionStore.getState().clearPermissions();
               }
             } else {
@@ -88,11 +85,6 @@ export const useAuthStore = create<AuthStore>()(
             }
 
             set(initialState);
-            console.log('✅ Store: Estado inicial definido', {
-              isAuthenticated: initialState.isAuthenticated,
-              hasUser: !!initialState.user,
-              tokenValid: !!tokenValid
-            });
 
             const handleTokenExpired = () => {
               get().logout();
@@ -168,8 +160,6 @@ export const useAuthStore = create<AuthStore>()(
                     token: accessToken,
                     isLoading: false,
                   });
-
-                  console.log('Login successful, user:', authUser);
                 } else {
                   throw new Error('Não foi possível obter informações do usuário');
                 }
@@ -191,8 +181,6 @@ export const useAuthStore = create<AuthStore>()(
         },
 
         logout: () => {
-          console.log('🚪 Store: Fazendo logout...');
-          
           window.removeEventListener('auth:token-expired', () => {});
           
           usePermissionStore.getState().clearPermissions();
@@ -204,8 +192,6 @@ export const useAuthStore = create<AuthStore>()(
             token: null,
             isLoading: false,
           });
-          
-          console.log('✅ Store: Logout concluído');
         },
 
         setUser: (user: AuthUser | null) => {
@@ -223,7 +209,6 @@ export const useAuthStore = create<AuthStore>()(
         refreshToken: async () => {
           try {
             // TODO: Implementar refresh token quando a API estiver pronta
-            console.log('Refresh token not implemented yet');
           } catch (error) {
             // Se falhar o refresh, faz logout
             get().logout();

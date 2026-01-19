@@ -57,7 +57,6 @@ export class AccessGroupService {
           totalPages: raw.totalPages ?? 0,
         };
 
-        console.log('✅ AccessGroupService: Grupos encontrados (formato direto):', normalized.items.length);
         return normalized;
       }
 
@@ -76,7 +75,6 @@ export class AccessGroupService {
           totalPages: raw.data.totalPages ?? 0,
         };
 
-        console.log('✅ AccessGroupService: Grupos encontrados (formato envelopado):', normalized.items.length);
         return normalized;
       }
 
@@ -93,7 +91,6 @@ export class AccessGroupService {
         'status' in error &&
         (error as { status?: number }).status === 404
       ) {
-        console.log('📝 AccessGroupService: 404 - Nenhum grupo encontrado (normal)');
         return {
           items: [],
           page: 1,

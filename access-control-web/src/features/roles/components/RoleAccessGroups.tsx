@@ -94,12 +94,6 @@ export const RoleAccessGroups = ({
         AccessGroupService.getAllAccessGroups(),
       ]);
 
-      console.log('🔄 RoleAccessGroups: Dados carregados:', {
-        role: role.name,
-        currentGroups: currentGroups.length,
-        availableGroups: availableGroups.length,
-      });
-
       setRoleGroups(currentGroups);
       setAllGroups(availableGroups);
       
@@ -143,12 +137,6 @@ export const RoleAccessGroups = ({
       // Grupos para remover (não selecionados que estavam associados)
       const toRemove = Array.from(currentGroupIds).filter(id => !newSelectedIds.has(id));
 
-      console.log('💾 RoleAccessGroups: Salvando alterações:', {
-        role: role.name,
-        toAdd: toAdd.length,
-        toRemove: toRemove.length,
-      });
-
       // Executar operações
       const promises = [];
       
@@ -162,7 +150,6 @@ export const RoleAccessGroups = ({
 
       if (promises.length > 0) {
         await Promise.all(promises);
-        console.log('✅ RoleAccessGroups: Grupos de acesso atualizados com sucesso');
       }
 
       onClose();

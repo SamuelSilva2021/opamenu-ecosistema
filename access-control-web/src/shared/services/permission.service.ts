@@ -108,7 +108,6 @@ export class PermissionService {
       permissions = apiData.data;
     }
     
-    console.log('🔍 Debug - Permissions extraídas:', permissions);
     
     // Aplicar filtros no frontend se necessário
     let filteredPermissions = permissions;
@@ -254,7 +253,6 @@ export class PermissionService {
   static async createPermission(permission: CreatePermissionRequest): Promise<Permission> {
     const response = await httpClient.post<Permission | ApiResponse<Permission>>(this.BASE_URL, permission);
     
-    console.log('🔍 Debug - Resposta completa da API (Create Permission):', response);
     
     if ('succeeded' in response) {
       if (!response.succeeded || !response.data) {
@@ -272,7 +270,6 @@ export class PermissionService {
   static async updatePermission(id: string, permission: UpdatePermissionRequest): Promise<Permission> {
     const response = await httpClient.put<Permission | ApiResponse<Permission>>(`${this.BASE_URL}/${id}`, permission);
     
-    console.log('🔍 Debug - Resposta completa da API (Update Permission):', response);
     
     if ('succeeded' in response) {
       if (!response.succeeded || !response.data) {
@@ -290,7 +287,6 @@ export class PermissionService {
   static async deletePermission(id: string): Promise<boolean> {
     const response = await httpClient.delete<boolean | ApiResponse<boolean>>(`${this.BASE_URL}/${id}`);
     
-    console.log('🔍 Debug - Resposta da API (Delete Permission):', response);
     
     if (typeof response === 'object' && 'succeeded' in response) {
       if (!response.succeeded) {

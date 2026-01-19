@@ -44,7 +44,6 @@ export class PermissionOperationService {
       { params }
     );
     
-    console.log('🔍 Debug - Resposta completa da API (Permission Operations):', response);
     
     let apiData: PermissionOperationsApiResponse;
     
@@ -57,7 +56,6 @@ export class PermissionOperationService {
       apiData = response as PermissionOperationsApiResponse;
     }
     
-    console.log('🔍 Debug - Dados da API (Permission Operations):', apiData);
     
     // Verifica se apiData tem a propriedade items
     if (!apiData || !apiData.items) {

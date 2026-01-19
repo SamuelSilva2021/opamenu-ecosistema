@@ -160,11 +160,9 @@ export class OperationService {
    */
   static async createOperation(data: CreateOperationRequest): Promise<Operation> {
     try {
-      console.log('🔄 OperationService: Enviando dados para criação:', data);
       
       const response = await httpClient.post<Operation | ApiResponse<Operation>>(this.BASE_URL, data);
       
-      console.log('🔍 OperationService: Resposta da API:', response);
       
       if ('succeeded' in response) {
         if (!response.succeeded) {
@@ -184,13 +182,11 @@ export class OperationService {
           throw new Error('API não retornou dados válidos para a operação criada');
         }
         
-        console.log('✅ OperationService: Operação criada com sucesso:', response.data);
         return response.data;
       }
       
       // Resposta direta
       const operation = response as Operation;
-      console.log('✅ OperationService: Operação criada com sucesso (direto):', operation);
       return operation;
       
     } catch (error: any) {

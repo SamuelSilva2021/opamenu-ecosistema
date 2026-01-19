@@ -77,22 +77,12 @@ export const PermissionForm: React.FC<PermissionFormProps> = ({
   // Preenche o formulário quando editing
   useEffect(() => {
     if (permission) {
-      console.log('🔍 Debug - Carregando permissão para edição:', permission);
-      
       // Extrai os IDs das operações se existirem
       const operationIds: string[] = permission.operations 
         ? permission.operations.map((op: Operation) => op.id)
         : [];
       
       setFormData({
-        tenantId: permission.tenantId || '',
-        roleId: permission.roleId || '',
-        moduleId: permission.moduleId || '',
-        operationIds: operationIds,
-        isActive: permission.isActive,
-      });
-      
-      console.log('🔍 Debug - FormData preenchido:', {
         tenantId: permission.tenantId || '',
         roleId: permission.roleId || '',
         moduleId: permission.moduleId || '',

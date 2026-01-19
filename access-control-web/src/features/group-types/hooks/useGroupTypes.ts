@@ -95,15 +95,11 @@ export const useGroupTypes = (options: UseGroupTypesOptions = {}): UseGroupTypes
     setState(prev => ({ ...prev, loading: true, error: null }));
 
     try {
-      console.log('🚀 Iniciando criação de group type:', data);
       const newGroupType = await GroupTypeService.createGroupType(data);
-      console.log('✅ Group type criado com sucesso:', newGroupType);
       
       // Atualiza a lista local
       setState(prev => {
-        console.log('📋 Lista antes da criação:', prev.groupTypes);
         const updatedList = [newGroupType, ...prev.groupTypes];
-        console.log('📋 Lista depois da criação:', updatedList);
         
         return {
           ...prev,
@@ -131,20 +127,15 @@ export const useGroupTypes = (options: UseGroupTypesOptions = {}): UseGroupTypes
     setState(prev => ({ ...prev, loading: true, error: null }));
 
     try {
-      console.log('🚀 Iniciando atualização:', { id, data });
       
       const updatedGroupType = await GroupTypeService.updateGroupType(id, data);
       
-      console.log('✅ Tipo atualizado retornado da API:', updatedGroupType);
       
       // Atualiza a lista local
       setState(prev => {
-        console.log('📋 Lista antes da atualização:', prev.groupTypes);
         const updatedList = prev.groupTypes.map(gt => 
           gt.id === id ? updatedGroupType : gt
         );
-        console.log('📋 Lista depois da atualização:', updatedList);
-        console.log('🔍 Item encontrado para atualizar:', prev.groupTypes.find(gt => gt.id === id));
         
         return {
           ...prev,
@@ -153,7 +144,7 @@ export const useGroupTypes = (options: UseGroupTypesOptions = {}): UseGroupTypes
         };
       });
 
-      console.log('✅ Success: Tipo de grupo atualizado com sucesso!');
+      logger.info('✅ Success: Tipo de grupo atualizado com sucesso!');
       return updatedGroupType;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro ao atualizar tipo de grupo';
@@ -181,7 +172,7 @@ export const useGroupTypes = (options: UseGroupTypesOptions = {}): UseGroupTypes
         loading: false,
       }));
 
-      console.log('✅ Success: Tipo de grupo removido com sucesso!');
+      logger.info('✅ Success: Tipo de grupo removido com sucesso!');
       return true;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro ao remover tipo de grupo';

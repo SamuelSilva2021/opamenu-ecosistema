@@ -189,7 +189,6 @@ export const AccessGroupsList = ({
               size="small"
               onClick={(e) => {
                 e.stopPropagation();
-                console.log('Visualizar:', row.name);
               }}
             >
               <ViewIcon />

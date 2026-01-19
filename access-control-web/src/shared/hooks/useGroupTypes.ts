@@ -93,19 +93,15 @@ export const useGroupTypes = (): UseGroupTypesReturn => {
   const createGroupType = useCallback(async (data: CreateGroupTypeRequest): Promise<GroupType | null> => {
     try {
       setError(null);
-      console.log('🚀 Iniciando criação de group type:', data);
       
       const newGroupType = await executeCreate<GroupType>(() => 
         GroupTypeService.createGroupType(data)
       );
       
-      console.log('✅ Group type criado com sucesso:', newGroupType);
-      
       if (newGroupType) {
         // Adiciona o novo item na lista
         setGroupTypes(prev => {
           const updated = [newGroupType, ...prev];
-          console.log('📋 Lista atualizada:', updated);
           return updated;
         });
         return newGroupType;
@@ -126,13 +122,10 @@ export const useGroupTypes = (): UseGroupTypesReturn => {
   const updateGroupType = useCallback(async (id: string, data: UpdateGroupTypeRequest): Promise<GroupType | null> => {
     try {
       setError(null);
-      console.log('🚀 Iniciando atualização de group type:', { id, data });
       
       const updatedGroupType = await executeUpdate<GroupType>(() => 
         GroupTypeService.updateGroupType(id, data)
       );
-      
-      console.log('✅ Group type atualizado com sucesso:', updatedGroupType);
       
       if (updatedGroupType) {
         // Atualiza o item na lista
@@ -140,10 +133,6 @@ export const useGroupTypes = (): UseGroupTypesReturn => {
           const updated = prev.map(item => 
             item.id === id ? updatedGroupType : item
           );
-          console.log('📋 Lista antes da atualização:', prev);
-          console.log('📋 Lista depois da atualização:', updated);
-          console.log('🔍 Item encontrado para atualizar:', prev.find(item => item.id === id));
-          console.log('🔍 Item atualizado:', updatedGroupType);
           return updated;
         });
         return updatedGroupType;

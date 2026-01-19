@@ -41,8 +41,6 @@ class HttpClient {
       (error) => {
         // Tratamento especial para 401 (token expirado) SEM reload
         if (error.response?.status === HTTP_STATUS.UNAUTHORIZED) {
-          console.log('🔐 Token expirado detectado - fazendo logout suave...');
-          
           // Só faz logout uma vez para evitar loops
           if (!isLoggingOut) {
             isLoggingOut = true;

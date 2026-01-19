@@ -52,7 +52,6 @@ export const AppHeader = ({ open, onMenuClick }: AppHeaderProps) => {
 
   const handleSettings = () => {
     // TODO: Navegar para configurações
-    console.log('🔧 Abrir configurações');
     handleMenuClose();
   };
 

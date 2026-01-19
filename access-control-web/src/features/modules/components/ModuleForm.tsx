@@ -140,10 +140,6 @@ export const ModuleForm = ({
       isActive: formData.isActive,
     };
 
-    console.log('📤 Enviando dados do módulo:', {
-      ...submitData,
-      key: `"${submitData.key}"` // Para ver exatamente o que está sendo enviado (mudança: moduleKey → key)
-    });
     onSubmit(submitData);
   };
 

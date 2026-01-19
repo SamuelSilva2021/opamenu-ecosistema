@@ -55,11 +55,9 @@ export const ModulesPage = () => {
   const handleDialogSubmit = async (data: CreateModuleRequest | UpdateModuleRequest) => {
     try {
       if (editingModule) {
-        const result = await updateModule(editingModule.id, data as UpdateModuleRequest);
-        console.log('✅ Module update result:', result);
+        await updateModule(editingModule.id, data as UpdateModuleRequest);
       } else {
-        const result = await createModule(data as CreateModuleRequest);
-        console.log('✅ Module create result:', result);
+        await createModule(data as CreateModuleRequest);
       }
       // Se chegou até aqui, a operação foi bem-sucedida
       setDialogOpen(false);

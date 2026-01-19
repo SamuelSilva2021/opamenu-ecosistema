@@ -77,14 +77,10 @@ export const useRoles = (options: UseRolesOptions = {}): UseRolesResult => {
     setError(null);
 
     try {
-      console.log('🔄 useRoles: Carregando roles...', { page, pageSize });
-      
       const response = await RoleService.getRoles({
         page,
         limit: pageSize
       });
-
-      console.log('✅ useRoles: Roles carregados:', response);
 
       setRoles(response.items || []);
       setCurrentPage(response.page || page);
@@ -108,12 +104,8 @@ export const useRoles = (options: UseRolesOptions = {}): UseRolesResult => {
     setError(null);
 
     try {
-      console.log('🔄 useRoles: Criando novo role...', roleData);
-      
       const newRole = await RoleService.createRole(roleData);
       
-      console.log('✅ useRoles: Role criado:', newRole);
-
       // Recarrega a lista para refletir mudanças
       await loadRoles(currentPage);
       
@@ -136,12 +128,8 @@ export const useRoles = (options: UseRolesOptions = {}): UseRolesResult => {
     setError(null);
 
     try {
-      console.log('🔄 useRoles: Atualizando role...', { id, roleData });
-      
       const updatedRole = await RoleService.updateRole(id, roleData);
       
-      console.log('✅ useRoles: Role atualizado:', updatedRole);
-
       // Atualiza o role na lista local
       setRoles(prev => prev.map(role => 
         role.id === id ? updatedRole : role
@@ -166,12 +154,8 @@ export const useRoles = (options: UseRolesOptions = {}): UseRolesResult => {
     setError(null);
 
     try {
-      console.log('🔄 useRoles: Removendo role...', id);
-      
       await RoleService.deleteRole(id);
       
-      console.log('✅ useRoles: Role removido:', id);
-
       // Remove o role da lista local
       setRoles(prev => prev.filter(role => role.id !== id));
       
@@ -201,15 +185,8 @@ export const useRoles = (options: UseRolesOptions = {}): UseRolesResult => {
     setError(null);
 
     try {
-      console.log('🔄 useRoles: Alternando status do role...', { 
-        id: role.id, 
-        currentStatus: role.isActive 
-      });
-      
       const updatedRole = await RoleService.toggleRoleStatus(role);
       
-      console.log('✅ useRoles: Status do role alterado:', updatedRole);
-
       // Atualiza o role na lista local
       setRoles(prev => prev.map(r => 
         r.id === role.id ? updatedRole : r
@@ -238,11 +215,8 @@ export const useRoles = (options: UseRolesOptions = {}): UseRolesResult => {
    */
   const getRoleAccessGroups = useCallback(async (roleId: string): Promise<AccessGroup[]> => {
     try {
-      console.log('🔄 useRoles: Buscando grupos de acesso do role...', roleId);
-      
       const groups = await RoleService.getAccessGroupsByRole(roleId);
       
-      console.log('✅ useRoles: Grupos de acesso encontrados:', groups.length);
       return groups;
       
     } catch (err: any) {
@@ -256,11 +230,7 @@ export const useRoles = (options: UseRolesOptions = {}): UseRolesResult => {
    */
   const assignAccessGroupsToRole = useCallback(async (roleId: string, accessGroupIds: string[]): Promise<void> => {
     try {
-      console.log('🔄 useRoles: Atribuindo grupos de acesso ao role...', { roleId, count: accessGroupIds.length });
-      
       await RoleService.assignAccessGroupsToRole(roleId, accessGroupIds);
-      
-      console.log('✅ useRoles: Grupos de acesso atribuídos com sucesso');
       
     } catch (err: any) {
       console.error('❌ useRoles: Erro ao atribuir grupos de acesso:', err);
@@ -273,11 +243,7 @@ export const useRoles = (options: UseRolesOptions = {}): UseRolesResult => {
    */
   const removeAccessGroupsFromRole = useCallback(async (roleId: string, accessGroupIds: string[]): Promise<void> => {
     try {
-      console.log('🔄 useRoles: Removendo grupos de acesso do role...', { roleId, count: accessGroupIds.length });
-      
       await RoleService.removeAccessGroupsFromRole(roleId, accessGroupIds);
-      
-      console.log('✅ useRoles: Grupos de acesso removidos com sucesso');
       
     } catch (err: any) {
       console.error('❌ useRoles: Erro ao remover grupos de acesso:', err);
@@ -292,11 +258,8 @@ export const useRoles = (options: UseRolesOptions = {}): UseRolesResult => {
    */
   const getRolePermissions = useCallback(async (roleId: string): Promise<Permission[]> => {
     try {
-      console.log('🔄 useRoles: Buscando permissões do role...', roleId);
-      
       const permissions = await RoleService.getPermissionsByRole(roleId);
       
-      console.log('✅ useRoles: Permissões encontradas:', permissions.length);
       return permissions;
       
     } catch (err: any) {
@@ -310,11 +273,7 @@ export const useRoles = (options: UseRolesOptions = {}): UseRolesResult => {
    */
   const assignPermissionsToRole = useCallback(async (roleId: string, permissionIds: string[]): Promise<void> => {
     try {
-      console.log('🔄 useRoles: Atribuindo permissões ao role...', { roleId, count: permissionIds.length });
-      
       await RoleService.assignPermissionsToRole(roleId, permissionIds);
-      
-      console.log('✅ useRoles: Permissões atribuídas com sucesso');
       
     } catch (err: any) {
       console.error('❌ useRoles: Erro ao atribuir permissões:', err);
@@ -327,11 +286,7 @@ export const useRoles = (options: UseRolesOptions = {}): UseRolesResult => {
    */
   const removePermissionsFromRole = useCallback(async (roleId: string, permissionIds: string[]): Promise<void> => {
     try {
-      console.log('🔄 useRoles: Removendo permissões do role...', { roleId, count: permissionIds.length });
-      
       await RoleService.removePermissionsFromRole(roleId, permissionIds);
-      
-      console.log('✅ useRoles: Permissões removidas com sucesso');
       
     } catch (err: any) {
       console.error('❌ useRoles: Erro ao remover permissões:', err);

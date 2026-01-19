@@ -57,11 +57,9 @@ export const OperationsPage = () => {
     try {
       if (editingOperation) {
         const result = await updateOperation(editingOperation.id, data as UpdateOperationRequest);
-        console.log('✅ Update result:', result);
         setSuccessMessage('Operação atualizada com sucesso!');
       } else {
         const result = await createOperation(data as CreateOperationRequest);
-        console.log('✅ Create result:', result);
         setSuccessMessage('Operação criada com sucesso!');
       }
       

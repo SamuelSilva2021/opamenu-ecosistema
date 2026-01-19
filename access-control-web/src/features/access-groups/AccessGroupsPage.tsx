@@ -58,12 +58,6 @@ export const AccessGroupsPage = () => {
     );
   }
 
-  console.log('🔄 AccessGroupsPage renderizou com:', {
-    accessGroupsCount: accessGroups.length,
-    loading,
-    error: !!error
-  });
-
   const handleCreateAccessGroup = () => {
     if (!canCreate) {
       alert('Você não tem permissão para criar grupos de acesso.');
@@ -105,7 +99,7 @@ export const AccessGroupsPage = () => {
 	};
 
   const handleToggleStatus = async (accessGroup: AccessGroup) => {
-    console.log(`🔄 Toggle status: ${accessGroup.name}`);
+    // TODO: Implementar lógica de toggle status
   };
 
   const handlePageChange = async (page: number) => {
@@ -120,11 +114,9 @@ export const AccessGroupsPage = () => {
   const handleDialogSubmit = async (data: CreateAccessGroupRequest | UpdateAccessGroupRequest) => {
     try {
       if (editingAccessGroup) {
-        const result = await updateAccessGroup(editingAccessGroup.id, data as UpdateAccessGroupRequest);
-        console.log('✏️ Update result:', result);
+        await updateAccessGroup(editingAccessGroup.id, data as UpdateAccessGroupRequest);
       } else {
-        const result = await createAccessGroup(data as CreateAccessGroupRequest);
-        console.log('➕ Create result:', result);
+        await createAccessGroup(data as CreateAccessGroupRequest);
       }
       
       setDialogOpen(false);

@@ -37,8 +37,6 @@ export const OperationsTestPage = () => {
     setSuccess(null);
     
     try {
-      console.log('🔄 Testando API de Operations...');
-      
       // Usando fetch diretamente para testar a rota
       const response = await fetch('/api/operation', {
         method: 'GET',
@@ -49,15 +47,11 @@ export const OperationsTestPage = () => {
         },
       });
 
-      console.log('📡 Response status:', response.status);
-      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
-
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();
-      console.log('📦 Response data:', data);
 
       // Verifica se a resposta tem a estrutura esperada
       if (data && Array.isArray(data.data)) {

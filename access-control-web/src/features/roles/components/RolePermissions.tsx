@@ -122,20 +122,12 @@ export const RolePermissions: React.FC<RolePermissionsProps> = ({
     setError(null);
 
     try {
-      console.log('🔄 RolePermissions: Carregando dados...', role.id);
-
       // Carrega dados em paralelo
       const [permissions, modules, currentRolePermissions] = await Promise.all([
         PermissionService.getPermissions(),
         ModuleService.getModules(),
         getRolePermissions(role.id)
       ]);
-
-      console.log('✅ RolePermissions: Dados carregados', {
-        permissions: permissions.data?.length || 0,
-        modules: modules.data?.length || 0,
-        rolePermissions: currentRolePermissions.length
-      });
 
       setAllPermissions(permissions.data || []);
       setAllModules(modules.data || []);
@@ -232,12 +224,6 @@ export const RolePermissions: React.FC<RolePermissionsProps> = ({
     setError(null);
 
     try {
-      console.log('🔄 RolePermissions: Salvando alterações...', {
-        roleId: role.id,
-        selectedCount: selectedPermissions.size,
-        currentCount: rolePermissions.length
-      });
-
       const currentPermissionIds = new Set(rolePermissions.map(p => p.id));
       const newSelectedIds = Array.from(selectedPermissions);
 
@@ -251,12 +237,10 @@ export const RolePermissions: React.FC<RolePermissionsProps> = ({
       const promises: Promise<void>[] = [];
 
       if (toAdd.length > 0) {
-        console.log('➕ RolePermissions: Adicionando permissões:', toAdd.length);
         promises.push(assignPermissionsToRole(role.id, toAdd));
       }
 
       if (toRemove.length > 0) {
-        console.log('➖ RolePermissions: Removendo permissões:', toRemove.length);
         promises.push(removePermissionsFromRole(role.id, toRemove));
       }
 
@@ -268,7 +252,6 @@ export const RolePermissions: React.FC<RolePermissionsProps> = ({
         setRolePermissions(updatedPermissions);
       }
 
-      console.log('✅ RolePermissions: Alterações salvas com sucesso');
       onClose();
 
     } catch (err: any) {

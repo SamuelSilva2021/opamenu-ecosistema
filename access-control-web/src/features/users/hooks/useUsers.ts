@@ -83,14 +83,10 @@ export const useUsers = (options: UseUsersOptions = {}): UseUsersResult => {
     setError(null);
 
     try {
-      console.log('🔄 useUsers: Carregando usuários...', { page, pageSize });
-      
       const response = await UserService.getUsers({
         page,
         limit: pageSize
       });
-
-      console.log('✅ useUsers: Usuários carregados:', response);
 
       setUsers(response.items || []);
       setCurrentPage(response.page || page);
@@ -114,11 +110,7 @@ export const useUsers = (options: UseUsersOptions = {}): UseUsersResult => {
     setError(null);
 
     try {
-      console.log('🔄 useUsers: Criando usuário...', { ...userData, password: '[HIDDEN]' });
-      
       const newUser = await UserService.createUser(userData);
-      
-      console.log('✅ useUsers: Usuário criado:', newUser);
       
       // Adiciona o novo usuário à lista local
       setUsers(prevUsers => [newUser, ...prevUsers]);
@@ -143,11 +135,7 @@ export const useUsers = (options: UseUsersOptions = {}): UseUsersResult => {
     setError(null);
 
     try {
-      console.log('🔄 useUsers: Atualizando usuário:', id, userData);
-      
       const updatedUser = await UserService.updateUser(id, userData);
-      
-      console.log('✅ useUsers: Usuário atualizado:', updatedUser);
       
       // Atualiza o usuário na lista local
       setUsers(prevUsers => 
@@ -173,11 +161,7 @@ export const useUsers = (options: UseUsersOptions = {}): UseUsersResult => {
     setError(null);
 
     try {
-      console.log('🔄 useUsers: Removendo usuário:', id);
-      
       await UserService.deleteUser(id);
-      
-      console.log('✅ useUsers: Usuário removido com sucesso');
       
       // Remove o usuário da lista local
       setUsers(prevUsers => prevUsers.filter(user => user.id !== id));
@@ -200,11 +184,7 @@ export const useUsers = (options: UseUsersOptions = {}): UseUsersResult => {
     setError(null);
 
     try {
-      console.log('🔄 useUsers: Alterando status do usuário:', user.id, 'para:', user.status === UserAccountStatus.Active ? UserAccountStatus.Inactive : UserAccountStatus.Active);
-      
       const updatedUser = await UserService.toggleUserStatus(user);
-      
-      console.log('✅ useUsers: Status alterado:', updatedUser);
       
       // Atualiza o usuário na lista local
       setUsers(prevUsers => 
@@ -253,11 +233,7 @@ export const useUsers = (options: UseUsersOptions = {}): UseUsersResult => {
     setError(null);
 
     try {
-      console.log('🔄 useUsers: Iniciando fluxo esqueci senha:', email);
-      
       await UserService.forgotPassword(email);
-      
-      console.log('✅ useUsers: Email de recuperação enviado');
       
     } catch (err: any) {
       console.error('❌ useUsers: Erro ao enviar email de recuperação:', err);
@@ -276,11 +252,7 @@ export const useUsers = (options: UseUsersOptions = {}): UseUsersResult => {
     setError(null);
 
     try {
-      console.log('🔄 useUsers: Resetando senha:', email);
-      
       await UserService.resetPassword(email, token, newPassword);
-      
-      console.log('✅ useUsers: Senha resetada com sucesso');
       
     } catch (err: any) {
       console.error('❌ useUsers: Erro ao resetar senha:', err);
@@ -301,11 +273,8 @@ export const useUsers = (options: UseUsersOptions = {}): UseUsersResult => {
     setError(null);
 
     try {
-      console.log('🔄 useUsers: Buscando grupos do usuário:', userId);
-      
       const groups = await UserService.getUserAccessGroups(userId);
       
-      console.log('✅ useUsers: Grupos encontrados:', groups.length);
       return groups;
       
     } catch (err: any) {
@@ -325,11 +294,7 @@ export const useUsers = (options: UseUsersOptions = {}): UseUsersResult => {
     setError(null);
 
     try {
-      console.log('🔄 useUsers: Atribuindo grupos:', userId, accessGroupIds);
-      
       await UserService.assignUserAccessGroups(userId, accessGroupIds);
-      
-      console.log('✅ useUsers: Grupos atribuídos com sucesso');
       
     } catch (err: any) {
       console.error('❌ useUsers: Erro ao atribuir grupos:', err);
@@ -348,11 +313,7 @@ export const useUsers = (options: UseUsersOptions = {}): UseUsersResult => {
     setError(null);
 
     try {
-      console.log('🔄 useUsers: Removendo grupo:', userId, groupId);
-      
       await UserService.revokeUserAccessGroup(userId, groupId);
-      
-      console.log('✅ useUsers: Grupo removido com sucesso');
       
     } catch (err: any) {
       console.error('❌ useUsers: Erro ao remover grupo:', err);

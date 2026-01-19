@@ -120,7 +120,6 @@ export class UserService {
       
       // Se for 404, retorna resultado vazio (normal para sistema novo)
       if (error.status === 404) {
-        console.log('📝 UserService: 404 - Nenhum usuário encontrado (normal)');
         return {
           items: [],
           page: 1,
@@ -161,7 +160,6 @@ export class UserService {
       console.error('💥 UserService: Erro ao buscar usuários ativos:', error);
       
       if (error.status === 404) {
-        console.log('📝 UserService: 404 - Nenhum usuário ativo encontrado');
         return [];
       }
       
@@ -240,7 +238,6 @@ export class UserService {
    */
   static async updateUser(id: string, userData: UpdateUserAccountRequest): Promise<UserAccount> {
     try {
-      console.log('🔄 UserService: Atualizando usuário:', id, userData);
       
       // Usando <any> e cast para lidar com retorno direto ou envelopado
       const response = await httpClient.put<UserAccount | ApiResponse<UserAccount>>(`${API_ENDPOINTS.USERS}/${id}`, userData);
@@ -406,7 +403,6 @@ export class UserService {
    */
   static async assignUserAccessGroups(userId: string, accessGroupIds: string[]): Promise<boolean> {
     try {
-      console.log('🔄 UserService: Atribuindo grupos ao usuário:', userId, accessGroupIds);
       
       const response = await httpClient.post<boolean | ApiResponse<boolean>>(`${API_ENDPOINTS.USERS}/${userId}/access-groups`, {
         accessGroupIds
@@ -420,7 +416,6 @@ export class UserService {
         return response.data || true;
       }
 
-      console.log('✅ UserService: Grupos atribuídos com sucesso');
       return (response as unknown as boolean) || true;
       
     } catch (error: any) {
@@ -434,7 +429,6 @@ export class UserService {
    */
   static async revokeUserAccessGroup(userId: string, groupId: string): Promise<boolean> {
     try {
-      console.log('🔄 UserService: Removendo grupo do usuário:', userId, groupId);
       
       const response = await httpClient.delete<boolean | ApiResponse<boolean>>(`${API_ENDPOINTS.USERS}/${userId}/access-groups/${groupId}`);
 
@@ -446,7 +440,6 @@ export class UserService {
         return response.data || true;
       }
 
-      console.log('✅ UserService: Grupo removido com sucesso');
       return (response as unknown as boolean) || true;
       
     } catch (error: any) {
