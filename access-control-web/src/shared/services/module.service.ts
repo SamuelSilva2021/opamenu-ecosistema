@@ -1,4 +1,4 @@
-import type { PaginatedResponse, AccessGroupApiResponse } from '../types';
+import type { PaginatedResponse, ApiResponse } from '../types';
 import type { Module, CreateModuleRequest, UpdateModuleRequest } from '../types/permission.types';
 import { httpClient } from '../utils/http-client';
 import { API_ENDPOINTS } from '../constants';
@@ -12,51 +12,109 @@ interface QueryParams {
   sortOrder?: 'asc' | 'desc';
 }
 
+interface ModulesApiResponse {
+  items?: Module[];
+  page?: number;
+  limit?: number;
+  total?: number;
+  totalPages?: number;
+  currentPage?: number;
+  pageSize?: number;
+  succeeded?: boolean | null;
+  code?: number;
+  errors?: string[];
+}
+
+interface ModulesEnvelopeResponse {
+  data?: ModulesApiResponse;
+  succeeded?: boolean | null;
+  errors?: string[];
+}
+
 export class ModuleService {
   private static readonly BASE_URL = API_ENDPOINTS.MODULES;
 
   static async getModules(params?: QueryParams): Promise<PaginatedResponse<Module>> {
-    const response = await httpClient.get<AccessGroupApiResponse<Module>>(
+    const response = await httpClient.get<ModulesApiResponse | ModulesEnvelopeResponse>(
       this.BASE_URL,
       { params }
     );
         
-    const responseData = response.data;
-    const modules = Array.isArray(responseData?.items) ? responseData.items : [];
+    const raw = response as ModulesApiResponse & ModulesEnvelopeResponse;
+    
+    let apiData: ModulesApiResponse | undefined;
+    
+    // Verifica se a resposta é direta (formato novo)
+    if (raw && Array.isArray(raw.items)) {
+      apiData = raw;
+    } 
+    // Verifica se a resposta é envelopada (formato antigo/padrão)
+    else if (raw && raw.data && Array.isArray(raw.data.items)) {
+      if (raw.succeeded === false) {
+        const errorMsg = raw.errors?.join(', ') || 'API retornou succeeded=false';
+        throw new Error(errorMsg);
+      }
+      apiData = raw.data;
+    }
+    
+    if (!apiData || !apiData.items) {
+      throw new Error('Resposta da API inválida: propriedade items não encontrada');
+    }
+    
+    const page = apiData.page ?? apiData.currentPage ?? params?.page ?? 1;
+    const limit = apiData.limit ?? apiData.pageSize ?? params?.limit ?? 10;
+    const totalPages = apiData.totalPages ?? 1;
+    const total = apiData.total ?? 0;
     
     return {
-      data: modules,
-      totalCount: responseData?.total || 0,
-      pageNumber: responseData?.page || 1,
-      pageSize: responseData?.limit || 10,
-      totalPages: responseData?.totalPages || 1,
-      hasPreviousPage: (responseData?.page || 1) > 1,
-      hasNextPage: (responseData?.page || 1) < (responseData?.totalPages || 1),
+      data: apiData.items,
+      totalCount: total,
+      pageNumber: page,
+      pageSize: limit,
+      totalPages: totalPages,
+      hasPreviousPage: page > 1,
+      hasNextPage: page < totalPages,
     };
   }
 
   static async getModuleById(id: string): Promise<Module> {
     const response = await httpClient.get<Module>(`${this.BASE_URL}/${id}`);
-    return response.data;
+    return response;
   }
 
   static async createModule(data: CreateModuleRequest): Promise<Module> {
-    const response = await httpClient.post<Module>(
+    const response = await httpClient.post<Module | ApiResponse<Module>>(
       this.BASE_URL,
       data
     );
-    return response.data;
+    
+    if ('succeeded' in response) {
+      if (!response.succeeded) {
+        throw new Error(response.errors?.join(', ') || 'Erro ao criar módulo');
+      }
+      return response.data;
+    }
+    
+    return response as Module;
   }
 
   /**
    * Atualiza um módulo existente
    */
   static async updateModule(id: string, data: UpdateModuleRequest): Promise<Module> {
-    const response = await httpClient.put<Module>(
+    const response = await httpClient.put<Module | ApiResponse<Module>>(
       `${this.BASE_URL}/${id}`,
       data
     );
-    return response.data;
+    
+    if ('succeeded' in response) {
+      if (!response.succeeded) {
+        throw new Error(response.errors?.join(', ') || 'Erro ao atualizar módulo');
+      }
+      return response.data;
+    }
+    
+    return response as Module;
   }
 
   /**
@@ -89,19 +147,24 @@ export class ModuleService {
    * Alterna o status ativo/inativo de um módulo
    */
   static async toggleModuleStatus(id: string): Promise<Module> {
-    // Como a API não tem endpoint específico, faremos um patch manual
-    const module = await this.getModuleById(id);
-    const updatedModule = await this.updateModule(id, {
-      name: module.name,
-      description: module.description || '',
-      url: module.url || '',
-      key: module.key || '', // Mudança: moduleKey → key
-      code: module.code,
-      applicationId: module.applicationId,
-      moduleTypeId: module.moduleTypeId,
-      isActive: !module.isActive
-    });
+    const response = await httpClient.patch<Module | ApiResponse<Module>>(
+      `${this.BASE_URL}/${id}/toggle-status`,
+      {}
+    );
     
-    return updatedModule;
+    if ('succeeded' in response) {
+      if (!response.succeeded) {
+        throw new Error(response.errors?.join(', ') || 'Erro ao alternar status do módulo');
+      }
+      return response.data;
+    }
+    
+    const directResponse = response as Module;
+    if (directResponse && (directResponse.id || directResponse.key || directResponse.name)) {
+      return directResponse;
+    }
+    
+    console.error('❌ [ModuleService] Formato desconhecido:', response);
+    throw new Error('Falha ao alternar status: formato de resposta desconhecido');
   }
 }

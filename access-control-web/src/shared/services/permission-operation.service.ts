@@ -1,4 +1,4 @@
-import type { PaginatedResponse } from '../types';
+import type { PaginatedResponse, ApiResponse } from '../types';
 import type { 
   PermissionOperation, 
   CreatePermissionOperationRequest, 
@@ -39,20 +39,38 @@ export class PermissionOperationService {
    * Lista todas as relações permissão-operação com paginação
    */
   static async getPermissionOperations(params?: QueryParams): Promise<PaginatedResponse<PermissionOperation>> {
-    const response = await httpClient.get<PermissionOperationsApiResponse>(
+    const response = await httpClient.get<PermissionOperationsApiResponse | ApiResponse<PermissionOperationsApiResponse>>(
       this.BASE_URL,
       { params }
     );
     
-    console.log('🔍 Debug - Resposta completa da API (Permission Operations):', response.data);
+    console.log('🔍 Debug - Resposta completa da API (Permission Operations):', response);
     
-    // Os dados já vêm diretamente no formato correto
-    const apiData = response.data;
+    let apiData: PermissionOperationsApiResponse;
+    
+    if ('succeeded' in response) {
+      if (!response.succeeded) {
+        throw new Error(response.errors?.join(', ') || 'Erro ao buscar permission operations');
+      }
+      apiData = response.data;
+    } else {
+      apiData = response as PermissionOperationsApiResponse;
+    }
+    
     console.log('🔍 Debug - Dados da API (Permission Operations):', apiData);
     
     // Verifica se apiData tem a propriedade items
-    if (!apiData.items) {
-      throw new Error('Resposta da API inválida: propriedade items não encontrada');
+    if (!apiData || !apiData.items) {
+      // Se não tiver items, retorna vazio para evitar quebrar a tela
+      return {
+        data: [],
+        totalCount: 0,
+        pageNumber: 1,
+        pageSize: 10,
+        totalPages: 0,
+        hasPreviousPage: false,
+        hasNextPage: false
+      };
     }
     
     return {
@@ -70,58 +88,65 @@ export class PermissionOperationService {
    * Busca relação por ID
    */
   static async getPermissionOperationById(id: string): Promise<PermissionOperation> {
-    const response = await httpClient.get<PermissionOperation>(`${this.BASE_URL}/${id}`);
-    return response.data;
+    const response = await httpClient.get<PermissionOperation | ApiResponse<PermissionOperation>>(`${this.BASE_URL}/${id}`);
+    if ('succeeded' in response) return response.data;
+    return response as PermissionOperation;
   }
 
   /**
    * Busca relações por ID da permissão
    */
   static async getByPermissionId(permissionId: string): Promise<PermissionOperation[]> {
-    const response = await httpClient.get<PermissionOperation[]>(`${this.BASE_URL}/permission/${permissionId}`);
-    return response.data;
+    const response = await httpClient.get<PermissionOperation[] | ApiResponse<PermissionOperation[]>>(`${this.BASE_URL}/permission/${permissionId}`);
+    if ('succeeded' in response) return response.data;
+    return response as PermissionOperation[];
   }
 
   /**
    * Busca relações por ID da operação
    */
   static async getByOperationId(operationId: string): Promise<PermissionOperation[]> {
-    const response = await httpClient.get<PermissionOperation[]>(`${this.BASE_URL}/operation/${operationId}`);
-    return response.data;
+    const response = await httpClient.get<PermissionOperation[] | ApiResponse<PermissionOperation[]>>(`${this.BASE_URL}/operation/${operationId}`);
+    if ('succeeded' in response) return response.data;
+    return response as PermissionOperation[];
   }
 
   /**
    * Busca uma relação específica entre permissão e operação
    */
   static async getByPermissionAndOperation(permissionId: string, operationId: string): Promise<PermissionOperation> {
-    const response = await httpClient.get<PermissionOperation>(
+    const response = await httpClient.get<PermissionOperation | ApiResponse<PermissionOperation>>(
       `${this.BASE_URL}/permission/${permissionId}/operation/${operationId}`
     );
-    return response.data;
+    if ('succeeded' in response) return response.data;
+    return response as PermissionOperation;
   }
 
   /**
    * Cria uma nova relação permissão-operação
    */
   static async createPermissionOperation(permissionOperation: CreatePermissionOperationRequest): Promise<PermissionOperation> {
-    const response = await httpClient.post<PermissionOperation>(this.BASE_URL, permissionOperation);
-    return response.data;
+    const response = await httpClient.post<PermissionOperation | ApiResponse<PermissionOperation>>(this.BASE_URL, permissionOperation);
+    if ('succeeded' in response) return response.data;
+    return response as PermissionOperation;
   }
 
   /**
    * Cria múltiplas relações permissão-operação (bulk)
    */
   static async createPermissionOperationsBulk(bulkRequest: PermissionOperationBulkRequest): Promise<PermissionOperation[]> {
-    const response = await httpClient.post<PermissionOperation[]>(`${this.BASE_URL}/bulk`, bulkRequest);
-    return response.data;
+    const response = await httpClient.post<PermissionOperation[] | ApiResponse<PermissionOperation[]>>(`${this.BASE_URL}/bulk`, bulkRequest);
+    if ('succeeded' in response) return response.data;
+    return response as PermissionOperation[];
   }
 
   /**
    * Atualiza uma relação permissão-operação existente
    */
   static async updatePermissionOperation(id: string, permissionOperation: UpdatePermissionOperationRequest): Promise<PermissionOperation> {
-    const response = await httpClient.put<PermissionOperation>(`${this.BASE_URL}/${id}`, permissionOperation);
-    return response.data;
+    const response = await httpClient.put<PermissionOperation | ApiResponse<PermissionOperation>>(`${this.BASE_URL}/${id}`, permissionOperation);
+    if ('succeeded' in response) return response.data;
+    return response as PermissionOperation;
   }
 
   /**
@@ -154,7 +179,13 @@ export class PermissionOperationService {
    * Alterna o status de uma relação permissão-operação
    */
   static async togglePermissionOperationStatus(id: string): Promise<PermissionOperation> {
-    const response = await httpClient.patch<PermissionOperation>(`${this.BASE_URL}/${id}/toggle-status`);
-    return response.data;
+    const response = await httpClient.patch<PermissionOperation | ApiResponse<PermissionOperation>>(`${this.BASE_URL}/${id}/toggle-status`);
+    if ('succeeded' in response) {
+      if (!response.succeeded) {
+        throw new Error(response.errors?.join(', ') || 'Erro ao alternar status');
+      }
+      return response.data;
+    }
+    return response as PermissionOperation;
   }
 }

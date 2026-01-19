@@ -1,4 +1,4 @@
-import type { PagedResponse, Tenant, TenantSummary, TenantFilters } from '../types';
+import type { PaginatedResponse, Tenant, TenantSummary, TenantFilters, ApiResponse } from '../types';
 import { httpClient } from '../utils';
 import { API_ENDPOINTS } from '../constants';
 
@@ -8,8 +8,17 @@ interface GetTenantsParams {
   filters?: TenantFilters;
 }
 
+interface RawTenantResponse {
+  items: TenantSummary[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  succeeded: boolean | null;
+}
+
 export class TenantService {
-  static async getTenants(params: GetTenantsParams = {}): Promise<PagedResponse<TenantSummary>> {
+  static async getTenants(params: GetTenantsParams = {}): Promise<PaginatedResponse<TenantSummary>> {
     const { page = 1, limit = 10, filters } = params;
 
     const queryParams: Record<string, string> = {
@@ -29,17 +38,42 @@ export class TenantService {
     const searchParams = new URLSearchParams(queryParams);
 
     const url = `${API_ENDPOINTS.TENANTS}?${searchParams}`;
-    const response = await httpClient.get<PagedResponse<TenantSummary>>(url);
+    const response = await httpClient.get<RawTenantResponse | PaginatedResponse<TenantSummary> | ApiResponse<PaginatedResponse<TenantSummary>>>(url);
 
-    if (response.succeeded === false) {
-      throw new Error('Falha ao buscar tenants');
+    if ('items' in response && Array.isArray(response.items)) {
+      return {
+        data: response.items,
+        totalCount: response.total || 0,
+        pageNumber: response.page || page,
+        pageSize: response.limit || limit,
+        totalPages: response.totalPages || 0,
+        hasPreviousPage: (response.page || page) > 1,
+        hasNextPage: (response.page || page) < (response.totalPages || 0)
+      };
     }
 
-    return response;
+    if ('succeeded' in response && 'data' in response) {
+      if (response.succeeded === false) {
+        throw new Error('Falha ao buscar tenants');
+      }
+      return response.data;
+    }
+
+    return response as PaginatedResponse<TenantSummary>;
   }
 
   static async getTenantById(id: string): Promise<Tenant> {
-    const tenant = await httpClient.get<Tenant>(API_ENDPOINTS.TENANT_BY_ID(id));
+    const response = await httpClient.get<Tenant | ApiResponse<Tenant>>(API_ENDPOINTS.TENANT_BY_ID(id));
+
+    let tenant: Tenant;
+    if ('succeeded' in response) {
+      if (response.succeeded === false) {
+        throw new Error('Tenant não encontrado');
+      }
+      tenant = response.data || (response as unknown as Tenant);
+    } else {
+      tenant = response as Tenant;
+    }
 
     if (!tenant || !tenant.id) {
       throw new Error('Tenant não encontrado');
@@ -49,7 +83,17 @@ export class TenantService {
   }
 
   static async updateTenant(id: string, data: Partial<Tenant>): Promise<Tenant> {
-    const tenant = await httpClient.put<Tenant>(API_ENDPOINTS.TENANT_BY_ID(id), data);
+    const response = await httpClient.put<Tenant | ApiResponse<Tenant>>(API_ENDPOINTS.TENANT_BY_ID(id), data);
+
+    let tenant: Tenant;
+    if ('succeeded' in response) {
+      if (response.succeeded === false) {
+        throw new Error('Erro ao atualizar tenant');
+      }
+      tenant = response.data || (response as unknown as Tenant);
+    } else {
+      tenant = response as Tenant;
+    }
 
     if (!tenant || !tenant.id) {
       throw new Error('Erro ao atualizar tenant');

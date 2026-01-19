@@ -3,7 +3,8 @@ import type {
   CreateRoleRequest, 
   UpdateRoleRequest,
   Permission,
-  AccessGroup
+  AccessGroup,
+  ApiResponse
 } from '../types';
 import { httpClient } from '../utils';
 import { API_ENDPOINTS } from '../constants';
@@ -22,6 +23,19 @@ interface RolesApiResponse {
   totalPages: number;
 }
 
+interface RolesDirectResponse {
+  items: Role[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  succeeded?: boolean | null;
+  code?: number;
+  currentPage?: number;
+  pageSize?: number;
+  errors?: string[];
+}
+
 export class RoleService {
   static async getRoles(params: GetRolesParams = {}): Promise<RolesApiResponse> {
     try {
@@ -34,19 +48,41 @@ export class RoleService {
       });
       
       const url = `${API_ENDPOINTS.ROLES}?${searchParams}`;
-      const response = await httpClient.get<RolesApiResponse>(url);
+      const response = await httpClient.get<RolesApiResponse | ApiResponse<RolesApiResponse> | RolesDirectResponse>(url);
       
-      if (!response.succeeded) {
-        throw new Error(response.errors?.join(', ') || 'API retornou succeeded=false');
+      // Verifica se é o formato direto paginado
+      const raw = response as any;
+      if (raw && Array.isArray(raw.items)) {
+        const apiData = raw as RolesDirectResponse;
+        return {
+          items: apiData.items,
+          page: apiData.page ?? apiData.currentPage ?? 1,
+          limit: apiData.limit ?? apiData.pageSize ?? limit,
+          total: apiData.total ?? 0,
+          totalPages: apiData.totalPages ?? 1
+        };
+      }
+
+      // Verifica se é um envelope (com ou sem data, mas com indicador de sucesso)
+      if ('succeeded' in response) {
+        // Se for erro explícito
+        if (response.succeeded === false) {
+          throw new Error(response.errors?.join(', ') || 'API retornou succeeded=false');
+        }
+        
+        // Se for sucesso envelopado
+        if (response.succeeded === true && 'data' in response) {
+          return response.data || {
+            items: [],
+            page: 1,
+            limit: 10,
+            total: 0,
+            totalPages: 0
+          };
+        }
       }
       
-      return response.data || {
-        items: [],
-        page: 1,
-        limit: 10,
-        total: 0,
-        totalPages: 0
-      };
+      return response as RolesApiResponse;
       
     } catch (error: any) {
       if (error.status === 404) {
@@ -68,108 +104,139 @@ export class RoleService {
   }
 
   static async getRoleById(id: string): Promise<Role> {
-    const response = await httpClient.get<Role>(API_ENDPOINTS.ROLE_BY_ID(id));
+    const response = await httpClient.get<Role | ApiResponse<Role>>(API_ENDPOINTS.ROLE_BY_ID(id));
     
-    if (!response.succeeded || !response.data) {
-      throw new Error(response.errors?.join(', ') || 'Role não encontrado');
+    if ('succeeded' in response) {
+      if (!response.succeeded || !response.data) {
+        throw new Error(response.errors?.join(', ') || 'Role não encontrado');
+      }
+      return response.data;
     }
     
-    return response.data;
+    return response as Role;
   }
 
   static async createRole(role: CreateRoleRequest): Promise<Role> {
-    const response = await httpClient.post<Role>(API_ENDPOINTS.ROLES, role);
+    const response = await httpClient.post<Role | ApiResponse<Role>>(API_ENDPOINTS.ROLES, role);
     
-    if (!response.succeeded || !response.data) {
-      throw new Error(response.errors?.join(', ') || 'Erro ao criar role');
+    if ('succeeded' in response) {
+      if (!response.succeeded || !response.data) {
+        throw new Error(response.errors?.join(', ') || 'Erro ao criar role');
+      }
+      return response.data;
     }
     
-    return response.data;
+    return response as Role;
   }
 
   static async updateRole(id: string, role: UpdateRoleRequest): Promise<Role> {
-    const response = await httpClient.put<Role>(API_ENDPOINTS.ROLE_BY_ID(id), role);
+    const response = await httpClient.put<Role | ApiResponse<Role>>(API_ENDPOINTS.ROLE_BY_ID(id), role);
     
-    if (!response.succeeded || !response.data) {
-      throw new Error(response.errors?.join(', ') || 'Erro ao atualizar role');
+    if ('succeeded' in response) {
+      if (!response.succeeded || !response.data) {
+        throw new Error(response.errors?.join(', ') || 'Erro ao atualizar role');
+      }
+      return response.data;
     }
     
-    return response.data;
+    return response as Role;
   }
 
   static async deleteRole(id: string): Promise<void> {
-    const response = await httpClient.delete(API_ENDPOINTS.ROLE_BY_ID(id));
+    const response = await httpClient.delete<void | ApiResponse<void>>(API_ENDPOINTS.ROLE_BY_ID(id));
     
-    if (!response.succeeded) {
-      throw new Error(response.errors?.join(', ') || 'Erro ao remover role');
+    if (response && typeof response === 'object' && 'succeeded' in response) {
+      if (!response.succeeded) {
+        throw new Error(response.errors?.join(', ') || 'Erro ao remover role');
+      }
     }
   }
 
   // ===== PERMISSIONS =====
 
   static async getPermissionsByRole(roleId: string): Promise<Permission[]> {
-    const response = await httpClient.get<Permission[]>(`${API_ENDPOINTS.ROLES}/${roleId}/permissions`);
+    const response = await httpClient.get<Permission[] | ApiResponse<Permission[]>>(`${API_ENDPOINTS.ROLES}/${roleId}/permissions`);
     
-    if (!response.succeeded || !response.data) {
-      throw new Error(response.errors?.join(', ') || 'Erro ao buscar permissões do role');
+    if ('succeeded' in response) {
+      if (!response.succeeded || !response.data) {
+        throw new Error(response.errors?.join(', ') || 'Erro ao buscar permissões do role');
+      }
+      return response.data;
     }
     
-    return response.data;
+    if (Array.isArray(response)) {
+      return response;
+    }
+    return [];
   }
 
   static async assignPermissionsToRole(roleId: string, permissionIds: string[]): Promise<void> {
-    const response = await httpClient.post<boolean>(
+    const response = await httpClient.post<boolean | ApiResponse<boolean>>(
       `${API_ENDPOINTS.ROLES}/${roleId}/permissions`, 
       permissionIds
     );
     
-    if (!response.succeeded) {
-      throw new Error(response.errors?.join(', ') || 'Erro ao atribuir permissões ao role');
+    if (typeof response === 'object' && response !== null && 'succeeded' in response) {
+      if (!response.succeeded) {
+        throw new Error(response.errors?.join(', ') || 'Erro ao atribuir permissões ao role');
+      }
     }
   }
 
   static async removePermissionsFromRole(roleId: string, permissionIds: string[]): Promise<void> {
-    const response = await httpClient.delete<boolean>(
+    const response = await httpClient.delete<boolean | ApiResponse<boolean>>(
       `${API_ENDPOINTS.ROLES}/${roleId}/permissions`,
       { data: permissionIds }
     );
     
-    if (!response.succeeded) {
-      throw new Error(response.errors?.join(', ') || 'Erro ao remover permissões do role');
+    if (typeof response === 'object' && response !== null && 'succeeded' in response) {
+      if (!response.succeeded) {
+        throw new Error(response.errors?.join(', ') || 'Erro ao remover permissões do role');
+      }
     }
   }
 
   // ===== ACCESS GROUPS =====
 
   static async getAccessGroupsByRole(roleId: string): Promise<AccessGroup[]> {
-    const response = await httpClient.get<AccessGroup[]>(`${API_ENDPOINTS.ROLES}/${roleId}/access-groups`);
+    const response = await httpClient.get<AccessGroup[] | ApiResponse<AccessGroup[]>>(`${API_ENDPOINTS.ROLES}/${roleId}/access-groups`);
     
-    if (!response.succeeded || !response.data) {
-      throw new Error(response.errors?.join(', ') || 'Erro ao buscar grupos de acesso do role');
+    if ('succeeded' in response) {
+      if (!response.succeeded || !response.data) {
+        throw new Error(response.errors?.join(', ') || 'Erro ao buscar grupos de acesso do role');
+      }
+      return response.data;
     }
     
-    return response.data;
+    if (Array.isArray(response)) {
+      return response;
+    }
+    return [];
   }
 
   static async assignAccessGroupsToRole(roleId: string, accessGroupIds: string[]): Promise<void> {
-    const response = await httpClient.post<boolean>(
+    const response = await httpClient.post<boolean | ApiResponse<boolean>>(
       `${API_ENDPOINTS.ROLES}/${roleId}/access-groups`, 
       accessGroupIds
     );
     
-    if (!response.succeeded) {
-      throw new Error(response.errors?.join(', ') || 'Erro ao atribuir grupos de acesso ao role');
+    if (typeof response === 'object' && response !== null && 'succeeded' in response) {
+      if (!response.succeeded) {
+        throw new Error(response.errors?.join(', ') || 'Erro ao atribuir grupos de acesso ao role');
+      }
     }
   }
 
   static async removeAccessGroupsFromRole(roleId: string, accessGroupIds: string[]): Promise<void> {
-    const response = await httpClient.delete<boolean>(
+    const response = await httpClient.delete<boolean | ApiResponse<boolean>>(
       `${API_ENDPOINTS.ROLES}/${roleId}/access-groups`,
       { data: accessGroupIds }
     );
     
-    if (!response.succeeded) {
-      throw new Error(response.errors?.join(', ') || 'Erro ao remover grupos de acesso do role');
+    if (typeof response === 'object' && response !== null && 'succeeded' in response) {
+      if (!response.succeeded) {
+        throw new Error(response.errors?.join(', ') || 'Erro ao remover grupos de acesso do role');
+      }
     }
   }
 

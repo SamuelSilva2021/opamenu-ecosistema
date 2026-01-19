@@ -65,6 +65,20 @@ namespace Authenticator.API.UserEntry.AccessControl.Module
             var response = await _moduleService.UpdateModuleAsync(id, moduleType);
             return BuildResponse(response);
         }
+
+        [HttpPatch]
+        [Route("{id:guid}/toggle-status")]
+        [Authorize(Roles = "SUPER_ADMIN")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ModuleDTO>> ToggleStatus([FromRoute] Guid id)
+        {
+            var response = await _moduleService.ToggleStatus(id);
+            return BuildResponse(response);
+        }
         [HttpDelete]
         [Route("{id:guid}")]
         [Authorize(Roles = "SUPER_ADMIN")]

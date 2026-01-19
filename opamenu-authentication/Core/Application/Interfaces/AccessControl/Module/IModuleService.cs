@@ -39,6 +39,7 @@ namespace Authenticator.API.Core.Application.Interfaces.AccessControl.Module
         /// <param name="moduleType"></param>
         /// <returns></returns>
         Task<ResponseDTO<ModuleDTO>> UpdateModuleAsync(Guid id, ModuleUpdateDTO moduleType);
+        Task<ResponseDTO<ModuleDTO>> ToggleStatus(Guid id);
         /// <summary>
         /// Remove um módulo pelo ID
         /// </summary>

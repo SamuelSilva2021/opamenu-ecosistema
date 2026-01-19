@@ -49,6 +49,12 @@ export const ROUTES = {
   OPERATION_EDIT: (id: string) => `/operations/${id}/edit`,
   OPERATION_DETAIL: (id: string) => `/operations/${id}`,
   
+  // Tenants
+  TENANTS: '/tenants',
+  TENANT_CREATE: '/tenants/create',
+  TENANT_EDIT: (id: string) => `/tenants/${id}/edit`,
+  TENANT_DETAIL: (id: string) => `/tenants/${id}`,
+
   // Settings
   SETTINGS: '/settings',
   PROFILE: '/profile',

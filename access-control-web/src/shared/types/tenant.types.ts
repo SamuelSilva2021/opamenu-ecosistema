@@ -20,8 +20,18 @@ export interface Tenant {
   addressNeighborhood?: string;
   addressCity?: string;
   addressState?: string;
-  addressZipCode?: string;
+  addressZipcode?: string;
   addressCountry?: string;
+
+  // Endereço de Cobrança
+  billingStreet?: string;
+  billingNumber?: string;
+  billingComplement?: string;
+  billingNeighborhood?: string;
+  billingCity?: string;
+  billingState?: string;
+  billingZipcode?: string;
+  billingCountry?: string;
   
   // Representante Legal
   legalRepresentativeName?: string;
@@ -61,4 +71,13 @@ export interface CreateTenantRequest {
   phone?: string;
   cnpjCpf?: string;
   razaoSocial?: string;
+}
+
+export interface TenantFilters {
+  name?: string;
+  slug?: string;
+  domain?: string;
+  email?: string;
+  phone?: string;
+  status?: string;
 }

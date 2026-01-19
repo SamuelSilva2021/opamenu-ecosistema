@@ -7,6 +7,7 @@ import { OperationsPage, OperationsTestPage } from '../../features/operations';
 import { PermissionsPage } from '../../features/permissions';
 import { RolesPage } from '../../features/roles';
 import { UsersPage } from '../../features/users';
+import { TenantsPage } from '../../features/tenants';
 import { ProtectedRoute } from './ProtectedRoute';
 import { MainLayout } from '../../shared/components';
 import { ROUTES } from '../../shared/constants';
@@ -124,6 +125,18 @@ export const AppRoutes = () => {
           <ProtectedRoute>
             <MainLayout>
               <UsersPage />
+            </MainLayout>
+          </ProtectedRoute>
+        } 
+      />
+
+      {/* Rotas de Tenants */}
+      <Route 
+        path={ROUTES.TENANTS} 
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <TenantsPage />
             </MainLayout>
           </ProtectedRoute>
         } 

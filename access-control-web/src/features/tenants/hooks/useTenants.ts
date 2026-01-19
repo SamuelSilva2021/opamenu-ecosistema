@@ -48,9 +48,9 @@ export const useTenants = (options: UseTenantsOptions = {}): UseTenantsResult =>
     try {
       const response = await TenantService.getTenants({ page, limit: pageSize, filters: filtersToUse });
 
-      setTenants(response.items || []);
-      setCurrentPage(response.page || page);
-      setTotalItems(response.total || 0);
+      setTenants(response.data || []);
+      setCurrentPage(response.pageNumber || page);
+      setTotalItems(response.totalCount || 0);
       setTotalPages(response.totalPages || 0);
     } catch (err: unknown) {
       const message =

@@ -45,7 +45,7 @@ export const TenantsFilter: React.FC<TenantsFilterProps> = ({ onSearch, initialF
   return (
     <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ mb: 3, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
       <Grid container spacing={2} alignItems="center">
-        <Grid xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <TextField
             label="Nome"
             fullWidth
@@ -53,7 +53,7 @@ export const TenantsFilter: React.FC<TenantsFilterProps> = ({ onSearch, initialF
             {...register('name')}
           />
         </Grid>
-        <Grid xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <TextField
             label="Email"
             fullWidth
@@ -61,7 +61,7 @@ export const TenantsFilter: React.FC<TenantsFilterProps> = ({ onSearch, initialF
             {...register('email')}
           />
         </Grid>
-        <Grid xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <TextField
             label="Telefone"
             fullWidth
@@ -69,7 +69,7 @@ export const TenantsFilter: React.FC<TenantsFilterProps> = ({ onSearch, initialF
             {...register('phone')}
           />
         </Grid>
-        <Grid xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <TextField
             label="Domínio"
             fullWidth
@@ -77,7 +77,7 @@ export const TenantsFilter: React.FC<TenantsFilterProps> = ({ onSearch, initialF
             {...register('domain')}
           />
         </Grid>
-        <Grid xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <TextField
             label="Slug"
             fullWidth
@@ -85,7 +85,7 @@ export const TenantsFilter: React.FC<TenantsFilterProps> = ({ onSearch, initialF
             {...register('slug')}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <TextField
             select
             label="Status"
@@ -105,15 +105,23 @@ export const TenantsFilter: React.FC<TenantsFilterProps> = ({ onSearch, initialF
             <option value="Cancelado">Cancelado</option>
           </TextField>
         </Grid>
-        <Grid xs={12} sm={12} md={6}>
-          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-            <Button variant="contained" type="submit" startIcon={<SearchIcon />}>
-              Filtrar
-            </Button>
-            <Button variant="outlined" onClick={handleClear} startIcon={<ClearIcon />}>
-              Limpar
-            </Button>
-          </Box>
+        <Grid size={{ xs: 12, sm: 12, md: 6 }} sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            variant="contained"
+            startIcon={<SearchIcon />}
+            type="submit"
+            fullWidth
+          >
+            Filtrar
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<ClearIcon />}
+            onClick={handleClear}
+            fullWidth
+          >
+            Limpar
+          </Button>
         </Grid>
       </Grid>
     </Box>

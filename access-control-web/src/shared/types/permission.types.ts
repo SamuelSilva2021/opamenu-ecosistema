@@ -38,6 +38,7 @@ export const ModuleKey = {
   ROLE_MODULE: 'ROLE_MODULE',
   OPERATION_MODULE: 'OPERATION_MODULE',
   PERMISSION_MODULE: 'PERMISSION_MODULE',
+  TENANT_MODULE: 'TENANT_MODULE',
 } as const;
 
 export type ModuleKey = typeof ModuleKey[keyof typeof ModuleKey];

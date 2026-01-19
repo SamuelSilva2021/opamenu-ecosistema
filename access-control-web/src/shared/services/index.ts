@@ -7,3 +7,5 @@ export { PermissionService } from './permission.service';
 export { PermissionOperationService } from './permission-operation.service';
 export { RoleService } from './role.service';
 export { UserService } from './user.service';
+export { TenantService } from './tenant.service';
+export { SubscriptionService } from './subscription.service';

@@ -22,6 +22,7 @@ import {
   Dashboard as DashboardIcon,
   PlayArrow as OperationIcon,
   AdminPanelSettings as RoleIcon,
+  Business as BusinessIcon,
   ExpandLess,
   ExpandMore,
   ChevronLeft as ChevronLeftIcon,
@@ -131,6 +132,14 @@ export const Sidebar = ({ open, onClose, onToggle }: SidebarProps) => {
           icon: <SecurityIcon />,
           path: '/permissions',
           moduleKey: ModuleKey.PERMISSION_MODULE,
+          operation: 'SELECT',
+        },
+        {
+          id: 'tenants',
+          title: 'Tenants',
+          icon: <BusinessIcon />,
+          path: '/tenants',
+          moduleKey: ModuleKey.TENANT_MODULE,
           operation: 'SELECT',
         },
         {

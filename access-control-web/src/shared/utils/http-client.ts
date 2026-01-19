@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { API_BASE_URL, HTTP_STATUS } from '../constants';
-import type { ApiResponse, ApiError } from '../types';
+import type { ApiError } from '../types';
 import { getToken, clearAuth } from './auth-storage';
 
 // Variável para controlar se já estamos fazendo logout
@@ -60,6 +60,19 @@ class HttpClient {
           }
         }
         
+        // Tratamento para o padrão de erro da API Authentication (Array de erros no 400)
+        if (error.response?.status === HTTP_STATUS.BAD_REQUEST && Array.isArray(error.response.data)) {
+            const apiErrors = error.response.data;
+            const errorMessage = apiErrors.map((e: any) => e.message || 'Erro desconhecido').join(', ');
+            
+            const apiError: ApiError = {
+                message: errorMessage,
+                status: error.response.status,
+                errors: apiErrors
+            };
+            return Promise.reject(apiError);
+        }
+
         const apiError: ApiError = {
           message: error.response?.data?.message || 'Erro interno do servidor',
           status: error.response?.status || HTTP_STATUS.INTERNAL_SERVER_ERROR,
@@ -71,28 +84,28 @@ class HttpClient {
     );
   }
 
-  async get<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response = await this.client.get<ApiResponse<T>>(url, config);
+  async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    const response = await this.client.get<T>(url, config);
     return response.data;
   }
 
-  async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response = await this.client.post<ApiResponse<T>>(url, data, config);
+  async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+    const response = await this.client.post<T>(url, data, config);
     return response.data;
   }
 
-  async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response = await this.client.put<ApiResponse<T>>(url, data, config);
+  async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+    const response = await this.client.put<T>(url, data, config);
     return response.data;
   }
 
-  async patch<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response = await this.client.patch<ApiResponse<T>>(url, data, config);
+  async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    const response = await this.client.delete<T>(url, config);
     return response.data;
   }
 
-  async delete<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response = await this.client.delete<ApiResponse<T>>(url, config);
+  async patch<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+    const response = await this.client.patch<T>(url, data, config);
     return response.data;
   }
 }

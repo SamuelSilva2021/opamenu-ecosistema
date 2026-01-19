@@ -1,4 +1,4 @@
-import type { PaginatedResponse } from '../types';
+import type { PaginatedResponse, ApiResponse } from '../types';
 import type { Permission, CreatePermissionRequest, UpdatePermissionRequest } from '../types/permission.types';
 import { httpClient } from '../utils/http-client';
 import { API_ENDPOINTS } from '../constants';
@@ -28,6 +28,7 @@ interface QueryParams {
   sortOrder?: 'asc' | 'desc';
   moduleId?: string;
   roleId?: string;
+  tenantId?: string;
 }
 
 // Interface específica para a resposta da API de Permissions
@@ -43,17 +44,16 @@ interface PermissionsApiResponse {
   exception: string | null;
 }
 
-// Interface para respostas de permissão única
-interface PermissionApiResponse {
-  succeeded: boolean;
-  successResult: any;
-  errors: ErrorDTO[];
-  headers: Record<string, any>;
-  data: Permission;
-  requestUrl: string | null;
-  requestBody: string | null;
-  rawRequestBody: string | null;
-  exception: string | null;
+interface PermissionsDirectResponse {
+  items: Permission[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  succeeded?: boolean | null;
+  code?: number;
+  currentPage?: number;
+  pageSize?: number;
 }
 
 /**
@@ -66,25 +66,34 @@ export class PermissionService {
   /**
    * Lista todas as permissões com paginação
    */
-  static async getPermissions(params?: QueryParams): Promise<PaginatedResponse<Permission>> {
-    console.log('🔍 Buscando permissões com parâmetros:', params);
-    
-    const response = await httpClient.get<Permission[] | PermissionsApiResponse>(
+  static async getPermissions(params?: QueryParams): Promise<PaginatedResponse<Permission>> {    
+    const response = await httpClient.get<Permission[] | PermissionsApiResponse | PermissionsDirectResponse>(
       this.BASE_URL,
       { params }
     );
     
-    console.log('🔍 Debug - Resposta completa da API (Permissions):', response.data);
+    // Verificação para novo formato direto
+    const raw = response as any;
+    if (raw && Array.isArray(raw.items)) {
+      const apiData = raw as PermissionsDirectResponse;
+      return {
+        data: apiData.items,
+        totalCount: apiData.total ?? 0,
+        pageNumber: apiData.page ?? apiData.currentPage ?? 1,
+        pageSize: apiData.limit ?? apiData.pageSize ?? 10,
+        totalPages: apiData.totalPages ?? 1,
+        hasPreviousPage: (apiData.page ?? apiData.currentPage ?? 1) > 1,
+        hasNextPage: (apiData.page ?? apiData.currentPage ?? 1) < (apiData.totalPages ?? 1)
+      };
+    }
     
     let permissions: Permission[];
     
     // Verifica se a resposta é um array direto ou um ResponseDTO
-    if (Array.isArray(response.data)) {
-      console.log('🔍 Debug - API retornou array direto');
-      permissions = response.data;
+    if (Array.isArray(response)) {
+      permissions = response;
     } else {
-      console.log('🔍 Debug - API retornou ResponseDTO');
-      const apiData = response.data as PermissionsApiResponse;
+      const apiData = response as PermissionsApiResponse;
       
       // Verifica se a operação foi bem-sucedida
       if (!apiData.succeeded) {
@@ -172,16 +181,6 @@ export class PermissionService {
     const totalCount = filteredPermissions.length;
     const totalPages = Math.ceil(totalCount / pageSize);
     
-    console.log('📊 Paginação calculada:', {
-      totalCount,
-      pageSize,
-      currentPage,
-      totalPages,
-      startIndex,
-      endIndex,
-      itemsInPage: paginatedPermissions.length
-    });
-    
     return {
       data: paginatedPermissions,
       totalCount: totalCount,
@@ -197,121 +196,107 @@ export class PermissionService {
    * Busca permissão por ID
    */
   static async getPermissionById(id: string): Promise<Permission> {
-    const response = await httpClient.get<PermissionApiResponse>(`${this.BASE_URL}/${id}`);
+    const response = await httpClient.get<Permission | ApiResponse<Permission>>(`${this.BASE_URL}/${id}`);
     
-    if (!response.data.succeeded) {
-      throw new Error(`Erro na API: ${getErrorMessage(response.data.errors)}`);
+    if ('succeeded' in response) {
+      if (!response.succeeded || !response.data) {
+        throw new Error(response.errors?.join(', ') || 'Erro ao buscar permissão');
+      }
+      return response.data;
     }
     
-    return response.data.data;
+    return response as Permission;
   }
 
   /**
    * Busca permissões por módulo
    */
   static async getPermissionsByModule(moduleId: string): Promise<Permission[]> {
-    const response = await httpClient.get<PermissionsApiResponse>(`${this.BASE_URL}/module/${moduleId}`);
+    const response = await httpClient.get<Permission[] | ApiResponse<Permission[]>>(`${this.BASE_URL}/module/${moduleId}`);
     
-    if (!response.data.succeeded) {
-      throw new Error(`Erro na API: ${getErrorMessage(response.data.errors)}`);
+    if ('succeeded' in response) {
+      if (!response.succeeded || !response.data) {
+        throw new Error(response.errors?.join(', ') || 'Erro ao buscar permissões por módulo');
+      }
+      return response.data;
     }
     
-    return response.data.data;
+    return response as Permission[];
   }
 
   /**
    * Busca permissões por role
    */
   static async getPermissionsByRole(roleId: string): Promise<Permission[]> {
-    const response = await httpClient.get<PermissionsApiResponse>(`${this.BASE_URL}/role/${roleId}`);
+    const response = await httpClient.get<Permission[] | ApiResponse<Permission[]>>(`${this.BASE_URL}/role/${roleId}`);
     
-    if (!response.data.succeeded) {
-      throw new Error(`Erro na API: ${getErrorMessage(response.data.errors)}`);
+    if ('succeeded' in response) {
+      if (!response.succeeded || !response.data) {
+        throw new Error(response.errors?.join(', ') || 'Erro ao buscar permissões por role');
+      }
+      return response.data;
     }
     
-    return response.data.data;
+    return response as Permission[];
+  }
+
+  /**
+   * Busca permissões por tenant
+   */
+  static async getPermissionsByTenant(tenantId: string): Promise<Permission[]> {
+    const response = await this.getPermissions({ tenantId, limit: 1000 });
+    return response.data;
   }
 
   /**
    * Cria uma nova permissão
    */
   static async createPermission(permission: CreatePermissionRequest): Promise<Permission> {
-    const response = await httpClient.post<PermissionApiResponse>(this.BASE_URL, permission);
+    const response = await httpClient.post<Permission | ApiResponse<Permission>>(this.BASE_URL, permission);
     
     console.log('🔍 Debug - Resposta completa da API (Create Permission):', response);
-    console.log('🔍 Debug - Dados da resposta:', response.data);
     
-    // Verifica se temos dados na resposta
-    if (!response.data) {
-      throw new Error('Resposta da API inválida: sem dados');
-    }
-    
-    // Se a resposta tem a propriedade succeeded, usa a lógica ResponseDTO
-    if ('succeeded' in response.data) {
-      const apiData = response.data as PermissionApiResponse;
-      console.log('🔍 Debug - ResponseDTO detectado, succeeded:', apiData.succeeded);
-      
-      if (!apiData.succeeded) {
-        throw new Error(`Erro na API: ${getErrorMessage(apiData.errors)}`);
+    if ('succeeded' in response) {
+      if (!response.succeeded || !response.data) {
+        throw new Error(response.errors?.join(', ') || 'Erro ao criar permissão');
       }
-      
-      return apiData.data;
+      return response.data;
     }
     
-    // Se não tem succeeded, assume que é a permissão direta
-    return response.data as Permission;
+    return response as Permission;
   }
 
   /**
    * Atualiza uma permissão existente
    */
   static async updatePermission(id: string, permission: UpdatePermissionRequest): Promise<Permission> {
-    const response = await httpClient.put<PermissionApiResponse>(`${this.BASE_URL}/${id}`, permission);
+    const response = await httpClient.put<Permission | ApiResponse<Permission>>(`${this.BASE_URL}/${id}`, permission);
     
     console.log('🔍 Debug - Resposta completa da API (Update Permission):', response);
-    console.log('🔍 Debug - Dados da resposta:', response.data);
     
-    // Verifica se temos dados na resposta
-    if (!response.data) {
-      throw new Error('Resposta da API inválida: sem dados');
-    }
-    
-    // Se a resposta tem a propriedade succeeded, usa a lógica ResponseDTO
-    if ('succeeded' in response.data) {
-      const apiData = response.data as PermissionApiResponse;
-      console.log('🔍 Debug - ResponseDTO detectado, succeeded:', apiData.succeeded);
-      
-      if (!apiData.succeeded) {
-        throw new Error(`Erro na API: ${getErrorMessage(apiData.errors)}`);
+    if ('succeeded' in response) {
+      if (!response.succeeded || !response.data) {
+        throw new Error(response.errors?.join(', ') || 'Erro ao atualizar permissão');
       }
-      
-      return apiData.data;
+      return response.data;
     }
     
-    // Se não tem succeeded, assume que é a permissão direta
-    return response.data as Permission;
+    return response as Permission;
   }
 
   /**
    * Remove uma permissão (soft delete)
    */
   static async deletePermission(id: string): Promise<boolean> {
-    const response = await httpClient.delete<PermissionApiResponse>(`${this.BASE_URL}/${id}`);
+    const response = await httpClient.delete<boolean | ApiResponse<boolean>>(`${this.BASE_URL}/${id}`);
     
-    console.log('🔍 Debug - Resposta da API (Delete Permission):', response.data);
+    console.log('🔍 Debug - Resposta da API (Delete Permission):', response);
     
-    // Verifica se temos dados na resposta
-    if (!response.data) {
-      throw new Error('Resposta da API inválida: sem dados');
-    }
-    
-    // Se a resposta tem a propriedade succeeded, usa a lógica ResponseDTO
-    if ('succeeded' in response.data) {
-      const apiData = response.data as PermissionApiResponse;
-      
-      if (!apiData.succeeded) {
-        throw new Error(`Erro na API: ${getErrorMessage(apiData.errors)}`);
+    if (typeof response === 'object' && 'succeeded' in response) {
+      if (!response.succeeded) {
+        throw new Error(response.errors?.join(', ') || 'Erro ao remover permissão');
       }
+      return true;
     }
     
     return true;
@@ -321,27 +306,15 @@ export class PermissionService {
    * Alterna o status de uma permissão
    */
   static async togglePermissionStatus(id: string): Promise<Permission> {
-    const response = await httpClient.patch<PermissionApiResponse>(`${this.BASE_URL}/${id}/toggle-status`);
+    const response = await httpClient.patch<Permission | ApiResponse<Permission>>(`${this.BASE_URL}/${id}/toggle-status`);
     
-    console.log('🔍 Debug - Resposta da API (Toggle Permission):', response.data);
-    
-    // Verifica se temos dados na resposta
-    if (!response.data) {
-      throw new Error('Resposta da API inválida: sem dados');
-    }
-    
-    // Se a resposta tem a propriedade succeeded, usa a lógica ResponseDTO
-    if ('succeeded' in response.data) {
-      const apiData = response.data as PermissionApiResponse;
-      
-      if (!apiData.succeeded) {
-        throw new Error(`Erro na API: ${getErrorMessage(apiData.errors)}`);
+    if ('succeeded' in response) {
+      if (!response.succeeded || !response.data) {
+        throw new Error(response.errors?.join(', ') || 'Erro ao alternar status da permissão');
       }
-      
-      return apiData.data;
+      return response.data;
     }
     
-    // Se não tem succeeded, assume que é a permissão direta
-    return response.data as Permission;
+    return response as Permission;
   }
 }

@@ -149,6 +149,34 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Module
             }
         }
         /// <summary>
+        /// Atualiza o status do módulo
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public async Task<ResponseDTO<ModuleDTO>> ToggleStatus(Guid id)
+        {
+            try
+            {
+                var existingModuleType = await _moduleRepository.GetByIdAsync(id);
+                if (existingModuleType == null)
+                    return StaticResponseBuilder<ModuleDTO>.BuildError("Módulo não encontrado!");
+
+                existingModuleType.IsActive = !existingModuleType.IsActive;
+                existingModuleType.UpdatedAt = DateTime.UtcNow;
+
+                await _moduleRepository.UpdateAsync(existingModuleType);
+                var moduleTypeDTO = _mapper.Map<ModuleDTO>(existingModuleType);
+
+                return StaticResponseBuilder<ModuleDTO>.BuildOk(moduleTypeDTO);
+            }
+            catch (Exception ex)
+            {
+                return StaticResponseBuilder<ModuleDTO>.BuildErrorResponse(ex);
+            }
+        }
+
+        /// <summary>
         /// Atualiza um módulo pelo ID
         /// </summary>
         /// <param name="id"></param>

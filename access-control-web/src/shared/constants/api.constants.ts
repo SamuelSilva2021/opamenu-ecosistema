@@ -49,6 +49,10 @@ export const API_ENDPOINTS = {
 
   // Permission Operations
   PERMISSION_OPERATIONS: '/permission-operations',
+
+  // Subscriptions
+  SUBSCRIPTIONS: '/subscription',
+  SUBSCRIPTION_BY_TENANT: (tenantId: string) => `/subscription/tenant/${tenantId}`,
 } as const;
 
 export const HTTP_STATUS = {

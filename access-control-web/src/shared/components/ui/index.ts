@@ -2,3 +2,4 @@
 export * from './ActionButtons';
 export * from './StatusChip';
 export * from './LoadingButton';
+export * from './CopyToClipboard';

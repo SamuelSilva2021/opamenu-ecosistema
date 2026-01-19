@@ -25,7 +25,7 @@
 
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-import type { AuthState, AuthUser, LoginRequest, LoginResponseData, UserInfo } from '../types';
+import type { AuthState, AuthUser, LoginRequest, LoginResponseData, UserInfo, ApiResponse } from '../types';
 import { httpClient } from '../utils';
 import { API_ENDPOINTS } from '../constants';
 import { setToken, setRefreshToken, setStoredUser, clearAuth, getToken, getStoredUser, isTokenValid } from '../utils/auth-storage';
@@ -116,18 +116,39 @@ export const useAuthStore = create<AuthStore>()(
           try {
             set({ isLoading: true });
 
-            const loginResponse = await httpClient.post<LoginResponseData>(API_ENDPOINTS.LOGIN, credentials);
+            const loginResponse = await httpClient.post<LoginResponseData | ApiResponse<LoginResponseData>>(API_ENDPOINTS.LOGIN, credentials);
             
-            if (loginResponse.succeeded && loginResponse.data) {
-              const { accessToken, refreshToken } = loginResponse.data;
+            let loginData: LoginResponseData;
+
+            if ('succeeded' in loginResponse) {
+              if (!loginResponse.succeeded || !loginResponse.data) {
+                throw new Error('Credenciais inválidas ou resposta inesperada da API');
+              }
+              loginData = loginResponse.data;
+            } else {
+              loginData = loginResponse as LoginResponseData;
+            }
+            
+            if (loginData && loginData.accessToken) {
+              const { accessToken, refreshToken } = loginData;
 
               setToken(accessToken);
               setRefreshToken(refreshToken);
               try {
-                const userInfoResponse = await httpClient.get<UserInfo>(API_ENDPOINTS.ME);
+                const userInfoResponse = await httpClient.get<UserInfo | ApiResponse<UserInfo>>(API_ENDPOINTS.ME);
                 
-                if (userInfoResponse.succeeded && userInfoResponse.data) {
-                  const userData = userInfoResponse.data;
+                let userData: UserInfo;
+
+                if ('succeeded' in userInfoResponse) {
+                   if (!userInfoResponse.succeeded || !userInfoResponse.data) {
+                       throw new Error('Não foi possível obter informações do usuário');
+                   }
+                   userData = userInfoResponse.data;
+                } else {
+                   userData = userInfoResponse as UserInfo;
+                }
+                
+                if (userData) {
                   
                   setStoredUser(userData);
 
