@@ -1,8 +1,9 @@
-﻿using Authenticator.API.Core.Application.Interfaces.AccessControl.Roles;
+using Authenticator.API.Core.Application.Interfaces.AccessControl.Roles;
 using Authenticator.API.Core.Application.Interfaces.AccessControl.RolePermissions;
 using Authenticator.API.Core.Application.Interfaces.AccessControl.RoleAccessGroups;
 using Authenticator.API.Core.Application.Interfaces.AccessControl.Permissions;
 using Authenticator.API.Core.Application.Interfaces.AccessControl.AccessGroup;
+using Authenticator.API.Core.Application.Interfaces.Auth;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
 using Authenticator.API.Core.Domain.AccessControl.Roles.DTOs;
 using Authenticator.API.Core.Domain.AccessControl.Permissions.DTOs;
@@ -10,11 +11,12 @@ using Authenticator.API.Core.Domain.AccessControl.AccessGroup.DTOs;
 using Authenticator.API.Core.Domain.Api;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Authenticator.API.Core.Domain.Api.Commons;
 
 namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
 {
     /// <summary>
-    /// ServiÃ§o para gerenciar Roles e seus relacionamentos
+    /// Serviço para gerenciamento de Roles
     /// </summary>
     public class RoleService(
         IRoleRepository roleRepository,
@@ -22,6 +24,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
         IAccessGroupRepository accessGroupRepository,
         IRolePermissionRepository rolePermissionRepository,
         IRoleAccessGroupRepository roleAccessGroupRepository,
+        IUserContext userContext,
         IMapper mapper
     ) : IRoleService
     {
@@ -30,6 +33,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
         private readonly IAccessGroupRepository _accessGroupRepository = accessGroupRepository;
         private readonly IRolePermissionRepository _rolePermissionRepository = rolePermissionRepository;
         private readonly IRoleAccessGroupRepository _roleAccessGroupRepository = roleAccessGroupRepository;
+        private readonly IUserContext _userContext = userContext;
         private readonly IMapper _mapper = mapper;
 
         public async Task<ResponseDTO<IEnumerable<RoleDTO>>> GetAllRolesAsync()
@@ -40,16 +44,16 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
                     .Include(x => x.RolePermissions)!.ThenInclude(rp => rp.Permission)
                     .Include(x => x.RoleAccessGroups)!.ThenInclude(rag => rag.AccessGroup));
 
+                if (!entities.Any())
+                    return StaticResponseBuilder<IEnumerable<RoleDTO>>.BuildOk([]);
+
                 var dtos = _mapper.Map<IEnumerable<RoleDTO>>(entities);
-                return ResponseBuilder<IEnumerable<RoleDTO>>.Ok(dtos).Build();
+                return StaticResponseBuilder<IEnumerable<RoleDTO>>.BuildOk(dtos);
+
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<IEnumerable<RoleDTO>>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<IEnumerable<RoleDTO>>.BuildErrorResponse(ex);
             }
         }
 
@@ -64,6 +68,9 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
                         .Include(x => x.RolePermissions)!.ThenInclude(rp => rp.Permission)
                         .Include(x => x.RoleAccessGroups)!.ThenInclude(rag => rag.AccessGroup));
 
+                if (!entities.Any())
+                    return StaticResponseBuilder<PagedResponseDTO<RoleDTO>>.BuildOk(null!);
+
                 var dtos = _mapper.Map<IEnumerable<RoleDTO>>(entities);
                 var paged = new PagedResponseDTO<RoleDTO>
                 {
@@ -73,15 +80,11 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
                     Total = entities.Count(),
                     TotalPages = (int)Math.Ceiling((double)entities.Count() / limit)
                 };
-                return ResponseBuilder<PagedResponseDTO<RoleDTO>>.Ok(paged).Build();
+                return StaticResponseBuilder<PagedResponseDTO<RoleDTO>>.BuildOk(paged);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<PagedResponseDTO<RoleDTO>>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<PagedResponseDTO<RoleDTO>>.BuildErrorResponse(ex);
             }
         }
 
@@ -94,21 +97,18 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
                     .Include(x => x.RoleAccessGroups)!.ThenInclude(rag => rag.AccessGroup));
 
                 if (entity == null)
-                    return ResponseBuilder<RoleDTO>
-                        .Fail(new ErrorDTO { Message = "Role nÃ£o encontrada" })
-                        .WithCode(404)
-                        .Build();
+                    return StaticResponseBuilder<RoleDTO>.BuildOk(null!);
+
+                var currentTenantId = _userContext.CurrentUser?.TenantId;
+                if (currentTenantId.HasValue && currentTenantId.Value != Guid.Empty && entity.TenantId != currentTenantId.Value)
+                    return StaticResponseBuilder<RoleDTO>.BuildError("Role não encontrada");
 
                 var dto = _mapper.Map<RoleDTO>(entity);
-                return ResponseBuilder<RoleDTO>.Ok(dto).Build();
+                return StaticResponseBuilder<RoleDTO>.BuildOk(dto);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<RoleDTO>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<RoleDTO>.BuildErrorResponse(ex);
             }
         }
 
@@ -116,10 +116,15 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
         {
             try
             {
-                // Utiliza mÃ©todo existente no repositÃ³rio para obter roles por tenant
+                var currentTenantId = _userContext.CurrentUser?.TenantId;
+                if (currentTenantId.HasValue && currentTenantId.Value != Guid.Empty && currentTenantId.Value != tenantId)
+                    return StaticResponseBuilder<IEnumerable<RoleDTO>>.BuildOk([]);
+
                 var entities = await _roleRepository.GetAllByTenantAsync(tenantId);
 
-                // Carregar includes manualmente se necessÃ¡rio
+                if (!entities.Any())
+                    return StaticResponseBuilder<IEnumerable<RoleDTO>>.BuildOk([]);
+
                 var entitiesWithIncludes = new List<RoleEntity>();
                 foreach (var role in entities)
                 {
@@ -131,15 +136,11 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
                 }
 
                 var dtos = _mapper.Map<IEnumerable<RoleDTO>>(entitiesWithIncludes);
-                return ResponseBuilder<IEnumerable<RoleDTO>>.Ok(dtos).Build();
+                return StaticResponseBuilder<IEnumerable<RoleDTO>>.BuildOk(dtos);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<IEnumerable<RoleDTO>>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<IEnumerable<RoleDTO>>.BuildErrorResponse(ex);
             }
         }
 
@@ -150,9 +151,12 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
                 var entity = _mapper.Map<RoleEntity>(dto);
                 entity.CreatedAt = DateTime.Now;
 
+                var currentTenantId = _userContext.CurrentUser?.TenantId;
+                if (currentTenantId.HasValue && currentTenantId.Value != Guid.Empty)
+                    entity.TenantId = currentTenantId.Value;
+
                 var created = await _roleRepository.AddAsync(entity);
 
-                // Associar permissÃµes
                 if (dto.PermissionIds != null && dto.PermissionIds.Any())
                     await AssignPermissionsInternalAsync(created.Id, dto.PermissionIds);
 
@@ -165,15 +169,11 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
                     .Include(x => x.RoleAccessGroups)!.ThenInclude(rag => rag.AccessGroup));
 
                 var resultDto = _mapper.Map<RoleDTO>(full);
-                return ResponseBuilder<RoleDTO>.Ok(resultDto).WithCode(201).Build();
+                return StaticResponseBuilder<RoleDTO>.BuildOk(resultDto);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<RoleDTO>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<RoleDTO>.BuildErrorResponse(ex);
             }
         }
 
@@ -186,33 +186,28 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
                     .Include(x => x.RoleAccessGroups)!.ThenInclude(rag => rag.AccessGroup));
 
                 if (existing == null)
-                    return ResponseBuilder<RoleDTO>
-                        .Fail(new ErrorDTO { Message = "Role nÃ£o encontrada" })
-                        .WithCode(404)
-                        .Build();
+                    return StaticResponseBuilder<RoleDTO>.BuildError("Role não encontrada");
+
+                var currentTenantId = _userContext.CurrentUser?.TenantId;
+                if (currentTenantId.HasValue && currentTenantId.Value != Guid.Empty && existing.TenantId != currentTenantId.Value)
+                    return StaticResponseBuilder<RoleDTO>.BuildError("Role não encontrada");
 
                 _mapper.Map(dto, existing);
                 existing.UpdatedAt = DateTime.Now;
                 await _roleRepository.UpdateAsync(existing);
 
-                // Sincronizar permissÃµes, se lista fornecida
                 if (dto.PermissionIds != null)
                     await SyncRolePermissionsInternalAsync(id, dto.PermissionIds);
 
-                // Sincronizar grupos de acesso, se lista fornecida
                 if (dto.AccessGroupIds != null)
                     await SyncRoleAccessGroupsInternalAsync(id, dto.AccessGroupIds);
 
                 var resultDto = _mapper.Map<RoleDTO>(existing);
-                return ResponseBuilder<RoleDTO>.Ok(resultDto).Build();
+                return StaticResponseBuilder<RoleDTO>.BuildOk(resultDto);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<RoleDTO>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<RoleDTO>.BuildErrorResponse(ex);
             }
         }
 
@@ -222,25 +217,21 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
             {
                 var existing = await _roleRepository.GetByIdAsync(id);
                 if (existing == null)
-                    return ResponseBuilder<bool>
-                        .Fail(new ErrorDTO { Message = "Role nÃ£o encontrada" })
-                        .WithCode(404)
-                        .Build();
+                    return StaticResponseBuilder<bool>.BuildError("Role não encontrada");
 
-                // Remover relaÃ§Ãµes (soft delete) antes de excluir a role
+                var currentTenantId = _userContext.CurrentUser?.TenantId;
+                if (currentTenantId.HasValue && currentTenantId.Value != Guid.Empty && existing.TenantId != currentTenantId.Value)
+                    return StaticResponseBuilder<bool>.BuildError("Role não encontrada");
+
                 await _rolePermissionRepository.RemoveAllByRoleIdAsync(id);
                 await _roleAccessGroupRepository.RemoveAllByRoleIdAsync(id);
 
                 await _roleRepository.DeleteAsync(existing);
-                return ResponseBuilder<bool>.Ok(true).Build();
+                return StaticResponseBuilder<bool>.BuildOk(true);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<bool>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<bool>.BuildErrorResponse(ex);
             }
         }
 
@@ -248,7 +239,18 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
         {
             try
             {
+                var currentTenantId = _userContext.CurrentUser?.TenantId;
+                if (currentTenantId.HasValue && currentTenantId.Value != Guid.Empty)
+                {
+                    var role = await _roleRepository.GetByIdAsync(roleId);
+                    if (role == null || role.TenantId != currentTenantId.Value)
+                        return StaticResponseBuilder<IEnumerable<PermissionDTO>>.BuildOk([]);
+                }
+
                 var relations = await _rolePermissionRepository.GetAllRolePermissionsByRoleIdAsync(roleId);
+                if (relations == null)
+                    return StaticResponseBuilder<IEnumerable<PermissionDTO>>.BuildOk([]);
+
                 var permissionIds = relations
                     .Where(rp => rp.IsActive)
                     .Select(rp => rp.PermissionId)
@@ -266,15 +268,11 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
                 }
 
                 var dtos = _mapper.Map<IEnumerable<PermissionDTO>>(permissions);
-                return ResponseBuilder<IEnumerable<PermissionDTO>>.Ok(dtos).Build();
+                return StaticResponseBuilder<IEnumerable<PermissionDTO>>.BuildOk(dtos);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<IEnumerable<PermissionDTO>>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<IEnumerable<PermissionDTO>>.BuildErrorResponse(ex);
             }
         }
 
@@ -282,16 +280,20 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
         {
             try
             {
+                var currentTenantId = _userContext.CurrentUser?.TenantId;
+                if (currentTenantId.HasValue && currentTenantId.Value != Guid.Empty)
+                {
+                    var role = await _roleRepository.GetByIdAsync(roleId);
+                    if (role == null || role.TenantId != currentTenantId.Value)
+                        return StaticResponseBuilder<bool>.BuildError("Role não encontrada");
+                }
+
                 var result = await AssignPermissionsInternalAsync(roleId, permissionIds);
-                return ResponseBuilder<bool>.Ok(result).Build();
+                return StaticResponseBuilder<bool>.BuildOk(result);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<bool>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<bool>.BuildErrorResponse(ex);
             }
         }
 
@@ -299,16 +301,20 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
         {
             try
             {
+                var currentTenantId = _userContext.CurrentUser?.TenantId;
+                if (currentTenantId.HasValue && currentTenantId.Value != Guid.Empty)
+                {
+                    var role = await _roleRepository.GetByIdAsync(roleId);
+                    if (role == null || role.TenantId != currentTenantId.Value)
+                        return StaticResponseBuilder<bool>.BuildError("Role não encontrada");
+                }
+
                 var removed = await _rolePermissionRepository.RemoveByRoleAndPermissionsAsync(roleId, permissionIds);
-                return ResponseBuilder<bool>.Ok(removed).Build();
+                return StaticResponseBuilder<bool>.BuildOk(removed);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<bool>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<bool>.BuildErrorResponse(ex);
             }
         }
 
@@ -316,18 +322,26 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
         {
             try
             {
+                var currentTenantId = _userContext.CurrentUser?.TenantId;
+                if (currentTenantId.HasValue && currentTenantId.Value != Guid.Empty)
+                {
+                    var role = await _roleRepository.GetByIdAsync(roleId);
+                    if (role == null || role.TenantId != currentTenantId.Value)
+                        return StaticResponseBuilder<IEnumerable<AccessGroupDTO>>.BuildOk([]);
+                }
+
                 var relations = await _roleAccessGroupRepository.GetByRoleIdAsync(roleId);
+
                 var groups = relations.Where(r => r.IsActive && r.AccessGroup != null).Select(r => r.AccessGroup!);
+                if (!groups.Any())
+                    return StaticResponseBuilder<IEnumerable<AccessGroupDTO>>.BuildOk([]);
+
                 var dtos = _mapper.Map<IEnumerable<AccessGroupDTO>>(groups);
-                return ResponseBuilder<IEnumerable<AccessGroupDTO>>.Ok(dtos).Build();
+                return StaticResponseBuilder<IEnumerable<AccessGroupDTO>>.BuildOk(dtos);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<IEnumerable<AccessGroupDTO>>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<IEnumerable<AccessGroupDTO>>.BuildErrorResponse(ex);
             }
         }
 
@@ -335,16 +349,20 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
         {
             try
             {
+                var currentTenantId = _userContext.CurrentUser?.TenantId;
+                if (currentTenantId.HasValue && currentTenantId.Value != Guid.Empty)
+                {
+                    var role = await _roleRepository.GetByIdAsync(roleId);
+                    if (role == null || role.TenantId != currentTenantId.Value)
+                        return StaticResponseBuilder<bool>.BuildError("Role não encontrada");
+                }
+
                 var result = await AssignAccessGroupsInternalAsync(roleId, accessGroupIds);
-                return ResponseBuilder<bool>.Ok(result).Build();
+                return StaticResponseBuilder<bool>.BuildOk(result);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<bool>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<bool>.BuildErrorResponse(ex);
             }
         }
 
@@ -352,134 +370,185 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
         {
             try
             {
+                var currentTenantId = _userContext.CurrentUser?.TenantId;
+                if (currentTenantId.HasValue && currentTenantId.Value != Guid.Empty)
+                {
+                    var role = await _roleRepository.GetByIdAsync(roleId);
+                    if (role == null || role.TenantId != currentTenantId.Value)
+                        return StaticResponseBuilder<bool>.BuildError("Role não encontrada");
+                }
+
                 var removed = await _roleAccessGroupRepository.RemoveByRoleAndGroupsAsync(roleId, accessGroupIds);
-                return ResponseBuilder<bool>.Ok(removed).Build();
+                return StaticResponseBuilder<bool>.BuildOk(removed);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<bool>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<bool>.BuildErrorResponse(ex);
             }
         }
 
         private async Task<bool> AssignPermissionsInternalAsync(Guid roleId, List<Guid> permissionIds)
         {
-            var role = await _roleRepository.GetByIdAsync(roleId);
-            if (role == null)
-                throw new ArgumentException("Role nÃ£o encontrada");
-
-            foreach (var permissionId in permissionIds)
+            try
             {
-                var permission = await _permissionRepository.GetByIdAsync(permissionId) ?? 
-                    throw new ArgumentException($"PermissÃ£o com ID {permissionId} nÃ£o encontrada");
-            }
+                var role = await _roleRepository.GetByIdAsync(roleId);
+                if (role == null)
+                    throw new ArgumentException("Role não encontrada");
 
-            var existing = await _rolePermissionRepository.GetAllRolePermissionsByRoleIdAsync(roleId);
-            var existingIdsActive = existing.Where(rp => rp.IsActive).Select(rp => rp.PermissionId).ToList();
-            var existingInactive = existing.Where(rp => !rp.IsActive).ToList();
-
-            // Reativar relaÃ§Ãµes inativas caso existam
-            if (existingInactive.Any())
-            {
-                foreach (var rel in existingInactive)
+                foreach (var permissionId in permissionIds)
                 {
-                    if (permissionIds.Contains(rel.PermissionId))
-                    {
-                        rel.IsActive = true;
-                        rel.UpdatedAt = DateTime.Now;
-                    }
+                    var permission = await _permissionRepository.GetByIdAsync(permissionId) ??
+                        throw new ArgumentException($"Permissão com ID {permissionId} não encontrada");
                 }
-                await _rolePermissionRepository.UpdateRangeAsync(existingInactive);
-            }
 
-            var newIds = permissionIds.Except(existingIdsActive).Except(existingInactive.Select(p => p.PermissionId)).ToList();
+                var existing = await _rolePermissionRepository.GetAllRolePermissionsByRoleIdAsync(roleId);
+                var existingIdsActive = existing.Where(rp => rp.IsActive).Select(rp => rp.PermissionId).ToList();
+                var existingInactive = existing.Where(rp => !rp.IsActive).ToList();
 
-            var relations = new List<RolePermissionEntity>();
-            foreach (var pid in newIds)
-            {
-                relations.Add(new RolePermissionEntity
+                if (existingInactive.Count != 0)
                 {
-                    Id = Guid.NewGuid(),
-                    RoleId = roleId,
-                    PermissionId = pid,
-                    IsActive = true,
-                    CreatedAt = DateTime.Now
-                });
+                    foreach (var rel in existingInactive)
+                    {
+                        if (permissionIds.Contains(rel.PermissionId))
+                        {
+                            rel.IsActive = true;
+                            rel.UpdatedAt = DateTime.Now;
+                        }
+                    }
+                    await _rolePermissionRepository.UpdateRangeAsync(existingInactive);
+                }
+
+                var newIds = permissionIds.Except(existingIdsActive).Except(existingInactive.Select(p => p.PermissionId)).ToList();
+
+                var relations = new List<RolePermissionEntity>();
+                foreach (var pid in newIds)
+                {
+                    relations.Add(new RolePermissionEntity
+                    {
+                        Id = Guid.NewGuid(),
+                        RoleId = roleId,
+                        PermissionId = pid,
+                        IsActive = true,
+                        CreatedAt = DateTime.Now
+                    });
+                }
+
+                if (relations.Count > 0)
+                    await _rolePermissionRepository.AddRangeAsync(relations);
+
+                return true;
             }
-
-            if (relations.Count > 0)
-                await _rolePermissionRepository.AddRangeAsync(relations);
-
-            return true;
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
 
         private async Task<bool> AssignAccessGroupsInternalAsync(Guid roleId, List<Guid> accessGroupIds)
         {
-            var role = await _roleRepository.GetByIdAsync(roleId);
-            if (role == null)
-                throw new ArgumentException("Role nÃ£o encontrada");
-
-            foreach (var groupId in accessGroupIds)
+            try
             {
-                var group = await _accessGroupRepository.GetByIdAsync(groupId);
-                if (group == null)
-                    throw new ArgumentException($"Grupo de acesso com ID {groupId} nÃ£o encontrado");
-            }
-
-            var existing = await _roleAccessGroupRepository.GetByRoleIdAsync(roleId);
-            var existingIds = existing.Where(rag => rag.IsActive).Select(rag => rag.AccessGroupId).ToList();
-            var newIds = accessGroupIds.Except(existingIds).ToList();
-
-            // Garanta que estamos usando a entidade correta do namespace RoleAccessGroups
-            var relations = new List<RoleAccessGroupEntity>();
-            foreach (var gid in newIds)
-            {
-                relations.Add(new RoleAccessGroupEntity
+                var role = await _roleRepository.GetByIdAsync(roleId) ?? throw new ArgumentException("Role não encontrada");
+                foreach (var groupId in accessGroupIds)
                 {
-                    Id = Guid.NewGuid(),
-                    RoleId = roleId,
-                    AccessGroupId = gid,
-                    IsActive = true,
-                    CreatedAt = DateTime.Now
-                });
+                    var group = await _accessGroupRepository.GetByIdAsync(groupId) ?? throw new ArgumentException($"Grupo de acesso com ID {groupId} não encontrado");
+                }
+
+                var existing = await _roleAccessGroupRepository.GetByRoleIdAsync(roleId);
+                var existingIds = existing.Where(rag => rag.IsActive).Select(rag => rag.AccessGroupId).ToList();
+                var newIds = accessGroupIds.Except(existingIds).ToList();
+
+                var relations = new List<RoleAccessGroupEntity>();
+                foreach (var gid in newIds)
+                {
+                    relations.Add(new RoleAccessGroupEntity
+                    {
+                        Id = Guid.NewGuid(),
+                        RoleId = roleId,
+                        AccessGroupId = gid,
+                        IsActive = true,
+                        CreatedAt = DateTime.Now
+                    });
+                }
+
+                if (relations.Count > 0)
+                    await _roleAccessGroupRepository.AddRangeAsync(relations);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+            
+        }
+
+        private async Task<ResponseDTO<bool>> SyncRolePermissionsInternalAsync(Guid roleId, List<Guid> permissionIds)
+        {
+            try
+            {
+                var existing = await _rolePermissionRepository.GetAllRolePermissionsByRoleIdAsync(roleId);
+                var toAdd = permissionIds.Except(existing.Where(rp => rp.IsActive).Select(rp => rp.PermissionId)).ToList();
+                var toRemove = existing.Where(rp => rp.IsActive && !permissionIds.Contains(rp.PermissionId)).Select(rp => rp.PermissionId).ToList();
+
+                if (toAdd.Any())
+                    await AssignPermissionsInternalAsync(roleId, toAdd);
+                if (toRemove.Any())
+                    await _rolePermissionRepository.RemoveByRoleAndPermissionsAsync(roleId, toRemove);
+
+                return StaticResponseBuilder<bool>.BuildOk(true);
+            }
+            catch (Exception ex)
+            {
+                return StaticResponseBuilder<bool>.BuildErrorResponse(ex);
             }
 
-            if (relations.Count > 0)
-                await _roleAccessGroupRepository.AddRangeAsync(relations);
-
-            return true;
         }
 
-        private async Task<bool> SyncRolePermissionsInternalAsync(Guid roleId, List<Guid> permissionIds)
+        private async Task<ResponseDTO<bool>> SyncRoleAccessGroupsInternalAsync(Guid roleId, List<Guid> accessGroupIds)
         {
-            var existing = await _rolePermissionRepository.GetAllRolePermissionsByRoleIdAsync(roleId);
-            var toAdd = permissionIds.Except(existing.Where(rp => rp.IsActive).Select(rp => rp.PermissionId)).ToList();
-            var toRemove = existing.Where(rp => rp.IsActive && !permissionIds.Contains(rp.PermissionId)).Select(rp => rp.PermissionId).ToList();
+            try
+            {
+                var existing = await _roleAccessGroupRepository.GetByRoleIdAsync(roleId);
+                var toAdd = accessGroupIds.Except(existing.Where(rag => rag.IsActive).Select(rag => rag.AccessGroupId)).ToList();
+                var toRemove = existing.Where(rag => rag.IsActive && !accessGroupIds.Contains(rag.AccessGroupId)).Select(rag => rag.AccessGroupId).ToList();
 
-            if (toAdd.Any())
-                await AssignPermissionsInternalAsync(roleId, toAdd);
-            if (toRemove.Any())
-                await _rolePermissionRepository.RemoveByRoleAndPermissionsAsync(roleId, toRemove);
+                if (toAdd.Any())
+                    await AssignAccessGroupsInternalAsync(roleId, toAdd);
+                if (toRemove.Any())
+                    await _roleAccessGroupRepository.RemoveByRoleAndGroupsAsync(roleId, toRemove);
 
-            return true;
+                return StaticResponseBuilder<bool>.BuildOk(true);
+            }
+            catch (Exception ex)
+            {
+                return StaticResponseBuilder<bool>.BuildErrorResponse(ex);
+            }
+            
         }
 
-        private async Task<bool> SyncRoleAccessGroupsInternalAsync(Guid roleId, List<Guid> accessGroupIds)
+        public async Task<ResponseDTO<RoleDTO>> ToggleStatus(Guid id, RoleUpdateDTO dto)
         {
-            var existing = await _roleAccessGroupRepository.GetByRoleIdAsync(roleId);
-            var toAdd = accessGroupIds.Except(existing.Where(rag => rag.IsActive).Select(rag => rag.AccessGroupId)).ToList();
-            var toRemove = existing.Where(rag => rag.IsActive && !accessGroupIds.Contains(rag.AccessGroupId)).Select(rag => rag.AccessGroupId).ToList();
+            try
+            {
+                var roleEntity = await _roleRepository.GetByIdAsync(id, include: r => r
+                .Include(x => x.RolePermissions)!.ThenInclude(rp => rp.Permission)
+                .Include(x => x.RoleAccessGroups)!.ThenInclude(rag => rag.AccessGroup));
 
-            if (toAdd.Any())
-                await AssignAccessGroupsInternalAsync(roleId, toAdd);
-            if (toRemove.Any())
-                // Ajuste para utilizar o mÃ©todo existente no repositÃ³rio
-                await _roleAccessGroupRepository.RemoveByRoleAndGroupsAsync(roleId, toRemove);
+                if (roleEntity == null)
+                    return StaticResponseBuilder<RoleDTO>.BuildError("Role não encontrada");
 
-            return true;
+                roleEntity.IsActive = dto.IsActive;
+                roleEntity.UpdatedAt = DateTime.Now;
+                await _roleRepository.UpdateAsync(roleEntity);
+                var resultDto = _mapper.Map<RoleDTO>(roleEntity);
+                return StaticResponseBuilder<RoleDTO>.BuildOk(resultDto);
+            }
+            catch (Exception ex)
+            {
+                return StaticResponseBuilder<RoleDTO>.BuildErrorResponse(ex);
+            }
+            
         }
     }
 }

@@ -37,5 +37,6 @@ namespace Authenticator.API.Core.Domain.AccessControl.Operations.DTOs
         /// Se a operação está ativa
         /// </summary>
         public bool IsActive { get; set; }
+        public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
     }
 }

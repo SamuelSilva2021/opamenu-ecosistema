@@ -1,4 +1,4 @@
-﻿using Authenticator.API.Core.Domain.Api;
+using Authenticator.API.Core.Domain.Api;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -127,12 +127,12 @@ namespace Authenticator.API.UserEntry
         /// <summary>
         /// Operation Insert
         /// </summary>
-        public const string OPERATION_INSERT = "INSERT";
+        public const string OPERATION_INSERT = "CREATE";
 
         /// <summary>
         /// Operation Select
         /// </summary>
-        public const string OPERATION_SELECT = "SELECT";
+        public const string OPERATION_SELECT = "READ";
 
         /// <summary>
         /// Operation Update
@@ -168,7 +168,24 @@ namespace Authenticator.API.UserEntry
         /// Operation Cancellation
         /// </summary>
         public const string OPERATION_CANCELLATION = "CANCELLATION";
+        #endregion
 
+
+        #region Modules
+        //Módulos controle de acesso
+        public const string MODULE_ACCESS_CONTROL = "ACCESS_CONTROL";
+        public const string MODULE_ACCESS_GROUP = "ACCESS_GROUP";
+
+        //Módulos food
+        public const string MODULE_BASIC_ACCESS = "BASIC_ACCESS";
+        public const string MODULE_ADMIN = "ADMIN";
+        public const string MODULE_USER = "USER";
+        public const string MODULE_DASHBOARD = "DASHBOARD";
+        public const string MODULE_CATEGORY = "CATEGORY";
+        public const string MODULE_PRODUCT = "PRODUCT";
+        public const string ADITIONAL_GROUP = "ADITIONAL_GROUP";
+        public const string ADITIONAL = "ADITIONAL";
+        public const string ORDER = "ORDER";
         #endregion
     }
 }

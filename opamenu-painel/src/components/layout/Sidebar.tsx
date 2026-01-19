@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/store/auth.store";
+import { hasPermission } from "@/lib/permissions";
 import {
   LayoutDashboard,
   UtensilsCrossed,
@@ -37,48 +39,56 @@ const routes = [
     icon: LayoutDashboard,
     href: "/dashboard",
     variant: "default",
+    module: "DASHBOARD",
   },
   {
     title: "Grupos de Adicionais",
     icon: Tags,
     href: "/dashboard/addon-groups",
     variant: "ghost",
+    module: "ADITIONAL_GROUP",
   },
     {
     title: "Adicionais",
     icon: Layers,
     href: "/dashboard/addons",
     variant: "ghost",
+    module: "ADITIONAL",
   },
   {
     title: "Categorias",
     icon: FolderTree,
     href: "/dashboard/categories",
     variant: "ghost",
+    module: "CATEGORY",
   },
   {
     title: "Produtos",
     icon: UtensilsCrossed,
     href: "/dashboard/products",
     variant: "ghost",
+    module: "PRODUCT",
   },
   {
     title: "Cupons",
     icon: Ticket,
     href: "/dashboard/coupons",
     variant: "ghost",
+    module: "COUPON",
   },
   {
     title: "Pedidos",
     icon: ShoppingBag,
     href: "/dashboard/orders",
     variant: "ghost",
+    module: "ORDER",
   },
   {
     title: "Clientes",
     icon: Users,
     href: "/dashboard/customers",
     variant: "ghost",
+    module: "CUSTOMER",
   },
   {
     title: "Relatórios",
@@ -86,22 +96,31 @@ const routes = [
     href: "/dashboard/reports",
     variant: "ghost",
     comingSoon: true,
+    module: "REPORT",
   },
   {
     title: "Assinatura",
     icon: CreditCard,
     href: "/dashboard/subscription",
     variant: "ghost",
+    module: "SUBSCRIPTION",
   },
   {
     title: "Configurações",
     icon: Settings,
     href: "/dashboard/settings",
     variant: "ghost",
+    module: "SETTINGS",
   },
 ];
 
 function SidebarContent({ isCollapsed }: { isCollapsed?: boolean }) {
+  const { user } = useAuthStore();
+  
+  const filteredRoutes = routes.filter(route => 
+    hasPermission(user, route.module, "READ")
+  );
+
   return (
     <div className="flex h-full flex-col bg-zinc-900 text-white">
       <div className={cn("flex h-16 items-center px-4 border-b border-zinc-800", isCollapsed ? "justify-center" : "px-6")}>
@@ -118,7 +137,7 @@ function SidebarContent({ isCollapsed }: { isCollapsed?: boolean }) {
       </div>
       <ScrollArea className="flex-1 py-4">
         <nav className="grid gap-1 px-2">
-          {routes.map((route) => (
+          {filteredRoutes.map((route) => (
             <TooltipProvider key={route.href} delayDuration={0}>
               <Tooltip>
                 <TooltipTrigger asChild>

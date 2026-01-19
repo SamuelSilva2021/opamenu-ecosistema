@@ -14,7 +14,7 @@ namespace Authenticator.API.Infrastructure.Mapper.AccessControl.Permissions
             // CreateDTO -> Entity
             CreateMap<PermissionOperationCreateDTO, PermissionOperationEntity>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.Now))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.Permission, opt => opt.Ignore())
                 .ForMember(dest => dest.Operation, opt => opt.Ignore());
@@ -25,7 +25,7 @@ namespace Authenticator.API.Infrastructure.Mapper.AccessControl.Permissions
                 .ForMember(dest => dest.PermissionId, opt => opt.Ignore())
                 .ForMember(dest => dest.OperationId, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(_ => DateTime.Now))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow))
                 .ForMember(dest => dest.Permission, opt => opt.Ignore())
                 .ForMember(dest => dest.Operation, opt => opt.Ignore());
 

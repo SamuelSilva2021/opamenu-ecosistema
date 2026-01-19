@@ -127,12 +127,12 @@ namespace OpaMenu.Web.UserEntry.Http
         /// <summary>
         /// Operation Insert
         /// </summary>
-        public const string OPERATION_INSERT = "INSERT";
+        public const string OPERATION_INSERT = "CREATE";
 
         /// <summary>
         /// Operation Select
         /// </summary>
-        public const string OPERATION_SELECT = "SELECT";
+        public const string OPERATION_SELECT = "READ";
 
         /// <summary>
         /// Operation Update

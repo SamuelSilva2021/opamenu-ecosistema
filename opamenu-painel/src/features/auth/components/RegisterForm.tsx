@@ -40,7 +40,6 @@ export function RegisterForm() {
 
   const { mutate: register, isPending } = useMutation({
     mutationFn: async (data: RegisterFormData) => {
-      // 1. Register
       const response = await authService.register(data);
       if (!response.succeeded) {
         throw new Error(response.message || "Falha ao realizar cadastro");

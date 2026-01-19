@@ -74,7 +74,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\opamenu-shared-infrastructure\OpaMenu.Infrastructure.Shared\OpaMenu.Infrastructure.Shared.csproj" />
+    <ProjectReference Include="..\opamenu-commons\OpaMenu.Infrastructure.Shared\OpaMenu.Infrastructure.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Core\Domain\Api\Commons\Resource.resx">
+      <LogicalName>OpaMenu.Application.Common.Localization.Resource.resources</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

@@ -43,7 +43,6 @@ namespace OpaMenu.Infrastructure.Shared.Entities.MultiTenant.TenantProduct
         /// Categoria do produto
         /// </summary>
         [Required]
-        [MaxLength(100)]
         public ETenantProductCategory Category { get; set; } = ETenantProductCategory.WebApp;
 
         /// <summary>

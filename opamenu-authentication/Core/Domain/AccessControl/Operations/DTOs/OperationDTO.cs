@@ -33,7 +33,7 @@
         /// <summary>
         /// Data de criação
         /// </summary>
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Data de atualização

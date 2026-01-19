@@ -13,7 +13,7 @@ namespace Authenticator.API.Infrastructure.Mapper.AccessControl.Roles
             // CreateDTO -> Entity
             CreateMap<RoleCreateDTO, RoleEntity>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.Now))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.RoleAccessGroups, opt => opt.Ignore())
                 .ForMember(dest => dest.RolePermissions, opt => opt.Ignore());
@@ -22,7 +22,7 @@ namespace Authenticator.API.Infrastructure.Mapper.AccessControl.Roles
             CreateMap<RoleUpdateDTO, RoleEntity>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(_ => DateTime.Now))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow))
                 .ForMember(dest => dest.RoleAccessGroups, opt => opt.Ignore())
                 .ForMember(dest => dest.RolePermissions, opt => opt.Ignore());
 

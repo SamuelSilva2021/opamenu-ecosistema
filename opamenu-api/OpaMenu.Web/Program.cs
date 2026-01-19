@@ -1,8 +1,9 @@
-﻿using CloudinaryDotNet;
+using CloudinaryDotNet;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using OpaMenu.Infrastructure.Configurations;
 using OpaMenu.Infrastructure.Shared.Data.Context;
+using OpaMenu.Infrastructure.Filters;
 using OpaMenu.Web.Extensions;
 using OpaMenu.Web.Hubs;
 using System;
@@ -89,6 +90,8 @@ builder.Services.AddCorsServices(builder.Configuration);
 // Register application services
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
+
+builder.Services.AddScoped<PermissionAuthorizationFilter>();
 
 builder.Services.AddDatabaseServices(builder.Configuration);
 

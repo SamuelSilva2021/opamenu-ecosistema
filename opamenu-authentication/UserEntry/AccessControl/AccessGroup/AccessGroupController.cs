@@ -18,12 +18,12 @@ namespace Authenticator.API.UserEntry.AccessControl.AccessGroup
     [ApiController]
     [Produces("application/json")]
     [Tags("Grupos de Acesso")]
-    [Authorize(Roles = "SUPER_ADMIN")]
+    [Authorize]
     public class AccessGroupController(
         ILogger<AccessGroupController> logger,
         IGroupTypeService groupTypeService,
         IAccessGroupService accessGroupService
-        ) : BusinessControleBase
+        ) : BaseController
     {
         private readonly ILogger<AccessGroupController> _logger = logger;
         private readonly IGroupTypeService _groupTypeService = groupTypeService;
@@ -31,6 +31,7 @@ namespace Authenticator.API.UserEntry.AccessControl.AccessGroup
 
         #region GET
         [HttpGet]
+        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -38,8 +39,8 @@ namespace Authenticator.API.UserEntry.AccessControl.AccessGroup
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ResponseDTO<IEnumerable<AccessGroupDTO>>>> GetAllAccessGroups([FromQuery] int page = 1, [FromQuery] int limit = 10)
         {
-            var accessGroups = await _accessGroupService.GetPagedAsync(page, limit);
-            return StatusCode(accessGroups.Code, accessGroups);
+            var response = await _accessGroupService.GetPagedAsync(page, limit);
+            return BuildResponse(response);
         }
 
         [HttpGet("{id}")]
@@ -51,11 +52,12 @@ namespace Authenticator.API.UserEntry.AccessControl.AccessGroup
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ResponseDTO<AccessGroupDTO>>> GetAccessGroupById([FromRoute] Guid id)
         {
-            var accessGroup = await _accessGroupService.GetByIdAsync(id);
-            return StatusCode(accessGroup.Code, accessGroup);
+            var response = await _accessGroupService.GetByIdAsync(id);
+            return BuildResponse(response);
         }
 
         [HttpGet("group-types")]
+        [Authorize(Roles = "SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -64,10 +66,11 @@ namespace Authenticator.API.UserEntry.AccessControl.AccessGroup
         public async Task<ActionResult<ResponseDTO<PagedResponseDTO<GroupTypeDTO>>>> GetAllGroupTypes([FromQuery] int page = 1, [FromQuery] int limit = 10)
         {
             var response = await _groupTypeService.GetPagedAsync(page, limit);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
 
         [HttpGet("group-types/{id:guid}")]
+        [Authorize(Roles = "SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -76,14 +79,15 @@ namespace Authenticator.API.UserEntry.AccessControl.AccessGroup
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ResponseDTO<GroupTypeDTO>>> GetGroupTypeById([FromRoute] Guid id)
         {
-            var groupType = await _groupTypeService.GetByIdAsync(id);
-            return StatusCode(groupType.Code, groupType);
+            var response = await _groupTypeService.GetByIdAsync(id);
+            return BuildResponse(response);
         }
 
         #endregion GET
 
         #region POST
         [HttpPost]
+        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -95,10 +99,11 @@ namespace Authenticator.API.UserEntry.AccessControl.AccessGroup
                 return BadRequest();
 
             var response = await _accessGroupService.CreateAsync(createAccessGroupDTO);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
 
         [HttpPost("group-types")]
+        [Authorize(Roles = "SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -110,12 +115,13 @@ namespace Authenticator.API.UserEntry.AccessControl.AccessGroup
                 return BadRequest();
 
             var response = await _groupTypeService.CreateAsync(groupTypeCreateDTO);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
         #endregion
 
         #region PUT
         [HttpPut("{id}")]
+        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -128,11 +134,29 @@ namespace Authenticator.API.UserEntry.AccessControl.AccessGroup
                 return BadRequest();
 
             var response = await _accessGroupService.UpdateAsync(id, updateAccessGroupDTO);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
+        }
+
+        [HttpPut("{id}/toggle-status")]
+        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ResponseDTO<AccessGroupDTO>>> ToggleStatusAccessGroup([FromRoute] Guid id, [FromBody] UpdateAccessGroupDTO updateAccessGroupDTO)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            var response = await _accessGroupService.ToggleStatus(id, updateAccessGroupDTO);
+            return BuildResponse(response);
         }
 
 
         [HttpPut("group-types/{id:guid}")]
+        [Authorize(Roles = "SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -145,13 +169,31 @@ namespace Authenticator.API.UserEntry.AccessControl.AccessGroup
                 return BadRequest();
 
             var response = await _groupTypeService.UpdateAsync(id, groupTypeUpdateDTO);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
+        }
+
+        [HttpPut("group-types/{id:guid}/toggle-status")]
+        [Authorize(Roles = "SUPER_ADMIN")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ResponseDTO<GroupTypeDTO>>> ToggleStatusGroupType([FromRoute] Guid id, [FromBody] GroupTypeUpdateDTO groupTypeUpdateDTO)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            var response = await _groupTypeService.ToggleStatus(id, groupTypeUpdateDTO);
+            return BuildResponse(response);
         }
 
         #endregion PUT
 
         #region DELETE
         [HttpDelete("{id:guid}")]
+        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -161,10 +203,11 @@ namespace Authenticator.API.UserEntry.AccessControl.AccessGroup
         public async Task<ActionResult<ResponseDTO<bool>>> DeleteAccessGroup([FromRoute] Guid id)
         {
             var response = await _accessGroupService.DeleteAsync(id);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
 
         [HttpDelete("group-types/{id:guid}")]
+        [Authorize(Roles = "SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -174,7 +217,7 @@ namespace Authenticator.API.UserEntry.AccessControl.AccessGroup
         public async Task<ActionResult<ResponseDTO<bool>>> DeleteGroupType([FromRoute] Guid id)
         {
             var response = await _groupTypeService.DeleteAsync(id);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
 
         #endregion DELETE

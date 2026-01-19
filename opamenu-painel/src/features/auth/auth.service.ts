@@ -18,7 +18,7 @@ export const authService = {
             password: data.password,
             confirmPassword: data.confirmPassword
         };
-        const response = await apiAuth.post<ApiResponse<any>>("/Register", payload);
+        const response = await apiAuth.post<ApiResponse<any>>("/register", payload);
         return response.data;
     },
 

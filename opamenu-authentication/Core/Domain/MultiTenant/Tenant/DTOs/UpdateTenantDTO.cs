@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
 
 namespace Authenticator.API.Core.Domain.MultiTenant.Tenant.DTOs
@@ -14,7 +14,6 @@ namespace Authenticator.API.Core.Domain.MultiTenant.Tenant.DTOs
         [MaxLength(255)]
         public string? Domain { get; set; }
 
-        [MaxLength(20)]
         public ETenantStatus Status { get; set; }
 
         [MaxLength(18)]

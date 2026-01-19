@@ -12,7 +12,7 @@ namespace Authenticator.API.UserEntry.Register;
 /// Controller para registro de novos tenants (clientes/empresas)
 /// </summary>
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/register")]
 public class RegisterController(
     MultiTenantDbContext tenantContext,
     AccessControlDbContext accessContext,

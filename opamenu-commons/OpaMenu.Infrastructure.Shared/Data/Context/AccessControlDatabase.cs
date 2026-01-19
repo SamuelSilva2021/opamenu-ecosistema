@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts;
 using OpaMenu.Infrastructure.Shared.Entities;
@@ -24,16 +26,10 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context
     {
         private readonly ITenantContext _tenantContext;
 
-        // Construtor utilizado pelos testes e cenários sem injeção de ITenantContext
-        public AccessControlDbContext(DbContextOptions<AccessControlDbContext> options) : base(options)
-        {
-            _tenantContext = new DefaultTenantContext();
-        }
-
         // Construtor utilizado em execução normal com ITenantContext resolvido pelo DI
-        public AccessControlDbContext(DbContextOptions<AccessControlDbContext> options, ITenantContext tenantContext) : base(options)
+        public AccessControlDbContext(DbContextOptions<AccessControlDbContext> options, ITenantContext? tenantContext = null) : base(options)
         {
-            _tenantContext = tenantContext;
+            _tenantContext = tenantContext ?? new DefaultTenantContext();
         }
 
         public DbSet<UserAccountEntity> UserAccounts { get; set; }
@@ -54,6 +50,7 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context
             modelBuilder.Ignore<TenantProductEntity>();
             modelBuilder.Ignore<PlanEntity>();
             modelBuilder.Ignore<SubscriptionEntity>();
+            modelBuilder.Ignore<TenantBusinessEntity>();
 
             modelBuilder.Entity<TenantEntity>(entity =>
             {
@@ -78,6 +75,7 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context
                 entity.Ignore(e => e.Permissions);
                 entity.Ignore(e => e.Subscriptions);
                 entity.Ignore(e => e.ActiveSubscription);
+                entity.Ignore(e => e.BusinessInfo);
             });
 
             modelBuilder.Entity<UserAccountEntity>(entity =>
@@ -102,9 +100,6 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context
                 entity.Property(e => e.LastLoginAt).HasColumnName("last_login_at");
                 entity.Property(e => e.PasswordResetToken).HasColumnName("password_reset_token").HasMaxLength(500);
                 entity.Property(e => e.PasswordResetExpiresAt).HasColumnName("password_reset_expires_at");
-                entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("NOW()");
-                entity.Property(e => e.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone");
-                entity.Property(e => e.DeletedAt).HasColumnName("deleted_at").HasColumnType("timestamp with time zone");
 
                 entity.HasMany(u => u.AccountAccessGroups)
                     .WithOne(aag => aag.UserAccount)
@@ -123,8 +118,6 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context
                 entity.Property(e => e.TenantId).HasColumnName("tenant_id");
                 entity.Property(e => e.GroupTypeId).HasColumnName("group_type_id");
                 entity.Property(e => e.IsActive).HasColumnName("is_active").HasDefaultValue(true);
-                entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("NOW()");
-                entity.Property(e => e.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone");
 
                 entity.HasOne(e => e.GroupType)
                     .WithMany(gt => gt.AccessGroups)
@@ -150,8 +143,6 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context
                 entity.Property(e => e.Description).HasColumnName("description").HasMaxLength(500);
                 entity.Property(e => e.Code).HasColumnName("code").HasMaxLength(50);
                 entity.Property(e => e.IsActive).HasColumnName("is_active").HasDefaultValue(true);
-                entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("NOW()");
-                entity.Property(e => e.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone");
 
                 entity.HasIndex(gt => gt.Code).IsUnique();
 
@@ -171,10 +162,7 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context
                 entity.Property(e => e.AccessGroupId).HasColumnName("access_group_id");
                 entity.Property(e => e.IsActive).HasColumnName("is_active").IsRequired().HasDefaultValue(true);
                 entity.Property(e => e.GrantedBy).HasColumnName("granted_by");
-                entity.Property(e => e.GrantedAt).HasColumnName("granted_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("NOW()");
                 entity.Property(e => e.ExpiresAt).HasColumnName("expires_at");
-                entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("NOW()");
-                entity.Property(e => e.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone");
 
                 entity.HasOne(x => x.UserAccount)
                     .WithMany(x => x.AccountAccessGroups)
@@ -200,8 +188,6 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context
                 entity.Property(e => e.TenantId).HasColumnName("tenant_id");
                 entity.Property(e => e.ApplicationId).HasColumnName("application_id");
                 entity.Property(e => e.IsActive).HasColumnName("is_active");
-                entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("NOW()");
-                entity.Property(e => e.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone");
 
                 entity.HasMany(r => r.RoleAccessGroups)
                     .WithOne(gr => gr.Role)
@@ -222,8 +208,6 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context
                 entity.Property(e => e.AccessGroupId).HasColumnName("access_group_id");
                 entity.Property(e => e.RoleId).HasColumnName("role_id");
                 entity.Property(e => e.IsActive).HasColumnName("is_active");
-                entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("NOW()");
-                entity.Property(e => e.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone");
 
                 entity.HasOne(d => d.Role)
                     .WithMany(p => p.RoleAccessGroups)
@@ -245,8 +229,6 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context
                 entity.Property(e => e.RoleId).HasColumnName("role_id");
                 entity.Property(e => e.PermissionId).HasColumnName("permission_id");
                 entity.Property(e => e.IsActive).HasColumnName("is_active");
-                entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("NOW()");
-                entity.Property(e => e.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone");
             });
 
             modelBuilder.Entity<ApplicationEntity>(entity =>
@@ -263,8 +245,6 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context
                 entity.Property(e => e.AuxiliarSchema).HasColumnName("auxiliar_schema");
                 entity.Property(e => e.IsActive).HasColumnName("is_active");
                 entity.Property(e => e.Visible).HasColumnName("visible");
-                entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("NOW()");
-                entity.Property(e => e.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone");
             });
 
             modelBuilder.Entity<ModuleEntity>(entity =>
@@ -281,8 +261,6 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context
                 entity.Property(e => e.Code).HasColumnName("code");
                 entity.Property(e => e.ApplicationId).HasColumnName("application_id");
                 entity.Property(e => e.IsActive).HasColumnName("is_active");
-                entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("NOW()");
-                entity.Property(e => e.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone");
 
                 entity.HasOne(d => d.Application)
                     .WithMany(p => p.Modules)
@@ -300,8 +278,6 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context
                 entity.Property(e => e.ModuleId).HasColumnName("module_id");
                 entity.Property(e => e.TenantId).HasColumnName("tenant_id");
                 entity.Property(e => e.IsActive).HasColumnName("is_active");
-                entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("NOW()");
-                entity.Property(e => e.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone");
 
                 entity.HasMany(p => p.RolePermissions)
                     .WithOne(rp => rp.Permission)
@@ -319,8 +295,6 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context
                 entity.Property(e => e.Description).HasColumnName("description");
                 entity.Property(e => e.Value).HasColumnName("value");
                 entity.Property(e => e.IsActive).HasColumnName("is_active");
-                entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("NOW()");
-                entity.Property(e => e.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone");
             });
 
             modelBuilder.Entity<PermissionOperationEntity>(entity =>
@@ -333,8 +307,6 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context
                 entity.Property(e => e.PermissionId).HasColumnName("permission_id");
                 entity.Property(e => e.OperationId).HasColumnName("operation_id");
                 entity.Property(e => e.IsActive).HasColumnName("is_active");
-                entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("NOW()");
-                entity.Property(e => e.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone");
 
                 entity.HasOne(d => d.Permission)
                     .WithMany(p => p.PermissionOperations)
@@ -368,6 +340,37 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context
             modelBuilder.Entity<PermissionOperationEntity>().HasQueryFilter(e =>
                 !_tenantContext.HasTenant || e.Permission.TenantId == _tenantContext.TenantId);
 
+            modelBuilder.ApplyUtcDateTimeConvention();
+        }
+    }
+
+    internal static class AccessControlModelBuilderExtensions
+    {
+        public static void ApplyUtcDateTimeConvention(this ModelBuilder modelBuilder)
+        {
+            var dateTimeConverter = new ValueConverter<DateTime, DateTime>(
+                v => v.Kind == DateTimeKind.Utc ? v : v.ToUniversalTime(),
+                v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+
+            var nullableDateTimeConverter = new ValueConverter<DateTime?, DateTime?>(
+                v => v.HasValue ? (v.Value.Kind == DateTimeKind.Utc ? v.Value : v.Value.ToUniversalTime()) : v,
+                v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
+
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                foreach (var property in entityType.GetProperties())
+                {
+                    if (property.ClrType == typeof(DateTime))
+                    {
+                        property.SetValueConverter(dateTimeConverter);
+                    }
+
+                    if (property.ClrType == typeof(DateTime?))
+                    {
+                        property.SetValueConverter(nullableDateTimeConverter);
+                    }
+                }
+            }
         }
     }
 }

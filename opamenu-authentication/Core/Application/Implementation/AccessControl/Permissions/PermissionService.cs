@@ -1,16 +1,19 @@
-﻿using Authenticator.API.Core.Application.Interfaces.AccessControl.Permissions;
 using Authenticator.API.Core.Application.Interfaces.AccessControl.Operation;
-using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
+using Authenticator.API.Core.Application.Interfaces.AccessControl.PermissionOperations;
+using Authenticator.API.Core.Application.Interfaces.AccessControl.Permissions;
 using Authenticator.API.Core.Domain.AccessControl.Permissions.DTOs;
 using Authenticator.API.Core.Domain.Api;
+using Authenticator.API.Core.Domain.Api.Commons;
 using AutoMapper;
+using Azure;
 using Microsoft.EntityFrameworkCore;
-using Authenticator.API.Core.Application.Interfaces.AccessControl.PermissionOperations;
+using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
+using Xunit.Sdk;
 
 namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permissions
 {
     /// <summary>
-    /// ServiÃ§o para gerenciar permissÃµes
+    /// Serviço para gerenciar permissões
     /// </summary>
     /// <param name="permissionRepository"></param>
     /// <param name="operationRepository"></param>
@@ -27,7 +30,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
         private readonly IMapper _mapper = mapper;
 
         /// <summary>
-        /// ObtÃ©m todas as permissÃµes
+        /// Obtém todas as permissões
         /// </summary>
         /// <returns></returns>
         public async Task<ResponseDTO<IEnumerable<PermissionDTO>>> GetAllPermissionsAsync()
@@ -35,25 +38,25 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
             try
             {
                 var entities = await _permissionRepository.GetAllAsync(include: p => p
+                    .Include(p => p.RolePermissions)
                     .Include(x => x.Module)
                     .Include(x => x.PermissionOperations)
                         .ThenInclude(po => po.Operation));
 
+                if(!entities.Any())
+                    return StaticResponseBuilder<IEnumerable<PermissionDTO>>.BuildOk(null!);
+
                 var dtos = _mapper.Map<IEnumerable<PermissionDTO>>(entities);
-                return ResponseBuilder<IEnumerable<PermissionDTO>>.Ok(dtos).Build();
+                return StaticResponseBuilder<IEnumerable<PermissionDTO>>.BuildOk(dtos);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<IEnumerable<PermissionDTO>>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<IEnumerable<PermissionDTO>>.BuildErrorResponse(ex);
             }
         }
 
         /// <summary>
-        /// ObtÃ©m todas as permissÃµes paginadas
+        /// Obtém todas as permissões paginadas
         /// </summary>
         /// <param name="page"></param>
         /// <param name="limit"></param>
@@ -70,6 +73,9 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
                         .Include(x => x.PermissionOperations)
                             .ThenInclude(po => po.Operation));
 
+                if(!entities.Any())
+                    return StaticResponseBuilder<PagedResponseDTO<PermissionDTO>>.BuildOk(null!);
+
                 var dtos = _mapper.Map<IEnumerable<PermissionDTO>>(entities);
 
                 var pagedResponse = new PagedResponseDTO<PermissionDTO>
@@ -80,21 +86,16 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
                     Total = entities.Count(),
                     TotalPages = (int)Math.Ceiling((double)entities.Count() / limit)
                 };
-
-                return ResponseBuilder<PagedResponseDTO<PermissionDTO>>.Ok(pagedResponse).Build();
+                return StaticResponseBuilder<PagedResponseDTO<PermissionDTO>>.BuildOk(pagedResponse);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<PagedResponseDTO<PermissionDTO>>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<PagedResponseDTO<PermissionDTO>>.BuildErrorResponse(ex);
             }
         }
 
         /// <summary>
-        /// ObtÃ©m uma permissÃ£o pelo ID
+        /// Obtém permissão por ID
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -108,26 +109,19 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
                         .ThenInclude(po => po.Operation));
 
                 if (entity == null)
-                    return ResponseBuilder<PermissionDTO>
-                        .Fail(new ErrorDTO { Message = "PermissÃ£o nÃ£o encontrada" })
-                        .WithCode(404)
-                        .Build();
+                    return StaticResponseBuilder<PermissionDTO>.BuildOk(null!);
 
                 var dto = _mapper.Map<PermissionDTO>(entity);
-                return ResponseBuilder<PermissionDTO>.Ok(dto).Build();
+                return StaticResponseBuilder<PermissionDTO>.BuildOk(dto);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<PermissionDTO>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<PermissionDTO>.BuildErrorResponse(ex);
             }
         }
 
         /// <summary>
-        /// ObtÃ©m permissÃµes por mÃ³dulo
+        /// Obtem permissões por módulo
         /// </summary>
         /// <param name="moduleId"></param>
         /// <returns></returns>
@@ -142,21 +136,20 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
                         .Include(x => x.PermissionOperations)
                             .ThenInclude(po => po.Operation));
 
+                if(entities == null)
+                    return StaticResponseBuilder<IEnumerable<PermissionDTO>>.BuildOk(null!);
+
                 var dtos = _mapper.Map<IEnumerable<PermissionDTO>>(entities);
-                return ResponseBuilder<IEnumerable<PermissionDTO>>.Ok(dtos).Build();
+                return StaticResponseBuilder<IEnumerable<PermissionDTO>>.BuildOk(dtos);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<IEnumerable<PermissionDTO>>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<IEnumerable<PermissionDTO>>.BuildErrorResponse(ex);
             }
         }
 
         /// <summary>
-        /// ObtÃ©m permissÃµes por role
+        /// Obtém permissão por role
         /// </summary>
         /// <param name="roleId"></param>
         /// <returns></returns>
@@ -171,21 +164,20 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
                         .Include(x => x.PermissionOperations)
                             .ThenInclude(po => po.Operation));
 
+                if(entities == null)
+                    return StaticResponseBuilder<IEnumerable<PermissionDTO>>.BuildOk(null!);
+
                 var dtos = _mapper.Map<IEnumerable<PermissionDTO>>(entities);
-                return ResponseBuilder<IEnumerable<PermissionDTO>>.Ok(dtos).Build();
+                return StaticResponseBuilder<IEnumerable<PermissionDTO>>.BuildOk(dtos);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<IEnumerable<PermissionDTO>>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<IEnumerable<PermissionDTO>>.BuildErrorResponse(ex);
             }
         }
 
         /// <summary>
-        /// Adiciona uma nova permissÃ£o
+        /// Adiciona uma nova permissão
         /// </summary>
         /// <param name="permission"></param>
         /// <returns></returns>
@@ -198,7 +190,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
 
                 var createdEntity = await _permissionRepository.AddAsync(entity);
 
-                // Associar operaÃ§Ãµes se fornecidas
+                // Associar operações se fornecidas
                 if (permission.OperationIds != null && permission.OperationIds.Any())
                 {
                     await AssignOperationsToPermissionInternalAsync(createdEntity.Id, permission.OperationIds);
@@ -211,20 +203,16 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
                         .ThenInclude(po => po.Operation));
 
                 var dto = _mapper.Map<PermissionDTO>(entityWithIncludes);
-                return ResponseBuilder<PermissionDTO>.Ok(dto).WithCode(201).Build();
+                return StaticResponseBuilder<PermissionDTO>.BuildOk(dto);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<PermissionDTO>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<PermissionDTO>.BuildErrorResponse(ex);
             }
         }
 
         /// <summary>
-        /// Atualiza uma permissÃ£o
+        /// Atualiza uma permissão existente
         /// </summary>
         /// <param name="id"></param>
         /// <param name="permission"></param>
@@ -239,15 +227,10 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
                         .ThenInclude(po => po.Operation));
 
                 if (existingEntity == null)
-                    return ResponseBuilder<PermissionDTO>
-                        .Fail(new ErrorDTO { Message = "PermissÃ£o nÃ£o encontrada" })
-                        .WithCode(404)
-                        .Build();
+                    return StaticResponseBuilder<PermissionDTO>.BuildError("Permissão não encontrada!");
 
                 _mapper.Map(permission, existingEntity);
-                existingEntity.UpdatedAt = DateTime.Now;
                 await _permissionRepository.UpdateAsync(existingEntity);
-
 
                 var operationsChanges = PermissionsOperationsCompare(existingEntity.PermissionOperations, permission);
 
@@ -257,29 +240,22 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
                     {
                         var operationId = change.Keys.First();
                         var action = change.Values.First();
-                        if (action == "add")
-                            await AddOrRemoveOperationsFromPermissionInternal(id, new List<Guid> { operationId }, existingEntity.PermissionOperations);
-                        else if (action == "remove")
-                            await AddOrRemoveOperationsFromPermissionInternal(id, new List<Guid> { operationId }, existingEntity.PermissionOperations);
+                        await AddOrRemoveOperationsFromPermissionInternal(id, operationId , existingEntity.PermissionOperations, action);
                     }
                     await _permissionOperationRepository.UpdateRangeAsync(existingEntity.PermissionOperations);
                 }
 
                 var dto = _mapper.Map<PermissionDTO>(existingEntity);
-                return ResponseBuilder<PermissionDTO>.Ok(dto).Build();
+                return StaticResponseBuilder<PermissionDTO>.BuildOk(dto);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<PermissionDTO>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<PermissionDTO>.BuildErrorResponse(ex);
             }
         }
 
         /// <summary>
-        /// Deleta uma permissÃ£o
+        /// Deleta uma permissão
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -289,29 +265,22 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
             {
                 var existingEntity = await _permissionRepository.GetByIdAsync(id);
                 if (existingEntity == null)
-                    return ResponseBuilder<bool>
-                        .Fail(new ErrorDTO { Message = "PermissÃ£o nÃ£o encontrada" })
-                        .WithCode(404)
-                        .Build();
+                    return StaticResponseBuilder<bool>.BuildError("Permissão não encontrada!");
 
-                // Remover todas as operaÃ§Ãµes associadas antes de deletar
+                // Remover todos o vinculos associadas antes de deletar
                 await RemoveAllOperationsFromPermissionInternalAsync(id);
 
                 await _permissionRepository.DeleteAsync(existingEntity);
-                return ResponseBuilder<bool>.Ok(true).Build();
+                return StaticResponseBuilder<bool>.BuildOk(true);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<bool>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<bool>.BuildErrorResponse(ex);
             }
         }
 
         /// <summary>
-        /// Associa operaÃ§Ãµes a uma permissÃ£o
+        /// Associa operações a uma permissão
         /// </summary>
         /// <param name="permissionId"></param>
         /// <param name="operationIds"></param>
@@ -321,20 +290,16 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
             try
             {
                 var result = await AssignOperationsToPermissionInternalAsync(permissionId, operationIds);
-                return ResponseBuilder<bool>.Ok(result).Build();
+                return StaticResponseBuilder<bool>.BuildOk(result);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<bool>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<bool>.BuildErrorResponse(ex);
             }
         }
 
         /// <summary>
-        /// Remove operaÃ§Ãµes de uma permissÃ£o
+        /// Remove vinculos de operações de uma permissão
         /// </summary>
         /// <param name="permissionId"></param>
         /// <param name="operationIds"></param>
@@ -343,23 +308,33 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
         {
             try
             {
-                //var result = await RemoveOperationsFromPermissionInternalAsync(permissionId, operationIds);
-                //return ResponseBuilder<bool>.Ok(result).Build();
-                return ResponseBuilder<bool>.Ok(true).Build();
+                var permission = await _permissionRepository.GetByIdAsync(permissionId, include: p => p
+                    .Include(x => x.PermissionOperations)) ?? throw new ArgumentException("Permissão não encontrada");
+
+                var permissionOperationsToRemove = permission.PermissionOperations
+                    .Where(po => operationIds.Contains(po.OperationId) && po.IsActive)
+                    .ToList();
+
+                if(permissionOperationsToRemove.Count == 0)
+                    throw new ArgumentException("Nenhum vínculo de operação encontrado para remoção");
+
+                foreach (var permissionOperation in permissionOperationsToRemove)
+                {
+                    permissionOperation.IsActive = false;
+                    permissionOperation.UpdatedAt = DateTime.Now;
+                }
+                await _permissionOperationRepository.UpdateRangeAsync(permissionOperationsToRemove);
+
+                return StaticResponseBuilder<bool>.BuildOk(true);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<bool>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<bool>.BuildErrorResponse(ex);
             }
         }
 
         /// <summary>
-        /// MÃ©todo interno para associar operaÃ§Ãµes a uma permissÃ£o
-        /// </summary>
+        /// Método interno para associar operações a uma permissão
         /// <param name="permissionId"></param>
         /// <param name="operationIds"></param>
         /// <returns></returns>
@@ -417,46 +392,66 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
         }
 
         /// <summary>
-        /// MÃ©todo interno para adicionar ou remover operaÃ§Ãµes de uma permissÃ£o
+        /// Método interno para adicionar ou remover operações de uma permissão
         /// </summary>
         /// <param name="permissionId"></param>
         /// <param name="operationIds"></param>
         /// <param name="permissionOperations"></param>
         /// <returns></returns>
-        private async Task<IEnumerable<PermissionOperationEntity>> AddOrRemoveOperationsFromPermissionInternal(Guid permissionId, List<Guid> operationIds,
-            IEnumerable<PermissionOperationEntity> permissionOperations)
+        private async Task<IEnumerable<PermissionOperationEntity>> AddOrRemoveOperationsFromPermissionInternal(Guid permissionId, Guid operationId,
+            IEnumerable<PermissionOperationEntity> permissionOperations, string action)
         {
             try
             {
-                foreach (var operationId in operationIds)
+                if (action == "add")
                 {
-                    var permissionOperation = permissionOperations
-                        .FirstOrDefault(po => po.OperationId == operationId && po.IsActive);
-                    if (permissionOperation != null)
+                    var existingPermissionOperation = permissionOperations.FirstOrDefault(po => po.PermissionId == permissionId && po.OperationId == operationId);
+
+                    if (existingPermissionOperation != null)
                     {
-                        permissionOperation.IsActive = false;
-                        permissionOperation.UpdatedAt = DateTime.Now;
-                        continue;
+                        if (!existingPermissionOperation.IsActive)
+                        {
+                            existingPermissionOperation.IsActive = true;
+                            existingPermissionOperation.UpdatedAt = DateTime.Now;
+                        }
                     }
-                    permissionOperation = permissionOperations
-                        .FirstOrDefault(po => po.OperationId == operationId && !po.IsActive);
-                    if (permissionOperation != null)
+                    else
                     {
-                        permissionOperation.IsActive = true;
-                        permissionOperation.UpdatedAt = DateTime.Now;
+                        var permissionOperation = new PermissionOperationEntity
+                        {
+                            Id = Guid.NewGuid(),
+                            PermissionId = permissionId,
+                            OperationId = operationId,
+                            IsActive = true,
+                            CreatedAt = DateTime.Now
+                        };
+                        await _permissionOperationRepository.AddAsync(permissionOperation);
+
+                        permissionOperations.ToList().Add(permissionOperation);
                     }
+                    return permissionOperations;
+                }
+                else if (action == "remove")
+                {
+                    var existingPermissionOperation = permissionOperations.FirstOrDefault(po => po.PermissionId == permissionId && po.OperationId == operationId);
+                    if (existingPermissionOperation != null && existingPermissionOperation.IsActive)
+                    {
+                        existingPermissionOperation.IsActive = false;
+                        existingPermissionOperation.UpdatedAt = DateTime.Now;
+                    }
+                    return permissionOperations;
                 }
                 return permissionOperations;
             }
             catch (Exception ex)
             {
-                return permissionOperations;
+                throw new Exception("Erro ao adicionar ou remover operações da permissão.", ex);
             }
 
         }
 
         /// <summary>
-        /// MÃ©todo interno para remover todas as operaÃ§Ãµes de uma permissÃ£o
+        /// Método interno para remover todas as operações de uma permissão
         /// </summary>
         /// <param name="permissionId"></param>
         /// <returns></returns>
@@ -470,11 +465,17 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
             
             await _permissionOperationRepository.DeleteRangeAsync(permission.PermissionOperations);
 
-            await _permissionRepository.DeleteAsync(permission);
             return true;
 
         }
-        private List<Dictionary<Guid, string>> PermissionsOperationsCompare(IEnumerable<PermissionOperationEntity> permissionOperations, PermissionUpdateDTO newPermission)
+
+        /// <summary>
+        /// Compara as operações de uma permissão existente com as novas operações fornecidas
+        /// </summary>
+        /// <param name="permissionOperations"></param>
+        /// <param name="newPermission"></param>
+        /// <returns></returns>
+        private static List<Dictionary<Guid, string>> PermissionsOperationsCompare(IEnumerable<PermissionOperationEntity> permissionOperations, PermissionUpdateDTO newPermission)
         {
             List<Dictionary<Guid, string>> operationsCompare = new List<Dictionary<Guid, string>>();
 
@@ -493,6 +494,32 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
                 }
             }
             return operationsCompare;
+        }
+
+        public async Task<ResponseDTO<PermissionDTO>> ToggleStatus(Guid id)
+        {
+            try
+            {
+                var existingEntity = await _permissionRepository.GetByIdAsync(id, include: p => p
+                    .Include(x => x.Module)
+                    .Include(x => x.PermissionOperations)
+                        .ThenInclude(po => po.Operation));
+
+                if (existingEntity == null)
+                    return StaticResponseBuilder<PermissionDTO>.BuildError("Permissão não encontrada!");
+
+                existingEntity.IsActive = !existingEntity.IsActive;
+                existingEntity.UpdatedAt = DateTime.Now;
+
+                await _permissionRepository.UpdateAsync(existingEntity);
+
+                var dto = _mapper.Map<PermissionDTO>(existingEntity);
+                return StaticResponseBuilder<PermissionDTO>.BuildOk(dto);
+            }
+            catch (Exception ex)
+            {
+                return StaticResponseBuilder<PermissionDTO>.BuildErrorResponse(ex);
+            }
         }
     }
 }

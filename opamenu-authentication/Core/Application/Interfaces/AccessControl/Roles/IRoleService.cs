@@ -16,6 +16,7 @@ namespace Authenticator.API.Core.Application.Interfaces.AccessControl.Roles
         Task<ResponseDTO<IEnumerable<RoleDTO>>> GetRolesByTenantAsync(Guid tenantId);
         Task<ResponseDTO<RoleDTO>> AddRoleAsync(RoleCreateDTO dto);
         Task<ResponseDTO<RoleDTO>> UpdateRoleAsync(Guid id, RoleUpdateDTO dto);
+        Task<ResponseDTO<RoleDTO>> ToggleStatus(Guid id, RoleUpdateDTO dto);
         Task<ResponseDTO<bool>> DeleteRoleAsync(Guid id);
         Task<ResponseDTO<IEnumerable<PermissionDTO>>> GetPermissionsByRoleAsync(Guid roleId);
         Task<ResponseDTO<bool>> AssignPermissionsToRoleAsync(Guid roleId, List<Guid> permissionIds);

@@ -1,11 +1,11 @@
 ﻿using Authenticator.API.Core.Application.Interfaces.AccessControl.AccessGroup;
 using Authenticator.API.Core.Application.Interfaces.Auth;
 using Authenticator.API.Core.Domain.AccessControl.AccessGroup.DTOs;
-using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
-using Authenticator.API.Core.Domain.AccessControl.Modules.DTOs;
 using Authenticator.API.Core.Domain.Api;
+using Authenticator.API.Core.Domain.Api.Commons;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
 
 namespace Authenticator.API.Core.Application.Implementation.AccessControl.AccessGroup
 {
@@ -41,13 +41,12 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Access
                 var createdEntity = await _accessGroupRepository.AddAsync(entity);
 
                 var dto = _mapper.Map<AccessGroupDTO>(createdEntity);
-                return ResponseBuilder<AccessGroupDTO>.Ok(dto).Build();
+                return StaticResponseBuilder<AccessGroupDTO>.BuildCreated(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao criar o grupo de acesso");
-                return ResponseBuilder<AccessGroupDTO>
-                    .Fail(new ErrorDTO { Message = ex.Message }).WithException(ex).WithCode(500).Build();
+                return StaticResponseBuilder<AccessGroupDTO>.BuildErrorResponse(ex);
             }
         }
         /// <summary>
@@ -67,12 +66,12 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Access
                         .Build();
 
                 await _accessGroupRepository.DeleteAsync(entity);
-                return ResponseBuilder<bool>.Ok(true).Build();
+                return StaticResponseBuilder<bool>.BuildOk(true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao deletar grupo de acesso.");
-                return ResponseBuilder<bool>.Fail(new ErrorDTO { Message = ex.Message }).WithException(ex).WithCode(500).Build();
+                return StaticResponseBuilder<bool>.BuildErrorResponse(ex);
             }
         }
         /// <summary>
@@ -85,47 +84,32 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Access
             {
                 var currentUser = _userContext.CurrentUser;
                 if (currentUser == null)
-                {
-                    _logger.LogWarning("usuário nÃ£o autenticado ao tentar buscar grupos de acesso");
-                    return ResponseBuilder<IEnumerable<AccessGroupDTO>>
-                        .Fail(new ErrorDTO { Message = "usuário nÃ£o autenticado" })
-                        .WithCode(401)
-                        .Build();
-                }
+                    return StaticResponseBuilder<IEnumerable<AccessGroupDTO>>.BuildError("Usuário não autenticado.");
 
                 IEnumerable<AccessGroupEntity> entities;
 
                 if (currentUser.TenantId == Guid.Empty)
                 {
                     entities = await _accessGroupRepository.GetAllAsync();
-                    if (!entities.Any())
-                        return ResponseBuilder<IEnumerable<AccessGroupDTO>>
-                            .Ok(Enumerable.Empty<AccessGroupDTO>())
-                            .Build();
-                    //_logger.LogWarning("TenantId nÃ£o encontrado para o usuário: {UserId}", currentUser.UserId);
-                    //return ResponseBuilder<IEnumerable<AccessGroupDTO>>
-                    //    .Fail(new ErrorDTO { Message = "Tenant nÃ£o identificado" })
-                    //    .WithCode(400)
-                    //    .Build();
-                }
-                else
-                {
-                    // Filtra grupos de acesso pelo TenantId do usuário
-                    entities = await _accessGroupRepository.GetAllAsyncByTenantId(currentUser.TenantId);
                     if (entities == null || !entities.Any())
-                        return ResponseBuilder<IEnumerable<AccessGroupDTO>>
-                            .Ok(Enumerable.Empty<AccessGroupDTO>())
-                            .Build();
+                        return StaticResponseBuilder<IEnumerable<AccessGroupDTO>>.BuildOk([]);
+
+                    var accessGroupDto = _mapper.Map<IEnumerable<AccessGroupDTO>>(entities);
+                    return StaticResponseBuilder<IEnumerable<AccessGroupDTO>>.BuildOk(accessGroupDto);
                 }
 
+                entities = await _accessGroupRepository.GetAllAsyncByTenantId(currentUser.TenantId);
+                if (entities == null || !entities.Any())
+                    return StaticResponseBuilder<IEnumerable<AccessGroupDTO>>.BuildOk([]);
+
                 var dto = _mapper.Map<IEnumerable<AccessGroupDTO>>(entities);
-                return ResponseBuilder<IEnumerable<AccessGroupDTO>>.Ok(dto).Build();
+                return StaticResponseBuilder<IEnumerable<AccessGroupDTO>>.BuildOk(dto);
+
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao buscar grupos de acesso");
-                return ResponseBuilder<IEnumerable<AccessGroupDTO>>
-                    .Fail(new ErrorDTO { Message = ex.Message }).WithException(ex).WithCode(500).Build();
+                return StaticResponseBuilder<IEnumerable<AccessGroupDTO>>.BuildErrorResponse(ex);
             }
 
         }
@@ -136,13 +120,21 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Access
         /// <returns></returns>
         public async Task<ResponseDTO<AccessGroupDTO>> GetByIdAsync(Guid id)
         {
-            var entity = await _accessGroupRepository.GetByIdAsync(id);
-            if (entity == null)
-                return ResponseBuilder<AccessGroupDTO>
-                    .Fail(new ErrorDTO { Message = "Grupo de accesso nÃ£o encontrado." }).WithCode(404).Build();
+            try
+            {
+                var entity = await _accessGroupRepository.GetByIdAsync(id);
+                if (entity == null)
+                    return StaticResponseBuilder<AccessGroupDTO>.BuildOk(new AccessGroupDTO { });
 
-            var dto = _mapper.Map<AccessGroupDTO>(entity);
-            return ResponseBuilder<AccessGroupDTO>.Ok(dto).Build();
+                var dto = _mapper.Map<AccessGroupDTO>(entity);
+                return StaticResponseBuilder<AccessGroupDTO>.BuildOk(dto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao buscar grupo de acesso por ID.");
+                return StaticResponseBuilder<AccessGroupDTO>.BuildErrorResponse(ex);
+            }
+
         }
         /// <summary>
         /// Recupera grupos de acesso paginados
@@ -187,14 +179,13 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Access
                 }
                 else
                 {
-                    // Filtra por tenant e inclui GroupType corretamente (Where + Include)
-                    total = await _accessGroupRepository.CountAsync(ag => ag.TenantId == currentUser.TenantId);
+                    total = await _accessGroupRepository.CountAsync(ag => ag.TenantId == currentUser!.TenantId);
 
                     entities = await _accessGroupRepository.GetPagedAsync(
                         page,
                         limit,
                         include: q => q
-                            .Where(ag => ag.TenantId == currentUser.TenantId)
+                            .Where(ag => ag.TenantId == currentUser!.TenantId)
                             .Include(ag => ag.GroupType));
 
                     items = _mapper.Map<IEnumerable<AccessGroupDTO>>(entities);
@@ -211,15 +202,36 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Access
                     };
 
                 }
-                return ResponseBuilder<PagedResponseDTO<AccessGroupDTO>>.Ok(pagedResult).Build();
+                return StaticResponseBuilder<PagedResponseDTO<AccessGroupDTO>>.BuildOk(pagedResult);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao buscar grupos de acesso paginados");
-                return ResponseBuilder<PagedResponseDTO<AccessGroupDTO>>
-                    .Fail(new ErrorDTO { Message = ex.Message }).WithException(ex).WithCode(500).Build();
+                return StaticResponseBuilder<PagedResponseDTO<AccessGroupDTO>>.BuildErrorResponse(ex);
             }
         }
+
+        public async Task<ResponseDTO<AccessGroupDTO>> ToggleStatus(Guid id, UpdateAccessGroupDTO dto)
+        {
+            try
+            {
+                var entity = await _accessGroupRepository.GetByIdAsync(id);
+                if (entity == null)
+                    StaticResponseBuilder<AccessGroupDTO>.BuildError("Grupo de accesso não encontrado.");
+
+                entity!.IsActive = dto.IsActive;
+
+                await _accessGroupRepository.UpdateAsync(entity);
+                var updatedDto = _mapper.Map<AccessGroupDTO>(entity);
+
+                return StaticResponseBuilder<AccessGroupDTO>.BuildOk(updatedDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao atualizar o grupo de acesso.");
+                return StaticResponseBuilder<AccessGroupDTO>.BuildErrorResponse(ex);
+            }
+        }
+
         /// <summary>
         /// Atualiza um grupo de acesso
         /// </summary>
@@ -233,7 +245,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Access
                 var entity = await _accessGroupRepository.GetByIdAsync(id);
                 if (entity == null)
                     return ResponseBuilder<AccessGroupDTO>
-                        .Fail(new ErrorDTO { Message = "Grupo de accesso nÃ£o encontrado." }).WithCode(404).Build();
+                        .Fail(new ErrorDTO { Message = "Grupo de accesso não encontrado." }).WithCode(404).Build();
 
                 var updatedEntity = _mapper.Map(dto, entity);
 

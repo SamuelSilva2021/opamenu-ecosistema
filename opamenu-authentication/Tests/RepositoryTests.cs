@@ -90,7 +90,7 @@ namespace Authenticator.API.Tests
             // Assert
             result.Should().NotBeNull();
             result.Id.Should().Be(userAccount.Id);
-            result.CreatedAt.Should().BeCloseTo(DateTime.Now, TimeSpan.FromSeconds(5));
+            result.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
         }
 
         [Fact]
@@ -222,7 +222,7 @@ namespace Authenticator.API.Tests
                 LastName = "Me",
                 Status = EUserAccountStatus.Ativo,
                 IsEmailVerified = false,
-                UpdatedAt = DateTime.Now
+                UpdatedAt = DateTime.UtcNow
             };
 
             await repository.AddAsync(userAccount);
@@ -237,7 +237,7 @@ namespace Authenticator.API.Tests
             var updatedEntity = await repository.GetByIdAsync(userAccount.Id);
             updatedEntity.Should().NotBeNull();
             updatedEntity!.IsEmailVerified.Should().BeTrue();
-            updatedEntity.UpdatedAt.Should().BeCloseTo(DateTime.Now, TimeSpan.FromSeconds(5));
+            updatedEntity.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
         }
 
         [Fact]

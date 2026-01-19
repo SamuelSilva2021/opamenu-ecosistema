@@ -17,7 +17,7 @@ namespace Authenticator.API.Infrastructure.Mapper.AccessControl.Operation
             // CreateDTO para Entity
             CreateMap<OperationCreateDTO, OperationEntity>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.Now))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.PermissionOperations, opt => opt.Ignore());
 
@@ -25,7 +25,7 @@ namespace Authenticator.API.Infrastructure.Mapper.AccessControl.Operation
             CreateMap<OperationUpdateDTO, OperationEntity>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(_ => DateTime.Now))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow))
                 .ForMember(dest => dest.PermissionOperations, opt => opt.Ignore());
 
             // ResponseDTO para Entity (para casos de atualização)

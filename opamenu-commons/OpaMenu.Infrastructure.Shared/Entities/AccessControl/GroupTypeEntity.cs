@@ -38,7 +38,7 @@ namespace OpaMenu.Infrastructure.Shared.Entities.AccessControl
         /// <summary>
         /// Data da última atualização do tipo de grupo de acesso
         /// </summary>
-        public DateTime? UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
         /// <summary>
         /// Grupos de Acesso associados a este tipo
         /// </summary>

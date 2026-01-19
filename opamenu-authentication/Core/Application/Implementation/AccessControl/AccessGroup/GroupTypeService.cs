@@ -4,6 +4,7 @@ using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
 using Authenticator.API.Core.Domain.AccessControl.AccessGroups.DTOs;
 using Authenticator.API.Core.Domain.Api;
 using AutoMapper;
+using Authenticator.API.Core.Domain.Api.Commons;
 
 namespace Authenticator.API.Core.Application.Implementation.AccessControl.AccessGroup
 {
@@ -194,6 +195,28 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Access
                     .Fail(new ErrorDTO { Message = ex.Message }).WithCode(500).Build();
             }
 
+        }
+
+        public async Task<ResponseDTO<GroupTypeDTO?>> ToggleStatus(Guid id, GroupTypeUpdateDTO groupType)
+        {
+            try
+            {
+                var groupTypeEntity = _groupTypeRepository.GetByIdAsync(id);
+
+                if (groupTypeEntity == null)
+                    return StaticResponseBuilder<GroupTypeDTO?>.BuildError("Tipo de grupo não encontrado.");
+
+                groupTypeEntity.Result!.IsActive = groupType.IsActive;
+
+                await _groupTypeRepository.UpdateAsync(groupTypeEntity.Result);
+                var dto = _mapper.Map<GroupTypeDTO>(groupTypeEntity.Result);
+                return StaticResponseBuilder<GroupTypeDTO?>.BuildOk(dto);
+            }
+
+            catch (Exception ex)
+            {
+                return StaticResponseBuilder<GroupTypeDTO?>.BuildErrorResponse(ex);
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
+using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
 
 namespace Authenticator.API.Core.Application.Interfaces.MultiTenant
 {

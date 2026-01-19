@@ -12,8 +12,8 @@ namespace Authenticator.API.UserEntry.AccessControl.Operation
     /// <param name="operationService"></param>
     [Route("api/operation")]
     [ApiController]
-    [Authorize(Roles = "SUPER_ADMIN")]
-    public class OperationController(IOperationService operationService) : ControllerBase
+    [Authorize]
+    public class OperationController(IOperationService operationService) : BaseController
     {
         private readonly IOperationService _operationService = operationService;
 
@@ -22,15 +22,16 @@ namespace Authenticator.API.UserEntry.AccessControl.Operation
         /// </summary>
         /// <returns></returns>
         [HttpGet]
+        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<IEnumerable<OperationDTO>>> GetAllOperationAsync()
+        public async Task<ActionResult<IEnumerable<OperationDTO>>> GetAllOperationAsync([FromQuery] int page = 1, [FromQuery] int limit = 10)
         {
-            var response = await _operationService.GetAllOperationAsync();
-            return StatusCode(response.Code, response);
+            var response = await _operationService.GetAllOperationPagedAsync(page, limit);
+            return BuildResponse(response);
         }
 
         /// <summary>
@@ -40,6 +41,7 @@ namespace Authenticator.API.UserEntry.AccessControl.Operation
         /// <returns></returns>
         [HttpGet]
         [Route("{id:guid}")]
+        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -48,7 +50,7 @@ namespace Authenticator.API.UserEntry.AccessControl.Operation
         public async Task<ActionResult<OperationDTO>> GetOperationByIdAsync([FromRoute] Guid id)
         {
             var response = await _operationService.GetOperationByIdAsync(id);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
 
         /// <summary>
@@ -57,6 +59,7 @@ namespace Authenticator.API.UserEntry.AccessControl.Operation
         /// <param name="operation"></param>
         /// <returns></returns>
         [HttpPost]
+        [Authorize(Roles = "SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -65,7 +68,7 @@ namespace Authenticator.API.UserEntry.AccessControl.Operation
         public async Task<ActionResult<OperationDTO>> AddOperationAsync([FromBody] OperationCreateDTO operation)
         {
             var response = await _operationService.AddOperationAsync(operation);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
 
         /// <summary>
@@ -75,6 +78,7 @@ namespace Authenticator.API.UserEntry.AccessControl.Operation
         /// <returns></returns>
         [HttpDelete]
         [Route("{id:guid}")]
+        [Authorize(Roles = "SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -83,7 +87,7 @@ namespace Authenticator.API.UserEntry.AccessControl.Operation
         public async Task<ActionResult<bool>> DeleteOperationAsync([FromRoute] Guid id)
         {
             var response = await _operationService.DeleteOperationAsync(id);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
 
         /// <summary>
@@ -94,6 +98,7 @@ namespace Authenticator.API.UserEntry.AccessControl.Operation
         /// <returns></returns>
         [HttpPut]
         [Route("{id:guid}")]
+        [Authorize(Roles = "SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -102,7 +107,7 @@ namespace Authenticator.API.UserEntry.AccessControl.Operation
         public async Task<ActionResult<OperationDTO>> UpdateOperationAsync([FromRoute] Guid id, [FromBody] OperationUpdateDTO operation)
         {
             var response = await _operationService.UpdateOperationAsync(id, operation);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Authenticator.API.Core.Application.Interfaces;
+using Authenticator.API.Core.Application.Interfaces;
 using Authenticator.API.Core.Domain.AccessControl.UserAccounts.DTOs;
 using Authenticator.API.Core.Domain.Api;
 using Microsoft.Extensions.Options;
@@ -34,8 +34,9 @@ public class JwtTokenService : IJwtTokenService
     /// <param name="user"></param>
     /// <param name="tenant"></param>
     /// <param name="roles"></param>
+    /// <param name="permissions"></param>
     /// <returns></returns>
-    public string GenerateAccessToken(UserAccountEntity user, TenantEntity? tenant, IList<string> roles)
+    public string GenerateAccessToken(UserAccountEntity user, TenantEntity? tenant, IList<string> roles, IList<string>? permissions = null)
     {
         try
         {
@@ -52,6 +53,12 @@ public class JwtTokenService : IJwtTokenService
 
             foreach (var role in roles)
                 claims.Add(new Claim(ClaimTypes.Role, role));
+
+            if (permissions != null)
+            {
+                foreach (var permission in permissions)
+                    claims.Add(new Claim("permission", permission));
+            }
 
             if (tenant != null)
             {
@@ -166,8 +173,10 @@ public class JwtTokenService : IJwtTokenService
     /// <returns></returns>
     public int GetTokenExpirationTime() =>  _jwtSettings.AccessTokenExpirationMinutes * 60;
 
-    public string GenerateAccessToken(UserAccountDTO? user, TenantEntity tenant, List<string> roles)
+    public string GenerateAccessToken(UserAccountDTO? user, TenantEntity tenant, List<string> roles, IList<string>? permissions = null)
     {
+        if (user == null) throw new ArgumentNullException(nameof(user));
+
         try
         {
             var claims = new List<Claim>
@@ -183,6 +192,12 @@ public class JwtTokenService : IJwtTokenService
 
             foreach (var role in roles)
                 claims.Add(new Claim(ClaimTypes.Role, role));
+
+            if (permissions != null)
+            {
+                foreach (var permission in permissions)
+                    claims.Add(new Claim("permission", permission));
+            }
 
             if (tenant != null)
             {

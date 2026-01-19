@@ -42,6 +42,13 @@ namespace Authenticator.API.Core.Application.Interfaces.AccessControl.AccessGrou
         /// <returns></returns>
         Task<ResponseDTO<GroupTypeDTO?>> UpdateAsync(Guid id, GroupTypeUpdateDTO groupType);
         /// <summary>
+        /// Atualiza o status ativo/inativo de um tipo de grupo pelo ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="groupType"></param>
+        /// <returns></returns>
+        Task<ResponseDTO<GroupTypeDTO?>> ToggleStatus(Guid id, GroupTypeUpdateDTO groupType);
+        /// <summary>
         /// Deleta um tipo de grupo pelo ID
         /// </summary>
         /// <param name="id"></param>

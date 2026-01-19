@@ -1,4 +1,4 @@
-﻿using Authenticator.API.Core.Application.Interfaces.Auth;
+using Authenticator.API.Core.Application.Interfaces.Auth;
 using Authenticator.API.Core.Application.Interfaces.MultiTenant;
 using Authenticator.API.Core.Application.Interfaces.Payment;
 using Authenticator.API.Core.Domain.Api;
@@ -149,6 +149,27 @@ public class SubscriptionService(
 
         var subscriptionDto = mapper.Map<SubscriptionDTO>(subscription);
         return StaticResponseBuilder<SubscriptionDTO>.BuildOk(subscriptionDto);
+    }
+
+    public async Task<ResponseDTO<SubscriptionDTO>> GetByTenantAsync(Guid tenantId)
+    {
+        try
+        {
+            if (tenantId == Guid.Empty)
+                return StaticResponseBuilder<SubscriptionDTO>.BuildError("Tenant inválido");
+
+            var subscription = await subscriptionRepository.GetByTenantIdAsync(tenantId);
+            if (subscription == null)
+                return StaticResponseBuilder<SubscriptionDTO>.BuildOk(new SubscriptionDTO { });
+
+            var dto = mapper.Map<SubscriptionDTO>(subscription);
+            return StaticResponseBuilder<SubscriptionDTO>.BuildOk(dto);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro ao buscar assinatura para o tenant {TenantId}", tenantId);
+            return StaticResponseBuilder<SubscriptionDTO>.BuildError("Erro ao buscar assinatura do tenant");
+        }
     }
 
     public async Task<ResponseDTO<SubscriptionDTO>> CreateAsync(CreateSubscriptionDTO dto)

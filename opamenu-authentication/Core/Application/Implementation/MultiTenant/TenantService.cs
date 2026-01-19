@@ -7,6 +7,7 @@ using Authenticator.API.Core.Application.Interfaces.MultiTenant;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts;
 using Authenticator.API.Core.Domain.Api;
+using Authenticator.API.Core.Domain.Api.Commons;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
 using Authenticator.API.Core.Domain.MultiTenant.Tenant.DTOs;
 using AutoMapper;
@@ -14,11 +15,10 @@ using System.Text.RegularExpressions;
 using Authenticator.API.Core.Application.Interfaces.AccessControl.UserAccounts;
 using Authenticator.API.Core.Domain.AccessControl.UserAccounts.DTOs;
 
+using System.Linq.Expressions;
+
 namespace Authenticator.API.Core.Application.Implementation.MultiTenant
 {
-    /// <summary>
-    /// Serviço para gerenciamento de tenants (empresas)
-    /// </summary>
     public class TenantService(
         ITenantRepository tenantRepository,
         IMapper mapper,
@@ -57,14 +57,9 @@ namespace Authenticator.API.Core.Application.Implementation.MultiTenant
         {
             try
             {
-                var validationResult = await ValidateNewTenantAsync(tenant);
-                if (!validationResult.Success)
-                {
-                    return ResponseBuilder<RegisterTenantResponseDTO>
-                        .Fail(new ErrorDTO { Message = validationResult.Message })
-                        .WithCode(400)
-                        .Build();
-                }
+                var (Success, Message) = await ValidateNewTenantAsync(tenant);
+                if (!Success)
+                    return StaticResponseBuilder<RegisterTenantResponseDTO>.BuildError(Message);
 
                 TenantEntity? createdTenant = null;
                 UserAccountDTO? userAdmin = null;
@@ -77,27 +72,129 @@ namespace Authenticator.API.Core.Application.Implementation.MultiTenant
 
                 var userAdminResponse = await _userAccountService.CreateUserAccountAdminAsync(createdTenant.Id, tenant);
                 if (!userAdminResponse.Succeeded || userAdminResponse.Data == null)
-                {
                     throw new InvalidOperationException($"Erro ao criar usuário admin: {userAdminResponse.Errors?.FirstOrDefault()?.Message ?? "Erro desconhecido"}");
-                }
+
                 userAdmin = userAdminResponse.Data;
 
                 await ConfigureInitialPermissionsAsync(createdTenant, userAdmin);
 
-                return await GenerateSuccessResponseAsync(createdTenant, userAdmin, tenant);
+                var response = GenerateSuccessResponseAsync(createdTenant, userAdmin, tenant);
+
+                return StaticResponseBuilder<RegisterTenantResponseDTO>.BuildOk(response);
             }
             catch (Exception ex)
             {
                 await TryRollbackTenantCreationAsync(ex, tenant);
+                return StaticResponseBuilder<RegisterTenantResponseDTO>.BuildErrorResponse(ex);
+            }
+        }
 
-                var baseException = ex.GetBaseException();
+        public async Task<ResponseDTO<PagedResponseDTO<TenantSummaryDTO>>> GetAllAsync(int page, int limit, TenantFilterDTO? filter = null)
+        {
+            try
+            {
+                if (page < 1) page = 1;
+                if (limit < 1) limit = 10;
+                if (limit > 100) limit = 100;
 
-                _logger.LogError(ex, "Erro ao criar novo tenant: {Message}", baseException.Message);
-                return ResponseBuilder<RegisterTenantResponseDTO>
-                    .Fail(new ErrorDTO { Message = baseException.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                Expression<Func<TenantEntity, bool>> predicate = x => true;
+
+                if (filter != null)
+                {
+                    predicate = x =>
+                        (string.IsNullOrEmpty(filter.Name) || x.Name.Contains(filter.Name)) &&
+                        (string.IsNullOrEmpty(filter.Slug) || x.Slug.Contains(filter.Slug)) &&
+                        (string.IsNullOrEmpty(filter.Domain) || (x.Domain != null && x.Domain.Contains(filter.Domain))) &&
+                        (string.IsNullOrEmpty(filter.Email) || (x.Email != null && x.Email.Contains(filter.Email))) &&
+                        (string.IsNullOrEmpty(filter.Phone) || (x.Phone != null && x.Phone.Contains(filter.Phone))) &&
+                        (!filter.Status.HasValue || x.Status == filter.Status.Value);
+                }
+
+                var total = await _tenantRepository.CountAsync(predicate);
+
+                var tenants = await _tenantRepository.GetPagedAsync(predicate, page, limit);
+
+                var dtoList = _mapper.Map<IEnumerable<TenantSummaryDTO>>(tenants);
+
+                var totalPages = total == 0 ? 0 : (int)Math.Ceiling(total / (double)limit);
+
+                var pagedResult = new PagedResponseDTO<TenantSummaryDTO>
+                {
+                    Items = dtoList,
+                    Page = page,
+                    Limit = limit,
+                    Total = total,
+                    TotalPages = totalPages
+                };
+
+                return StaticResponseBuilder<PagedResponseDTO<TenantSummaryDTO>>.BuildOk(pagedResult);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao listar tenants");
+
+                return StaticResponseBuilder<PagedResponseDTO<TenantSummaryDTO>>.BuildErrorResponse(ex);
+            }
+        }
+
+        public async Task<ResponseDTO<TenantDTO>> GetByIdAsync(Guid id)
+        {
+            try
+            {
+                var tenant = await _tenantRepository.GetByIdAsync(id);
+                if (tenant == null)
+                    StaticResponseBuilder<TenantDTO>.BuildOk(null!);
+
+                var dto = _mapper.Map<TenantDTO>(tenant);
+                return StaticResponseBuilder<TenantDTO>.BuildOk(dto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao buscar tenant {TenantId}", id);
+                return StaticResponseBuilder<TenantDTO>.BuildErrorResponse(ex);
+            }
+        }
+
+        public async Task<ResponseDTO<TenantDTO>> UpdateAsync(Guid id, UpdateTenantDTO dto)
+        {
+            try
+            {
+                var tenant = await _tenantRepository.GetByIdAsync(id);
+                if (tenant == null)
+                    StaticResponseBuilder<TenantDTO>.BuildError("Tenant não encontrado");
+
+                _mapper.Map(dto, tenant);
+
+                tenant!.UpdatedAt = DateTime.UtcNow;
+
+                await _tenantRepository.UpdateAsync(tenant);
+
+                var resultDto = _mapper.Map<TenantDTO>(tenant);
+                return StaticResponseBuilder<TenantDTO>.BuildOk(resultDto);
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao atualizar tenant {TenantId}", id);
+                return StaticResponseBuilder<TenantDTO>.BuildErrorResponse(ex);
+            }
+        }
+
+        public async Task<ResponseDTO<bool>> DeleteAsync(Guid id)
+        {
+            try
+            {
+                var tenant = await _tenantRepository.GetByIdAsync(id);
+                if (tenant == null)
+                    return StaticResponseBuilder<bool>.BuildError("Tenant não encontrado");
+
+                await _tenantRepository.DeleteAsync(tenant);
+                return StaticResponseBuilder<bool>.BuildOk(true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao deletar tenant {TenantId}", id);
+                return StaticResponseBuilder<bool>.BuildErrorResponse(ex);
             }
         }
 
@@ -215,7 +312,7 @@ namespace Authenticator.API.Core.Application.Implementation.MultiTenant
             }
         }
 
-        private async Task<ResponseDTO<RegisterTenantResponseDTO>> GenerateSuccessResponseAsync(TenantEntity createdTenant, UserAccountDTO userAdmin, CreateTenantDTO tenantDto)
+        private RegisterTenantResponseDTO GenerateSuccessResponseAsync(TenantEntity createdTenant, UserAccountDTO userAdmin, CreateTenantDTO tenantDto)
         {
             var accessToken = _jwtTokenService.GenerateAccessToken(userAdmin, createdTenant, new List<string> { "Admin" });
             var refreshToken = _jwtTokenService.GenerateRefreshToken();
@@ -242,7 +339,7 @@ namespace Authenticator.API.Core.Application.Implementation.MultiTenant
                 Message = "Empresa e usuário administrador criados com sucesso!"
             };
 
-            return ResponseBuilder<RegisterTenantResponseDTO>.Ok(dto).WithCode(201).Build();
+            return dto;
         }
 
         /// <summary>

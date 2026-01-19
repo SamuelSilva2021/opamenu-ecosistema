@@ -482,6 +482,55 @@ public class AuthenticationService(
         await Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Achata a estrutura hierárquica de permissões para uma lista de strings (claims)
+    /// </summary>
+    private List<string> FlattenPermissions(UserPermissionsDTO permissionsDto)
+    {
+        var flatPermissions = new List<string>();
+        if (permissionsDto?.AccessGroups == null) return flatPermissions;
+
+        foreach (var group in permissionsDto.AccessGroups)
+        {
+            if (group.Roles == null) continue;
+            foreach (var role in group.Roles)
+            {
+                if (role.Modules == null) continue;
+                foreach (var module in role.Modules)
+                {
+                    if (!string.IsNullOrEmpty(module.Key))
+                    {
+                        // Permissão base do módulo
+                        flatPermissions.Add(module.Key);
+
+                        if (module.Operations != null)
+                        {
+                            foreach (var op in module.Operations)
+                            {
+                                // Permissão específica: MODULO:OPERACAO
+                                var normalizedOp = NormalizeOperation(op);
+                                flatPermissions.Add($"{module.Key}:{normalizedOp}");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return flatPermissions.Distinct().ToList();
+    }
+
+    private string NormalizeOperation(string operation)
+    {
+        if (string.IsNullOrWhiteSpace(operation)) return operation;
+
+        return operation.ToUpper() switch
+        {
+            "SELECT" => "READ",
+            "INSERT" => "CREATE",
+            _ => operation.ToUpper()
+        };
+    }
+
     #endregion
 }
 

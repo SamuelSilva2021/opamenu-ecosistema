@@ -1,5 +1,6 @@
 using Authenticator.API.Core.Application.Interfaces.AccessControl.Permissions;
 using Authenticator.API.Core.Domain.AccessControl.Permissions.DTOs;
+using Authenticator.API.Core.Domain.Api;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,7 +13,7 @@ namespace Authenticator.API.UserEntry.AccessControl.Permissions
     [Route("api/permissions")]
     [ApiController]
     [Authorize(Roles = "SUPER_ADMIN")]
-    public class PermissionController(IPermissionService permissionService) : ControllerBase
+    public class PermissionController(IPermissionService permissionService) : BaseController
     {
         private readonly IPermissionService _permissionService = permissionService;
 
@@ -29,7 +30,7 @@ namespace Authenticator.API.UserEntry.AccessControl.Permissions
         public async Task<ActionResult<IEnumerable<PermissionDTO>>> GetAllPermissionsAsync()
         {
             var response = await _permissionService.GetAllPermissionsAsync();
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
 
         /// <summary>
@@ -48,7 +49,7 @@ namespace Authenticator.API.UserEntry.AccessControl.Permissions
         public async Task<IActionResult> GetAllPermissionsPagedAsync([FromQuery] int page = 1, [FromQuery] int limit = 20)
         {
             var response = await _permissionService.GetAllPermissionsPagedAsync(page, limit);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
 
         /// <summary>
@@ -67,7 +68,7 @@ namespace Authenticator.API.UserEntry.AccessControl.Permissions
         public async Task<ActionResult<PermissionDTO>> GetPermissionByIdAsync([FromRoute] Guid id)
         {
             var response = await _permissionService.GetPermissionByIdAsync(id);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
 
         /// <summary>
@@ -85,7 +86,7 @@ namespace Authenticator.API.UserEntry.AccessControl.Permissions
         public async Task<ActionResult<IEnumerable<PermissionDTO>>> GetPermissionsByModuleAsync([FromRoute] Guid moduleId)
         {
             var response = await _permissionService.GetPermissionsByModuleAsync(moduleId);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
 
         /// <summary>
@@ -103,7 +104,7 @@ namespace Authenticator.API.UserEntry.AccessControl.Permissions
         public async Task<ActionResult<IEnumerable<PermissionDTO>>> GetPermissionsByRoleAsync([FromRoute] Guid roleId)
         {
             var response = await _permissionService.GetPermissionsByRoleAsync(roleId);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
 
         /// <summary>
@@ -125,7 +126,7 @@ namespace Authenticator.API.UserEntry.AccessControl.Permissions
             }
 
             var response = await _permissionService.AddPermissionAsync(permission);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
 
         /// <summary>
@@ -150,7 +151,26 @@ namespace Authenticator.API.UserEntry.AccessControl.Permissions
             }
 
             var response = await _permissionService.UpdatePermissionAsync(id, permission);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
+        }
+
+        /// <summary>
+        /// Atualiza o status de uma permissão
+        /// </summary>
+        /// <param name="id">ID da permissão</param>
+        /// <returns></returns>
+        [HttpPatch]
+        [Route("{id:guid}/toggle-status")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ResponseDTO<PermissionDTO>>> ToggleStatus([FromRoute] Guid id)
+        {
+            var response = await _permissionService.ToggleStatus(id);
+            return BuildResponse(response, response);
         }
 
         /// <summary>
@@ -169,7 +189,7 @@ namespace Authenticator.API.UserEntry.AccessControl.Permissions
         public async Task<ActionResult<bool>> DeletePermissionAsync([FromRoute] Guid id)
         {
             var response = await _permissionService.DeletePermissionAsync(id);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
 
         /// <summary>
@@ -194,7 +214,7 @@ namespace Authenticator.API.UserEntry.AccessControl.Permissions
             }
 
             var response = await _permissionService.AssignOperationsToPermissionAsync(permissionId, operationIds);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
 
         /// <summary>
@@ -219,7 +239,7 @@ namespace Authenticator.API.UserEntry.AccessControl.Permissions
             }
 
             var response = await _permissionService.RemoveOperationsFromPermissionAsync(permissionId, operationIds);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
     }
 }

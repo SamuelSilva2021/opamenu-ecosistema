@@ -16,13 +16,13 @@ namespace Authenticator.API.UserEntry.Users
     [Produces("application/json")]
     [Authorize]
     [Tags("Usuários")]
-    public class UsersController(IUserAccountService userAccountService, IAccountAccessGroupService accountAccessGroupService) : ControllerBase
+    public class UsersController(IUserAccountService userAccountService, IAccountAccessGroupService accountAccessGroupService) : BaseController
     {
         private readonly IUserAccountService _userService = userAccountService;
         private readonly IAccountAccessGroupService _accountAccessGroupService = accountAccessGroupService;
 
         /// <summary>
-        /// Lista usuários do tenant atual com paginação
+        /// Lista todos o usuários com paginação
         /// </summary>
         [HttpGet]
         [Authorize(Roles = "SUPER_ADMIN")]
@@ -33,8 +33,24 @@ namespace Authenticator.API.UserEntry.Users
         public async Task<ActionResult<ResponseDTO<PagedResponseDTO<UserAccountDTO>>>> GetPaged([FromQuery] int page = 1, [FromQuery] int limit = 10)
         {
             var response = await _userService.GetAllUserAccountsPagedAsync(page, limit);
-            return Ok(response);
+            return BuildResponse(response);
         }
+
+        /// <summary>
+        /// Lista todos o usuários com paginação
+        /// </summary>
+        [HttpGet("users-tenant")]
+        [Authorize(Roles = "ADMIN")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ResponseDTO<PagedResponseDTO<UserAccountDTO>>>> GetUsersByTenantPaged([FromQuery] int page = 1, [FromQuery] int limit = 10)
+        {
+            var response = await _userService.GetAllUserAccountsByTenantIdPagedAsync(page, limit);
+            return BuildResponse(response);
+        }
+
 
         /// <summary>
         /// Lista todos os usuários ativos do tenant atual
@@ -46,7 +62,7 @@ namespace Authenticator.API.UserEntry.Users
         public async Task<ActionResult<ResponseDTO<IEnumerable<UserAccountDTO>>>> GetActive()
         {
             var response = await _userService.GetAllActiveUsersAsync();
-            return Ok(response);
+            return BuildResponse(response);
         }
 
         /// <summary>
@@ -60,7 +76,7 @@ namespace Authenticator.API.UserEntry.Users
         public async Task<ActionResult<ResponseDTO<UserAccountDTO>>> GetById([FromRoute] Guid id)
         {
             var response = await _userService.GetUserAccountByIdAsync(id);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
 
         /// <summary>
@@ -74,7 +90,7 @@ namespace Authenticator.API.UserEntry.Users
         public async Task<ActionResult<ResponseDTO<UserAccountDTO>>> Create([FromBody] UserAccountCreateDTO request)
         {
             var response = await _userService.AddUserAccountAsync(request);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
 
         /// <summary>
@@ -90,7 +106,7 @@ namespace Authenticator.API.UserEntry.Users
         public async Task<ActionResult<ResponseDTO<UserAccountDTO>>> Update([FromRoute] Guid id, [FromBody] UserAccountUpdateDto request)
         {
             var response = await _userService.UpdateUserAccountAsync(id, request);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
 
         /// <summary>
@@ -104,7 +120,7 @@ namespace Authenticator.API.UserEntry.Users
         public async Task<ActionResult<ResponseDTO<bool>>> Delete([FromRoute] Guid id)
         {
             var response = await _userService.DeleteUserAccountAsync(id);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
 
         /// <summary>
@@ -132,7 +148,7 @@ namespace Authenticator.API.UserEntry.Users
         public async Task<ActionResult<ResponseDTO<bool>>> ForgotPassword([FromBody] UserAccountForgotPasswordDTO request)
         {
             var response = await _userService.ForgotPasswordAsync(request);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
 
         /// <summary>
@@ -146,7 +162,7 @@ namespace Authenticator.API.UserEntry.Users
         public async Task<ActionResult<ResponseDTO<bool>>> ResetPassword([FromBody] UserAccountResetPasswordDTO request)
         {
             var response = await _userService.ResetPasswordAsync(request);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
 
         #region User Access Groups
@@ -154,6 +170,7 @@ namespace Authenticator.API.UserEntry.Users
         /// Lista grupos de acesso vinculados a um usuário
         /// </summary>
         [HttpGet("{id:guid}/access-groups")]
+        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -161,13 +178,14 @@ namespace Authenticator.API.UserEntry.Users
         public async Task<ActionResult<ResponseDTO<IEnumerable<AccessGroupDTO>>>> GetUserAccessGroups([FromRoute] Guid id)
         {
             var response = await _accountAccessGroupService.GetUserAccessGroupsAsync(id);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
 
         /// <summary>
         /// Atribui grupos de acesso a um usuário
         /// </summary>
         [HttpPost("{id:guid}/access-groups")]
+        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -176,13 +194,14 @@ namespace Authenticator.API.UserEntry.Users
         public async Task<ActionResult<ResponseDTO<bool>>> AssignUserAccessGroups([FromRoute] Guid id, [FromBody] AssignUserAccessGroupsDTO request)
         {
             var response = await _accountAccessGroupService.AssignAccessGroupsAsync(id, request);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
 
         /// <summary>
         /// Revoga um grupo de acesso de um usuário
         /// </summary>
         [HttpDelete("{id:guid}/access-groups/{groupId:guid}")]
+        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -190,7 +209,7 @@ namespace Authenticator.API.UserEntry.Users
         public async Task<ActionResult<ResponseDTO<bool>>> RevokeUserAccessGroup([FromRoute] Guid id, [FromRoute] Guid groupId)
         {
             var response = await _accountAccessGroupService.RevokeAccessGroupAsync(id, groupId);
-            return StatusCode(response.Code, response);
+            return BuildResponse(response);
         }
         #endregion
     }

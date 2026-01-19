@@ -22,7 +22,7 @@ namespace Authenticator.API.Infrastructure.Mapper.AccessControl.AccessGroup
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
 
             CreateMap<UpdateAccessGroupDTO, AccessGroupEntity>()
-                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.SpecifyKind(src.CreatedAt, DateTimeKind.Utc)))
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow));
         }
     }

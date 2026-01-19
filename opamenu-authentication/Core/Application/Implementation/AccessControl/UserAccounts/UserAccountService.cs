@@ -3,12 +3,11 @@ using Authenticator.API.Core.Application.Interfaces.AccessControl.UserAccounts;
 using Authenticator.API.Core.Application.Interfaces.Auth;
 using Authenticator.API.Core.Domain.AccessControl.UserAccounts.DTOs;
 using Authenticator.API.Core.Domain.Api;
+using Authenticator.API.Core.Domain.Api.Commons;
 using Authenticator.API.Core.Domain.MultiTenant.Tenant.DTOs;
-using Authenticator.API.Infrastructure.Repositories.AccessControl.UserAccount;
 using AutoMapper;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts.Enum;
-using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
 
 namespace Authenticator.API.Core.Application.Implementation.AccessControl.UserAccounts
 {
@@ -33,13 +32,30 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.UserAc
         {
             try
             {
+                var tenantId = _userContext.CurrentUser?.TenantId;
+
                 if (page < 1) page = 1;
                 if (limit < 1) limit = 10;
                 if (limit > 100) limit = 100;
 
-                var entities = await _userRepository.GetUsersPagedAsync(page, limit);
-                var total = entities.Count();
-                var items = _mapper.Map<IEnumerable<UserAccountDTO>>(entities);
+                var userAccountEntities = await _userRepository.GetUsersPagedAsync(page, limit);
+
+                var total = userAccountEntities.Count();
+
+                if (!userAccountEntities.Any())
+                {
+                    var pagedNullResult = new PagedResponseDTO<UserAccountDTO>
+                    {
+                        Items = Enumerable.Empty<UserAccountDTO>(),
+                        Page = page,
+                        Limit = limit,
+                        Total = 0,
+                        TotalPages = 0
+                    };
+                    return StaticResponseBuilder<PagedResponseDTO<UserAccountDTO>>.BuildOk(pagedNullResult);
+                }
+
+                var items = _mapper.Map<IEnumerable<UserAccountDTO>>(userAccountEntities);
 
                 var totalPages = total == 0 ? 0 : (int)Math.Ceiling(total / (double)limit);
                 var pagedResult = new PagedResponseDTO<UserAccountDTO>
@@ -50,17 +66,55 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.UserAc
                     Total = total,
                     TotalPages = totalPages
                 };
-
-                return ResponseBuilder<PagedResponseDTO<UserAccountDTO>>.Ok(pagedResult).Build();
+                return StaticResponseBuilder<PagedResponseDTO<UserAccountDTO>>.BuildOk(pagedResult);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao listar usuários paginados");
-                return ResponseBuilder<PagedResponseDTO<UserAccountDTO>>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<PagedResponseDTO<UserAccountDTO>>.BuildErrorResponse(ex);
+            }
+        }
+        public async Task<ResponseDTO<PagedResponseDTO<UserAccountDTO>>> GetAllUserAccountsByTenantIdPagedAsync(int page, int limit)
+        {
+            try
+            {
+                var tenantId = _userContext.CurrentUser?.TenantId;
+                if (!tenantId.HasValue)
+                    return StaticResponseBuilder<PagedResponseDTO<UserAccountDTO>>.BuildError("TenantId não fornecido para filtrar usuários.");
+
+                if (page < 1) page = 1;
+                if (limit < 1) limit = 10;
+                if (limit > 100) limit = 100;
+
+                var userAccountEntities = await _userRepository.GetUsersByTenantPagedAsync(tenantId.Value, page, limit);
+                var total = userAccountEntities.Count();
+
+                if (!userAccountEntities.Any())
+                {
+                    var pagedNullResult = new PagedResponseDTO<UserAccountDTO>
+                    {
+                        Items = Enumerable.Empty<UserAccountDTO>(),
+                        Page = page,
+                        Limit = limit,
+                        Total = 0,
+                        TotalPages = 0
+                    };
+                    return StaticResponseBuilder<PagedResponseDTO<UserAccountDTO>>.BuildOk(pagedNullResult);
+                }
+                var items = _mapper.Map<IEnumerable<UserAccountDTO>>(userAccountEntities);
+                var totalPages = total == 0 ? 0 : (int)Math.Ceiling(total / (double)limit);
+                var pagedResult = new PagedResponseDTO<UserAccountDTO>
+                {
+                    Items = items,
+                    Page = page,
+                    Limit = limit,
+                    Total = total,
+                    TotalPages = totalPages
+                };
+                return StaticResponseBuilder<PagedResponseDTO<UserAccountDTO>>.BuildOk(pagedResult);
+            }
+            catch (Exception ex)
+            {
+                return StaticResponseBuilder<PagedResponseDTO<UserAccountDTO>>.BuildErrorResponse(ex);
             }
         }
 
@@ -70,25 +124,19 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.UserAc
             {
                 var tenantId = _userContext.CurrentUser?.TenantId;
                 if (!tenantId.HasValue)
-                {
-                    return ResponseBuilder<IEnumerable<UserAccountDTO>>
-                        .Fail(new ErrorDTO { Message = "Tenant não identificado" })
-                        .WithCode(400)
-                        .Build();
-                }
+                    return StaticResponseBuilder<IEnumerable<UserAccountDTO>>.BuildError("TenantId não fornecido para filtrar usuários.");
 
                 var users = await _userRepository.GetActiveUsersByTenantAsync(tenantId.Value);
+
+                if (users == null)
+                    return StaticResponseBuilder<IEnumerable<UserAccountDTO>>.BuildOk(null!);
+
                 var items = _mapper.Map<IEnumerable<UserAccountDTO>>(users);
-                return ResponseBuilder<IEnumerable<UserAccountDTO>>.Ok(items).Build();
+                return StaticResponseBuilder<IEnumerable<UserAccountDTO>>.BuildOk(items);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao listar usuários ativos");
-                return ResponseBuilder<IEnumerable<UserAccountDTO>>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<IEnumerable<UserAccountDTO>>.BuildErrorResponse(ex);
             }
         }
 
@@ -99,24 +147,14 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.UserAc
                 var tenantId = _userContext.CurrentUser?.TenantId;
                 var user = await _userRepository.GetByIdAsync(id);
                 if (user == null || (tenantId.HasValue && user.TenantId != tenantId))
-                {
-                    return ResponseBuilder<UserAccountDTO>
-                        .Fail(new ErrorDTO { Message = "Usuário não encontrado" })
-                        .WithCode(404)
-                        .Build();
-                }
+                    return StaticResponseBuilder<UserAccountDTO>.BuildOk(null!);
 
                 var dto = _mapper.Map<UserAccountDTO>(user);
-                return ResponseBuilder<UserAccountDTO>.Ok(dto).Build();
+                return StaticResponseBuilder<UserAccountDTO>.BuildOk(dto);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao obter usuário por ID");
-                return ResponseBuilder<UserAccountDTO>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<UserAccountDTO>.BuildErrorResponse(ex);
             }
         }
 
@@ -125,12 +163,8 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.UserAc
             try
             {
                 if (await _userRepository.EmailExistsAsync(dto.Email))
-                {
-                    return ResponseBuilder<UserAccountDTO>
-                        .Fail(new ErrorDTO { Message = "Email já¡ está em uso" })
-                        .WithCode(400)
-                        .Build();
-                }
+                    return StaticResponseBuilder<UserAccountDTO>.BuildError("Email já está em uso.");
+
                 var userName = dto.Email.Split('@')[0];
 
                 if (await _userRepository.UsernameExistsAsync(userName))
@@ -153,16 +187,11 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.UserAc
 
                 var created = await _userRepository.AddAsync(entity);
                 var createdDto = _mapper.Map<UserAccountDTO>(created);
-                return ResponseBuilder<UserAccountDTO>.Ok(createdDto).WithCode(201).Build();
+                return StaticResponseBuilder<UserAccountDTO>.BuildCreated(createdDto);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao criar usuário");
-                return ResponseBuilder<UserAccountDTO>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<UserAccountDTO>.BuildErrorResponse(ex);
             }
         }
 
@@ -176,30 +205,25 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.UserAc
                 {
                     var emailExists = await _userRepository.EmailExistsAsync(dto.Email, id);
                     if (emailExists)
-                        return ResponseBuilder<UserAccountDTO>.Fail(new ErrorDTO { Message = "Email já está em uso." }).WithCode(400).Build();
+                        return StaticResponseBuilder<UserAccountDTO>.BuildError("Email já está em uso.");
                 }
 
                 if (!string.IsNullOrWhiteSpace(dto.Username))
                 {
                     var usernameExists = await _userRepository.UsernameExistsAsync(dto.Username, id);
                     if (usernameExists)
-                        return ResponseBuilder<UserAccountDTO>.Fail(new ErrorDTO { Message = "Username já está em uso." }).WithCode(400).Build();
+                        return StaticResponseBuilder<UserAccountDTO>.BuildError("Nome de usuário já está em uso.");
                 }
 
                 var updatedEntity = _mapper.Map(dto, userAccountEntity);
 
                 await _userRepository.UpdateAsync(updatedEntity!);
                 var updatedDto = _mapper.Map<UserAccountDTO>(updatedEntity);
-                return ResponseBuilder<UserAccountDTO>.Ok(updatedDto).Build();
+                return StaticResponseBuilder<UserAccountDTO>.BuildOk(updatedDto);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao atualizar usuário");
-                return ResponseBuilder<UserAccountDTO>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<UserAccountDTO>.BuildErrorResponse(ex);
             }
         }
 
@@ -208,26 +232,15 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.UserAc
             try
             {
                 var existing = await _userRepository.GetByIdAsync(id);
-                var tenantId = _userContext.CurrentUser?.TenantId;
-                if (existing == null || (tenantId.HasValue && existing.TenantId != tenantId))
-                {
-                    return ResponseBuilder<bool>
-                        .Fail(new ErrorDTO { Message = "Usuário não encontrado" })
-                        .WithCode(404)
-                        .Build();
-                }
+                if (existing == null)
+                    return StaticResponseBuilder<bool>.BuildOk(false);
 
                 await _userRepository.DeleteAsync(existing);
-                return ResponseBuilder<bool>.Ok(true).Build();
+                return StaticResponseBuilder<bool>.BuildOk(true);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao deletar usuário.");
-                return ResponseBuilder<bool>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<bool>.BuildErrorResponse(ex);
             }
         }
 
@@ -284,25 +297,19 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.UserAc
             {
                 var user = await _userRepository.GetByEmailAsync(dto.Email);
                 if (user == null)
-                {
-                    return ResponseBuilder<bool>.Ok(true).Build();
-                }
+                    return StaticResponseBuilder<bool>.BuildOk(true);
 
                 var resetToken = _jwtTokenService.GenerateRefreshToken();
                 var expiresAt = DateTime.UtcNow.AddHours(2);
                 await _userRepository.SetPasswordResetTokenAsync(user.Id, resetToken, expiresAt);
 
                 // TODO: Enviar email com o token (fora do escopo)
-                return ResponseBuilder<bool>.Ok(true).Build();
+                return StaticResponseBuilder<bool>.BuildOk(true);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao iniciar fluxo de esqueci a senha");
-                return ResponseBuilder<bool>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                _logger.LogError(ex, "Erro ao solicitar reset de senha");
+                return StaticResponseBuilder<bool>.BuildErrorResponse(ex);
             }
         }
 
@@ -312,29 +319,19 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.UserAc
             {
                 var user = await _userRepository.GetByValidPasswordResetTokenAsync(dto.ResetToken);
                 if (user == null)
-                {
-                    return ResponseBuilder<bool>
-                        .Fail(new ErrorDTO { Message = "Token de reset inválido ou expirado" })
-                        .WithCode(400)
-                        .Build();
-                }
+                    return StaticResponseBuilder<bool>.BuildError("Token de reset de senha invÃ¡lido ou expirado.");
 
                 user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
                 user.UpdatedAt = DateTime.UtcNow;
                 user.PasswordResetToken = null;
                 user.PasswordResetExpiresAt = null;
                 await _userRepository.UpdateAsync(user);
+                return StaticResponseBuilder<bool>.BuildOk(true);
 
-                return ResponseBuilder<bool>.Ok(true).Build();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao resetar senha");
-                return ResponseBuilder<bool>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<bool>.BuildErrorResponse(ex);
             }
         }
 

@@ -1,4 +1,4 @@
-﻿using Authenticator.API.Core.Domain.AccessControl.UserAccounts.DTOs;
+using Authenticator.API.Core.Domain.AccessControl.UserAccounts.DTOs;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
 using System.Security.Claims;
@@ -16,8 +16,9 @@ public interface IJwtTokenService
     /// <param name="user">usuário autenticado</param>
     /// <param name="tenant">Tenant (opcional)</param>
     /// <param name="roles">Lista de roles do usuário</param>
+    /// <param name="permissions">Lista de permissões do usuário (opcional)</param>
     /// <returns>Token JWT gerado</returns>
-    string GenerateAccessToken(UserAccountEntity user, TenantEntity? tenant, IList<string> roles);
+    string GenerateAccessToken(UserAccountEntity user, TenantEntity? tenant, IList<string> roles, IList<string>? permissions = null);
 
     /// <summary>
     /// Gera um refresh token
@@ -44,6 +45,6 @@ public interface IJwtTokenService
     /// </summary>
     /// <returns>Tempo de expiraÃ§Ã£o em segundos</returns>
     int GetTokenExpirationTime();
-    string GenerateAccessToken(UserAccountDTO? data, TenantEntity createdTenant, List<string> list);
+    string GenerateAccessToken(UserAccountDTO? data, TenantEntity createdTenant, List<string> list, IList<string>? permissions = null);
 }
 

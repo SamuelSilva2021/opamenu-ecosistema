@@ -15,11 +15,11 @@ namespace Authenticator.API.UserEntry.AccessControl.Roles
     [ApiController]
     [Produces("application/json")]
     [Tags("Roles")]
-    [Authorize(Roles = "SUPER_ADMIN")]
+    [Authorize]
     public class RoleController(
         ILogger<RoleController> logger,
         IRoleService roleService
-        ) : ControllerBase
+        ) : BaseController
     {
         private readonly ILogger<RoleController> _logger = logger;
         private readonly IRoleService _roleService = roleService;
@@ -33,32 +33,19 @@ namespace Authenticator.API.UserEntry.AccessControl.Roles
         /// <param name="limit">Limite de itens por página</param>
         /// <returns>Lista paginada de roles</returns>
         [HttpGet]
+        [Authorize(Roles = "SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [SwaggerOperation(
-            Summary = "Lista roles com paginação",
+        [SwaggerOperation(Summary = "Lista roles com paginação",
             Description = "Retorna uma lista paginada de todos os roles do tenant atual"
         )]
         public async Task<ActionResult> GetAllRolesPaged([FromQuery] int page = 1, [FromQuery] int limit = 10)
         {
-            try
-            {
-                _logger.LogInformation("Buscando roles - Página: {Page}, Limite: {Limit}", page, limit);
-                
-                var response = await _roleService.GetAllRolesPagedAsync(page, limit);
-                
-                _logger.LogInformation("Roles encontrados: {Count}", response.Data?.Items?.Count() ?? 0);
-                
-                return StatusCode(response.Code, response);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao buscar roles paginados");
-                throw;
-            }
+            var response = await _roleService.GetAllRolesPagedAsync(page, limit);
+            return BuildResponse(response);
         }
 
         /// <summary>
@@ -67,31 +54,19 @@ namespace Authenticator.API.UserEntry.AccessControl.Roles
         /// <param name="id">ID do role</param>
         /// <returns>Role encontrado</returns>
         [HttpGet("{id:guid}")]
+        [Authorize(Roles = "SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [SwaggerOperation(
-            Summary = "Busca role por ID",
-            Description = "Retorna um role específico pelo seu ID"
+        [SwaggerOperation(Summary = "Busca role por ID",Description = "Retorna um role específico pelo seu ID"
         )]
         public async Task<ActionResult> GetRoleById([FromRoute] Guid id)
         {
-            try
-            {
-                _logger.LogInformation("Buscando role por ID: {RoleId}", id);
-                
-                var response = await _roleService.GetRoleByIdAsync(id);
-                
-                return StatusCode(response.Code, response);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao buscar role por ID: {RoleId}", id);
-                throw;
-            }
+            var response = await _roleService.GetRoleByIdAsync(id);
+            return BuildResponse(response);
         }
 
         /// <summary>
@@ -100,31 +75,19 @@ namespace Authenticator.API.UserEntry.AccessControl.Roles
         /// <param name="roleId">ID do role</param>
         /// <returns>Lista de permissões do role</returns>
         [HttpGet("{roleId:guid}/permissions")]
+        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [SwaggerOperation(
-            Summary = "Busca permissões do role",
-            Description = "Retorna todas as permissões associadas ao role"
+        [SwaggerOperation(Summary = "Busca permissões do role",Description = "Retorna todas as permissões associadas ao role"
         )]
         public async Task<ActionResult<IEnumerable<PermissionDTO>>> GetPermissionsByRole([FromRoute] Guid roleId)
         {
-            try
-            {
-                _logger.LogInformation("Buscando permissões do role: {RoleId}", roleId);
-                
-                var response = await _roleService.GetPermissionsByRoleAsync(roleId);
-                
-                return StatusCode(response.Code, response);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao buscar permissões do role: {RoleId}", roleId);
-                throw;
-            }
+            var response = await _roleService.GetPermissionsByRoleAsync(roleId);
+            return BuildResponse(response);
         }
 
         /// <summary>
@@ -133,31 +96,19 @@ namespace Authenticator.API.UserEntry.AccessControl.Roles
         /// <param name="roleId">ID do role</param>
         /// <returns>Lista de grupos de acesso do role</returns>
         [HttpGet("{roleId:guid}/access-groups")]
+        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [SwaggerOperation(
-            Summary = "Busca grupos de acesso do role",
-            Description = "Retorna todos os grupos de acesso associados ao role"
+        [SwaggerOperation(Summary = "Busca grupos de acesso do role",Description = "Retorna todos os grupos de acesso associados ao role"
         )]
         public async Task<ActionResult<IEnumerable<AccessGroupDTO>>> GetAccessGroupsByRole([FromRoute] Guid roleId)
         {
-            try
-            {
-                _logger.LogInformation("Buscando grupos de acesso do role: {RoleId}", roleId);
-                
-                var response = await _roleService.GetAccessGroupsByRoleAsync(roleId);
-                
-                return StatusCode(response.Code, response);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao buscar grupos de acesso do role: {RoleId}", roleId);
-                throw;
-            }
+            var response = await _roleService.GetAccessGroupsByRoleAsync(roleId);
+            return BuildResponse(response);
         }
 
         #endregion
@@ -170,36 +121,18 @@ namespace Authenticator.API.UserEntry.AccessControl.Roles
         /// <param name="dto">Dados para criação do role</param>
         /// <returns>Role criado</returns>
         [HttpPost]
+        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [SwaggerOperation(
-            Summary = "Cria novo role",
-            Description = "Cria um novo role no sistema"
+        [SwaggerOperation(Summary = "Cria novo role",Description = "Cria um novo role no sistema"
         )]
         public async Task<ActionResult> CreateRole([FromBody] RoleCreateDTO dto)
         {
-            try
-            {
-                _logger.LogInformation("Criando novo role: {RoleName}", dto.Name);
-                
-                var response = await _roleService.AddRoleAsync(dto);
-                
-                if (response.Succeeded)
-                {
-                    _logger.LogInformation("Role criado com sucesso: {RoleId}", response.Data?.Id);
-                    return StatusCode(response.Code, response);
-                }
-                
-                return StatusCode(response.Code, response);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao criar role: {RoleName}", dto.Name);
-                throw;
-            }
+            var response = await _roleService.AddRoleAsync(dto);
+            return BuildResponse(response);
         }
 
         /// <summary>
@@ -209,6 +142,7 @@ namespace Authenticator.API.UserEntry.AccessControl.Roles
         /// <param name="permissionIds">Lista de IDs das permissões</param>
         /// <returns>Resultado da operação</returns>
         [HttpPost("{roleId:guid}/permissions")]
+        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -221,19 +155,8 @@ namespace Authenticator.API.UserEntry.AccessControl.Roles
         )]
         public async Task<ActionResult> AssignPermissionsToRole([FromRoute] Guid roleId, [FromBody] List<Guid> permissionIds)
         {
-            try
-            {
-                _logger.LogInformation("Atribuindo permissões ao role: {RoleId}, Permissões: {Count}", roleId, permissionIds.Count);
-                
-                var response = await _roleService.AssignPermissionsToRoleAsync(roleId, permissionIds);
-                
-                return StatusCode(response.Code, response);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao atribuir permissões ao role: {RoleId}", roleId);
-                throw;
-            }
+            var response = await _roleService.AssignPermissionsToRoleAsync(roleId, permissionIds);
+            return BuildResponse(response);
         }
 
         /// <summary>
@@ -243,31 +166,18 @@ namespace Authenticator.API.UserEntry.AccessControl.Roles
         /// <param name="accessGroupIds">Lista de IDs dos grupos de acesso</param>
         /// <returns>Resultado da operação</returns>
         [HttpPost("{roleId:guid}/access-groups")]
+        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [SwaggerOperation(
-            Summary = "Atribui grupos de acesso ao role",
-            Description = "Associa uma lista de grupos de acesso ao role especificado"
-        )]
+        [SwaggerOperation(Summary = "Atribui grupos de acesso ao role",Description = "Associa uma lista de grupos de acesso ao role especificado")]
         public async Task<ActionResult> AssignAccessGroupsToRole([FromRoute] Guid roleId, [FromBody] List<Guid> accessGroupIds)
         {
-            try
-            {
-                _logger.LogInformation("Atribuindo grupos de acesso ao role: {RoleId}, Grupos: {Count}", roleId, accessGroupIds.Count);
-                
-                var response = await _roleService.AssignAccessGroupsToRoleAsync(roleId, accessGroupIds);
-                
-                return StatusCode(response.Code, response);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao atribuir grupos de acesso ao role: {RoleId}", roleId);
-                throw;
-            }
+            var response = await _roleService.AssignAccessGroupsToRoleAsync(roleId, accessGroupIds);
+            return BuildResponse(response);
         }
 
         #endregion
@@ -281,31 +191,39 @@ namespace Authenticator.API.UserEntry.AccessControl.Roles
         /// <param name="dto">Dados para atualização</param>
         /// <returns>Role atualizado</returns>
         [HttpPut("{id:guid}")]
+        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [SwaggerOperation(
-            Summary = "Atualiza role",
-            Description = "Atualiza os dados de um role existente"
-        )]
+        [SwaggerOperation(Summary = "Atualiza role",Description = "Atualiza os dados de um role existente")]
         public async Task<ActionResult> UpdateRole([FromRoute] Guid id, [FromBody] RoleUpdateDTO dto)
         {
-            try
-            {
-                _logger.LogInformation("Atualizando role: {RoleId}", id);
-                
-                var response = await _roleService.UpdateRoleAsync(id, dto);
-                
-                return StatusCode(response.Code, response);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao atualizar role: {RoleId}", id);
-                throw;
-            }
+            var response = await _roleService.UpdateRoleAsync(id, dto);
+            return BuildResponse(response);
+        }
+
+        /// <summary>
+        /// Atualiza o status
+        /// </summary>
+        /// <param name="id">ID do role</param>
+        /// <param name="dto">Dados para atualização</param>
+        /// <returns>Role atualizado</returns>
+        [HttpPut("{id:guid}/toggle-status")]
+        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [SwaggerOperation(Summary = "Atualiza o status da role", Description = "Atualiza o status de um role existente")]
+        public async Task<ActionResult> ToggleStatus([FromRoute] Guid id, [FromBody] RoleUpdateDTO dto)
+        {
+            var response = await _roleService.ToggleStatus(id, dto);
+            return BuildResponse(response);
         }
 
         #endregion
@@ -318,31 +236,18 @@ namespace Authenticator.API.UserEntry.AccessControl.Roles
         /// <param name="id">ID do role</param>
         /// <returns>Resultado da operação</returns>
         [HttpDelete("{id:guid}")]
+        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [SwaggerOperation(
-            Summary = "Remove role",
-            Description = "Remove um role do sistema"
-        )]
+        [SwaggerOperation(Summary = "Remove role",Description = "Remove um role do sistema")]
         public async Task<ActionResult> DeleteRole([FromRoute] Guid id)
         {
-            try
-            {
-                _logger.LogInformation("Removendo role: {RoleId}", id);
-                
-                var response = await _roleService.DeleteRoleAsync(id);
-                
-                return StatusCode(response.Code, response);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao remover role: {RoleId}", id);
-                throw;
-            }
+            var response = await _roleService.DeleteRoleAsync(id);
+            return BuildResponse(response);
         }
 
         /// <summary>
@@ -352,31 +257,18 @@ namespace Authenticator.API.UserEntry.AccessControl.Roles
         /// <param name="permissionIds">Lista de IDs das permissões</param>
         /// <returns>Resultado da operação</returns>
         [HttpDelete("{roleId:guid}/permissions")]
+        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [SwaggerOperation(
-            Summary = "Remove permissões do role",
-            Description = "Remove a associação de permissões do role especificado"
-        )]
+        [SwaggerOperation(Summary = "Remove permissões do role",Description = "Remove a associação de permissões do role especificado")]
         public async Task<ActionResult> RemovePermissionsFromRole([FromRoute] Guid roleId, [FromBody] List<Guid> permissionIds)
         {
-            try
-            {
-                _logger.LogInformation("Removendo permissões do role: {RoleId}, Permissões: {Count}", roleId, permissionIds.Count);
-                
-                var response = await _roleService.RemovePermissionsFromRoleAsync(roleId, permissionIds);
-                
-                return StatusCode(response.Code, response);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao remover permissões do role: {RoleId}", roleId);
-                throw;
-            }
+            var response = await _roleService.RemovePermissionsFromRoleAsync(roleId, permissionIds);
+            return BuildResponse(response);
         }
 
         /// <summary>
@@ -386,31 +278,18 @@ namespace Authenticator.API.UserEntry.AccessControl.Roles
         /// <param name="accessGroupIds">Lista de IDs dos grupos de acesso</param>
         /// <returns>Resultado da operação</returns>
         [HttpDelete("{roleId:guid}/access-groups")]
+        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [SwaggerOperation(
-            Summary = "Remove grupos de acesso do role",
-            Description = "Remove a associação de grupos de acesso do role especificado"
-        )]
+        [SwaggerOperation(Summary = "Remove grupos de acesso do role",Description = "Remove a associação de grupos de acesso do role especificado")]
         public async Task<ActionResult> RemoveAccessGroupsFromRole([FromRoute] Guid roleId, [FromBody] List<Guid> accessGroupIds)
         {
-            try
-            {
-                _logger.LogInformation("Removendo grupos de acesso do role: {RoleId}, Grupos: {Count}", roleId, accessGroupIds.Count);
-                
-                var response = await _roleService.RemoveAccessGroupsFromRoleAsync(roleId, accessGroupIds);
-                
-                return StatusCode(response.Code, response);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao remover grupos de acesso do role: {RoleId}", roleId);
-                throw;
-            }
+            var response = await _roleService.RemoveAccessGroupsFromRoleAsync(roleId, accessGroupIds);
+            return BuildResponse(response);
         }
 
         #endregion

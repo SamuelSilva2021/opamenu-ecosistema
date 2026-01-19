@@ -55,7 +55,7 @@ namespace OpaMenu.Infrastructure.Shared.Entities.AccessControl
         /// <summary>
         /// Data de atualização
         /// </summary>
-        public DateTime? UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation properties
         public virtual UserAccountEntity UserAccount { get; set; } = null!;

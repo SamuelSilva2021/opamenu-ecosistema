@@ -5,6 +5,7 @@ using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
 using Authenticator.API.Core.Domain.AccessControl.Modules.DTOs;
 using Authenticator.API.Core.Domain.Api;
 using AutoMapper;
+using Authenticator.API.Core.Domain.Api.Commons;
 
 namespace Authenticator.API.Core.Application.Implementation.AccessControl.Module
 {
@@ -37,13 +38,11 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Module
                 var createdModuleType = await _moduleRepository.AddAsync(moduleEntity);
 
                 var moduleTypeDTO = _mapper.Map<ModuleDTO>(createdModuleType);
-
-                return ResponseBuilder<ModuleDTO>.Ok(moduleTypeDTO).WithCode(201).Build();
+                return StaticResponseBuilder<ModuleDTO>.BuildOk(moduleTypeDTO);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<ModuleDTO>
-                    .Fail(new ErrorDTO { Message = ex.Message }).WithException(ex).WithCode(500).Build();
+                return StaticResponseBuilder< ModuleDTO>.BuildErrorResponse(ex);
             }
         }
         /// <summary>
@@ -57,20 +56,14 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Module
             {
                 var existingModuleType = await _moduleRepository.GetByIdAsync(id);
                 if (existingModuleType == null)
-                    return ResponseBuilder<bool>
-                        .Fail(new ErrorDTO { Message = "Modulo não encontrado" })
-                        .WithCode(404)
-                        .Build();
+                    return StaticResponseBuilder<bool>.BuildError("Módulo não encontrado!");
+
                 await _moduleRepository.DeleteAsync(existingModuleType);
-                return ResponseBuilder<bool>.Ok(true).Build();
+                return StaticResponseBuilder<bool>.BuildOk(true);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<bool>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<bool>.BuildErrorResponse(ex);
             }
         }
         /// <summary>
@@ -84,20 +77,16 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Module
                 var moduleTypes = await _moduleRepository.GetAllAsync();
 
                 if(!moduleTypes.Any())
-                    return ResponseBuilder<IEnumerable<ModuleDTO>>.Ok([]).Build();
+                    return StaticResponseBuilder<IEnumerable<ModuleDTO>>.BuildOk([]);
 
                 var moduleTypesDTO = _mapper.Map<IEnumerable<ModuleDTO>>(moduleTypes);
 
-                return ResponseBuilder<IEnumerable<ModuleDTO>>.Ok(moduleTypesDTO).Build();
+                return StaticResponseBuilder<IEnumerable<ModuleDTO>>.BuildOk(moduleTypesDTO);
 
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<IEnumerable<ModuleDTO>>
-                    .Fail(new ErrorDTO{Message = ex.Message})
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<IEnumerable<ModuleDTO>>.BuildErrorResponse(ex);
             }
         }
         /// <summary>
@@ -130,15 +119,11 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Module
                     TotalPages = totalPages
                 };
 
-                return ResponseBuilder<PagedResponseDTO<ModuleDTO>>.Ok(pagedResult).Build();
+                return StaticResponseBuilder<PagedResponseDTO<ModuleDTO>>.BuildOk(pagedResult);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<PagedResponseDTO<ModuleDTO>>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<PagedResponseDTO<ModuleDTO>>.BuildErrorResponse(ex);
             }
             
         }
@@ -153,21 +138,14 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Module
             {
                 var moduleType = await _moduleRepository.GetByIdAsync(id);
                 if (moduleType == null)
-                    return ResponseBuilder<ModuleDTO>
-                        .Fail(new ErrorDTO { Message = "Module type not found." })
-                        .WithCode(404)
-                        .Build();
+                    return StaticResponseBuilder<ModuleDTO>.BuildOk(new ModuleDTO { });
 
                 var moduleTypeDTO = _mapper.Map<ModuleDTO>(moduleType);
-                return ResponseBuilder<ModuleDTO>.Ok(moduleTypeDTO).Build();
+                return StaticResponseBuilder<ModuleDTO>.BuildOk(moduleTypeDTO);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<ModuleDTO>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<ModuleDTO>.BuildErrorResponse(ex);
             }
         }
         /// <summary>
@@ -182,25 +160,18 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Module
             {
                 var existingModuleType = await _moduleRepository.GetByIdAsync(id);
                 if (existingModuleType == null)
-                    return ResponseBuilder<ModuleDTO>
-                        .Fail(new ErrorDTO { Message = "Modulo não encotrado" })
-                        .WithCode(404)
-                        .Build();
+                    return StaticResponseBuilder<ModuleDTO>.BuildError("Módulo não encontrado!");
 
                 var moduleUpdatedEntity = _mapper.Map(moduleType, existingModuleType);
 
                 await _moduleRepository.UpdateAsync(moduleUpdatedEntity);
 
                 var moduleTypeDTO = _mapper.Map<ModuleDTO>(moduleUpdatedEntity);
-                return ResponseBuilder<ModuleDTO>.Ok(moduleTypeDTO).Build();
+                return StaticResponseBuilder<ModuleDTO>.BuildOk(moduleTypeDTO);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<ModuleDTO>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<ModuleDTO>.BuildErrorResponse(ex);
             }
         }
     }

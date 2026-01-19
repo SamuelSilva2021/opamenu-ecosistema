@@ -79,7 +79,7 @@ namespace OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts
         /// <summary>
         /// Data de atualização
         /// </summary>
-        public DateTime? UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Data de exclusão (soft delete)

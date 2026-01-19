@@ -4,6 +4,7 @@ namespace Authenticator.API.Core.Application.Interfaces.AccessControl.Operation
 {
     public interface IOperationRepository: IBaseRepository<OperationEntity>
     {
+        Task<bool> ExisteValue(string value);
     }
 }
 

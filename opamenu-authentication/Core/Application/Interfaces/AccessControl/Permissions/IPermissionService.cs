@@ -1,4 +1,4 @@
-﻿using Authenticator.API.Core.Domain.AccessControl.Permissions.DTOs;
+using Authenticator.API.Core.Domain.AccessControl.Permissions.DTOs;
 using Authenticator.API.Core.Domain.Api;
 
 namespace Authenticator.API.Core.Application.Interfaces.AccessControl.Permissions
@@ -57,6 +57,13 @@ namespace Authenticator.API.Core.Application.Interfaces.AccessControl.Permission
         /// <param name="permission"></param>
         /// <returns></returns>
         Task<ResponseDTO<PermissionDTO>> UpdatePermissionAsync(Guid id, PermissionUpdateDTO permission);
+
+        /// <summary>
+        /// Alterna o status ativo/inativo de uma permissão
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        Task<ResponseDTO<PermissionDTO>> ToggleStatus(Guid id);
 
         /// <summary>
         /// Deleta uma permissão

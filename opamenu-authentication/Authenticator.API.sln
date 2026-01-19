@@ -1,9 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.12.35707.178 d17.12
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11408.92 d18.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Authenticator.API", "Authenticator.API.csproj", "{1F05DDE3-D55A-4C4D-A5BB-092D22DFB60F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpaMenu.Commons", "..\opamenu-commons\OpaMenu.Commons\OpaMenu.Commons.csproj", "{B9E9B55A-E0CC-B5A4-B0BF-2EFD7B41E1BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpaMenu.Infrastructure.Shared", "..\opamenu-commons\OpaMenu.Infrastructure.Shared\OpaMenu.Infrastructure.Shared.csproj", "{23956A1C-38C8-B8E0-E701-D7ABAB70ACAC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{1F05DDE3-D55A-4C4D-A5BB-092D22DFB60F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1F05DDE3-D55A-4C4D-A5BB-092D22DFB60F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1F05DDE3-D55A-4C4D-A5BB-092D22DFB60F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9E9B55A-E0CC-B5A4-B0BF-2EFD7B41E1BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9E9B55A-E0CC-B5A4-B0BF-2EFD7B41E1BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9E9B55A-E0CC-B5A4-B0BF-2EFD7B41E1BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9E9B55A-E0CC-B5A4-B0BF-2EFD7B41E1BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{23956A1C-38C8-B8E0-E701-D7ABAB70ACAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23956A1C-38C8-B8E0-E701-D7ABAB70ACAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23956A1C-38C8-B8E0-E701-D7ABAB70ACAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23956A1C-38C8-B8E0-E701-D7ABAB70ACAC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

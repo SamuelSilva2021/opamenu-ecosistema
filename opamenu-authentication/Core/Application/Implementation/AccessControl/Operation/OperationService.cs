@@ -1,8 +1,11 @@
 ﻿using Authenticator.API.Core.Application.Interfaces.AccessControl.Operation;
-using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
+using Authenticator.API.Core.Application.Interfaces.Auth;
+using Authenticator.API.Core.Domain.AccessControl.AccessGroup.DTOs;
 using Authenticator.API.Core.Domain.AccessControl.Operations.DTOs;
 using Authenticator.API.Core.Domain.Api;
+using Authenticator.API.Core.Domain.Api.Commons;
 using AutoMapper;
+using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
 
 namespace Authenticator.API.Core.Application.Implementation.AccessControl.Operation
 {
@@ -11,10 +14,11 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Operat
     /// </summary>
     /// <param name="operationRepository"></param>
     /// <param name="mapper"></param>
-    public class OperationService(IOperationRepository operationRepository, IMapper mapper) : IOperationService
+    public class OperationService(IOperationRepository operationRepository, IMapper mapper, IUserContext userContext) : IOperationService
     {
         private readonly IOperationRepository _operationRepository = operationRepository;
         private readonly IMapper _mapper = mapper;
+        private readonly IUserContext _userContext = userContext;
         /// <summary>
         /// Adiciona uma nova operação
         /// </summary>
@@ -25,14 +29,19 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Operat
             try
             {
                 var entity = _mapper.Map<OperationEntity>(operation);
+                var valueExist = await _operationRepository.ExisteValue(operation.Value!);
+
+                if (valueExist)
+                    return StaticResponseBuilder<OperationDTO>.BuildError("Já existe uma operação com esse valor.");
+
                 var createdEntity = await _operationRepository.AddAsync(entity);
                 var dto = _mapper.Map<OperationDTO>(createdEntity);
-                return ResponseBuilder<OperationDTO>.Ok(dto).WithCode(201).Build();
+
+                return StaticResponseBuilder<OperationDTO>.BuildOk(dto);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<OperationDTO>
-                    .Fail(new ErrorDTO { Message = ex.Message }).WithException(ex).WithCode(500).Build();
+                return StaticResponseBuilder<OperationDTO>.BuildErrorResponse(ex);
             }
             
         }
@@ -47,20 +56,14 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Operat
             {
                 var existingEntity = await _operationRepository.GetByIdAsync(id);
                 if (existingEntity == null)
-                    return ResponseBuilder<bool>
-                        .Fail(new ErrorDTO { Message = "Operação não encontrada" })
-                        .WithCode(404)
-                        .Build();
+                    return StaticResponseBuilder<bool>.BuildError("Operação não encontrada");
+
                 await _operationRepository.DeleteAsync(existingEntity);
-                return ResponseBuilder<bool>.Ok(true).Build();
+                return StaticResponseBuilder<bool>.BuildOk(true);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<bool>
-                    .Fail(new ErrorDTO { Message = ex.Message })
-                    .WithException(ex)
-                    .WithCode(500)
-                    .Build();
+                return StaticResponseBuilder<bool>.BuildErrorResponse(ex);
             }
         }
         /// <summary>
@@ -72,13 +75,15 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Operat
             try
             {
                 var entities = await _operationRepository.GetAllAsync();
+                if (entities == null)
+                    return StaticResponseBuilder<IEnumerable<OperationDTO>>.BuildOk([]);
+
                 var dtos = _mapper.Map<IEnumerable<OperationDTO>>(entities);
-                return ResponseBuilder<IEnumerable<OperationDTO>>.Ok(dtos).Build();
+                return StaticResponseBuilder<IEnumerable<OperationDTO>>.BuildOk(dtos);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<IEnumerable<OperationDTO>>
-                    .Fail(new ErrorDTO { Message = ex.Message }).WithException(ex).WithCode(500).Build();
+                return StaticResponseBuilder<IEnumerable<OperationDTO>>.BuildErrorResponse(ex);
             }
         }
         /// <summary>
@@ -90,7 +95,37 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Operat
         /// <exception cref="NotImplementedException"></exception>
         public async Task<ResponseDTO<PagedResponseDTO<OperationDTO>>> GetAllOperationPagedAsync(int page, int limit)
         {
-            throw new NotImplementedException();
+            try
+            {
+                if (page < 1) page = 1;
+                if (limit < 1) limit = 10;
+                if (limit > 100) limit = 100;
+
+                var currentUser = _userContext.CurrentUser;
+
+
+                var total = await _operationRepository.CountAsync();
+
+                var entities = await _operationRepository.GetPagedWithIncludesAsync(page, limit, o => o.PermissionOperations);
+
+                var items = _mapper.Map<IEnumerable<OperationDTO>>(entities);
+
+                var totalPages = total == 0 ? 0 : (int)Math.Ceiling(total / (double)limit);
+
+                var pagedResult = new PagedResponseDTO<OperationDTO>
+                {
+                    Items = items,
+                    Page = page,
+                    Limit = limit,
+                    Total = total,
+                    TotalPages = totalPages
+                };
+                return StaticResponseBuilder<PagedResponseDTO<OperationDTO>>.BuildOk(pagedResult);
+            }
+            catch (Exception ex)
+            {
+                return StaticResponseBuilder<PagedResponseDTO<OperationDTO>>.BuildErrorResponse(ex);
+            }
         }
         /// <summary>
         /// Obtém uma operação por ID
@@ -103,17 +138,15 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Operat
             {
                 var operationEntity = await _operationRepository.GetByIdAsync(id);
                 if (operationEntity == null)
-                    return ResponseBuilder<OperationDTO>
-                        .Fail(new ErrorDTO { Message = "Operação não encontrada" })
-                        .WithCode(404)
-                        .Build();
+                    return StaticResponseBuilder<OperationDTO>.BuildOk(null!);
+
                 var operationDTO = _mapper.Map<OperationDTO>(operationEntity);
-                return ResponseBuilder<OperationDTO>.Ok(operationDTO).Build();
+
+                return StaticResponseBuilder<OperationDTO>.BuildOk(operationDTO);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<OperationDTO>
-                    .Fail(new ErrorDTO { Message = ex.Message }).WithException(ex).WithCode(500).Build();
+                return StaticResponseBuilder<OperationDTO>.BuildErrorResponse(ex);
             }
         }
         /// <summary>
@@ -128,22 +161,18 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Operat
             {
                 var existingEntity = await _operationRepository.GetByIdAsync(id);
                 if (existingEntity == null)
-                    return ResponseBuilder<OperationDTO>
-                        .Fail(new ErrorDTO { Message = "Operação não encontrada" })
-                        .WithCode(404)
-                        .Build();
+                    return StaticResponseBuilder<OperationDTO>.BuildError("Operação não encontrada");
 
                 existingEntity = _mapper.Map(operation, existingEntity);
 
                 await _operationRepository.UpdateAsync(existingEntity);
 
                 var dto = _mapper.Map<OperationDTO>(existingEntity);
-                return ResponseBuilder<OperationDTO>.Ok(dto).Build();
+                return StaticResponseBuilder<OperationDTO>.BuildOk(dto);
             }
             catch (Exception ex)
             {
-                return ResponseBuilder<OperationDTO>
-                    .Fail(new ErrorDTO { Message = ex.Message }).WithException(ex).WithCode(500).Build();
+                return StaticResponseBuilder<OperationDTO>.BuildErrorResponse(ex);
             }
         }
     }

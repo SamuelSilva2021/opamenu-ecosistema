@@ -14,6 +14,13 @@ namespace Authenticator.API.Core.Application.Interfaces.AccessControl.UserAccoun
         /// Lista usuários (do tenant atual) com paginação
         /// </summary>
         Task<ResponseDTO<PagedResponseDTO<UserAccountDTO>>> GetAllUserAccountsPagedAsync(int page, int limit);
+        /// <summary>
+        /// Retorna todos os usuários do tenant atual com paginação
+        /// </summary>
+        /// <param name="page"></param>
+        /// <param name="limit"></param>
+        /// <returns></returns>
+        Task<ResponseDTO<PagedResponseDTO<UserAccountDTO>>> GetAllUserAccountsByTenantIdPagedAsync(int page, int limit);
 
         /// <summary>
         /// Lista todos os usuários ativos do tenant atual
