@@ -28,7 +28,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.UserAc
         private readonly IJwtTokenService _jwtTokenService = jwtTokenService;
         private readonly ILogger<UserAccountService> _logger = logger;
 
-        public async Task<ResponseDTO<PagedResponseDTO<UserAccountDTO>>> GetAllUserAccountsPagedAsync(int page, int limit)
+        public async Task<ResponseDTO<PagedResponseDTO<UserAccountWithGroupsDTO>>> GetAllUserAccountsPagedAsync(int page, int limit)
         {
             try
             {
@@ -44,21 +44,21 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.UserAc
 
                 if (!userAccountEntities.Any())
                 {
-                    var pagedNullResult = new PagedResponseDTO<UserAccountDTO>
+                    var pagedNullResult = new PagedResponseDTO<UserAccountWithGroupsDTO>
                     {
-                        Items = Enumerable.Empty<UserAccountDTO>(),
+                        Items = Enumerable.Empty<UserAccountWithGroupsDTO>(),
                         Page = page,
                         Limit = limit,
                         Total = 0,
                         TotalPages = 0
                     };
-                    return StaticResponseBuilder<PagedResponseDTO<UserAccountDTO>>.BuildOk(pagedNullResult);
+                    return StaticResponseBuilder<PagedResponseDTO<UserAccountWithGroupsDTO>>.BuildOk(pagedNullResult);
                 }
 
-                var items = _mapper.Map<IEnumerable<UserAccountDTO>>(userAccountEntities);
+                var items = _mapper.Map<IEnumerable<UserAccountWithGroupsDTO>>(userAccountEntities);
 
                 var totalPages = total == 0 ? 0 : (int)Math.Ceiling(total / (double)limit);
-                var pagedResult = new PagedResponseDTO<UserAccountDTO>
+                var pagedResult = new PagedResponseDTO<UserAccountWithGroupsDTO>
                 {
                     Items = items,
                     Page = page,
@@ -66,11 +66,11 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.UserAc
                     Total = total,
                     TotalPages = totalPages
                 };
-                return StaticResponseBuilder<PagedResponseDTO<UserAccountDTO>>.BuildOk(pagedResult);
+                return StaticResponseBuilder<PagedResponseDTO<UserAccountWithGroupsDTO>>.BuildOk(pagedResult);
             }
             catch (Exception ex)
             {
-                return StaticResponseBuilder<PagedResponseDTO<UserAccountDTO>>.BuildErrorResponse(ex);
+                return StaticResponseBuilder<PagedResponseDTO<UserAccountWithGroupsDTO>>.BuildErrorResponse(ex);
             }
         }
         public async Task<ResponseDTO<PagedResponseDTO<UserAccountDTO>>> GetAllUserAccountsByTenantIdPagedAsync(int page, int limit)

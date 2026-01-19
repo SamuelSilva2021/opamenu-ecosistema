@@ -30,7 +30,7 @@ namespace Authenticator.API.UserEntry.Users
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ResponseDTO<PagedResponseDTO<UserAccountDTO>>>> GetPaged([FromQuery] int page = 1, [FromQuery] int limit = 10)
+        public async Task<ActionResult<ResponseDTO<PagedResponseDTO<UserAccountWithGroupsDTO>>>> GetPaged([FromQuery] int page = 1, [FromQuery] int limit = 10)
         {
             var response = await _userService.GetAllUserAccountsPagedAsync(page, limit);
             return BuildResponse(response);

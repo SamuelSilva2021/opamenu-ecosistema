@@ -1,4 +1,4 @@
-﻿using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts.Enum;
+using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts.Enum;
 using Authenticator.API.Core.Domain.AccessControl.UserAccounts.DTOs;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts;
 using AutoMapper;
@@ -12,6 +12,10 @@ namespace Authenticator.API.Infrastructure.Mapper.AccessControl.UserAccount
             // Entity para DTO
             CreateMap<UserAccountEntity, UserAccountDTO>()
                 .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}".Trim()));
+
+            CreateMap<UserAccountEntity, UserAccountWithGroupsDTO>()
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}".Trim()))
+                .ForMember(dest => dest.AccessGroups, opt => opt.MapFrom(src => src.AccountAccessGroups.Select(aag => aag.AccessGroup)));
 
             CreateMap<UserAccountEntity, UserAccountListDTO>()
                 .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}".Trim()));

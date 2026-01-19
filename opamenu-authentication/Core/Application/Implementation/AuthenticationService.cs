@@ -395,12 +395,10 @@ public class AuthenticationService(
     /// <returns></returns>
     private async Task<List<string>> GetUserPermissionsAsync(List<string> roles)
     {
-        // Resolver permissÃµes via relaÃ§Ãµes RolePermission (N:N), evitando dependÃªncia de Permission.RoleId
         return await _accessControlContext.RolePermissions
-            .Where(rp => roles.Contains(rp.Role!.Name) && rp.IsActive)
+            .Where(rp => roles.Contains(rp.Role!.Name) && rp.IsActive && rp.Permission.IsActive && rp.Role.IsActive)
             .Include(rp => rp.Role)
             .Include(rp => rp.Permission)
-            .Where(rp => rp.Role!.IsActive && rp.Permission!.IsActive)
             .Select(rp => rp.Permission!.Name)
             .Distinct()
             .ToListAsync();
@@ -480,55 +478,6 @@ public class AuthenticationService(
         }
 
         await Task.CompletedTask;
-    }
-
-    /// <summary>
-    /// Achata a estrutura hierárquica de permissões para uma lista de strings (claims)
-    /// </summary>
-    private List<string> FlattenPermissions(UserPermissionsDTO permissionsDto)
-    {
-        var flatPermissions = new List<string>();
-        if (permissionsDto?.AccessGroups == null) return flatPermissions;
-
-        foreach (var group in permissionsDto.AccessGroups)
-        {
-            if (group.Roles == null) continue;
-            foreach (var role in group.Roles)
-            {
-                if (role.Modules == null) continue;
-                foreach (var module in role.Modules)
-                {
-                    if (!string.IsNullOrEmpty(module.Key))
-                    {
-                        // Permissão base do módulo
-                        flatPermissions.Add(module.Key);
-
-                        if (module.Operations != null)
-                        {
-                            foreach (var op in module.Operations)
-                            {
-                                // Permissão específica: MODULO:OPERACAO
-                                var normalizedOp = NormalizeOperation(op);
-                                flatPermissions.Add($"{module.Key}:{normalizedOp}");
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return flatPermissions.Distinct().ToList();
-    }
-
-    private string NormalizeOperation(string operation)
-    {
-        if (string.IsNullOrWhiteSpace(operation)) return operation;
-
-        return operation.ToUpper() switch
-        {
-            "SELECT" => "READ",
-            "INSERT" => "CREATE",
-            _ => operation.ToUpper()
-        };
     }
 
     #endregion

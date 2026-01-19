@@ -387,6 +387,7 @@ export function UserForm({
               helperText={errors.tenantId || 'ID do cliente/organização (opcional)'}
               disabled={loading || validating}
               placeholder="00000000-0000-0000-0000-000000000000"
+              inputProps={{ maxLength: 36 }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">

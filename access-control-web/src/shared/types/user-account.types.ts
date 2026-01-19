@@ -1,4 +1,6 @@
 // Tipos baseados na API saas-authentication-api
+import type { AccessGroup } from './access-group.types';
+
 export const UserAccountStatus = {
   Active: 'Ativo',
   Inactive: 'Inativo',
@@ -22,6 +24,7 @@ export interface UserAccount {
   updatedAt?: string;
   lastLoginAt?: string;
   fullName: string;
+  accessGroups?: AccessGroup[];
 }
 
 export interface CreateUserAccountRequest {

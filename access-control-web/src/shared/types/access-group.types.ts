@@ -25,6 +25,7 @@ export interface UpdateAccessGroupRequest {
   description?: string;
   code?: string;
   groupTypeId?: string;
+  tenantId?: string;
   isActive?: boolean;
   createdAt: string;
 }

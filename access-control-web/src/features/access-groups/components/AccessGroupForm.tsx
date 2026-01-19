@@ -16,6 +16,7 @@ import type { AccessGroup, CreateAccessGroupRequest, UpdateAccessGroupRequest, G
 export interface AccessGroupFormData {
   name: string;
   description: string;
+  tenantId?: string;
   code: string;
   groupTypeId: string;
   isActive: boolean;
@@ -42,6 +43,7 @@ export const AccessGroupForm = ({
   const [formData, setFormData] = useState<AccessGroupFormData>({
     name: '',
     description: '',
+    tenantId: '',
     code: '',
     groupTypeId: '',
     isActive: true,
@@ -60,6 +62,7 @@ export const AccessGroupForm = ({
         groupTypeId: initialData.groupTypeId || '',
         isActive: initialData.isActive,
         createdAt: initialData.createdAt,
+        tenantId: initialData.tenantId || '',
       });
     }
   }, [initialData]);
@@ -133,6 +136,7 @@ export const AccessGroupForm = ({
       onSubmit({
         name: formData.name.trim(),
         description: formData.description.trim(),
+        tenantId: formData.tenantId || undefined,
         code: formData.code.trim() || undefined,
         groupTypeId: formData.groupTypeId,
         isActive: formData.isActive,
@@ -217,6 +221,17 @@ export const AccessGroupForm = ({
           </FormHelperText>
         </FormControl>
 
+        <TextField
+          fullWidth
+          label="Tenant ID"
+          placeholder="Ex: 123e4567-e89b-12d3-a456-426614174000"
+          value={formData.tenantId}
+          onChange={(e) => handleInputChange('tenantId', e.target.value)}
+          error={!!errors.tenantId}
+          helperText={errors.tenantId || 'ID do tenant (opcional)'}
+          disabled={isSubmitting}
+        />
+        
         {/* Descrição */}
         <TextField
           fullWidth

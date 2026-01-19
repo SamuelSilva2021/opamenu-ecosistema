@@ -133,8 +133,8 @@ public class UserAccountsRepository(
     public async Task<IEnumerable<UserAccountEntity>> GetUsersByTenantPagedAsync(Guid tenantId, int pageNumber, int pageSize) =>
         await GetPagedAsync(u => u.TenantId == tenantId && u.DeletedAt == null, pageNumber, pageSize);
 
-    public async Task<IEnumerable<UserAccountEntity>> GetUsersPagedAsync(int pageNumber, int pageSize) => 
-        await GetPagedAsync(u => u.DeletedAt == null, pageNumber, pageSize);
+    public async Task<IEnumerable<UserAccountEntity>> GetUsersPagedAsync(int pageNumber, int pageSize) =>
+        await GetPagedAsync(pageNumber, pageSize, q => q.Include(x => x.AccountAccessGroups).ThenInclude(ac => ac.AccessGroup));
 
     /// <summary>
     /// Atualiza a data do Ãºltimo login do usuário

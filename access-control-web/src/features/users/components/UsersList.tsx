@@ -142,6 +142,7 @@ export function UsersList({
               <TableCell>Usuário</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>Telefone</TableCell>
+              <TableCell>Grupos de Acesso</TableCell>
               <TableCell align="center">Status</TableCell>
               <TableCell align="center">Email Verificado</TableCell>
               <TableCell align="center">Último Login</TableCell>
@@ -217,6 +218,39 @@ export function UsersList({
                       -
                     </Typography>
                   )}
+                </TableCell>
+
+                {/* Coluna Grupos de Acesso */}
+                <TableCell>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, maxWidth: 250 }}>
+                    {user.accessGroups && user.accessGroups.length > 0 ? (
+                      <>
+                        {user.accessGroups.slice(0, 2).map((group) => (
+                          <Chip
+                            key={group.id}
+                            label={group.name}
+                            size="small"
+                            variant="outlined"
+                            sx={{ fontSize: '0.75rem' }}
+                          />
+                        ))}
+                        {user.accessGroups.length > 2 && (
+                          <Tooltip title={user.accessGroups.slice(2).map(g => g.name).join(', ')}>
+                            <Chip
+                              label={`+${user.accessGroups.length - 2}`}
+                              size="small"
+                              variant="outlined"
+                              sx={{ fontSize: '0.75rem', bgcolor: 'action.hover', cursor: 'help' }}
+                            />
+                          </Tooltip>
+                        )}
+                      </>
+                    ) : (
+                      <Typography variant="caption" color="text.secondary">
+                        -
+                      </Typography>
+                    )}
+                  </Box>
                 </TableCell>
 
                 {/* Coluna Status */}

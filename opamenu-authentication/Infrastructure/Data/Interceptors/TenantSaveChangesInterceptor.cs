@@ -44,7 +44,7 @@ namespace Authenticator.API.Infrastructure.Data.Interceptors
                 if (tenantProp == null)
                     continue;
 
-                // Em criaÃ§Ã£o, define o TenantId se nÃ£o informado
+                // Em criação, define o TenantId ou valida se é consistente
                 if (entry.State == EntityState.Added)
                 {
                     if (tenantProp.CurrentValue is null || (tenantProp.CurrentValue is Guid g && g == Guid.Empty))
@@ -57,12 +57,12 @@ namespace Authenticator.API.Infrastructure.Data.Interceptors
                     }
                 }
 
-                // Em atualizaÃ§Ã£o, impede alteraÃ§Ã£o cross-tenant
+                //Em atualização impede a mudança de tenant
                 if (entry.State == EntityState.Modified)
                 {
                     if (tenantProp.CurrentValue is Guid current && current != tenantId)
                     {
-                        throw new InvalidOperationException("OperaÃ§Ã£o de atualizaÃ§Ã£o cross-tenant nÃ£o permitida");
+                        throw new InvalidOperationException("Operação de atualização cross-tenant não permitida permitida");
                     }
                 }
             }

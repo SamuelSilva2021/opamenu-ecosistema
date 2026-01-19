@@ -38,7 +38,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Accoun
                 if (!tenantId.HasValue)
                 {
                     return ResponseBuilder<IEnumerable<AccessGroupDTO>>
-                        .Fail(new ErrorDTO { Message = "Tenant nÃ£o identificado" })
+                        .Fail(new ErrorDTO { Message = "Tenant não identificado" })
                         .WithCode(400)
                         .Build();
                 }
@@ -47,7 +47,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Accoun
                 if (user == null || user.TenantId != tenantId)
                 {
                     return ResponseBuilder<IEnumerable<AccessGroupDTO>>
-                        .Fail(new ErrorDTO { Message = "usuário nÃ£o encontrado no tenant" })
+                        .Fail(new ErrorDTO { Message = "usuário não encontrado no tenant" })
                         .WithCode(404)
                         .Build();
                 }
@@ -80,7 +80,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Accoun
                 if (!tenantId.HasValue)
                 {
                     return ResponseBuilder<bool>
-                        .Fail(new ErrorDTO { Message = "Tenant nÃ£o identificado" })
+                        .Fail(new ErrorDTO { Message = "Tenant não identificado" })
                         .WithCode(400)
                         .Build();
                 }
@@ -97,7 +97,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Accoun
                 if (user == null || user.TenantId != tenantId)
                 {
                     return ResponseBuilder<bool>
-                        .Fail(new ErrorDTO { Message = "usuário nÃ£o encontrado no tenant" })
+                        .Fail(new ErrorDTO { Message = "usuário não encontrado no tenant" })
                         .WithCode(404)
                         .Build();
                 }
@@ -112,7 +112,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Accoun
                 if (invalidIds.Count > 0)
                 {
                     return ResponseBuilder<bool>
-                        .Fail(new ErrorDTO { Message = $"Grupos invÃ¡lidos ou de outro tenant: {string.Join(", ", invalidIds)}" })
+                        .Fail(new ErrorDTO { Message = $"Grupos inválido ou de outro tenant: {string.Join(", ", invalidIds)}" })
                         .WithCode(400)
                         .Build();
                 }
