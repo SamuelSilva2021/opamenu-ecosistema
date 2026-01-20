@@ -56,8 +56,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { getErrorMessage } from "@/lib/utils";
+import { usePermission } from "@/hooks/usePermission";
+import { PermissionGate } from "@/components/auth/PermissionGate";
 
 export default function CouponsPage() {
+  const { can } = usePermission();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -206,6 +209,9 @@ export default function CouponsPage() {
       id: "actions",
       cell: ({ row }) => {
         const coupon = row.original;
+        const canEdit = can("COUPON", "UPDATE");
+        const canDelete = can("COUPON", "DELETE");
+
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -219,16 +225,20 @@ export default function CouponsPage() {
               <DropdownMenuItem onClick={() => navigator.clipboard.writeText(coupon.code)}>
                 Copiar código
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => openEditForm(coupon)}>
-                <Edit className="mr-2 h-4 w-4" /> Editar
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => setDeleteId(coupon.id)}
-                className="text-red-600 focus:text-red-600"
-              >
-                <Trash2 className="mr-2 h-4 w-4" /> Excluir
-              </DropdownMenuItem>
+              {(canEdit || canDelete) && <DropdownMenuSeparator />}
+              {canEdit && (
+                <DropdownMenuItem onClick={() => openEditForm(coupon)}>
+                  <Edit className="mr-2 h-4 w-4" /> Editar
+                </DropdownMenuItem>
+              )}
+              {canDelete && (
+                <DropdownMenuItem 
+                  onClick={() => setDeleteId(coupon.id)}
+                  className="text-red-600 focus:text-red-600"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" /> Excluir
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         )
@@ -262,9 +272,11 @@ export default function CouponsPage() {
             Gerencie os cupons de desconto da sua loja.
           </p>
         </div>
-        <Button onClick={() => { setEditingCoupon(null); setIsFormOpen(true); }}>
-          <Plus className="mr-2 h-4 w-4" /> Novo Cupom
-        </Button>
+        <PermissionGate module="COUPON" operation="CREATE">
+          <Button onClick={() => { setEditingCoupon(null); setIsFormOpen(true); }}>
+            <Plus className="mr-2 h-4 w-4" /> Novo Cupom
+          </Button>
+        </PermissionGate>
       </div>
 
       <Card>

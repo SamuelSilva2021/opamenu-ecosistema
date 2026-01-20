@@ -67,8 +67,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { getErrorMessage } from "@/lib/utils";
+import { usePermission } from "@/hooks/usePermission";
+import { PermissionGate } from "@/components/auth/PermissionGate";
 
 export default function ProductsPage() {
+  const { can } = usePermission();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -286,6 +289,12 @@ export default function ProductsPage() {
       id: "actions",
       cell: ({ row }) => {
         const product = row.original;
+        const canEdit = can("PRODUCT", "UPDATE");
+        const canDelete = can("PRODUCT", "DELETE");
+
+        if (!canEdit && !canDelete) {
+          return null;
+        }
 
         return (
           <DropdownMenu>
@@ -297,26 +306,32 @@ export default function ProductsPage() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Ações</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => openEditForm(product)}>
-                <Edit className="mr-2 h-4 w-4" />
-                Editar
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setManageAddonGroupsProductId(product.id)}>
-                <Layers className="mr-2 h-4 w-4" />
-                Gerenciar Adicionais
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => toggleStatusMutation.mutate(product.id)}>
-                <ArrowUpDown className="mr-2 h-4 w-4" />
-                {product.isActive ? "Desativar" : "Ativar"}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                onClick={() => setDeleteId(product.id)}
-                className="text-red-600 focus:text-red-600"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Excluir
-              </DropdownMenuItem>
+              {canEdit && (
+                <>
+                  <DropdownMenuItem onClick={() => openEditForm(product)}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Editar
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setManageAddonGroupsProductId(product.id)}>
+                    <Layers className="mr-2 h-4 w-4" />
+                    Gerenciar Adicionais
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => toggleStatusMutation.mutate(product.id)}>
+                    <ArrowUpDown className="mr-2 h-4 w-4" />
+                    {product.isActive ? "Desativar" : "Ativar"}
+                  </DropdownMenuItem>
+                </>
+              )}
+              {canEdit && canDelete && <DropdownMenuSeparator />}
+              {canDelete && (
+                <DropdownMenuItem 
+                  onClick={() => setDeleteId(product.id)}
+                  className="text-red-600 focus:text-red-600"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Excluir
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -348,10 +363,12 @@ export default function ProductsPage() {
           <h2 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Produtos</h2>
           <p className="text-muted-foreground mt-1">Gerencie os produtos do seu cardápio.</p>
         </div>
-        <Button onClick={openNewForm} className="shrink-0 w-full sm:w-auto">
-          <Plus className="mr-2 h-4 w-4" />
-          Novo Produto
-        </Button>
+        <PermissionGate module="PRODUCT" operation="CREATE">
+          <Button onClick={openNewForm} className="shrink-0 w-full sm:w-auto">
+            <Plus className="mr-2 h-4 w-4" />
+            Novo Produto
+          </Button>
+        </PermissionGate>
       </div>
 
       <Card>

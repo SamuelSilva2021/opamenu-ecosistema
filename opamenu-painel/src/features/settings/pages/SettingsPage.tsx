@@ -14,6 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { usePermission } from "@/hooks/usePermission";
 
 import { settingsService } from "../settings.service";
 import { filesService } from "@/services/files.service";
@@ -43,11 +44,14 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export default function SettingsPage() {
+  const { can } = usePermission();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("general");
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  const canUpdate = can("SETTINGS", "UPDATE");
 
   // Fetch settings
   const { data: settings, isLoading } = useQuery({
@@ -219,7 +223,7 @@ export default function SettingsPage() {
         </aside>
         <div className="flex-1 lg:max-w-2xl">
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            
+            <fieldset disabled={!canUpdate} className="space-y-6 group-disabled:opacity-50">
             {activeTab === "general" && (
               <Card>
                 <CardHeader>
@@ -443,6 +447,7 @@ export default function SettingsPage() {
                                                 [dayKey]: { ...dayConfig, isOpen: checked }
                                             });
                                         }}
+                                        disabled={!canUpdate}
                                     />
                                     <Label className="w-24">{translateDay(day)}</Label>
                                 </div>
@@ -456,6 +461,7 @@ export default function SettingsPage() {
                                                 [dayKey]: { ...dayConfig, open: e.target.value }
                                             })}
                                             className="w-24"
+                                            disabled={!canUpdate}
                                         />
                                         <span>às</span>
                                         <Input 
@@ -466,6 +472,7 @@ export default function SettingsPage() {
                                                 [dayKey]: { ...dayConfig, close: e.target.value }
                                             })}
                                             className="w-24"
+                                            disabled={!canUpdate}
                                         />
                                     </div>
                                 )}
@@ -476,13 +483,16 @@ export default function SettingsPage() {
                 </CardContent>
               </Card>
             )}
+            </fieldset>
 
+            {canUpdate && (
             <div className="flex justify-end">
               <Button type="submit" disabled={mutation.isPending}>
                 {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Salvar Alterações
               </Button>
             </div>
+            )}
           </form>
         </div>
       </div>

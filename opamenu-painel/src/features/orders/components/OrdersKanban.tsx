@@ -17,6 +17,7 @@ import { createPortal } from "react-dom";
 interface OrdersKanbanProps {
   orders: Order[];
   onOrderMove: (orderId: number, newStatus: OrderStatus) => void;
+  readOnly?: boolean;
 }
 
 const COLUMNS = [
@@ -27,7 +28,7 @@ const COLUMNS = [
   { id: OrderStatus.Delivered, title: "Entregue/Retirado", color: "bg-slate-500" },
 ];
 
-export function OrdersKanban({ orders, onOrderMove }: OrdersKanbanProps) {
+export function OrdersKanban({ orders, onOrderMove, readOnly = false }: OrdersKanbanProps) {
   const [activeOrder, setActiveOrder] = useState<Order | null>(null);
 
   const sensors = useSensors(
@@ -39,6 +40,7 @@ export function OrdersKanban({ orders, onOrderMove }: OrdersKanbanProps) {
   );
 
   function handleDragStart(event: DragStartEvent) {
+    if (readOnly) return;
     const { active } = event;
     const order = orders.find((o) => o.id === active.id);
     if (order) {

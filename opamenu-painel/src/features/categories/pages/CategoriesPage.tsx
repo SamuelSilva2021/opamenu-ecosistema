@@ -63,8 +63,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { getErrorMessage } from "@/lib/utils";
+import { usePermission } from "@/hooks/usePermission";
+import { PermissionGate } from "@/components/auth/PermissionGate";
 
 export default function CategoriesPage() {
+  const { can } = usePermission();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -203,6 +206,13 @@ export default function CategoriesPage() {
       id: "actions",
       cell: ({ row }) => {
         const category = row.original;
+        const canEdit = can("CATEGORY", "UPDATE");
+        const canDelete = can("CATEGORY", "DELETE");
+
+        if (!canEdit && !canDelete) {
+          return null;
+        }
+
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -213,18 +223,24 @@ export default function CategoriesPage() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Ações</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => openEditForm(category)}>
-                <Edit className="mr-2 h-4 w-4" />
-                Editar
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                onClick={() => setDeleteId(category.id)}
-                className="text-red-600 focus:text-red-600"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Excluir
-              </DropdownMenuItem>
+              {canEdit && (
+                <DropdownMenuItem onClick={() => openEditForm(category)}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Editar
+                </DropdownMenuItem>
+              )}
+              {canDelete && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={() => setDeleteId(category.id)}
+                    className="text-red-600 focus:text-red-600"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Excluir
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -258,10 +274,12 @@ export default function CategoriesPage() {
             Gerencie as categorias de produtos do seu cardápio.
           </p>
         </div>
-        <Button onClick={openNewForm} className="shrink-0 w-full sm:w-auto">
-          <Plus className="mr-2 h-4 w-4" />
-          Nova Categoria
-        </Button>
+        <PermissionGate module="CATEGORY" operation="CREATE">
+          <Button onClick={openNewForm} className="shrink-0 w-full sm:w-auto">
+            <Plus className="mr-2 h-4 w-4" />
+            Nova Categoria
+          </Button>
+        </PermissionGate>
       </div>
 
       <Card className="border-none shadow-md bg-white dark:bg-zinc-800">

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
@@ -90,6 +90,9 @@ public static class ServiceCollectionExtensions
         // Configurar AutoMapper com profiles da aplicaÃ§Ã£o
         services.AddAutoMapper(typeof(ProductMappingProfile));
         services.AddConfigureScrutor();
+
+        // Configurar Cache Distribuído (Memory Cache como padrão, pronto para Redis)
+        services.AddDistributedMemoryCache();
 
         // Registrar NotificationService com Hub especÃ­fico (substitui o registro do Scrutor)
         services.AddScoped<INotificationService, SignalRNotificationServiceWrapper>();

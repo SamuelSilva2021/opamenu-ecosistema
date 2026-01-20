@@ -65,8 +65,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { getErrorMessage } from "@/lib/utils";
+import { usePermission } from "@/hooks/usePermission";
+import { PermissionGate } from "@/components/auth/PermissionGate";
 
 export default function AddonGroupsPage() {
+  const { can } = usePermission();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<AddonGroup | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -220,6 +223,13 @@ export default function AddonGroupsPage() {
       id: "actions",
       cell: ({ row }) => {
         const group = row.original;
+        const canEdit = can("ADITIONAL_GROUP", "UPDATE");
+        const canDelete = can("ADITIONAL_GROUP", "DELETE");
+
+        if (!canEdit && !canDelete) {
+          return null;
+        }
+
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -230,22 +240,29 @@ export default function AddonGroupsPage() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Ações</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => setManageAddonsGroupId(group.id)}>
-                <Layers className="mr-2 h-4 w-4" />
-                Gerenciar Itens
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => openEditForm(group)}>
-                <Edit className="mr-2 h-4 w-4" />
-                Editar Grupo
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => setDeleteId(group.id)}
-                className="text-red-600 focus:text-red-600"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Excluir
-              </DropdownMenuItem>
+              {canEdit && (
+                <>
+                  <DropdownMenuItem onClick={() => setManageAddonsGroupId(group.id)}>
+                    <Layers className="mr-2 h-4 w-4" />
+                    Gerenciar Itens
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => openEditForm(group)}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Editar Grupo
+                  </DropdownMenuItem>
+                </>
+              )}
+              {canEdit && canDelete && <DropdownMenuSeparator />}
+              {canDelete && (
+                <DropdownMenuItem 
+                  onClick={() => setDeleteId(group.id)}
+                  className="text-red-600 focus:text-red-600"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Excluir
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -279,10 +296,12 @@ export default function AddonGroupsPage() {
             Gerencie os grupos e opções de adicionais para seus produtos.
           </p>
         </div>
-        <Button onClick={openNewForm} className="shrink-0 w-full sm:w-auto">
-          <Plus className="mr-2 h-4 w-4" />
-          Novo Grupo
-        </Button>
+        <PermissionGate module="ADITIONAL_GROUP" operation="CREATE">
+          <Button onClick={openNewForm} className="shrink-0 w-full sm:w-auto">
+            <Plus className="mr-2 h-4 w-4" />
+            Novo Grupo
+          </Button>
+        </PermissionGate>
       </div>
 
       <Card className="border-none shadow-md bg-white dark:bg-zinc-800">

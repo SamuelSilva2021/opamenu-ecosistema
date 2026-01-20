@@ -5,6 +5,10 @@ using Microsoft.Extensions.Logging;
 using OpaMenu.Domain.Interfaces;
 using OpaMenu.Infrastructure.Anotations;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using OpaMenu.Infrastructure.Shared.Data.Context;
+using Microsoft.Extensions.Caching.Distributed;
+using System.Text.Json;
 
 namespace OpaMenu.Infrastructure.Filters
 {
@@ -12,19 +16,24 @@ namespace OpaMenu.Infrastructure.Filters
     {
         private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<PermissionAuthorizationFilter> _logger;
+        private readonly AccessControlDbContext _dbContext;
+        private readonly IDistributedCache _cache;
 
         public PermissionAuthorizationFilter(
             ICurrentUserService currentUserService,
-            ILogger<PermissionAuthorizationFilter> logger)
+            ILogger<PermissionAuthorizationFilter> logger,
+            AccessControlDbContext dbContext,
+            IDistributedCache cache)
         {
             _currentUserService = currentUserService;
             _logger = logger;
+            _dbContext = dbContext;
+            _cache = cache;
         }
 
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            var descriptor = context.ActionDescriptor as ControllerActionDescriptor;
-            if (descriptor == null)
+            if (context.ActionDescriptor is not ControllerActionDescriptor descriptor)
             {
                 await next();
                 return;
@@ -71,6 +80,99 @@ namespace OpaMenu.Infrastructure.Filters
                 string.Equals(p, requiredModule, StringComparison.OrdinalIgnoreCase) ||
                 (!string.IsNullOrEmpty(requiredOperation) &&
                  string.Equals(p, $"{requiredModule}:{requiredOperation}", StringComparison.OrdinalIgnoreCase)));
+
+            if (!hasPermission)
+            {
+                if (Guid.TryParse(_currentUserService.UserId, out var userId) &&
+                    Guid.TryParse(_currentUserService.TenantId, out var tenantId))
+                {
+                    try
+                    {
+                        // 1. Tentar buscar permissões do cache
+                        var cacheKey = $"auth:permissions:{userId}:{tenantId}";
+                        var cachedPermissions = await _cache.GetStringAsync(cacheKey);
+                        List<string> userPermissions;
+
+                        if (!string.IsNullOrEmpty(cachedPermissions))
+                        {
+                            userPermissions = JsonSerializer.Deserialize<List<string>>(cachedPermissions) ?? new List<string>();
+                        }
+                        else
+                        {
+                            // 2. Se não estiver no cache, buscar do banco (TODAS as permissões do usuário)
+                            // A query busca todas as permissões ativas associadas ao usuário através da hierarquia
+                            var permissionsData = await _dbContext.UserAccounts
+                                .AsNoTracking()
+                                .Where(u => u.Id == userId && u.TenantId == tenantId)
+                                .SelectMany(u => u.AccountAccessGroups)
+                                .Select(aag => aag.AccessGroup)
+                                .Where(ag => ag.IsActive)
+                                .SelectMany(ag => ag.RoleAccessGroups)
+                                .Select(rag => rag.Role)
+                                .Where(r => r.IsActive)
+                                .SelectMany(r => r.RolePermissions)
+                                .Select(rp => rp.Permission)
+                                .Where(p => p.IsActive)
+                                .Select(p => new 
+                                { 
+                                    ModuleKey = p.Module.Key, 
+                                    Operations = p.PermissionOperations
+                                        .Where(po => po.IsActive)
+                                        .Select(po => po.Operation.Value)
+                                        .ToList()
+                                })
+                                .ToListAsync();
+
+                            // 3. Processar e formatar permissões
+                            userPermissions = new List<string>();
+                            foreach (var p in permissionsData)
+                            {
+                                if (!string.IsNullOrEmpty(p.ModuleKey))
+                                {
+                                    // Adiciona permissão de módulo (ex: "DASHBOARD")
+                                    userPermissions.Add(p.ModuleKey);
+                                    
+                                    // Adiciona permissões de operação (ex: "DASHBOARD:READ")
+                                    foreach (var op in p.Operations)
+                                    {
+                                        if (!string.IsNullOrEmpty(op))
+                                        {
+                                            userPermissions.Add($"{p.ModuleKey}:{op}");
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            // Remove duplicatas e normaliza
+                            userPermissions = userPermissions.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
+                            // 4. Salvar no cache (expiração de 30 minutos)
+                            var cacheOptions = new DistributedCacheEntryOptions
+                            {
+                                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
+                            };
+                            await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(userPermissions), cacheOptions);
+                        }
+
+                        // 5. Verificar se possui a permissão necessária na lista carregada
+                        hasPermission = userPermissions.Any(p =>
+                            string.Equals(p, requiredModule, StringComparison.OrdinalIgnoreCase) ||
+                            (!string.IsNullOrEmpty(requiredOperation) &&
+                             string.Equals(p, $"{requiredModule}:{requiredOperation}", StringComparison.OrdinalIgnoreCase)));
+
+                        if (hasPermission)
+                        {
+                            _logger.LogInformation(
+                                "Permissão confirmada via Cache/Banco para usuário {UserId} no módulo {Module} operação {Operation}",
+                                userId, requiredModule, requiredOperation);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Erro ao verificar permissões no cache/banco para o usuário {UserId}", userId);
+                    }
+                }
+            }
 
             if (!hasPermission && permissions.Count == 0)
             {

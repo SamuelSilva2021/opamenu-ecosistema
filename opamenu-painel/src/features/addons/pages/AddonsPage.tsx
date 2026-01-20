@@ -62,8 +62,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { getErrorMessage } from "@/lib/utils";
+import { usePermission } from "@/hooks/usePermission";
+import { PermissionGate } from "@/components/auth/PermissionGate";
 
 export default function AddonsPage() {
+  const { can } = usePermission();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingAddon, setEditingAddon] = useState<Addon | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -225,6 +228,13 @@ export default function AddonsPage() {
       id: "actions",
       cell: ({ row }) => {
         const addon = row.original;
+        const canEdit = can("ADITIONAL", "UPDATE");
+        const canDelete = can("ADITIONAL", "DELETE");
+
+        if (!canEdit && !canDelete) {
+          return null;
+        }
+
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -235,17 +245,21 @@ export default function AddonsPage() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Ações</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => openEditForm(addon)}>
-                <Edit className="mr-2 h-4 w-4" />
-                Editar
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => setDeleteId(addon.id)}
-                className="text-red-600 focus:text-red-600"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Excluir
-              </DropdownMenuItem>
+              {canEdit && (
+                <DropdownMenuItem onClick={() => openEditForm(addon)}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Editar
+                </DropdownMenuItem>
+              )}
+              {canDelete && (
+                <DropdownMenuItem 
+                  onClick={() => setDeleteId(addon.id)}
+                  className="text-red-600 focus:text-red-600"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Excluir
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -279,10 +293,12 @@ export default function AddonsPage() {
             Gerencie todos os itens adicionais disponíveis.
           </p>
         </div>
-        <Button onClick={openNewForm} className="shrink-0 w-full sm:w-auto">
-          <Plus className="mr-2 h-4 w-4" />
-          Novo Adicional
-        </Button>
+        <PermissionGate module="ADITIONAL" operation="CREATE">
+          <Button onClick={openNewForm} className="shrink-0 w-full sm:w-auto">
+            <Plus className="mr-2 h-4 w-4" />
+            Novo Adicional
+          </Button>
+        </PermissionGate>
       </div>
 
       <Card className="border-none shadow-md bg-white dark:bg-zinc-800">

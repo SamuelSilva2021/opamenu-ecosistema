@@ -5,10 +5,14 @@ import { OrderStatus, type Order } from "../types";
 import { Loader2, RefreshCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { usePermission } from "@/hooks/usePermission";
 
 export default function OrdersPage() {
+  const { can } = usePermission();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  
+  const canUpdate = can("ORDER", "UPDATE");
 
   const { data: orders = [], isLoading, isFetching } = useQuery({
     queryKey: ["orders"],
@@ -73,7 +77,7 @@ export default function OrdersPage() {
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : (
-        <OrdersKanban orders={orders} onOrderMove={handleOrderMove} />
+        <OrdersKanban orders={orders} onOrderMove={handleOrderMove} readOnly={!canUpdate} />
       )}
     </div>
   );

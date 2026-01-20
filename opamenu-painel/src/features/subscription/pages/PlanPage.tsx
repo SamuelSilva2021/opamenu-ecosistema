@@ -19,11 +19,15 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { subscriptionService } from "../subscription.service";
+import { usePermission } from "@/hooks/usePermission";
 
 export default function PlanPage() {
+  const { can } = usePermission();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+
+  const canUpdate = can("SUBSCRIPTION", "UPDATE");
 
   const { data: subscription, isLoading, error } = useQuery({
     queryKey: ["subscription-status"],
@@ -211,14 +215,14 @@ export default function PlanPage() {
             <Button 
               className="w-full gap-2" 
               onClick={handleManageBilling}
-              disabled={billingPortalMutation.isPending}
+              disabled={billingPortalMutation.isPending || !canUpdate}
             >
               {billingPortalMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
               <ExternalLink className="w-4 h-4" />
               Gerenciar Cobrança e Faturas
             </Button>
 
-            {!subscription.cancelAtPeriodEnd && subscription.status !== 'canceled' && (
+            {!subscription.cancelAtPeriodEnd && subscription.status !== 'canceled' && canUpdate && (
               <>
                 <div className="relative py-2">
                   <div className="absolute inset-0 flex items-center">
