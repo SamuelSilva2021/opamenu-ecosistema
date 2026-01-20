@@ -1,7 +1,8 @@
-﻿using AutoMapper;
+using AutoMapper;
 using OpaMenu.Application.Services.Interfaces;
 using OpaMenu.Domain.DTOs.Category;
 using OpaMenu.Domain.DTOs.Coupon;
+using OpaMenu.Domain.DTOs.Loyalty;
 using OpaMenu.Domain.DTOs.Menu;
 using OpaMenu.Domain.DTOs.Product;
 using OpaMenu.Domain.DTOs.Tenant;
@@ -17,7 +18,8 @@ namespace OpaMenu.Application.Services
         ITenantBusinessRepository tenantBusinessRepository,
         IMapper mapper,
         IProductRepository productRepository,
-        ICouponRepository couponRepository
+        ICouponRepository couponRepository,
+        ILoyaltyProgramRepository loyaltyProgramRepository
         ) : IStorefrontService
     {
         private readonly ITenantRepository _tenantRepository = tenantRepository;
@@ -25,6 +27,7 @@ namespace OpaMenu.Application.Services
         private readonly IMapper _mapper = mapper;
         private readonly IProductRepository _productRepository = productRepository;
         private readonly ICouponRepository _couponRepository = couponRepository;
+        private readonly ILoyaltyProgramRepository _loyaltyProgramRepository = loyaltyProgramRepository;
 
         public async Task<ResponseDTO<MenuResponseDto>> GetStorefrontDataAsync(string slug)
         {
@@ -42,7 +45,28 @@ namespace OpaMenu.Application.Services
                     return StaticResponseBuilder<MenuResponseDto>.BuildError("Loja nÃ£o encontrada.");
 
                 if (tenantBusinnessEntity != null)
+                {
                     tenantBusinness = _mapper.Map<TenantBusinessResponseDto>(tenantBusinnessEntity);
+
+                    var loyaltyProgram = await _loyaltyProgramRepository.GetByTenantIdAsync(tenantId);
+                    if (loyaltyProgram != null && loyaltyProgram.IsActive)
+                    {
+                        tenantBusinness = tenantBusinness with
+                        {
+                            LoyaltyProgram = new LoyaltyProgramDto
+                            {
+                                Id = loyaltyProgram.Id,
+                                Name = loyaltyProgram.Name,
+                                Description = loyaltyProgram.Description,
+                                PointsPerCurrency = loyaltyProgram.PointsPerCurrency,
+                                CurrencyValue = loyaltyProgram.CurrencyValue,
+                                MinOrderValue = loyaltyProgram.MinOrderValue,
+                                PointsValidityDays = loyaltyProgram.PointsValidityDays,
+                                IsActive = loyaltyProgram.IsActive
+                            }
+                        };
+                    }
+                }
 
                 var productsEntity = await _productRepository.GetProductsForMenuAsync(tenantId);
                 if (productsEntity.Any())

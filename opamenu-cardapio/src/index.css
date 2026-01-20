@@ -1,9 +1,9 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* Opamenu Digital Menu Design System - Modern Food Delivery Interface
-Paleta baseada na logo: Laranja (#F37021) + Verde (#6BBE45)
+Paleta baseada em Teal (#1EB3A5) para frescor e modernidade
 All colors MUST be HSL for proper theming.
 */
 
@@ -13,12 +13,12 @@ All colors MUST be HSL for proper theming.
     --background: 0 0% 100%;
     --foreground: 0 0% 20%;
 
-    /* Opamenu brand colors - Nova paleta baseada na logo */
-    --opamenu-orange: 20 92% 54%;     /* #F37021 - Cor principal da logo */
-    --opamenu-orange-light: 20 92% 65%; /* #FF8C42 - Variação clara */
-    --opamenu-orange-dark: 20 82% 48%;   /* #D95F1D - Hover/Active */
+    /* Opamenu brand colors - Nova paleta Teal/Esmeralda */
+    --opamenu-orange: 174 70% 40%;     /* #1EB3A5 - Teal/Esmeralda - Fresco e moderno */
+    --opamenu-orange-light: 174 70% 50%; /* #2BC4B6 - Variação clara */
+    --opamenu-orange-dark: 174 70% 30%;   /* #15857A - Hover/Active */
     
-    --opamenu-green: 101 47% 51%;      /* #6BBE45 - Verde secundário */
+    --opamenu-green: 101 47% 51%;      /* #6BBE45 - Verde secundário (Mantido) */
     --opamenu-green-light: 101 57% 61%; /* #85D266 - Variação clara */  
     --opamenu-green-dark: 101 47% 43%;   /* #58A23A - Escuro */
 
@@ -32,18 +32,18 @@ All colors MUST be HSL for proper theming.
     --card-foreground: 0 0% 20%;
     --card-hover: 0 0% 98%;
 
-    /* Interactive elements - Laranja como primário */
-    --primary: 20 92% 54%;            /* #F37021 */
+    /* Interactive elements - Teal como primário */
+    --primary: 174 70% 40%;            /* #1EB3A5 */
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 20 82% 48%;      /* #D95F1D */
+    --primary-hover: 174 70% 30%;      /* #15857A */
 
     /* Secondary - Verde */
     --secondary: 101 47% 51%;         /* #6BBE45 */
     --secondary-foreground: 0 0% 100%;
     --secondary-hover: 101 47% 43%;   /* #58A23A */
 
-    /* Accent - Usar o laranja claro */
-    --accent: 20 92% 65%;             /* #FF8C42 */
+    /* Accent - Usar o Teal claro */
+    --accent: 174 70% 50%;             /* #2BC4B6 */
     --accent-foreground: 0 0% 100%;
     --accent-light: 20 92% 96%;
 
@@ -56,7 +56,7 @@ All colors MUST be HSL for proper theming.
     --border: 0 0% 90%;               /* #E6E6E6 */
     --input: 0 0% 98%;
     --input-border: 0 0% 85%;
-    --ring: 20 92% 54%;               /* #F37021 */
+    --ring: 174 70% 40%;               /* #1EB3A5 */
 
     /* Feedback states */
     --destructive: 354 70% 54%;       /* #E63946 */
@@ -92,7 +92,7 @@ All colors MUST be HSL for proper theming.
     --card: 0 0% 8%;
     --card-foreground: 0 0% 95%;
 
-    --primary: 20 92% 54%;
+    --primary: 174 70% 40%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 101 47% 51%;
@@ -101,7 +101,7 @@ All colors MUST be HSL for proper theming.
     --muted: 0 0% 15%;
     --muted-foreground: 0 0% 60%;
 
-    --accent: 20 92% 65%;
+    --accent: 174 70% 50%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 354 70% 54%;
@@ -109,7 +109,7 @@ All colors MUST be HSL for proper theming.
 
     --border: 0 0% 15%;
     --input: 0 0% 15%;
-    --ring: 20 92% 54%;
+    --ring: 174 70% 40%;
   }
 }
 

@@ -130,9 +130,9 @@ const TenantHeader = ({ tenant, customer, onLoginClick, onLogoutClick, onEditPro
   return (
     <div className="w-full font-sans">
       {/* Top Menu (Orange Bar) - Visible only on Desktop (lg and up) */}
-      <div className="hidden lg:block bg-[#FF4500] text-white py-3 px-4 shadow-md">
+      <div className="hidden lg:block bg-primary text-white py-3 px-4 shadow-md">
         <div className="container mx-auto flex items-center justify-center gap-8">
-          <a href="#" className="flex items-center gap-2 font-medium bg-white text-[#FF4500] px-6 py-1.5 rounded-full shadow-sm hover:bg-gray-100 transition-colors">
+          <a href="#" className="flex items-center gap-2 font-medium bg-white text-primary px-6 py-1.5 rounded-full shadow-sm hover:bg-gray-100 transition-colors">
             <Home className="w-4 h-4" /> Início
           </a>
           <a href="#" className="flex items-center gap-2 font-medium hover:text-white/80 transition-colors">
@@ -156,7 +156,7 @@ const TenantHeader = ({ tenant, customer, onLoginClick, onLogoutClick, onEditPro
       </div>
 
       {/* Mobile Decorative Header (Orange Bar) - Visible only on Mobile (below lg) */}
-      <div className="lg:hidden bg-[#FF4500] h-24 w-full"></div>
+      <div className="lg:hidden bg-primary h-24 w-full"></div>
 
       {/* Tenant Info Section */}
       <div className="bg-white border-b pb-8 pt-4 -mt-4 rounded-t-[2rem] relative z-10 lg:mt-0 lg:rounded-none">
@@ -205,7 +205,7 @@ const TenantHeader = ({ tenant, customer, onLoginClick, onLogoutClick, onEditPro
 
               <Button 
                 variant="link" 
-                className="p-0 h-auto text-gray-600 font-semibold hover:text-[#FF4500]"
+                className="p-0 h-auto text-gray-600 font-semibold hover:text-primary"
                 onClick={() => setIsModalOpen(true)}
               >
                 Mais informações

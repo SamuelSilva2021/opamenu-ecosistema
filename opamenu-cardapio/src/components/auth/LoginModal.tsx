@@ -112,7 +112,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
               name="phoneNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[#FF4500] font-bold">Telefone</FormLabel>
+                  <FormLabel className="text-primary font-bold">Telefone</FormLabel>
                   <FormControl>
                     <Input 
                         placeholder="(00) 90000-0000" 
@@ -122,7 +122,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                             field.onChange(formatted);
                         }}
                         maxLength={15}
-                        className="text-lg h-12 border-[#FF4500] focus-visible:ring-[#FF4500]"
+                        className="text-lg h-12 border-primary focus-visible:ring-primary"
                     />
                   </FormControl>
                   <FormMessage />
@@ -132,7 +132,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
             
             <Button 
                 type="submit" 
-                className="w-full bg-[#FF4500] hover:bg-[#FF4500]/90 text-white font-bold h-12 text-lg"
+                className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-12 text-lg"
                 disabled={isLoading}
             >
               {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "CONFIRMAR"}

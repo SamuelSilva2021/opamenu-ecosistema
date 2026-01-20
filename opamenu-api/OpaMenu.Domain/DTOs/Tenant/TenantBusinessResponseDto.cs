@@ -1,4 +1,5 @@
 using System;
+using OpaMenu.Domain.DTOs.Loyalty;
 
 namespace OpaMenu.Domain.DTOs.Tenant
 {
@@ -24,6 +25,7 @@ namespace OpaMenu.Domain.DTOs.Tenant
         object? OpeningHours,
         object? PaymentMethods,
         double? Latitude,
-        double? Longitude
+        double? Longitude,
+        LoyaltyProgramDto? LoyaltyProgram
     );
 }

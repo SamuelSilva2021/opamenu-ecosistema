@@ -24,6 +24,18 @@ export interface TenantBusinessResponseDto {
   paymentMethods?: string | object;
   latitude?: number;
   longitude?: number;
+  loyaltyProgram?: LoyaltyProgramDto;
+}
+
+export interface LoyaltyProgramDto {
+  id: number;
+  name: string;
+  description?: string;
+  pointsPerCurrency: number;
+  currencyValue: number;
+  minOrderValue: number;
+  pointsValidityDays?: number;
+  isActive: boolean;
 }
 
 export interface CustomerResponseDto {
@@ -349,6 +361,7 @@ export interface TenantBusinessInfo {
   isOpen: boolean;
   latitude?: number;
   longitude?: number;
+  loyaltyProgram?: LoyaltyProgramDto;
 }
 
 export interface StorefrontData {

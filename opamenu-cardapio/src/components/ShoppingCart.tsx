@@ -92,10 +92,10 @@ const ShoppingCart = ({
         <div className="h-full rounded-none flex flex-col">
           <div className="flex flex-row items-center justify-between p-6 border-b bg-card">
             <div className="flex items-center gap-2">
-              <ShoppingBag className="h-5 w-5 text-opamenu-orange" />
+              <ShoppingBag className="h-5 w-5 text-primary" />
               <span className="font-semibold">Carrinho</span>
               {totalItems > 0 && (
-                <Badge className="bg-opamenu-orange text-white">
+                <Badge className="bg-primary text-white">
                   {totalItems}
                 </Badge>
               )}

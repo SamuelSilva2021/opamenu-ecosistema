@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using OpaMenu.Infrastructure.Shared.Data.Context;
@@ -11,9 +12,11 @@ using OpaMenu.Infrastructure.Shared.Data.Context;
 namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
 {
     [DbContext(typeof(OpamenuDbContext))]
-    partial class OpamenuDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260120144836_ProgramaDeFidelidade")]
+    partial class ProgramaDeFidelidade
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -445,11 +448,6 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
-
-                    b.Property<decimal>("CurrencyValue")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)")
-                        .HasColumnName("currency_value");
 
                     b.Property<string>("Description")
                         .HasMaxLength(500)

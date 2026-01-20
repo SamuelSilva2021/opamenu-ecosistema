@@ -1,4 +1,4 @@
-import { LayoutDashboard, Settings, Users, Building2, ChevronRight, LogOut, CreditCard, Package } from 'lucide-react';
+import { LayoutDashboard, Settings, Users, Building2, ChevronRight, LogOut, CreditCard, Package, Gift } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { clsx } from 'clsx';
 

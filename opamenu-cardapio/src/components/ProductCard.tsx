@@ -38,7 +38,7 @@ const ProductCard = ({
             className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-opamenu-orange/20 to-opamenu-green/20"> 
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-opamenu-green/20"> 
             <div className="text-center text-muted-foreground">
               <div className="text-4xl mb-2">🍽️</div>
               <p className="text-sm">Imagem não disponível</p>
@@ -49,7 +49,7 @@ const ProductCard = ({
 
       <CardContent className="p-4">
         <div className="mb-3">
-          <h3 className="font-semibold text-lg text-foreground group-hover:text-opamenu-orange transition-colors">  
+          <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors">  
             {product.name}
           </h3>
           <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
@@ -59,7 +59,7 @@ const ProductCard = ({
 
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <span className="text-2xl font-bold text-opamenu-orange"> 
+            <span className="text-2xl font-bold text-primary"> 
               {formatPrice(product.price)}
             </span>
           </div>
@@ -87,7 +87,7 @@ const ProductCard = ({
                     e.stopPropagation();
                     onAddToCart(product.id);
                   }}
-                  className="h-8 w-8 p-0 bg-opamenu-orange hover:bg-opamenu-orange/90 text-white"
+                  className="h-8 w-8 p-0 bg-primary hover:bg-primary/90 text-white"
                   disabled={!product.isActive}
                 >
                   <Plus className="h-4 w-4" />

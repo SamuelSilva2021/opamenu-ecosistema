@@ -12,24 +12,16 @@ using System.Text.Json;
 
 namespace OpaMenu.Infrastructure.Filters
 {
-    public class PermissionAuthorizationFilter : IAsyncActionFilter
+    public class PermissionAuthorizationFilter(
+        ICurrentUserService currentUserService,
+        ILogger<PermissionAuthorizationFilter> logger,
+        AccessControlDbContext dbContext,
+        IDistributedCache cache) : IAsyncActionFilter
     {
-        private readonly ICurrentUserService _currentUserService;
-        private readonly ILogger<PermissionAuthorizationFilter> _logger;
-        private readonly AccessControlDbContext _dbContext;
-        private readonly IDistributedCache _cache;
-
-        public PermissionAuthorizationFilter(
-            ICurrentUserService currentUserService,
-            ILogger<PermissionAuthorizationFilter> logger,
-            AccessControlDbContext dbContext,
-            IDistributedCache cache)
-        {
-            _currentUserService = currentUserService;
-            _logger = logger;
-            _dbContext = dbContext;
-            _cache = cache;
-        }
+        private readonly ICurrentUserService _currentUserService = currentUserService;
+        private readonly ILogger<PermissionAuthorizationFilter> _logger = logger;
+        private readonly AccessControlDbContext _dbContext = dbContext;
+        private readonly IDistributedCache _cache = cache;
 
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {

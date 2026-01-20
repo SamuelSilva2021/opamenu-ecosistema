@@ -15,6 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { authService } from "../auth.service";
 import { type LoginFormData, loginSchema } from "../validation";
 import { useAuthStore } from "@/store/auth.store";
@@ -95,7 +96,7 @@ export function LoginForm() {
               <FormItem>
                 <FormLabel>Senha</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="******" {...field} />
+                  <PasswordInput placeholder="******" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

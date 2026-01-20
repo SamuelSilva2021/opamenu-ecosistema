@@ -11,9 +11,9 @@ import ProductsPage from '@/features/products/pages/ProductsPage'
 import SettingsPage from '@/features/settings/pages/SettingsPage'
 import CouponsPage from '@/features/coupons/pages/CouponsPage'
 import CustomersPage from '@/features/customers/pages/CustomersPage'
-import OrdersPage from '@/features/orders/pages/OrdersPage'
 import PlanPage from '@/features/subscription/pages/PlanPage'
 import { Toaster } from "@/components/ui/toaster"
+import OrdersPage from './features/orders/pages/OrdersPage'
 
 function App() {
   return (

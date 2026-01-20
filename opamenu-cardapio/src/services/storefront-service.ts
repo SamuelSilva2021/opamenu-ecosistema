@@ -47,7 +47,8 @@ const mapTenantBusiness = (dto: TenantBusinessResponseDto): TenantBusinessInfo =
     paymentMethods: safeJsonParse(dto.paymentMethods, []),
     isOpen: false, // Calculated on frontend or needs another field?
     latitude: dto.latitude,
-    longitude: dto.longitude
+    longitude: dto.longitude,
+    loyaltyProgram: dto.loyaltyProgram
   };
 };
 

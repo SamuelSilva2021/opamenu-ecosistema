@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using OpaMenu.Infrastructure.Shared.Entities;
 
 namespace OpaMenu.Infrastructure.Shared.Data.Context;
@@ -25,6 +25,9 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
     public DbSet<TenantCustomerEntity> TenantCustomers { get; set; }
     public DbSet<CustomerEntity> Customers { get; set; }
     public DbSet<TableEntity> Tables { get; set; }
+    public DbSet<LoyaltyProgramEntity> LoyaltyPrograms { get; set; }
+    public DbSet<LoyaltyTransactionEntity> LoyaltyTransactions { get; set; }
+    public DbSet<CustomerLoyaltyBalanceEntity> CustomerLoyaltyBalances { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -318,6 +321,59 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
 
             entity.HasIndex(e => e.PaymentId);
             entity.HasIndex(e => e.RefundedAt);
+        });
+
+        // Loyalty Program configuration
+        modelBuilder.Entity<LoyaltyProgramEntity>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.PointsPerCurrency).HasPrecision(10, 2).IsRequired();
+            entity.Property(e => e.CurrencyValue).HasPrecision(10, 2).IsRequired();
+            entity.Property(e => e.MinOrderValue).HasPrecision(10, 2).IsRequired();
+            
+            // Um programa por Tenant
+            entity.HasIndex(e => e.TenantId).IsUnique();
+        });
+
+        // Customer Loyalty Balance configuration
+        modelBuilder.Entity<CustomerLoyaltyBalanceEntity>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.CustomerId).IsRequired();
+            entity.Property(e => e.Balance).IsRequired();
+            entity.Property(e => e.TotalEarned).IsRequired();
+            
+            // Saldo único por Cliente e Tenant
+            entity.HasIndex(e => new { e.TenantId, e.CustomerId }).IsUnique();
+
+            entity.HasOne(e => e.Customer)
+                .WithMany() // Assumindo que Customer não precisa navegar para Balances por enquanto
+                .HasForeignKey(e => e.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Loyalty Transaction configuration
+        modelBuilder.Entity<LoyaltyTransactionEntity>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.CustomerLoyaltyBalanceId).IsRequired();
+            entity.Property(e => e.Points).IsRequired();
+            entity.Property(e => e.Type).IsRequired();
+            entity.Property(e => e.Description).HasMaxLength(200);
+            
+            entity.HasOne(e => e.CustomerLoyaltyBalance)
+                .WithMany(b => b.Transactions)
+                .HasForeignKey(e => e.CustomerLoyaltyBalanceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Order)
+                .WithMany() // Order não precisa conhecer suas transações de fidelidade diretamente
+                .HasForeignKey(e => e.OrderId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(e => e.CustomerLoyaltyBalanceId);
         });
 
         // Addon configuration

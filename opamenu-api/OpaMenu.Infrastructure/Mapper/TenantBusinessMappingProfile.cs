@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using OpaMenu.Domain.DTOs.Tenant;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
 using System.Text.Json;
@@ -32,7 +32,8 @@ namespace OpaMenu.Infrastructure.Mapper
                     Deserialize(src.BusinessInfo != null ? src.BusinessInfo.OpeningHours : null),
                     Deserialize(src.BusinessInfo != null ? src.BusinessInfo.PaymentMethods : null),
                     src.BusinessInfo != null ? src.BusinessInfo.Latitude : null,
-                    src.BusinessInfo != null ? src.BusinessInfo.Longitude : null
+                    src.BusinessInfo != null ? src.BusinessInfo.Longitude : null,
+                    null
                 ));
 
             CreateMap<TenantBusinessEntity, TenantBusinessResponseDto>()
@@ -58,7 +59,8 @@ namespace OpaMenu.Infrastructure.Mapper
                     Deserialize(src.OpeningHours),
                     Deserialize(src.PaymentMethods),
                     src.Latitude,
-                    src.Longitude
+                    src.Longitude,
+                    null
                 ));
 
             CreateMap<UpdateTenantBusinessRequestDto, TenantBusinessEntity>()

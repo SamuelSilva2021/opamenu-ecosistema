@@ -126,16 +126,16 @@ namespace Authenticator.API.UserEntry.Users
         /// <summary>
         /// Altera a senha do usuário autenticado
         /// </summary>
-        //[HttpPost("change-password")]
-        //[ProducesResponseType(StatusCodes.Status200OK)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        //[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        //public async Task<ActionResult<ResponseDTO<bool>>> ChangePassword([FromBody] UserAccountChangePasswordDTO request)
-        //{
-        //    var response = await _userService.ChangePasswordAsync(request);
-        //    return StatusCode(response.Code, response);
-        //}
+        [HttpPost("change-password")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ResponseDTO<bool>>> ChangePassword([FromBody] UserAccountChangePasswordDTO request)
+        {
+            var response = await _userService.ChangePasswordAsync(request);
+            return StatusCode(response.Code, response);
+        }
 
         /// <summary>
         /// Inicia fluxo de esqueci a senha

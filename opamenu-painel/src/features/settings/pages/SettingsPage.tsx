@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Store, MapPin, Clock, CreditCard, Share2, Upload, Copy, Check, Facebook, MessageCircle } from "lucide-react";
+import { Loader2, Store, MapPin, Clock, CreditCard, Share2, Upload, Copy, Check, Facebook, MessageCircle, Gift } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,7 @@ import { usePermission } from "@/hooks/usePermission";
 import { settingsService } from "../settings.service";
 import { filesService } from "@/services/files.service";
 import type { OpeningHours, UpdateTenantBusinessRequestDto } from "../types";
+import LoyaltyPage from "@/features/loyalty/pages/LoyaltyPage";
 
 // Schema definition
 const formSchema = z.object({
@@ -190,6 +191,7 @@ export default function SettingsPage() {
     { id: "hours", label: "Horários", icon: Clock },
     { id: "payments", label: "Pagamento", icon: CreditCard },
     { id: "social", label: "Redes Sociais", icon: Share2 },
+    { id: "loyalty", label: "Fidelidade", icon: Gift },
   ];
 
   if (isLoading) {
@@ -222,6 +224,9 @@ export default function SettingsPage() {
           </nav>
         </aside>
         <div className="flex-1 lg:max-w-2xl">
+          {activeTab === "loyalty" ? (
+            <LoyaltyPage />
+          ) : (
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <fieldset disabled={!canUpdate} className="space-y-6 group-disabled:opacity-50">
             {activeTab === "general" && (
@@ -494,6 +499,7 @@ export default function SettingsPage() {
             </div>
             )}
           </form>
+          )}
         </div>
       </div>
     </div>

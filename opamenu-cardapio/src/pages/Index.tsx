@@ -243,7 +243,7 @@ const StorefrontContent = () => {
                 placeholder="Busque por um produto..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 h-12 bg-white border-gray-200 focus:border-[#FF4500] focus:ring-[#FF4500]/20 transition-all text-base"
+                className="pl-12 h-12 bg-white border-gray-200 focus:border-primary focus:ring-primary/20 transition-all text-base"
               />
             </div>
           </div>
@@ -286,8 +286,12 @@ const StorefrontContent = () => {
         {/* RIGHT COLUMN - Sidebar (Sticky on Desktop) */}
         <div className="hidden lg:block space-y-6">
             <div className="sticky top-4 space-y-6">
-                <LoyaltyCard />
-                {tenantBusiness && <DeliveryInfo tenant={tenantBusiness} />}
+                {tenantBusiness?.loyaltyProgram?.isActive && (
+                    <LoyaltyCard program={tenantBusiness.loyaltyProgram} />
+                )}
+                {tenantBusiness && customer && customer.street && (
+                    <DeliveryInfo tenant={tenantBusiness} customer={customer} />
+                )}
                 <InlineCart 
                     cartItems={cartItems} 
                     total={cartSubtotal}

@@ -1,5 +1,4 @@
 import { AlertCircle } from "lucide-react";
-import { AxiosError } from "axios";
 import { getErrorDetail, getErrorMessage } from "@/lib/utils";
 import type { ErrorDTO } from "../types";
 
@@ -9,32 +8,6 @@ interface AuthErrorAlertProps {
 
 export function AuthErrorAlert({ error }: AuthErrorAlertProps) {
   if (!error) return null;
-
-  let errorCode = "";
-  
-  // Tenta extrair o código do erro
-  
-  // 1. Caso seja um objeto direto (ex: lançado manualmente no throw do mutation)
-  if ((error as any)?.errors && Array.isArray((error as any).errors)) {
-      const errors = (error as any).errors;
-      if (errors.length > 0 && errors[0]?.code) {
-          errorCode = errors[0].code;
-      }
-  } 
-  // 2. Caso seja AxiosError
-  else if (error instanceof AxiosError && error.response?.data) {
-       const data = error.response.data as any;
-       if (data.errors && Array.isArray(data.errors) && data.errors.length > 0 && data.errors[0]?.code) {
-          errorCode = data.errors[0].code;
-       }
-  }
-  // 3. Caso seja um erro customizado com propriedade data
-  else if ((error as any)?.data?.errors && Array.isArray((error as any).data.errors)) {
-      const errors = (error as any).data.errors;
-       if (errors.length > 0 && errors[0]?.code) {
-          errorCode = errors[0].code;
-      }
-  }
 
   const message = getErrorMessage(error);
   const detail = getErrorDetail(error);

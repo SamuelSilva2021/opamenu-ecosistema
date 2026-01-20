@@ -244,52 +244,32 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.UserAc
             }
         }
 
-        //public async Task<ResponseDTO<bool>> ChangePasswordAsync(UserAccountChangePasswordDTO dto)
-        //{
-        //    try
-        //    {
-        //        var currentUserId = _userContext.CurrentUser?.UserId;
-        //        if (!currentUserId.HasValue)
-        //        {
-        //            return ResponseBuilder<bool>
-        //                .Fail(new ErrorDTO { Message = "usuário nÃ£o autenticado" })
-        //                .WithCode(401)
-        //                .Build();
-        //        }
+        public async Task<ResponseDTO<bool>> ChangePasswordAsync(UserAccountChangePasswordDTO dto)
+        {
+            try
+            {
+                var currentUserId = _userContext.CurrentUser?.UserId;
+                if (string.IsNullOrEmpty(currentUserId))
+                    return StaticResponseBuilder<bool>.BuildError("Usuário não autenticado.");
 
-        //        var user = await _userRepository.GetByIdAsync(currentUserId.Value);
-        //        if (user == null)
-        //        {
-        //            return ResponseBuilder<bool>
-        //                .Fail(new ErrorDTO { Message = "usuário nÃ£o encontrado" })
-        //                .WithCode(404)
-        //                .Build();
-        //        }
+                var user = await _userRepository.GetByIdAsync(Guid.Parse(currentUserId));
+                if (user == null)
+                    return StaticResponseBuilder<bool>.BuildError("Usuário não encontrado.");
 
-        //        var isValid = BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash);
-        //        if (!isValid)
-        //        {
-        //            return ResponseBuilder<bool>
-        //                .Fail(new ErrorDTO { Message = "Senha atual invÃ¡lida" })
-        //                .WithCode(400)
-        //                .Build();
-        //        }
+                var isValid = BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash);
+                if (!isValid)
+                    return StaticResponseBuilder<bool>.BuildError("Senha atual inválida.");
 
-        //        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
-        //        user.UpdatedAt = DateTime.UtcNow;
-        //        await _userRepository.UpdateAsync(user);
-        //        return ResponseBuilder<bool>.Ok(true).Build();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Erro ao alterar senha");
-        //        return ResponseBuilder<bool>
-        //            .Fail(new ErrorDTO { Message = ex.Message })
-        //            .WithException(ex)
-        //            .WithCode(500)
-        //            .Build();
-        //    }
-        //}
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+                user.UpdatedAt = DateTime.UtcNow;
+                await _userRepository.UpdateAsync(user);
+                return StaticResponseBuilder<bool>.BuildOk(true);
+            }
+            catch (Exception ex)
+            {
+                return StaticResponseBuilder<bool>.BuildErrorResponse(ex);
+            }
+        }
 
         public async Task<ResponseDTO<bool>> ForgotPasswordAsync(UserAccountForgotPasswordDTO dto)
         {

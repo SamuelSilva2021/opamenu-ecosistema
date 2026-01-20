@@ -51,7 +51,7 @@ namespace Authenticator.API.Core.Application.Interfaces.AccessControl.UserAccoun
         /// <summary>
         /// Altera a senha do usuário autenticado
         /// </summary>
-        //Task<ResponseDTO<bool>> ChangePasswordAsync(UserAccountChangePasswordDTO dto);
+        Task<ResponseDTO<bool>> ChangePasswordAsync(UserAccountChangePasswordDTO dto);
 
         /// <summary>
         /// Inicia fluxo de esqueci a senha (gera token)

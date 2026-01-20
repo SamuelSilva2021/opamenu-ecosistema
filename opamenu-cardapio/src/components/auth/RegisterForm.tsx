@@ -309,7 +309,7 @@ export function RegisterForm({ isOpen, onClose, initialPhone, onSuccess, onBack 
             
             <Button 
                 type="submit" 
-                className="w-full bg-[#FF4500] hover:bg-[#FF4500]/90 text-white font-bold h-12 text-lg mt-6"
+                className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-12 text-lg mt-6"
                 disabled={isLoading}
             >
               {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "CADASTRAR"}

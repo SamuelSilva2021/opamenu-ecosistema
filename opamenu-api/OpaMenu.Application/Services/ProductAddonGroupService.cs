@@ -292,8 +292,8 @@ public class ProductAddonGroupService(
 
     public async Task<ResponseDTO<bool>> CanRemoveAddonGroupFromProductAsync(int productId, int addonGroupId)
     {
-        // Verificar se hÃ¡ pedidos pendentes que usam este produto com adicionais
-        var ordersUsingProductWithAddons = false; // SimulaÃ§Ã£o de verificaÃ§Ã£o
+        // Verificar se há¡ pedidos pendentes que usam este produto com adicionais
+        var ordersUsingProductWithAddons = false; // simulação de verificação
         // Por enquanto, retorna true - pode ser implementado futuramente
         return StaticResponseBuilder<bool>.BuildOk(true);
     }

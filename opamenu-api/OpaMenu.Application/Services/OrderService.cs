@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using OpaMenu.Application.DTOs;
 using OpaMenu.Application.Services.Interfaces;
 using OpaMenu.Domain.DTOs;
@@ -28,7 +28,8 @@ public class OrderService(
     ITenantCustomerRepository tenantCustomerRepository,
     ICustomerRepository customerRepository,
     ITenantRepository tenantRepository,
-    ITableRepository tableRepository
+    ITableRepository tableRepository,
+    ILoyaltyService loyaltyService
     ) : IOrderService
 {
     private readonly IOrderRepository _orderRepository = orderRepository;
@@ -41,6 +42,7 @@ public class OrderService(
     private readonly ICustomerRepository _customerRepository = customerRepository;
     private readonly ITenantRepository _tenantRepository = tenantRepository;
     private readonly ITableRepository _tableRepository = tableRepository;
+    private readonly ILoyaltyService _loyaltyService = loyaltyService;
     private readonly ILogger<OrderService> _logger = logger;
 
     /// <summary>
@@ -297,8 +299,11 @@ public class OrderService(
             var orderDto = MapToOrderResponseDto(createdOrder);
 
             _logger.LogInformation("Pedido {OrderId} criado com sucesso", createdOrder.Id);
+
+            // Processar pontos de fidelidade
+            await _loyaltyService.ProcessOrderPointsAsync(createdOrder.Id, tenantId);
             
-            // Enviar notificaÃ§Ã£o de novo pedido para administradores
+            // Enviar notificação de novo pedido para administradores
             try
             {
                 await _notificationService.NotifyNewOrderAsync(orderDto);
@@ -468,6 +473,9 @@ public class OrderService(
             var orderDto = MapToOrderResponseDto(createdOrder);
 
             _logger.LogInformation("Pedido {OrderId} criado com sucesso", createdOrder.Id);
+
+            // Processar pontos de fidelidade
+            await _loyaltyService.ProcessOrderPointsAsync(createdOrder.Id, tenant.Id);
 
             // Enviar notificaÃ§Ã£o de novo pedido para administradores
             try

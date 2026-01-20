@@ -104,7 +104,7 @@ const BottomNavigation = ({
       
       <div className="relative -top-5">
         <Button 
-          className="rounded-full w-14 h-14 bg-[#FF4500] hover:bg-[#FF4500]/90 shadow-lg flex flex-col items-center justify-center gap-0 p-0"
+          className="rounded-full w-14 h-14 bg-primary hover:bg-primary/90 shadow-lg flex flex-col items-center justify-center gap-0 p-0"
           onClick={onCartClick}
         >
           <ShoppingCartIcon className="h-6 w-6 text-white" />

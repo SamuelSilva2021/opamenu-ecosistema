@@ -40,7 +40,7 @@ const InlineCart = ({
         <Button 
             variant="ghost" 
             size="sm" 
-            className="h-auto p-0 text-xs text-[#FF4500] hover:text-[#FF4500]/80 font-semibold uppercase"
+            className="h-auto p-0 text-xs text-primary hover:text-primary/80 font-semibold uppercase"
             onClick={onClearCart}
         >
             Limpar
@@ -57,7 +57,7 @@ const InlineCart = ({
                         <div className="flex items-center gap-3 mt-1">
                             <button 
                                 onClick={() => onUpdateQuantity(item.product.id, item.quantity - 1)}
-                                className="text-[#FF4500] text-xs font-semibold hover:underline"
+                                className="text-primary text-xs font-semibold hover:underline"
                             >
                                 Editar
                             </button>
@@ -92,7 +92,7 @@ const InlineCart = ({
         </div>
 
         <Button 
-            className="w-full bg-[#FF4500] hover:bg-[#FF4500]/90 text-white font-semibold py-6"
+            className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-6"
             onClick={onCheckout}
         >
             Escolher forma de pagamento

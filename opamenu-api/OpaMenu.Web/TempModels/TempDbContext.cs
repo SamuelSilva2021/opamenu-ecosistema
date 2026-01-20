@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
@@ -37,8 +37,41 @@ public partial class TempDbContext : DbContext
 
     public virtual DbSet<ProductImage> ProductImages { get; set; }
 
+    public virtual DbSet<LoyaltyProgram> LoyaltyPrograms { get; set; }
+
+    public virtual DbSet<CustomerLoyaltyBalance> CustomerLoyaltyBalances { get; set; }
+
+    public virtual DbSet<LoyaltyTransaction> LoyaltyTransactions { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<LoyaltyProgram>(entity =>
+        {
+            entity.HasIndex(e => e.TenantId, "IX_LoyaltyPrograms_TenantId").IsUnique();
+            entity.Property(e => e.Name).HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.PointsPerCurrency).HasPrecision(10, 2);
+            entity.Property(e => e.MinOrderValue).HasPrecision(10, 2);
+        });
+
+        modelBuilder.Entity<CustomerLoyaltyBalance>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.CustomerPhone }, "IX_CustomerLoyaltyBalances_Tenant_Phone").IsUnique();
+            entity.Property(e => e.CustomerName).HasMaxLength(100);
+            entity.Property(e => e.CustomerPhone).HasMaxLength(20);
+        });
+
+        modelBuilder.Entity<LoyaltyTransaction>(entity =>
+        {
+            entity.HasIndex(e => e.CustomerLoyaltyBalanceId, "IX_LoyaltyTransactions_BalanceId");
+            entity.Property(e => e.Description).HasMaxLength(200);
+            
+            entity.HasOne(d => d.CustomerLoyaltyBalance)
+                  .WithMany(p => p.Transactions)
+                  .HasForeignKey(d => d.CustomerLoyaltyBalanceId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
         modelBuilder.Entity<Addon>(entity =>
         {
             entity.HasIndex(e => e.AddonGroupId, "IX_Addons_AddonGroupId");
