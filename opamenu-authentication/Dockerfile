@@ -15,7 +15,7 @@ WORKDIR /src
 
 # Copiar csproj do projeto principal e das dependências
 COPY ["opamenu-authentication/Authenticator.API.csproj", "opamenu-authentication/"]
-COPY ["opamenu-shared-infrastructure/OpaMenu.Infrastructure.Shared/OpaMenu.Infrastructure.Shared.csproj", "opamenu-shared-infrastructure/OpaMenu.Infrastructure.Shared/"]
+COPY ["opamenu-commons/OpaMenu.Infrastructure.Shared/OpaMenu.Infrastructure.Shared.csproj", "opamenu-commons/OpaMenu.Infrastructure.Shared/"]
 
 # Restaurar dependências
 RUN dotnet restore "opamenu-authentication/Authenticator.API.csproj"
