@@ -1,4 +1,4 @@
-﻿using Authenticator.API.Core.Domain.Authentication;
+using Authenticator.API.Core.Domain.Authentication;
 using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
 
@@ -19,7 +19,11 @@ namespace Authenticator.API.Infrastructure.Helpers
                 UserId = user.Claims.FirstOrDefault(c => c.Type == "user_id")?.Value,
                 Username = user.Claims.FirstOrDefault(c => c.Type == "username")?.Value,
                 FullName = user.Claims.FirstOrDefault(c => c.Type == "full_name")?.Value,
-                Email = user.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value
+                Email = user.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value,
+                Roles = user.Claims
+                    .Where(c => c.Type == ClaimTypes.Role || c.Type == "role")
+                    .Select(c => c.Value)
+                    .ToList()
             };
         }
     }

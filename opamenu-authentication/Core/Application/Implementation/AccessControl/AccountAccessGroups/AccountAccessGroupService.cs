@@ -1,4 +1,4 @@
-﻿using Authenticator.API.Core.Application.Interfaces.AccessControl.AccountAccessGroups;
+using Authenticator.API.Core.Application.Interfaces.AccessControl.AccountAccessGroups;
 using Authenticator.API.Core.Application.Interfaces.AccessControl.AccessGroup;
 using Authenticator.API.Core.Application.Interfaces;
 using Authenticator.API.Core.Application.Interfaces.Auth;
@@ -77,7 +77,9 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Accoun
             try
             {
                 var tenantId = _userContext.CurrentUser?.TenantId;
-                if (!tenantId.HasValue)
+                var isSuperAdmin = _userContext.CurrentUser?.Roles?.Contains("SUPER_ADMIN") == true;
+
+                if (!tenantId.HasValue && !isSuperAdmin)
                 {
                     return ResponseBuilder<bool>
                         .Fail(new ErrorDTO { Message = "Tenant não identificado" })
@@ -94,7 +96,9 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Accoun
                 }
 
                 var user = await _userRepository.GetByIdAsync(userId);
-                if (user == null || user.TenantId != tenantId)
+                
+                // Se for SUPER_ADMIN, ignora validação de tenant do usuário
+                if (!isSuperAdmin && (user == null || user.TenantId != tenantId))
                 {
                     return ResponseBuilder<bool>
                         .Fail(new ErrorDTO { Message = "usuário não encontrado no tenant" })
@@ -104,9 +108,15 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Accoun
 
                 // Validar grupos pertencentes ao tenant e ativos
                 var targetIds = request.AccessGroupIds.Distinct().ToList();
-                // Buscar todos os grupos do tenant e filtrar por IDs alvo e ativos para evitar ambiguidade de sobrecarga
-                var allTenantGroups = await _accessGroupRepository.GetAllAsyncByTenantId(tenantId.Value);
-                var validGroups = allTenantGroups.Where(g => targetIds.Contains(g.Id) && g.IsActive).ToList();
+                
+                // Se for SUPER_ADMIN, busca grupos globais ou de sistema, senão busca por tenant
+                IEnumerable<AccessGroupEntity> validGroups;
+                
+                if (isSuperAdmin)
+                    validGroups = await _accessGroupRepository.FindAsync(g => targetIds.Contains(g.Id) && g.IsActive);
+                else
+                    validGroups = await _accessGroupRepository.FindAsync(g => g.TenantId == tenantId.Value && targetIds.Contains(g.Id) && g.IsActive);
+
                 var validIds = validGroups.Select(g => g.Id).ToHashSet();
                 var invalidIds = targetIds.Where(id => !validIds.Contains(id)).ToList();
                 if (invalidIds.Count > 0)
@@ -117,7 +127,6 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Accoun
                         .Build();
                 }
 
-                // Opcional: auditoria de quem concedeu; por ora, nÃ£o enviar grantedBy para evitar conflitos de tipos
                 await _accountAccessGroupRepository.AssignGroupsAsync(userId, targetIds, null, request.ExpiresAt);
 
                 return ResponseBuilder<bool>.Ok(true).Build();
