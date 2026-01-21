@@ -12,7 +12,7 @@ using System.Linq.Expressions;
 namespace Authenticator.API.Core.Application.Implementation.AccessControl.AccountAccessGroups
 {
     /// <summary>
-    /// ServiÃ§o para gerenciamento de vÃ­nculos de grupos de acesso de usuários
+    /// Serviço para gerenciamento de vínculos de grupos de acesso com usuários
     /// </summary>
     public class AccountAccessGroupService(
         IAccountAccessGroupRepository accountAccessGroupRepository,
