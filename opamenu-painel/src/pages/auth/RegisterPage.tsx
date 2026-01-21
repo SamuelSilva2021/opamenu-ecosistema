@@ -16,14 +16,6 @@ export default function RegisterPage() {
             className="h-[300px] w-[300px] rounded-full object-cover shadow-2xl" 
           />
         </div>
-        <div className="relative z-20 mt-auto">
-          <blockquote className="space-y-2">
-            <p className="text-lg">
-              &ldquo;Experimente gratuitamente por 14 dias.&rdquo;
-            </p>
-            <footer className="text-sm">Opamenu Team</footer>
-          </blockquote>
-        </div>
       </div>
       <div className="lg:p-8">
         <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
