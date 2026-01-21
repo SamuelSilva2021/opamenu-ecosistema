@@ -13,27 +13,6 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            /*
-            migrationBuilder.DeleteData(
-                table: "group_type",
-                keyColumn: "id",
-                keyValue: new Guid("00000000-0000-0000-0000-000000000001"));
-
-            migrationBuilder.DeleteData(
-                table: "group_type",
-                keyColumn: "id",
-                keyValue: new Guid("00000000-0000-0000-0000-000000000002"));
-
-            migrationBuilder.DeleteData(
-                table: "role",
-                keyColumn: "id",
-                keyValue: new Guid("00000000-0000-0000-0000-000000000010"));
-
-            migrationBuilder.DeleteData(
-                table: "role",
-                keyColumn: "id",
-                keyValue: new Guid("00000000-0000-0000-0000-000000000020"));
-            */
 
             migrationBuilder.RenameColumn(
                 name: "updated_at",
