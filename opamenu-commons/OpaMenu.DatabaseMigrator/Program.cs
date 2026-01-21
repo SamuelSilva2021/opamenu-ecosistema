@@ -24,6 +24,7 @@ string? dbOption = string.Empty;
 Console.WriteLine("Selecione uma opção:");
 Console.WriteLine("1 - Adicionar nova migração");
 Console.WriteLine("2 - Atualizar base de dados");
+Console.WriteLine("3 - Dropar base de dados");
 Console.Write("Opção: ");
 
 var mainOption = Console.ReadLine();
@@ -35,6 +36,9 @@ switch (mainOption)
         break;
     case "2":
         await HandleUpdateDatabaseAsync();
+        break;
+    case "3":
+        await HandleDropDatabaseAsync();
         break;
     default:
         Console.WriteLine("Opção inválida.");
@@ -207,6 +211,54 @@ async Task HandleUpdateDatabaseAsync()
     }
 }
 
+async Task HandleDropDatabaseAsync()
+{
+    dbOption = AskDatabaseOption();
+
+    if (dbOption is null)
+    {
+        Console.WriteLine("Nenhuma opção selecionada.");
+        return;
+    }
+
+    Console.WriteLine("!!! ATENÇÃO !!!");
+    Console.WriteLine("Você está prestes a EXCLUIR COMPLETAMENTE a base de dados selecionada.");
+    Console.WriteLine("Todos os dados serão perdidos permanentemente.");
+    Console.Write("Tem certeza que deseja continuar? (S/N): ");
+    var confirm = Console.ReadLine();
+
+    if (confirm?.Trim().ToUpper() != "S")
+    {
+        Console.WriteLine("Operação cancelada.");
+        return;
+    }
+
+    switch (dbOption)
+    {
+        case "1":
+            await DropContextAsync<MultiTenantDbContext>(
+                "Multi Tenant Database",
+                "MultiTenantDatabase",
+                opts => new MultiTenantDbContext(opts));
+            break;
+        case "2":
+            await DropContextAsync<AccessControlDbContext>(
+                "Access Control Database",
+                "AccessControlDatabase",
+                opts => new AccessControlDbContext(opts));
+            break;
+        case "3":
+            await DropContextAsync<OpamenuDbContext>(
+                "OpaMenu Business Database",
+                "OpamenuDatabase",
+                opts => new OpamenuDbContext(opts));
+            break;
+        default:
+            Console.WriteLine("Opção de base inválida.");
+            break;
+    }
+}
+
 string? AskDatabaseOption()
 {
     Console.WriteLine();
@@ -271,6 +323,58 @@ async Task MigrateContextAsync<TContext>(
     catch (Exception ex)
     {
         Console.WriteLine($"[ERRO] Falha ao migrar {dbLabel}:");
+        Console.WriteLine(ex.Message);
+        if (ex.InnerException != null)
+        {
+            Console.WriteLine($"Detalhe: {ex.InnerException.Message}");
+        }
+    }
+
+    Console.WriteLine();
+}
+
+async Task DropContextAsync<TContext>(
+    string dbLabel,
+    string connectionStringName,
+    Func<DbContextOptions<TContext>, TContext> contextFactory) where TContext : DbContext
+{
+    Console.WriteLine("========================================");
+    Console.WriteLine($"   DROPPING: {dbLabel}");
+    Console.WriteLine($"   Contexto: {typeof(TContext).Name}");
+    Console.WriteLine("========================================");
+
+    var connectionString = configuration.GetConnectionString(connectionStringName);
+
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        Console.WriteLine($"[AVISO] Connection string '{connectionStringName}' não encontrada. Pulando...");
+        Console.WriteLine();
+        return;
+    }
+
+    try
+    {
+        var optionsBuilder = new DbContextOptionsBuilder<TContext>()
+            .UseLoggerFactory(loggerFactory)
+            .UseNpgsql(connectionString);
+
+        await using var context = contextFactory(optionsBuilder.Options);
+
+        Console.WriteLine("Excluindo banco de dados...");
+        var deleted = await context.Database.EnsureDeletedAsync();
+        
+        if (deleted)
+        {
+            Console.WriteLine("SUCESSO: Banco de dados excluído.");
+        }
+        else
+        {
+             Console.WriteLine("INFO: Banco de dados não existia.");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[ERRO] Falha ao excluir {dbLabel}:");
         Console.WriteLine(ex.Message);
         if (ex.InnerException != null)
         {

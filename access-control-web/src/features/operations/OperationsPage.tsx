@@ -56,10 +56,10 @@ export const OperationsPage = () => {
   const handleDialogSubmit = async (data: CreateOperationRequest | UpdateOperationRequest) => {
     try {
       if (editingOperation) {
-        const result = await updateOperation(editingOperation.id, data as UpdateOperationRequest);
+        await updateOperation(editingOperation.id, data as UpdateOperationRequest);
         setSuccessMessage('Operação atualizada com sucesso!');
       } else {
-        const result = await createOperation(data as CreateOperationRequest);
+        await createOperation(data as CreateOperationRequest);
         setSuccessMessage('Operação criada com sucesso!');
       }
       

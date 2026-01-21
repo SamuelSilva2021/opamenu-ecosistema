@@ -98,7 +98,7 @@ export const AccessGroupsPage = () => {
 		setAccessGroupToDelete(null);
 	};
 
-  const handleToggleStatus = async (accessGroup: AccessGroup) => {
+  const handleToggleStatus = async (_accessGroup: AccessGroup) => {
     // TODO: Implementar lógica de toggle status
   };
 

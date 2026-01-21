@@ -27,15 +27,6 @@ export default function LoginPage() {
             className="h-[300px] w-[300px] rounded-full object-cover shadow-2xl" 
           />
         </div>
-        <div className="relative z-20 mt-auto">
-          <blockquote className="space-y-2">
-            <p className="text-lg">
-              &ldquo;Gerencie seu cardápio digital com agilidade e eficiência. 
-              O controle total do seu restaurante em um só lugar.&rdquo;
-            </p>
-            <footer className="text-sm">OpaMenu Team</footer>
-          </blockquote>
-        </div>
       </div>
       <div className="lg:p-8">
         <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
