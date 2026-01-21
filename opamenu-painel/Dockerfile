@@ -2,19 +2,26 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 
-COPY package*.json ./
+# Copy package files
+COPY opamenu-painel/package*.json ./opamenu-painel/
+
+WORKDIR /app/opamenu-painel
+
 RUN npm install
-COPY . .
+
+# Copy source code
+COPY opamenu-painel/ .
+
 RUN npm run build
 
 # Runtime
 FROM nginx:alpine
 
 # Copia build
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/opamenu-painel/dist /usr/share/nginx/html
 
 # Template do nginx
-COPY nginx.conf.template /etc/nginx/templates/default.conf.template
+COPY opamenu-painel/nginx.conf.template /etc/nginx/templates/default.conf.template
 
 # Railway injeta PORT automaticamente
 ENV NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx/conf.d

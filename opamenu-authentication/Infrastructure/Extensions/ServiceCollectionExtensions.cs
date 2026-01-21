@@ -135,7 +135,7 @@ public static class ServiceCollectionExtensions
             {
                 Title = "Authentication API",
                 Version = "1.0.0",
-                Description = "API de autenticaÃ§Ã£o e autorizaÃ§Ã£o com JWT e RBAC para o ecossistema Opa Menu",
+                Description = "API de autenticação e autorização com JWT e RBAC para o ecossistema Opamenu",
                 Contact = new OpenApiContact
                 {
                     Name = "Equipe Opa Menu",
@@ -150,7 +150,6 @@ public static class ServiceCollectionExtensions
                 TermsOfService = new Uri("https://opamenu.com/termos")
             });
 
-            // ConfiguraÃ§Ã£o para autenticaÃ§Ã£o JWT no Swagger
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 Name = "Authorization",
@@ -158,7 +157,7 @@ public static class ServiceCollectionExtensions
                 Scheme = "Bearer",
                 BearerFormat = "JWT",
                 In = ParameterLocation.Header,
-                Description = @"AutenticaÃ§Ã£o JWT usando o esquema Bearer.
+                Description = @"Autenticação JWT usando o esquema Bearer.
                 
                     **Como usar:**
                     1. FaÃ§a login no endpoint `/api/auth/login`
@@ -185,7 +184,7 @@ public static class ServiceCollectionExtensions
                 }
             });
 
-            // Inclui comentÃ¡rios XML na documentaÃ§Ã£o
+            // Inclui comentários XML na documentação
             var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
             var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
             if (File.Exists(xmlPath))

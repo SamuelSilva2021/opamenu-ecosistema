@@ -301,14 +301,14 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
                 });
 
             #region INJEÇÃO DE DADOS INICIAIS
-            var groupTypeIdSystem = new Guid("00000000-0000-0000-0000-000000000001");
-            var groupTypeIdTenant = new Guid("00000000-0000-0000-0000-000000000002");
-            var superAdminroleId = new Guid("00000000-0000-0000-0000-000000000010");
-            var adminroleId = new Guid("00000000-0000-0000-0000-000000000020");
-            var accessGroupId = new Guid("00000000-0000-0000-0000-000000000100");
-            var roleAccessGroup = new Guid("00000000-0000-0000-0000-000000001000");
-            var userAccountId = new Guid("00000000-0000-0000-0000-000000005000");
-            var userAccessGroupId = new Guid("00000000-0000-0000-0000-000000006000");
+            var groupTypeIdSystem = new Guid();
+            var groupTypeIdTenant = new Guid();
+            var superAdminroleId = new Guid();
+            var adminroleId = new Guid();
+            var accessGroupId = new Guid();
+            var roleAccessGroup = new Guid();
+            var userAccountId = new Guid();
+            var userAccessGroupId = new Guid();
 
             // Senha: "Abc@123" (BCrypt hash)
             var passwordHash = "$2a$11$5zjPGYTtvzZN8afzkFUnne4OAGrd8OFnVAuMk6wilOIF4ZdOEh66i";
