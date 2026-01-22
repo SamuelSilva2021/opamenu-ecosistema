@@ -92,6 +92,7 @@ export const TenantsFilter: React.FC<TenantsFilterProps> = ({ onSearch, initialF
             fullWidth
             size="small"
             defaultValue=""
+            InputLabelProps={{ shrink: true }}
             slotProps={{
                 select: { native: true }
             }}

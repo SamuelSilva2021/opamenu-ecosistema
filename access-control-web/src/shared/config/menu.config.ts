@@ -77,6 +77,14 @@ export const menuConfig: MenuItemConfig[] = [
         moduleKey: ModuleKey.ACCESS_GROUP,
         operation: 'SELECT',
         path: '/access-groups'
+      },    
+      {
+        key: 'permissions',
+        label: 'Permissões',
+        icon: 'key',
+        moduleKey: ModuleKey.ACCESS_GROUP,
+        operation: 'SELECT',
+        path: '/permissions'
       },
       {
         key: 'roles',
@@ -86,14 +94,6 @@ export const menuConfig: MenuItemConfig[] = [
         operation: 'SELECT',
         path: '/roles'
       },
-      {
-        key: 'permissions',
-        label: 'Permissões',
-        icon: 'key',
-        moduleKey: ModuleKey.ACCESS_GROUP,
-        operation: 'SELECT',
-        path: '/permissions'
-      }
     ]
   },
   {

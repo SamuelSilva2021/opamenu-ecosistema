@@ -119,19 +119,19 @@ export const Sidebar = ({ open, onClose, onToggle }: SidebarProps) => {
           operation: 'SELECT',
         },
         {
-          id: 'roles',
-          title: 'Papéis',
-          icon: <RoleIcon />,
-          path: '/roles',
-          moduleKey: ModuleKey.ROLE_MODULE,
-          operation: 'SELECT',
-        },
-        {
           id: 'permissions',
           title: 'Permissões',
           icon: <SecurityIcon />,
           path: '/permissions',
           moduleKey: ModuleKey.PERMISSION_MODULE,
+          operation: 'SELECT',
+        },
+        {
+          id: 'roles',
+          title: 'Papéis',
+          icon: <RoleIcon />,
+          path: '/roles',
+          moduleKey: ModuleKey.ROLE_MODULE,
           operation: 'SELECT',
         },
         {
