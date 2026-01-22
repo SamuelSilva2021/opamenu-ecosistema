@@ -542,41 +542,6 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.InsertData(
-                table: "categories",
-                columns: new[] { "id", "created_at", "description", "display_order", "is_active", "name", "tenant_id", "updated_at" },
-                values: new object[,]
-                {
-                    { 1, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Pratos principais do cardápio", 1, true, "Pratos Principais", null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) },
-                    { 2, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Bebidas e refrescos", 2, true, "Bebidas", null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) },
-                    { 3, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Doces e sobremesas", 3, true, "Sobremesas", null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) },
-                    { 4, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Aperitivos e entradas", 4, true, "Entradas", null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) }
-                });
-
-            migrationBuilder.InsertData(
-                table: "payment_methods",
-                columns: new[] { "id", "created_at", "description", "display_order", "icon_url", "is_active", "is_online", "name", "slug", "tenant_id", "updated_at" },
-                values: new object[,]
-                {
-                    { 1, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Pagamento via cartão de crédito", 1, null, true, true, "Crédito", "credito", null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) },
-                    { 2, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Pagamento via cartão de débito", 2, null, true, true, "Débito", "debito", null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) },
-                    { 3, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Pagamento instantâneo via PIX", 3, null, true, true, "PIX", "pix", null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) },
-                    { 4, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Pagamento em espécie", 4, null, true, false, "Dinheiro", "dinheiro", null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) }
-                });
-
-            migrationBuilder.InsertData(
-                table: "products",
-                columns: new[] { "id", "category_id", "created_at", "description", "display_order", "image_url", "is_active", "name", "price", "tenant_id", "updated_at" },
-                values: new object[,]
-                {
-                    { 1, 1, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Hambúrguer artesanal com carne bovina, queijo, alface, tomate e molho especial", 1, null, true, "Hambúrguer Clássico", 25.90m, null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) },
-                    { 2, 1, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Pizza tradicional com molho de tomate, mussarela e manjericão fresco", 2, null, true, "Pizza Margherita", 32.50m, null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) },
-                    { 3, 2, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Refrigerante gelado em lata de 350ml - diversos sabores", 1, null, true, "Refrigerante Lata", 5.50m, null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) },
-                    { 4, 2, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Suco natural de frutas frescas - 400ml", 2, null, true, "Suco Natural", 8.90m, null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) },
-                    { 5, 3, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Pudim caseiro de leite condensado com calda de açúcar", 1, null, true, "Pudim de Leite", 12.90m, null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) },
-                    { 6, 4, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Batatas crocantes cortadas na casa, tempero especial - serve até 3 pessoas", 1, null, true, "Porção de Batata Frita", 18.50m, null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) }
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_addons_addon_group_id",
                 table: "addons",
