@@ -5,15 +5,15 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using OpaMenu.Infrastructure.Shared.Data.Context;
+using OpaMenu.Infrastructure.Shared.Data.Context.Opamenu;
 
 #nullable disable
 
 namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
 {
     [DbContext(typeof(OpamenuDbContext))]
-    [Migration("20260122192056_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20260122221845_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -81,44 +81,6 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.HasIndex("AddonGroupId");
 
                     b.ToTable("addons");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000020"),
-                            AddonGroupId = new Guid("00000000-0000-0000-0000-000000000004"),
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Tiras crocantes de bacon",
-                            DisplayOrder = 1,
-                            IsActive = true,
-                            Name = "Bacon",
-                            Price = 4.00m,
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000021"),
-                            AddonGroupId = new Guid("00000000-0000-0000-0000-000000000004"),
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Cebolas caramelizadas na manteiga",
-                            DisplayOrder = 2,
-                            IsActive = true,
-                            Name = "Cebola Caramelizada",
-                            Price = 3.00m,
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000022"),
-                            AddonGroupId = new Guid("00000000-0000-0000-0000-000000000004"),
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Adicione uma fatia extra de queijo",
-                            DisplayOrder = 3,
-                            IsActive = true,
-                            Name = "Queijo Extra",
-                            Price = 2.50m,
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        });
                 });
 
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.AddonGroupEntity", b =>
@@ -178,22 +140,6 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.HasKey("Id");
 
                     b.ToTable("addon_groups");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000004"),
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Escolha seus complementos favoritos",
-                            DisplayOrder = 1,
-                            IsActive = true,
-                            IsRequired = false,
-                            MaxSelections = 3,
-                            MinSelections = 0,
-                            Name = "Complementos do Hamburguer",
-                            Type = 2,
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        });
                 });
 
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.CategoryEntity", b =>
@@ -241,18 +187,6 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.HasIndex("IsActive");
 
                     b.ToTable("categories");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000002"),
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Lanches diversos",
-                            DisplayOrder = 1,
-                            IsActive = true,
-                            Name = "Lanches",
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        });
                 });
 
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.CouponEntity", b =>
@@ -404,17 +338,6 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.HasIndex("Phone");
 
                     b.ToTable("customers", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000005"),
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Email = "exemplo@exemplo.com",
-                            Name = "Cliente Exemplo",
-                            Phone = "11999999999",
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        });
                 });
 
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.CustomerLoyaltyBalanceEntity", b =>
@@ -460,19 +383,6 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .IsUnique();
 
                     b.ToTable("customer_loyalty_balances");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000070"),
-                            Balance = 0,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CustomerId = new Guid("00000000-0000-0000-0000-000000000005"),
-                            LastActivityAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            TenantId = new Guid("00000000-0000-0000-0000-000000000001"),
-                            TotalEarned = 0,
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        });
                 });
 
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.LoyaltyProgramEntity", b =>
@@ -534,21 +444,6 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .IsUnique();
 
                     b.ToTable("loyalty_programs");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000060"),
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CurrencyValue = 0.10m,
-                            Description = "Ganhe pontos a cada compra e troque por descontos!",
-                            IsActive = true,
-                            MinOrderValue = 20.00m,
-                            Name = "Programa de Fidelidade Padrão",
-                            PointsPerCurrency = 1.0m,
-                            TenantId = new Guid("00000000-0000-0000-0000-000000000001"),
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        });
                 });
 
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.LoyaltyTransactionEntity", b =>
@@ -730,27 +625,6 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.HasIndex("TableId");
 
                     b.ToTable("orders", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000006"),
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CustomerId = new Guid("00000000-0000-0000-0000-000000000005"),
-                            CustomerName = "Cliente Exemplo",
-                            CustomerPhone = "11999999999",
-                            DeliveryAddress = "Rua Exemplo, 123, Bairro, Cidade, Estado",
-                            DeliveryFee = 5.00m,
-                            DiscountAmount = 0m,
-                            IsDelivery = true,
-                            OrderType = "Delivery",
-                            QueuePosition = 0,
-                            Status = "Pending",
-                            Subtotal = 25.90m,
-                            TenantId = new Guid("00000000-0000-0000-0000-000000000001"),
-                            Total = 30.90m,
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        });
                 });
 
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.OrderItemAddonEntity", b =>
@@ -866,20 +740,6 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.HasIndex("ProductId");
 
                     b.ToTable("order_items");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000080"),
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            OrderId = new Guid("00000000-0000-0000-0000-000000000006"),
-                            ProductId = new Guid("00000000-0000-0000-0000-000000000003"),
-                            ProductName = "Hamburguer Clássico",
-                            Quantity = 1,
-                            Subtotal = 25.90m,
-                            UnitPrice = 25.90m,
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        });
                 });
 
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.OrderRejectionEntity", b =>
@@ -1122,51 +982,68 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.HasData(
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000010"),
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Pagamento via cartão de crédito",
+                            Id = new Guid("8a42d5dd-3c90-f48c-826c-5219219f8034"),
+                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Pagamento em espécie",
                             DisplayOrder = 1,
-                            IsActive = true,
-                            IsOnline = true,
-                            Name = "Crédito",
-                            Slug = "credito",
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000011"),
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Pagamento via cartão de débito",
-                            DisplayOrder = 2,
-                            IsActive = true,
-                            IsOnline = true,
-                            Name = "Débito",
-                            Slug = "debito",
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000012"),
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Pagamento via PIX",
-                            DisplayOrder = 3,
-                            IsActive = true,
-                            IsOnline = true,
-                            Name = "PIX",
-                            Slug = "pix",
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000013"),
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Pagamento em dinheiro",
-                            DisplayOrder = 4,
+                            IconUrl = "fas fa-money-bill-wave",
                             IsActive = true,
                             IsOnline = false,
                             Name = "Dinheiro",
-                            Slug = "dinheiro",
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                            Slug = "money",
+                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("f0b06940-c5c5-da47-8e39-3904b297b70e"),
+                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Pagamento via cartão de crédito",
+                            DisplayOrder = 2,
+                            IconUrl = "fas fa-credit-card",
+                            IsActive = true,
+                            IsOnline = true,
+                            Name = "Cartão de Crédito",
+                            Slug = "credit_card",
+                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("1ff95edd-6e51-7641-e334-1bbbdd9ca4a9"),
+                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Pagamento via cartão de débito",
+                            DisplayOrder = 3,
+                            IconUrl = "fas fa-credit-card",
+                            IsActive = true,
+                            IsOnline = true,
+                            Name = "Cartão de Débito",
+                            Slug = "debit_card",
+                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("ea0b445d-89c3-c436-b76e-2bb572425149"),
+                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Pagamento instantâneo via Pix",
+                            DisplayOrder = 4,
+                            IconUrl = "fab fa-pix",
+                            IsActive = true,
+                            IsOnline = true,
+                            Name = "Pix",
+                            Slug = "pix",
+                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("702b5972-b2fb-d9c6-3fce-d0f4cba908a4"),
+                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Pagamento via vale refeição",
+                            DisplayOrder = 5,
+                            IconUrl = "fas fa-ticket-alt",
+                            IsActive = true,
+                            IsOnline = true,
+                            Name = "Vale Refeição",
+                            Slug = "meal_voucher",
+                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         });
                 });
 
@@ -1283,18 +1160,6 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .IsUnique();
 
                     b.ToTable("product_addon_groups");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000030"),
-                            AddonGroupId = new Guid("00000000-0000-0000-0000-000000000004"),
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            DisplayOrder = 0,
-                            IsRequired = false,
-                            ProductId = new Guid("00000000-0000-0000-0000-000000000003"),
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        });
                 });
 
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.ProductEntity", b =>
@@ -1358,20 +1223,6 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.HasIndex("IsActive");
 
                     b.ToTable("products");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000003"),
-                            CategoryId = new Guid("00000000-0000-0000-0000-000000000002"),
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Hamburguer artesanal com carne bovina, queijo, alface, tomate e molho especial",
-                            DisplayOrder = 1,
-                            IsActive = true,
-                            Name = "Hamburguer Clássico",
-                            Price = 25.90m,
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        });
                 });
 
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.ProductImageEntity", b =>
@@ -1520,17 +1371,6 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .IsUnique();
 
                     b.ToTable("tables");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000040"),
-                            Capacity = 4,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            Name = "Mesa 1",
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        });
                 });
 
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.TenantCustomerEntity", b =>
@@ -1584,17 +1424,6 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .IsUnique();
 
                     b.ToTable("tenant_customers", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000050"),
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CustomerId = new Guid("00000000-0000-0000-0000-000000000005"),
-                            TenantId = new Guid("00000000-0000-0000-0000-000000000001"),
-                            TotalOrders = 0m,
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        });
                 });
 
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.TenantPaymentMethodEntity", b =>

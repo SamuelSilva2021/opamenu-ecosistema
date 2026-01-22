@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using OpaMenu.Infrastructure.Shared.Data.Context;
+using OpaMenu.Infrastructure.Shared.Data.Context.Opamenu;
 
 namespace OpaMenu.Web.UserEntry;
 

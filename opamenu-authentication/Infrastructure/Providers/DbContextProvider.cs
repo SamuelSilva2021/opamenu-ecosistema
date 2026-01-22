@@ -5,8 +5,12 @@ using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Plan;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Subscription;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.TenantProduct;
+using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.PlanModule;
+using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.TenantModule;
 using OpaMenu.Infrastructure.Shared.Data.Context;
 using Microsoft.EntityFrameworkCore;
+using OpaMenu.Infrastructure.Shared.Data.Context.AccessControl;
+using OpaMenu.Infrastructure.Shared.Data.Context.MultTenant;
 
 namespace Authenticator.API.Infrastructure.Providers;
 
@@ -94,7 +98,9 @@ public class DbContextProvider : IDbContextProvider
                entityType == typeof(TenantBusinessEntity) ||
                entityType == typeof(TenantProductEntity) ||
                entityType == typeof(PlanEntity) ||
-               entityType == typeof(SubscriptionEntity);
+               entityType == typeof(SubscriptionEntity) ||
+               entityType == typeof(PlanModuleEntity) ||
+               entityType == typeof(TenantModuleEntity);
     }
 }
 

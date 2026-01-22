@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using System.IO;
 
-namespace OpaMenu.Infrastructure.Shared.Data.Context;
+namespace OpaMenu.Infrastructure.Shared.Data.Context.Opamenu;
 
 public class OpamenuDbContextFactory : IDesignTimeDbContextFactory<OpamenuDbContext>
 {

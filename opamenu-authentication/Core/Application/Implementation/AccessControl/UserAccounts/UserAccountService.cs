@@ -11,9 +11,6 @@ using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts.Enum;
 
 namespace Authenticator.API.Core.Application.Implementation.AccessControl.UserAccounts
 {
-    /// <summary>
-    /// Serviço para gerenciamento de contas de usuários
-    /// </summary>
     public class UserAccountService(
         IUserAccountsRepository userRepository,
         IMapper mapper,
@@ -319,7 +316,6 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.UserAc
         {
             try
             {
-                //Criar o usuário Administrador
                 var passwordHash = BCrypt.Net.BCrypt.HashPassword(tenantDto.Password);
                 var userName = await GenerateUniqueUsernameAsync(tenantDto.Email);
 
@@ -349,12 +345,6 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.UserAc
             }
             
         }
-
-        /// <summary>
-        /// Gera um nome de usuário Único baseado no email
-        /// </summary>
-        /// <param name="email"></param>
-        /// <returns></returns>
         private async Task<string> GenerateUniqueUsernameAsync(string email)
         {
             var baseUsername = email.Split('@')[0].ToLower();

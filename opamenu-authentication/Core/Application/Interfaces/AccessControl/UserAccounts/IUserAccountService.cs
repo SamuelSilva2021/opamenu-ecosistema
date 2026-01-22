@@ -36,6 +36,12 @@ namespace Authenticator.API.Core.Application.Interfaces.AccessControl.UserAccoun
         /// Cria um novo usuário (no tenant atual)
         /// </summary>
         Task<ResponseDTO<UserAccountDTO>> AddUserAccountAsync(UserAccountCreateDTO dto);
+        /// <summary>
+        /// Cria o usuário admin ao criar um novo tenant
+        /// </summary>
+        /// <param name="tenantId"></param>
+        /// <param name="tenantDto"></param>
+        /// <returns></returns>
         Task<ResponseDTO<UserAccountDTO>> CreateUserAccountAdminAsync(Guid tenantId, CreateTenantDTO tenantDto);
 
         /// <summary>

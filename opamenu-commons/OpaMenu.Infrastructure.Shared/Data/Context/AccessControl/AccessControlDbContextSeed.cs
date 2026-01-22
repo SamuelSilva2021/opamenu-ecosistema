@@ -5,13 +5,13 @@ using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts.Enum;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace OpaMenu.Infrastructure.Shared.Data.Context;
+namespace OpaMenu.Infrastructure.Shared.Data.Context.AccessControl;
 
 public static class AccessControlDbContextSeed
 {
     private static readonly DateTime _seedDate = new(2026, 1, 20, 0, 0, 0, DateTimeKind.Utc);
 
-    public static void Seed(this ModelBuilder modelBuilder)
+    public static void AccessControlSeed(this ModelBuilder modelBuilder)
     {
         // 1. Operations
         var opRead = CreateOperation("READ", "Leitura", "Permite visualizar registros");
@@ -96,9 +96,9 @@ public static class AccessControlDbContextSeed
         modelBuilder.Entity<RoleAccessGroupEntity>().HasData(roleAccessGroups);
 
         // 8. Initial User (System Admin)
-        // Note: Using a fixed hash or handling the salt is recommended to avoid changing the hash on every migration.
-        // For this example, we are generating it dynamically, which might produce a new hash every time the seed runs.
-        var userAdmin = CreateUserAccount("admin", "admin@opamenu.com.br", "System", "Admin", BCrypt.Net.BCrypt.HashPassword("Abc@123"));
+        // Note: Using a fixed hash is required to prevent "PendingModelChangesWarning" because BCrypt generates a new salt every time.
+        // Password: "Abc@123"
+        var userAdmin = CreateUserAccount("admin", "admin@opamenu.com.br", "System", "Admin", "$2a$11$rR/VYsNgEYRwaJt/bMn2ieq.izZrI8dUMfd4yottdElTWQL/vh7eO");
         modelBuilder.Entity<UserAccountEntity>().HasData(userAdmin);
 
         // 9. Link User -> AccessGroup (System Admin Group)

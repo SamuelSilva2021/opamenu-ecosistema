@@ -1,4 +1,4 @@
-﻿using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Subscription;
+using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Subscription;
 
 namespace Authenticator.API.Core.Domain.Api;
 
@@ -41,4 +41,9 @@ public class LoginResponse
     /// Indica se Ã© necessÃ¡rio realizar pagamento/assinatura
     /// </summary>
     public bool RequiresPayment { get; set; }
+
+    /// <summary>
+    /// Indica se o usuário deve ser redirecionado para seleção de plano
+    /// </summary>
+    public bool RedirectToPlanSelection { get; set; }
 }

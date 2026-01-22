@@ -12,12 +12,15 @@ using OpaMenu.Web.Services;
 using System.Text;
 using OpaMenu.Infrastructure.Shared.Interfaces;
 using OpaMenu.Infrastructure.Shared.Data.Context;
+using OpaMenu.Infrastructure.Shared.Data.Context.Opamenu;
+using OpaMenu.Infrastructure.Shared.Data.Context.AccessControl;
+using OpaMenu.Infrastructure.Shared.Data.Context.MultTenant;
 
 
 namespace OpaMenu.Web.Extensions;
 
 /// <summary>
-/// ExtensÃµes para configuraÃ§Ã£o de injeÃ§Ã£o de dependÃªncia
+/// Extenção para IServiceCollection
 /// </summary>
 public static class ServiceCollectionExtensions
 {
@@ -83,11 +86,10 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Registra serviÃ§os especÃ­ficos que nÃ£o sÃ£o cobertos pelo Scrutor
+    /// Registrar serviços da aplicação automaticamente
     /// </summary>
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
-        // Configurar AutoMapper com profiles da aplicaÃ§Ã£o
         services.AddAutoMapper(typeof(ProductMappingProfile));
         services.AddConfigureScrutor();
 
@@ -96,8 +98,8 @@ public static class ServiceCollectionExtensions
 
         // Registrar NotificationService com Hub especÃ­fico (substitui o registro do Scrutor)
         services.AddScoped<INotificationService, SignalRNotificationServiceWrapper>();
-        
-        // Registrar serviÃ§os de autenticaÃ§Ã£o
+
+        // Registrar serviços de autenticação e usuário atual
         services.AddScoped<IAuthenticationService, ExternalAuthenticationService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         
@@ -105,7 +107,7 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Configura autenticaÃ§Ã£o JWT usando tokens do saas-authentication-api
+    /// Configura a autenticação JWT
     /// </summary>
     public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
@@ -127,7 +129,7 @@ public static class ServiceCollectionExtensions
         })
         .AddJwtBearer(options =>
         {
-            options.RequireHttpsMetadata = false; // Para desenvolvimento
+            options.RequireHttpsMetadata = false;
             options.SaveToken = true;
             options.TokenValidationParameters = new TokenValidationParameters
             {
@@ -165,7 +167,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
     /// <summary>
-    /// Adiciona serviÃ§os CORS
+    /// Adiciona e configura os serviços CORS com base na
     /// configuration.
     /// </summary>
     /// <param name="services">The service collection to which the CORS services will be added.</param>

@@ -15,11 +15,13 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Npgsql;
 using System.Text;
+using OpaMenu.Infrastructure.Shared.Data.Context.AccessControl;
+using OpaMenu.Infrastructure.Shared.Data.Context.MultTenant;
 
 namespace Authenticator.API.Infrastructure.Extensions;
 
 /// <summary>
-/// ExtensÃµes para configuraÃ§Ã£o de serviÃ§os
+/// Extensões para configuração de serviços
 /// </summary>
 public static class ServiceCollectionExtensions
 {
@@ -144,7 +146,7 @@ public static class ServiceCollectionExtensions
                 },
                 License = new OpenApiLicense
                 {
-                    Name = "ProprietÃ¡rio",
+                    Name = "Proprietário",
                     Url = new Uri("https://opamenu.com/licenca")
                 },
                 TermsOfService = new Uri("https://opamenu.com/termos")
@@ -160,7 +162,7 @@ public static class ServiceCollectionExtensions
                 Description = @"Autenticação JWT usando o esquema Bearer.
                 
                     **Como usar:**
-                    1. FaÃ§a login no endpoint `/api/auth/login`
+                    1. Faça login no endpoint `/api/auth/login`
                     2. Copie o `accessToken` da resposta
                     3. Cole o token no campo abaixo (apenas o token, sem 'Bearer ')
                     4. Clique em 'Authorize' e teste os endpoints protegidos

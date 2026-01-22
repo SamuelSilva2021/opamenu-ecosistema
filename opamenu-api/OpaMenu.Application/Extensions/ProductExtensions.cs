@@ -129,8 +129,6 @@ public static class ProductExtensions
     {
         ArgumentNullException.ThrowIfNull(product);
 
-        var guidDefault = new Guid();
-
         return product switch
         {
             { Name: null or "" } => throw new ArgumentException("Product name is required"),

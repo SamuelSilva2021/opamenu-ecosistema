@@ -257,22 +257,19 @@ namespace Authenticator.API.Core.Application.Implementation.MultiTenant
         {
             try
             {
-                // Buscar GroupType "TENANT"
-                var tenantGroupType = await _groupTypeRepository.FirstOrDefaultAsync(gt => gt.Code == "TENANT");
-                if (tenantGroupType == null)
-                    throw new InvalidOperationException("Tipo de grupo TENANT não encontrado.");
+                // Buscar GroupType "TENANT_ADMIN" (Corrigido de "TENANT" para bater com o Seed)
+                var tenantGroupType = await _groupTypeRepository.FirstOrDefaultAsync(gt => gt.Code == "TENANT_ADMIN") ?? throw new InvalidOperationException("Tipo de grupo TENANT_ADMIN não encontrado. Verifique se o seed foi executado.");
 
-                var adminRole = (await _roleRepository.FindAsync(r => r.Code == "ADMIN")).FirstOrDefault();
-                if (adminRole == null)
-                    throw new InvalidOperationException("Role ADMIN não encontrada.");
+                // Buscar Role "ADMIN" (Role de template para administradores de tenant)
+                var adminRole = (await _roleRepository.FindAsync(r => r.Code == "ADMIN")).FirstOrDefault() ?? throw new InvalidOperationException("Role ADMIN não encontrada. Verifique se o seed foi executado.");
 
-                // Criar Grupo "Administradores para a loja"
+                // Criar Grupo "Administradores" específico para este tenant
                 var adminGroup = new AccessGroupEntity
                 {
                     Id = Guid.NewGuid(),
-                    Name = createdTenant.Slug,
-                    Code = "TENANT_ADMINS",
-                    Description = "Grupo de administradores do tenant",
+                    Name = $"Administradores - {createdTenant.Name}",
+                    Code = $"GRP_ADMIN_{createdTenant.Slug.ToUpper().Replace("-", "_")}", 
+                    Description = "Grupo de administradores do tenant com acesso total aos módulos contratados",
                     TenantId = createdTenant.Id,
                     GroupTypeId = tenantGroupType.Id,
                     IsActive = true,
@@ -280,7 +277,7 @@ namespace Authenticator.API.Core.Application.Implementation.MultiTenant
                 };
                 await _accessGroupRepository.AddAsync(adminGroup);
 
-                // Vincular Role ao Grupo
+                // Vincular Role "ADMIN" ao Grupo recém-criado
                 var roleGroup = new RoleAccessGroupEntity
                 {
                     Id = Guid.NewGuid(),
@@ -291,7 +288,7 @@ namespace Authenticator.API.Core.Application.Implementation.MultiTenant
                 };
                 await _roleAccessGroupRepository.AddAsync(roleGroup);
 
-                // Vincular usuário ao Grupo
+                // Vincular o usuário Admin (criado anteriormente) ao Grupo
                 var userGroup = new AccountAccessGroupEntity
                 {
                     Id = Guid.NewGuid(),
@@ -303,12 +300,12 @@ namespace Authenticator.API.Core.Application.Implementation.MultiTenant
                 };
                 await _accountAccessGroupRepository.AddAsync(userGroup);
 
-                _logger.LogInformation("Permissões de administrador configuradas para o usuário: {UserId}", userAdmin.Id);
+                _logger.LogInformation("Permissões iniciais configuradas. Grupo: {GroupName}, Usuário: {UserId}", adminGroup.Name, userAdmin.Id);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao configurar permissões iniciais para o tenant {TenantId}", createdTenant.Id);
-                throw; // Re-throw para acionar o rollback
+                _logger.LogError(ex, "Erro crítico ao configurar permissões iniciais para o tenant {TenantId}", createdTenant.Id);
+                throw;
             }
         }
 
@@ -336,15 +333,12 @@ namespace Authenticator.API.Core.Application.Implementation.MultiTenant
                 RefreshToken = refreshToken,
                 ExpiresIn = expiresIn,
                 CreatedAt = createdTenant.CreatedAt,
-                Message = "Empresa e usuário administrador criados com sucesso!"
+                Message = "Empresa e usuário administrador criados com sucesso!",
+                RedirectToPlanSelection = true
             };
 
             return dto;
         }
-
-        /// <summary>
-        /// Gera um slug Ãºnico para o tenant baseado no nome da empresa
-        /// </summary>
         private async Task<string> GenerateUniqueSlugAsync(string companyName)
         {
             // Remover caracteres especiais e normalizar

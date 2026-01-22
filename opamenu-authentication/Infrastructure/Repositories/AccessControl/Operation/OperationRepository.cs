@@ -2,6 +2,7 @@
 using Authenticator.API.Core.Application.Interfaces.AccessControl.Operation;
 using Microsoft.EntityFrameworkCore;
 using OpaMenu.Infrastructure.Shared.Data.Context;
+using OpaMenu.Infrastructure.Shared.Data.Context.AccessControl;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
 
 namespace Authenticator.API.Infrastructure.Repositories.AccessControl.Operation

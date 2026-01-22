@@ -144,7 +144,7 @@ public class PublicMenuController(
     /// Cancela um pedido público (apenas se pendente)
     /// </summary>
     [HttpPut("orders/{id}/cancel")]
-    public async Task<ActionResult<ApiResponse<OrderResponseDto>>> CancelOrder(string slug, Guid id, [FromBody] CancelOrderRequestDto request)
+    public async Task<ActionResult<ApiResponse<OrderResponseDto>>> CancelOrder(Guid id, [FromBody] CancelOrderRequestDto request)
     {
         // TODO: Validar se pedido pertence ao tenant do slug e ao customer (se auth disponível)
         var serviceResponse = await _orderService.CancelOrderAsync(id, request);

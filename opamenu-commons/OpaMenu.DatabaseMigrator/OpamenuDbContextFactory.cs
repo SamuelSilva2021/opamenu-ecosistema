@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
-using OpaMenu.Infrastructure.Shared.Data.Context;
+using OpaMenu.Infrastructure.Shared.Data.Context.Opamenu;
 
 namespace OpaMenu.DatabaseMigrator;
 

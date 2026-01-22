@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -604,80 +604,16 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                 });
 
             migrationBuilder.InsertData(
-                table: "addon_groups",
-                columns: new[] { "id", "created_at", "description", "display_order", "is_active", "is_required", "max_selections", "min_selections", "name", "tenant_id", "type", "updated_at" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000004"), new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Escolha seus complementos favoritos", 1, true, false, 3, 0, "Complementos do Hamburguer", null, 2, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) });
-
-            migrationBuilder.InsertData(
-                table: "categories",
-                columns: new[] { "id", "created_at", "description", "display_order", "is_active", "name", "tenant_id", "updated_at" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000002"), new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Lanches diversos", 1, true, "Lanches", null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) });
-
-            migrationBuilder.InsertData(
-                table: "customers",
-                columns: new[] { "id", "city", "complement", "created_at", "email", "name", "neighborhood", "phone", "postal_code", "state", "street", "street_number", "updated_at" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000005"), null, null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "exemplo@exemplo.com", "Cliente Exemplo", null, "11999999999", null, null, null, null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) });
-
-            migrationBuilder.InsertData(
-                table: "loyalty_programs",
-                columns: new[] { "id", "created_at", "currency_value", "description", "is_active", "min_order_value", "name", "points_per_currency", "points_validity_days", "tenant_id", "updated_at" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000060"), new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 0.10m, "Ganhe pontos a cada compra e troque por descontos!", true, 20.00m, "Programa de Fidelidade Padrão", 1.0m, null, new Guid("00000000-0000-0000-0000-000000000001"), new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) });
-
-            migrationBuilder.InsertData(
                 table: "payment_methods",
                 columns: new[] { "id", "created_at", "description", "display_order", "icon_url", "is_active", "is_online", "name", "slug", "updated_at" },
                 values: new object[,]
                 {
-                    { new Guid("00000000-0000-0000-0000-000000000010"), new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Pagamento via cartão de crédito", 1, null, true, true, "Crédito", "credito", new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) },
-                    { new Guid("00000000-0000-0000-0000-000000000011"), new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Pagamento via cartão de débito", 2, null, true, true, "Débito", "debito", new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) },
-                    { new Guid("00000000-0000-0000-0000-000000000012"), new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Pagamento via PIX", 3, null, true, true, "PIX", "pix", new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) },
-                    { new Guid("00000000-0000-0000-0000-000000000013"), new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Pagamento em dinheiro", 4, null, true, false, "Dinheiro", "dinheiro", new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) }
+                    { new Guid("1ff95edd-6e51-7641-e334-1bbbdd9ca4a9"), new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc), "Pagamento via cartão de débito", 3, "fas fa-credit-card", true, true, "Cartão de Débito", "debit_card", new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc) },
+                    { new Guid("702b5972-b2fb-d9c6-3fce-d0f4cba908a4"), new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc), "Pagamento via vale refeição", 5, "fas fa-ticket-alt", true, true, "Vale Refeição", "meal_voucher", new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc) },
+                    { new Guid("8a42d5dd-3c90-f48c-826c-5219219f8034"), new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc), "Pagamento em espécie", 1, "fas fa-money-bill-wave", true, false, "Dinheiro", "money", new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc) },
+                    { new Guid("ea0b445d-89c3-c436-b76e-2bb572425149"), new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc), "Pagamento instantâneo via Pix", 4, "fab fa-pix", true, true, "Pix", "pix", new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc) },
+                    { new Guid("f0b06940-c5c5-da47-8e39-3904b297b70e"), new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc), "Pagamento via cartão de crédito", 2, "fas fa-credit-card", true, true, "Cartão de Crédito", "credit_card", new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc) }
                 });
-
-            migrationBuilder.InsertData(
-                table: "tables",
-                columns: new[] { "id", "capacity", "created_at", "is_active", "name", "qr_code_url", "tenant_id", "updated_at" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000040"), 4, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), true, "Mesa 1", null, null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) });
-
-            migrationBuilder.InsertData(
-                table: "addons",
-                columns: new[] { "id", "addon_group_id", "created_at", "description", "display_order", "image_url", "is_active", "name", "price", "tenant_id", "updated_at" },
-                values: new object[,]
-                {
-                    { new Guid("00000000-0000-0000-0000-000000000020"), new Guid("00000000-0000-0000-0000-000000000004"), new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Tiras crocantes de bacon", 1, null, true, "Bacon", 4.00m, null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) },
-                    { new Guid("00000000-0000-0000-0000-000000000021"), new Guid("00000000-0000-0000-0000-000000000004"), new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Cebolas caramelizadas na manteiga", 2, null, true, "Cebola Caramelizada", 3.00m, null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) },
-                    { new Guid("00000000-0000-0000-0000-000000000022"), new Guid("00000000-0000-0000-0000-000000000004"), new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Adicione uma fatia extra de queijo", 3, null, true, "Queijo Extra", 2.50m, null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) }
-                });
-
-            migrationBuilder.InsertData(
-                table: "customer_loyalty_balances",
-                columns: new[] { "id", "balance", "created_at", "customer_id", "last_activity_at", "tenant_id", "total_earned", "updated_at" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000070"), 0, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), new Guid("00000000-0000-0000-0000-000000000005"), new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), new Guid("00000000-0000-0000-0000-000000000001"), 0, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) });
-
-            migrationBuilder.InsertData(
-                table: "orders",
-                columns: new[] { "id", "coupon_code", "created_at", "customer_email", "customer_id", "customer_name", "customer_phone", "delivery_address", "delivery_fee", "estimated_delivery_time", "estimated_preparation_minutes", "is_delivery", "notes", "order_type", "status", "subtotal", "table_id", "tenant_id", "total", "updated_at" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000006"), null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, new Guid("00000000-0000-0000-0000-000000000005"), "Cliente Exemplo", "11999999999", "Rua Exemplo, 123, Bairro, Cidade, Estado", 5.00m, null, null, true, null, "Delivery", "Pending", 25.90m, null, new Guid("00000000-0000-0000-0000-000000000001"), 30.90m, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) });
-
-            migrationBuilder.InsertData(
-                table: "products",
-                columns: new[] { "id", "category_id", "created_at", "description", "display_order", "image_url", "is_active", "name", "price", "tenant_id", "updated_at" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000003"), new Guid("00000000-0000-0000-0000-000000000002"), new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Hamburguer artesanal com carne bovina, queijo, alface, tomate e molho especial", 1, null, true, "Hamburguer Clássico", 25.90m, null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) });
-
-            migrationBuilder.InsertData(
-                table: "tenant_customers",
-                columns: new[] { "id", "created_at", "customer_id", "display_name", "first_purchase_at", "last_purchase_at", "notes", "tenant_id", "total_orders", "updated_at" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000050"), new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), new Guid("00000000-0000-0000-0000-000000000005"), null, null, null, null, new Guid("00000000-0000-0000-0000-000000000001"), 0m, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) });
-
-            migrationBuilder.InsertData(
-                table: "order_items",
-                columns: new[] { "id", "created_at", "notes", "order_id", "product_id", "product_name", "quantity", "subtotal", "tenant_id", "unit_price", "updated_at" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000080"), new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, new Guid("00000000-0000-0000-0000-000000000006"), new Guid("00000000-0000-0000-0000-000000000003"), "Hamburguer Clássico", 1, 25.90m, null, 25.90m, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) });
-
-            migrationBuilder.InsertData(
-                table: "product_addon_groups",
-                columns: new[] { "id", "addon_group_id", "created_at", "display_order", "is_required", "max_selections_override", "min_selections_override", "product_id", "tenant_id", "updated_at" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000030"), new Guid("00000000-0000-0000-0000-000000000004"), new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 0, false, null, null, new Guid("00000000-0000-0000-0000-000000000003"), null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) });
 
             migrationBuilder.CreateIndex(
                 name: "IX_addons_addon_group_id",

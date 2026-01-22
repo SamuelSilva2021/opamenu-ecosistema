@@ -59,4 +59,9 @@ public class RegisterTenantResponseDTO
     /// Mensagem de sucesso
     /// </summary>
     public string Message { get; set; } = "Tenant cadastrado com sucesso!";
+
+    /// <summary>
+    /// Indica se o usuário deve ser redirecionado para seleção de plano
+    /// </summary>
+    public bool RedirectToPlanSelection { get; set; }
 }

@@ -17,10 +17,6 @@ namespace Authenticator.API.UserEntry.AccessControl.Operation
     {
         private readonly IOperationService _operationService = operationService;
 
-        /// <summary>
-        /// Busca todas as operações
-        /// </summary>
-        /// <returns></returns>
         [HttpGet]
         [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
         [Produces("application/json")]
@@ -34,11 +30,6 @@ namespace Authenticator.API.UserEntry.AccessControl.Operation
             return BuildResponse(response);
         }
 
-        /// <summary>
-        /// Busca uma operação pelo Id
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
         [HttpGet]
         [Route("{id:guid}")]
         [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
@@ -53,11 +44,6 @@ namespace Authenticator.API.UserEntry.AccessControl.Operation
             return BuildResponse(response);
         }
 
-        /// <summary>
-        /// Adiciona uma nova operação
-        /// </summary>
-        /// <param name="operation"></param>
-        /// <returns></returns>
         [HttpPost]
         [Authorize(Roles = "SUPER_ADMIN")]
         [Produces("application/json")]
@@ -71,11 +57,6 @@ namespace Authenticator.API.UserEntry.AccessControl.Operation
             return BuildResponse(response);
         }
 
-        /// <summary>
-        /// Deleta uma operação pelo Id
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
         [HttpDelete]
         [Route("{id:guid}")]
         [Authorize(Roles = "SUPER_ADMIN")]
@@ -90,12 +71,6 @@ namespace Authenticator.API.UserEntry.AccessControl.Operation
             return BuildResponse(response);
         }
 
-        /// <summary>
-        /// Atualiza uma operação pelo Id
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="operation"></param>
-        /// <returns></returns>
         [HttpPut]
         [Route("{id:guid}")]
         [Authorize(Roles = "SUPER_ADMIN")]

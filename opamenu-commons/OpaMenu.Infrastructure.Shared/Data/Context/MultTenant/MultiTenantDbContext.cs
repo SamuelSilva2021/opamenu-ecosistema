@@ -6,6 +6,8 @@ using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Plan;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Subscription;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.TenantProduct;
+using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.TenantModule;
+using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.PlanModule;
 using OpaMenu.Infrastructure.Shared.Enums.MultiTenant;
 using OpaMenu.Infrastructure.Shared.Helpers;
 using System;
@@ -15,7 +17,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace OpaMenu.Infrastructure.Shared.Data.Context
+namespace OpaMenu.Infrastructure.Shared.Data.Context.MultTenant
 {
     /// <summary>
     /// Contexto do banco de dados multi-tenant
@@ -229,41 +231,51 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
+            modelBuilder.Entity<TenantModuleEntity>(entity =>
+            {
+                entity.ToTable("tenant_modules");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.TenantId, e.ModuleId }).IsUnique();
+
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.TenantId).HasColumnName("tenant_id").IsRequired();
+                entity.Property(e => e.ModuleId).HasColumnName("module_id").IsRequired();
+                entity.Property(e => e.IsEnabled).HasColumnName("is_enabled").HasDefaultValue(true);
+                entity.Property(e => e.Configuration).HasColumnName("configuration").HasColumnType("jsonb");
+                entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("NOW()");
+                entity.Property(e => e.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone");
+
+                entity.Ignore(e => e.Module); // Ignorar navegação para outro contexto
+
+                entity.HasOne(d => d.Tenant)
+                    .WithMany()
+                    .HasForeignKey(d => d.TenantId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<PlanModuleEntity>(entity =>
+            {
+                entity.ToTable("plan_modules");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.PlanId, e.ModuleId }).IsUnique();
+
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.PlanId).HasColumnName("plan_id").IsRequired();
+                entity.Property(e => e.ModuleId).HasColumnName("module_id").IsRequired();
+                entity.Property(e => e.IsIncluded).HasColumnName("is_included").HasDefaultValue(true);
+                entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("NOW()");
+
+                entity.Ignore(e => e.Module); // Ignorar navegação para outro contexto
+
+                entity.HasOne(d => d.Plan)
+                    .WithMany()
+                    .HasForeignKey(d => d.PlanId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
 
             base.OnModelCreating(modelBuilder);
 
-            SeedData(modelBuilder);
-        }
-
-        private static void SeedData(ModelBuilder modelBuilder)
-        {
-            var seedDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Unspecified);
-
-            // Seed Plans
-            modelBuilder.Entity<PlanEntity>().HasData(
-                new PlanEntity
-                {
-                    Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                    Name = "Free",
-                    Slug = "free",
-                    Description = "Plano gratuito para pequenos negócios",
-                    Price = 0m,
-                    MaxUsers = 1,
-                    CreatedAt = seedDate,
-                    UpdatedAt = seedDate
-                },
-                new PlanEntity
-                {
-                    Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
-                    Name = "Pro",
-                    Slug = "pro",
-                    Description = "Plano profissional para negócios em crescimento",
-                    Price = 99.90m,
-                    MaxUsers = 10,
-                    CreatedAt = seedDate,
-                    UpdatedAt = seedDate
-                }
-            );
+            modelBuilder.MultiTenantSeed();
         }
     }
 }

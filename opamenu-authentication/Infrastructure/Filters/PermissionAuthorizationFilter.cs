@@ -1,4 +1,5 @@
-﻿using Authenticator.API.Core.Application.Interfaces;
+using Authenticator.API.Core.Application.Interfaces;
+using Authenticator.API.Core.Application.Interfaces.MultiTenant;
 using Authenticator.API.Core.Domain.AccessControl.Modules.DTOs;
 using Authenticator.API.Core.Domain.Api;
 using Authenticator.API.Infrastructure.Configurations;

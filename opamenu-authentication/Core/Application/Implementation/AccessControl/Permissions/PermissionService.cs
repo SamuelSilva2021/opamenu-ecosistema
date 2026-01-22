@@ -17,6 +17,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
     /// </summary>
     /// <param name="permissionRepository"></param>
     /// <param name="operationRepository"></param>
+    /// <param name="permissionOperationRepository"></param>
     /// <param name="mapper"></param>
     public class PermissionService(
         IPermissionRepository permissionRepository,
@@ -29,10 +30,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
         private readonly IPermissionOperationRepository _permissionOperationRepository = permissionOperationRepository;
         private readonly IMapper _mapper = mapper;
 
-        /// <summary>
-        /// Obtém todas as permissões
-        /// </summary>
-        /// <returns></returns>
+        
         public async Task<ResponseDTO<IEnumerable<PermissionDTO>>> GetAllPermissionsAsync()
         {
             try
@@ -55,12 +53,6 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
             }
         }
 
-        /// <summary>
-        /// Obtém todas as permissões paginadas
-        /// </summary>
-        /// <param name="page"></param>
-        /// <param name="limit"></param>
-        /// <returns></returns>
         public async Task<ResponseDTO<PagedResponseDTO<PermissionDTO>>> GetAllPermissionsPagedAsync(int page, int limit)
         {
             try
@@ -91,11 +83,6 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
             }
         }
 
-        /// <summary>
-        /// Obtém permissão por ID
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
         public async Task<ResponseDTO<PermissionDTO>> GetPermissionByIdAsync(Guid id)
         {
             try
@@ -117,11 +104,6 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
             }
         }
 
-        /// <summary>
-        /// Obtem permissões por módulo
-        /// </summary>
-        /// <param name="moduleId"></param>
-        /// <returns></returns>
         public async Task<ResponseDTO<IEnumerable<PermissionDTO>>> GetPermissionsByModuleAsync(Guid moduleId)
         {
             try
@@ -145,11 +127,6 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
             }
         }
 
-        /// <summary>
-        /// Obtém permissão por role
-        /// </summary>
-        /// <param name="roleId"></param>
-        /// <returns></returns>
         public async Task<ResponseDTO<IEnumerable<PermissionDTO>>> GetPermissionsByRoleAsync(Guid roleId)
         {
             try
@@ -173,11 +150,6 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
             }
         }
 
-        /// <summary>
-        /// Adiciona uma nova permissão
-        /// </summary>
-        /// <param name="permission"></param>
-        /// <returns></returns>
         public async Task<ResponseDTO<PermissionDTO>> AddPermissionAsync(PermissionCreateDTO permission)
         {
             try
@@ -208,12 +180,6 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
             }
         }
 
-        /// <summary>
-        /// Atualiza uma permissão existente
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="permission"></param>
-        /// <returns></returns>
         public async Task<ResponseDTO<PermissionDTO>> UpdatePermissionAsync(Guid id, PermissionUpdateDTO permission)
         {
             try
@@ -251,11 +217,6 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
             }
         }
 
-        /// <summary>
-        /// Deleta uma permissão
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
         public async Task<ResponseDTO<bool>> DeletePermissionAsync(Guid id)
         {
             try
@@ -276,12 +237,6 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
             }
         }
 
-        /// <summary>
-        /// Associa operações a uma permissão
-        /// </summary>
-        /// <param name="permissionId"></param>
-        /// <param name="operationIds"></param>
-        /// <returns></returns>
         public async Task<ResponseDTO<bool>> AssignOperationsToPermissionAsync(Guid permissionId, List<Guid> operationIds)
         {
             try
@@ -295,12 +250,6 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
             }
         }
 
-        /// <summary>
-        /// Remove vinculos de operações de uma permissão
-        /// </summary>
-        /// <param name="permissionId"></param>
-        /// <param name="operationIds"></param>
-        /// <returns></returns>
         public async Task<ResponseDTO<bool>> RemoveOperationsFromPermissionAsync(Guid permissionId, List<Guid> operationIds)
         {
             try
@@ -330,11 +279,6 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
             }
         }
 
-        /// <summary>
-        /// Método interno para associar operações a uma permissão
-        /// <param name="permissionId"></param>
-        /// <param name="operationIds"></param>
-        /// <returns></returns>
         private async Task<bool> AssignOperationsToPermissionInternalAsync(Guid permissionId, List<Guid> operationIds)
         {
             try
@@ -388,13 +332,6 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
             
         }
 
-        /// <summary>
-        /// Método interno para adicionar ou remover operações de uma permissão
-        /// </summary>
-        /// <param name="permissionId"></param>
-        /// <param name="operationIds"></param>
-        /// <param name="permissionOperations"></param>
-        /// <returns></returns>
         private async Task<IEnumerable<PermissionOperationEntity>> AddOrRemoveOperationsFromPermissionInternal(Guid permissionId, Guid operationId,
             IEnumerable<PermissionOperationEntity> permissionOperations, string action)
         {
@@ -447,11 +384,6 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
 
         }
 
-        /// <summary>
-        /// Método interno para remover todas as operações de uma permissão
-        /// </summary>
-        /// <param name="permissionId"></param>
-        /// <returns></returns>
         private async Task<bool> RemoveAllOperationsFromPermissionInternalAsync(Guid permissionId)
         {
             var permission = await _permissionRepository.GetByIdAsync(permissionId, include: p => p
@@ -466,12 +398,6 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
 
         }
 
-        /// <summary>
-        /// Compara as operações de uma permissão existente com as novas operações fornecidas
-        /// </summary>
-        /// <param name="permissionOperations"></param>
-        /// <param name="newPermission"></param>
-        /// <returns></returns>
         private static List<Dictionary<Guid, string>> PermissionsOperationsCompare(IEnumerable<PermissionOperationEntity> permissionOperations, PermissionUpdateDTO newPermission)
         {
             List<Dictionary<Guid, string>> operationsCompare = new List<Dictionary<Guid, string>>();

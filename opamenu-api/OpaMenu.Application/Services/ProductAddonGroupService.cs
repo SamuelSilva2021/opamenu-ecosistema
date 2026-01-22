@@ -60,7 +60,7 @@ public class ProductAddonGroupService(
                 Description = product.Description,
                 Price = product.Price,
                 ImageUrl = product.ImageUrl,
-                AddonGroups = addonGroups
+                AddonGroups = [.. addonGroups
                     .OrderBy(pag => pag.DisplayOrder)
                     .Select(pag => new AddonGroupResponseDto
                     {
@@ -72,7 +72,7 @@ public class ProductAddonGroupService(
                         MaxSelections = pag.MaxSelectionsOverride ?? pag.AddonGroup.MaxSelections,
                         IsRequired = pag.IsRequired,
                         DisplayOrder = pag.DisplayOrder,
-                        Addons = pag.AddonGroup.Addons
+                        Addons = [.. pag.AddonGroup.Addons
                             .Where(a => a.IsActive)
                             .OrderBy(a => a.DisplayOrder)
                             .Select(a => new AddonResponseDto
@@ -85,9 +85,9 @@ public class ProductAddonGroupService(
                                 DisplayOrder = a.DisplayOrder,
                                 AddonGroupId = a.AddonGroupId,
                                 IsActive = a.IsActive
-                            }).ToList()
-                    }).ToList()
-            };
+                            })]
+                    })]
+           };
             return StaticResponseBuilder<ProductWithAddonsResponseDto?>.BuildOk(productWithAddonsDto);
         }
         catch (Exception ex)
@@ -292,7 +292,6 @@ public class ProductAddonGroupService(
     public async Task<ResponseDTO<bool>> CanRemoveAddonGroupFromProductAsync(Guid productId, Guid addonGroupId)
     {
         // Verificar se há¡ pedidos pendentes que usam este produto com adicionais
-        var ordersUsingProductWithAddons = false; // simulação de verificação
         // Por enquanto, retorna true - pode ser implementado futuramente
         return StaticResponseBuilder<bool>.BuildOk(true);
     }

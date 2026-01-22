@@ -6,15 +6,15 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using OpaMenu.Infrastructure.Shared.Data.Context;
+using OpaMenu.Infrastructure.Shared.Data.Context.AccessControl;
 
 #nullable disable
 
 namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
 {
     [DbContext(typeof(AccessControlDbContext))]
-    [Migration("20260122203002_UpdateAdminPasswordHash")]
-    partial class UpdateAdminPasswordHash
+    [Migration("20260122220833_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1637,7 +1637,7 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
                             FirstName = "System",
                             IsEmailVerified = true,
                             LastName = "Admin",
-                            PasswordHash = "$2a$11$uwqx.wvei6NWpS2ACqoUp.SwWooJcx9lZSx2ZthW2QCWkvHLbWhqi",
+                            PasswordHash = "$2a$11$rR/VYsNgEYRwaJt/bMn2ieq.izZrI8dUMfd4yottdElTWQL/vh7eO",
                             Status = "Ativo",
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             Username = "admin"

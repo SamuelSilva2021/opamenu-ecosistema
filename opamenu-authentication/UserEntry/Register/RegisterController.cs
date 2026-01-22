@@ -1,10 +1,10 @@
 using Authenticator.API.Core.Application.Interfaces;
-using Authenticator.API.Core.Application.Interfaces.Auth;
 using Authenticator.API.Core.Application.Interfaces.MultiTenant;
 using Authenticator.API.Core.Domain.Api;
 using Authenticator.API.Core.Domain.MultiTenant.Tenant.DTOs;
-using OpaMenu.Infrastructure.Shared.Data.Context;
 using Microsoft.AspNetCore.Mvc;
+using OpaMenu.Infrastructure.Shared.Data.Context.MultTenant;
+using OpaMenu.Infrastructure.Shared.Data.Context.AccessControl;
 
 namespace Authenticator.API.UserEntry.Register;
 
@@ -33,7 +33,7 @@ public class RegisterController(
     /// Registra um novo tenant (cliente/empresa) com usuário administrador
     /// </summary>
     /// <param name="request">Dados do tenant e usuário administrador</param>
-    /// <returns>InformaÃ§Ãµes do tenant criado com tokens de autenticaÃ§Ã£o</returns>
+    /// <returns>Informações do tenant com dados do token de authenticalção</returns>
     [HttpPost]
     public async Task<ActionResult<ResponseDTO<RegisterTenantResponseDTO>>> Register([FromBody] CreateTenantDTO request)
     {

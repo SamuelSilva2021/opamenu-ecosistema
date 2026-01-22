@@ -15,7 +15,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OpaMenu.Infrastructure.Shared.Data.Context
+namespace OpaMenu.Infrastructure.Shared.Data.Context.AccessControl
 {
 
     /// <summary>
@@ -341,7 +341,7 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context
                 !_tenantContext.HasTenant || e.Permission.TenantId == _tenantContext.TenantId);
 
             modelBuilder.ApplyUtcDateTimeConvention();
-            modelBuilder.Seed();
+            modelBuilder.AccessControlSeed();
         }
     }
 

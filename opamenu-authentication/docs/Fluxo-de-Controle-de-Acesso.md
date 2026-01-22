@@ -1,96 +1,107 @@
-# Fluxo de Controle de Acesso de Usuários
+# Fluxo de Controle de Acesso e Autenticação (Multi-Tenant & Plan-Based)
 
-Este documento descreve o fluxo fim-a-fim para autenticação, autorização e gerenciamento de acesso dos usuários no sistema.
+Este documento descreve a arquitetura de segurança, autenticação e autorização do sistema Opamenu, com foco no modelo **Multi-Tenant** e na restrição de acesso baseada em **Planos de Assinatura**.
 
-## Objetivo
+## 🎯 Visão Geral da Arquitetura
 
-- Garantir que cada usuário possua as permissões corretas dentro do tenant.
-- Padronizar a criação, atribuição e manutenção de acessos.
-- Apoiar a implementação de autenticação (JWT) e autorização por policies.
+O sistema utiliza uma abordagem híbrida de **RBAC (Role-Based Access Control)** com **Feature Toggling por Tenant**.
 
-## Entidades e relações principais
+A premissa fundamental é:
+> **"Um usuário nunca pode ter permissão para acessar um módulo que seu Tenant não contratou, independente de seu cargo (Role)."**
 
-- Tenant: escopo lógico de isolamento (multi-tenant).
-- UserAccount: usuário do sistema, pertencente a um tenant.
-- AccessGroup: agrupador de acesso dentro do tenant.
-- AccountAccessGroup: relação Usuário ↔ Grupo de Acesso.
-- Role: papel que representa um conjunto de permissões.
-- RoleAccessGroup: relação Grupo de Acesso ↔ Papel.
-- Permission: recurso/ação de alto nível.
-- Operation: operação específica (CRUD/ações) atrelada a permissões.
-- RolePermission: relação Papel ↔ Permissão (com operações).
-- Application/Module: contexto funcional onde permissões e operações se aplicam.
+### A Fórmula de Acesso
+O acesso final de um usuário é calculado dinamicamente pela interseção:
 
-Relação em cadeia na prática:
+```
+Permissões Efetivas = (Permissões da Role do Usuário) ∩ (Módulos Ativos do Plano do Tenant)
+```
 
-Usuário → AccountAccessGroup → RoleAccessGroup → Role → RolePermission → Permission/Operation → Módulos/Aplicações.
+---
 
-## Fluxo passo a passo
+## 🏗️ Entidades e Hierarquia
 
-1) Criar usuário
-- Criar UserAccount no tenant correto.
-- Se aplicável, verificar e-mail para ativar a conta.
-- Definir Status (ex.: Ativo/Inativo) e dados básicos (nome, e-mail, username).
+1.  **Tenant (Restaurante)**: A entidade raiz. Possui um **Plano** (ex: Basic, Premium).
+2.  **TenantModule**: Módulos que o Tenant contratou (ex: `FINANCIAL`, `STOCK`, `ORDERS`).
+3.  **GroupType**: Categorias de grupos (ex: `TENANT_ADMIN`, `WAITER`, `MANAGER`).
+4.  **AccessGroup**: Grupos concretos dentro de um tenant (ex: "Garçons do Restaurante X").
+5.  **Role**: Papéis funcionais (ex: `ADMIN` - tem acesso a tudo; `WAITER` - só pedidos).
+6.  **UserAccount**: O usuário final.
 
-2) Atribuir grupos de acesso ao usuário
-- Associar o usuário a um ou mais AccessGroups via AccountAccessGroup.
-- Sempre escopar por tenant.
+---
 
-3) Configurar papéis e vincular aos grupos
-- Definir Roles (papéis) com base nas necessidades do tenant/aplicação.
-- Vincular os Roles aos AccessGroups via RoleAccessGroup.
-- O usuário herda papéis por estar nos grupos.
+## 🚀 Fluxo de Registro de Tenant (Onboarding)
 
-4) Definir permissões e operações e ligar aos papéis
-- Criar Permissions e Operations.
-- Relacioná-las aos Roles via RolePermission.
-- Isso determina o que cada papel pode executar (ex.: ler/criar/editar/excluir) em determinados módulos/aplicações.
+Quando um novo restaurante se registra (`AddTenantAsync`), o sistema executa automaticamente:
 
-5) Autenticação (login) e emissão de tokens
-- Usuário faz login com credenciais válidas.
-- A API emite JWT com claims: userId, tenantId, e (de acordo com a estratégia) grupos/papéis/permissões.
-- Atualizar LastLoginAt do usuário.
+1.  **Criação do Tenant**: Salva os dados básicos e slug.
+2.  **Definição de Módulos**: Baseado no plano escolhido, popula a tabela `TenantModules`.
+    *   *Ex: Plano Basic -> Adiciona apenas módulos `ORDERS` e `CATALOG`.*
+3.  **Setup de Permissões Iniciais (`ConfigureInitialPermissionsAsync`)**:
+    *   Busca o `GroupType` com código **`TENANT_ADMIN`**.
+    *   Busca a `Role` template **`ADMIN`** (que possui acesso a *todos* os módulos do sistema).
+    *   Cria um **AccessGroup Dinâmico** exclusivo para o tenant:
+        *   Nome: `Administradores - {Nome do Tenant}`
+        *   Código: `GRP_ADMIN_{SLUG_DO_TENANT}` (Garante unicidade).
+    *   VIncula: `User` -> `AccessGroup` -> `Role ADMIN`.
 
-6) Autorização nas rotas
-- Controllers utilizam [Authorize] e policies específicas.
-- Policies checam claims de roles/permissões.
-- Middleware/Contexto de Tenant garante que consultas e autorizações estejam dentro do tenant correto.
+---
 
-7) Manutenção e auditoria
-- Gerenciar mudanças de acessos: adicionar/remover grupos, papéis e permissões.
-- Desativar relações (IsActive) ou usuário quando necessário.
-- Reset de senha, verificação de e-mail, auditoria de acesso (último login, logs).
+## 🔒 Fluxo de Autenticação e Autorização (Runtime)
 
-## Considerações de multi-tenant
+### 1. Login e Token JWT
+O usuário faz login e recebe um JWT contendo `sub` (UserId) e `tenant` (Slug). O token **NÃO** contém a lista completa de permissões para manter o payload leve.
 
-- Sempre incluir tenantId nas consultas de usuários, grupos e papéis.
-- Evitar vazamento de dados entre tenants.
-- Policies e validações devem considerar o tenant corrente (via TenantContext / claims).
+### 2. Recuperação de Informações (`GetUserInfo`)
+Quando o frontend (ou uma API protegida) solicita as permissões do usuário:
 
-## JWT e claims sugeridas
+1.  **Carregamento de Roles**: O sistema carrega todas as permissões atreladas às Roles do usuário.
+    *   *Cenário*: O usuário é Admin, então sua Role diz que ele pode acessar `FINANCIAL`, `STOCK`, `ORDERS`.
+2.  **Validação de Contrato (Tenant Modules)**:
+    *   O sistema verifica quais módulos o Tenant possui ativos no banco (`TenantModuleRepository`).
+    *   *Cenário*: O Tenant é plano "Basic" e só tem `ORDERS`.
+3.  **Filtragem (Interseção)**:
+    *   O `AuthenticationService` remove da lista do usuário qualquer permissão ligada a módulos que o Tenant **não** possui.
+    *   *Resultado*: O usuário recebe apenas permissões de `ORDERS`. As permissões de `FINANCIAL` e `STOCK` são suprimidas.
 
-- sub (userId), tid (tenantId), name/email.
-- Opcional: roles, permissions, groups (dependendo do tamanho do token e estratégia).
-- Expiração adequada e refresh tokens quando aplicável.
+### 3. Proteção de Rotas (`PermissionAuthorizationFilter`)
+Para garantir segurança no Backend (caso alguém tente forçar uma requisição):
 
-## Exemplo de fluxo fim-a-fim
+*   Toda Action crítica é decorada com `[MapPermission(Module = "FINANCIAL", Operation = "Read")]`.
+*   O filtro intercepta a requisição.
+*   Verifica se o usuário tem a permissão.
+*   **Crucial**: Como a lista de permissões do usuário já foi filtrada pelo plano do tenant no passo anterior, o acesso é negado (`403 Forbidden`) se o plano não cobrir aquele módulo.
 
-1. Admin do tenant cria o usuário João e ativa seu e‑mail.
-2. João é adicionado aos grupos “Financeiro” e “Relatórios”.
-3. “Financeiro” está vinculado aos papéis “FinanceManager” e “InvoiceViewer”.
-4. “FinanceManager” possui permissões de “Faturas” com operações de ler/criar/editar; “InvoiceViewer” apenas ler.
-5. João faz login, recebe JWT com claims do tenant e, conforme estratégia, papéis/permissões.
-6. Ao acessar rotas de faturamento, policies verificam se João possui as permissões/operações exigidas.
+---
 
-## Boas práticas
+## 💡 Exemplos Práticos
 
-- Manter o mínimo necessário de claims no JWT; para detalhes, consultar no backend por id e tenant.
-- Usar caching quando apropriado (ex.: usuários por tenant), invalidando ao alterar acessos.
-- Padronizar respostas com ResponseDTO e registrar eventos de auditoria.
-- Garantir que enums (ex.: Status) sejam retornados como strings (configurado globalmente no JSON).
+### Cenário A: Upgrade de Plano
+1.  **Situação**: Tenant "Pizza Place" está no plano **Basic** (sem Financeiro).
+2.  **Admin**: Tem Role `ADMIN`. Tenta acessar `/api/financial/reports`.
+3.  **Resultado**: Acesso Negado (O módulo `FINANCIAL` não existe para o tenant).
+4.  **Ação**: Tenant faz upgrade para **Premium**.
+5.  **Sistema**: Insere `FINANCIAL` na tabela `TenantModules`.
+6.  **Imediato**: No próximo login/refresh, a interseção `ADMIN ∩ Premium` agora inclui `FINANCIAL`. O acesso é liberado sem precisar editar o usuário ou a role.
 
-## Próximos passos
+### Cenário B: Funcionário Limitado
+1.  **Situação**: Tenant **Premium** (tem tudo).
+2.  **Usuário**: Garçom (Role `WAITER`).
+3.  **Acesso**: Tenta acessar Financeiro.
+4.  **Lógica**:
+    *   Tenant tem módulo Financeiro? **Sim**.
+    *   Role `WAITER` tem permissão Financeiro? **Não**.
+5.  **Resultado**: Acesso Negado (Falta de privilégio da Role).
 
-- Testes fim‑a‑fim (feliz/erro) nas rotas /auth e /api/*.
-- Revisar policies e garantir cobertura completa dos módulos críticos.
-- Documentar endpoints específicos de criação/atribuição (Users, AccessGroups, Roles, Permissions) por tenant.
+---
+
+## 🛠️ Manutenção e Extensibilidade
+
+*   **Novos Módulos**: Ao criar um novo módulo no sistema, basta adicioná-lo à Role `ADMIN` via seed e aos planos correspondentes. Nenhuma migração de dados de usuário é necessária.
+*   **Personalização**: Se um tenant específico precisar de uma exceção (ex: um módulo beta), basta adicionar o registro na `TenantModules` manualmente para aquele TenantId.
+
+## 📄 Referências de Código
+
+*   **Setup Inicial**: `TenantService.ConfigureInitialPermissionsAsync`
+*   **Lógica de Filtro**: `AuthenticationService.GetUserInfoAsync`
+*   **Segurança Global**: `PermissionAuthorizationFilter.OnActionExecutionAsync`
+*   **Entidades**: `TenantModuleEntity`, `AccessGroupEntity`

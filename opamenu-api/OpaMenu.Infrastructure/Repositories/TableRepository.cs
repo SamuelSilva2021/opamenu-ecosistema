@@ -1,7 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Domain.Interfaces;
 using OpaMenu.Infrastructure.Shared.Data.Context;
+using OpaMenu.Infrastructure.Shared.Data.Context.Opamenu;
 
 namespace OpaMenu.Infrastructure.Repositories;
 
@@ -31,7 +32,7 @@ public class TableRepository : BaseRepository<TableEntity>, ITableRepository
             .ToListAsync();
     }
 
-    public async Task<int> CountByTenantIdAsync(Guid tenantId)
+    public override async Task<int> CountByTenantIdAsync(Guid tenantId)
     {
         return await _dbSet.CountAsync(t => t.TenantId == tenantId);
     }

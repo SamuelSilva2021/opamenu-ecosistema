@@ -15,33 +15,37 @@ using Authenticator.API.Core.Domain.AccessControl.Modules.DTOs;
 using Authenticator.API.Core.Domain.AccessControl.UserAccounts.DTOs;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Subscription;
 using Authenticator.API.Core.Application.Interfaces.MultiTenant;
+using OpaMenu.Infrastructure.Shared.Data.Context.AccessControl;
+using OpaMenu.Infrastructure.Shared.Data.Context.MultTenant;
 
 namespace Authenticator.API.Core.Application.Implementation;
 
 /// <summary>
-/// ImplementaÃ§Ã£o do serviÃ§o de autenticaÃ§Ã£o
+/// Implementação do serviço de autenticação
 /// </summary>
 public class AuthenticationService(
-    AccessControlDbContext accessControlContext,
-    MultiTenantDbContext multiTenantContext,
-    IJwtTokenService jwtTokenService,
-    IMemoryCache cache,
-    ILogger<AuthenticationService> logger,
-    IUserAccountsRepository userAccountsRepository,
-    IModuleRepository moduleRepository,
-    ISubscriptionRepository subscriptionRepository,
-    IUserValidation loginValidation
-        ) : IAuthenticationService
-{
-    private readonly AccessControlDbContext _accessControlContext = accessControlContext;
-    private readonly MultiTenantDbContext _multiTenantContext = multiTenantContext;
-    private readonly IJwtTokenService _jwtTokenService = jwtTokenService;
-    private readonly IMemoryCache _cache = cache;
-    private readonly ILogger<AuthenticationService> _logger = logger;
-    private readonly IUserAccountsRepository _userAccountsRepository = userAccountsRepository;
-    private readonly IModuleRepository _moduleRepository = moduleRepository;
-    private readonly ISubscriptionRepository _subscriptionRepository = subscriptionRepository;
-    private readonly IUserValidation _loginValidation = loginValidation;
+        AccessControlDbContext accessControlContext,
+        MultiTenantDbContext multiTenantContext,
+        IJwtTokenService jwtTokenService,
+        IMemoryCache cache,
+        ILogger<AuthenticationService> logger,
+        IUserAccountsRepository userAccountsRepository,
+        IModuleRepository moduleRepository,
+        ISubscriptionRepository subscriptionRepository,
+        ITenantModuleRepository tenantModuleRepository,
+        IUserValidation loginValidation
+            ) : IAuthenticationService
+    {
+        private readonly AccessControlDbContext _accessControlContext = accessControlContext;
+        private readonly MultiTenantDbContext _multiTenantContext = multiTenantContext;
+        private readonly IJwtTokenService _jwtTokenService = jwtTokenService;
+        private readonly IMemoryCache _cache = cache;
+        private readonly ILogger<AuthenticationService> _logger = logger;
+        private readonly IUserAccountsRepository _userAccountsRepository = userAccountsRepository;
+        private readonly IModuleRepository _moduleRepository = moduleRepository;
+        private readonly ISubscriptionRepository _subscriptionRepository = subscriptionRepository;
+        private readonly ITenantModuleRepository _tenantModuleRepository = tenantModuleRepository;
+        private readonly IUserValidation _loginValidation = loginValidation;
 
     private const string REFRESH_TOKENS_CACHE_KEY = "refresh_tokens";
     private const string USER_CACHE_KEY_PREFIX = "user_";
@@ -98,11 +102,12 @@ public class AuthenticationService(
                 RefreshToken = refreshToken,
                 ExpiresIn = _jwtTokenService.GetTokenExpirationTime(),
                 TenantStatus = tenant?.Status.ToString(),
-                //SubscriptionStatus = subscription!.Status,
-                //// Requer pagamento se status for pendente ou suspenso, ou se assinatura nÃ£o estiver ativa/trial
-                //RequiresPayment = tenant?.Status == ETenantStatus.Pendente || 
-                //                  tenant?.Status == ETenantStatus.Suspenso ||
-                //                  (subscription != null && subscription.Status != ESubscriptionStatus.Ativo && subscription.Status != ESubscriptionStatus.Trial)
+                SubscriptionStatus = subscription?.Status ?? ESubscriptionStatus.Cancelado,
+                // Requer pagamento se status for pendente ou suspenso, ou se assinatura não estiver ativa/trial
+                RequiresPayment = tenant?.Status == ETenantStatus.Pendente || 
+                                  tenant?.Status == ETenantStatus.Suspenso ||
+                                  (subscription != null && subscription.Status != ESubscriptionStatus.Ativo && subscription.Status != ESubscriptionStatus.Trial),
+                RedirectToPlanSelection = tenant != null && (subscription == null || (subscription.Status != ESubscriptionStatus.Ativo && subscription.Status != ESubscriptionStatus.Trial))
             };
 
             _logger.LogInformation("Login bem-sucedido parausuário: {UserId}", user.Id);
@@ -252,7 +257,8 @@ public class AuthenticationService(
                 SubscriptionStatus = (ESubscriptionStatus)(subscription!.Status),
                 RequiresPayment = tenant?.Status == ETenantStatus.Pendente || 
                                   tenant?.Status == ETenantStatus.Suspenso ||
-                                  (subscription != null && subscription.Status != ESubscriptionStatus.Ativo && subscription.Status != ESubscriptionStatus.Trial)
+                                  (subscription != null && subscription.Status != ESubscriptionStatus.Ativo && subscription.Status != ESubscriptionStatus.Trial),
+                RedirectToPlanSelection = tenant != null && (subscription == null || (subscription.Status != ESubscriptionStatus.Ativo && subscription.Status != ESubscriptionStatus.Trial))
             };
 
             _logger.LogInformation("Token renovado com sucesso para usuário: {UserId}", user.Id);

@@ -3,7 +3,9 @@ using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using OpaMenu.Infrastructure.Shared.Data.Context;
+using OpaMenu.Infrastructure.Shared.Data.Context.AccessControl;
+using OpaMenu.Infrastructure.Shared.Data.Context.MultTenant;
+using OpaMenu.Infrastructure.Shared.Data.Context.Opamenu;
 
 var basePath = AppContext.BaseDirectory;
 var configuration = new ConfigurationBuilder()

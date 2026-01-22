@@ -7,6 +7,7 @@ using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Subscription;
 using Authenticator.API.Core.Domain.MultiTenant.Subscriptions.DTOs;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant; // For ETenantStatus if needed
 using AutoMapper;
+using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.TenantModule;
 
 namespace Authenticator.API.Core.Application.Implementation.MultiTenant;
 
@@ -17,6 +18,8 @@ public class SubscriptionService(
     IPaymentGatewayService paymentGatewayService,
     IUserContext userContext,
     ITenantProductRepository tenantProductRepository,
+    IPlanModuleRepository planModuleRepository,
+    ITenantModuleRepository tenantModuleRepository,
     IMapper mapper,
     ILogger<SubscriptionService> logger) : ISubscriptionService
 {
@@ -126,6 +129,25 @@ public class SubscriptionService(
             {
                 tenant.Status = ETenantStatus.Ativo;
                 await tenantRepository.UpdateAsync(tenant);
+            }
+
+            // Sync Modules
+            await tenantModuleRepository.RemoveByTenantIdAsync(tenantId.Value);
+            var planModules = await planModuleRepository.GetByPlanIdAsync(planId);
+            
+            if (planModules.Any())
+            {
+                var tenantModules = planModules.Select(pm => new TenantModuleEntity
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = tenantId.Value,
+                    ModuleId = pm.ModuleId,
+                    IsEnabled = true,
+                    Configuration = "{}", // Default config
+                    CreatedAt = DateTime.UtcNow
+                });
+                
+                await tenantModuleRepository.AddRangeAsync(tenantModules);
             }
             
             return StaticResponseBuilder<string>.BuildOk("Plano ativado com sucesso");

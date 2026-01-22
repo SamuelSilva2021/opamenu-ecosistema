@@ -7,6 +7,8 @@ using Authenticator.API.Infrastructure.Providers;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
+using OpaMenu.Infrastructure.Shared.Data.Context.AccessControl;
+using OpaMenu.Infrastructure.Shared.Data.Context.MultTenant;
 
 namespace Authenticator.API.Tests
 {

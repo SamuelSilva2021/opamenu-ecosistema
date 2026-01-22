@@ -1,4 +1,3 @@
-using OpaMenu.Infrastructure.Shared.Data.Context;
 using Authenticator.API.Core.Application.Interfaces;
 using Authenticator.API.Core.Application.Interfaces.AccessControl.Module;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
@@ -10,6 +9,7 @@ using System.Data;
 using Authenticator.API.Core.Domain.AccessControl.UserAccounts.DTOs;
 using Authenticator.API.Core.Domain.AccessControl.AccessGroup.DTOs;
 using Authenticator.API.Core.Domain.AccessControl.Roles.DTOs;
+using OpaMenu.Infrastructure.Shared.Data.Context.AccessControl;
 
 namespace Authenticator.API.Infrastructure.Repositories.AccessControl.Module
 {
