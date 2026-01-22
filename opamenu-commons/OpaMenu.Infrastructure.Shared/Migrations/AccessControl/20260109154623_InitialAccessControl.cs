@@ -301,14 +301,14 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
                 });
 
             #region INJEÇÃO DE DADOS INICIAIS
-            var groupTypeIdSystem = new Guid();
-            var groupTypeIdTenant = new Guid();
-            var superAdminroleId = new Guid();
-            var adminroleId = new Guid();
-            var accessGroupId = new Guid();
-            var roleAccessGroup = new Guid();
-            var userAccountId = new Guid();
-            var userAccessGroupId = new Guid();
+            var groupTypeIdSystem = Guid.NewGuid();
+            var groupTypeIdTenant = Guid.NewGuid();
+            var superAdminroleId = Guid.NewGuid();
+            var adminroleId = Guid.NewGuid();
+            var accessGroupId = Guid.NewGuid();
+            var roleAccessGroupId = Guid.NewGuid();
+            var userAccountId = Guid.NewGuid();
+            var userAccessGroupId = Guid.NewGuid();
 
             // Senha: "Abc@123" (BCrypt hash)
             var passwordHash = "$2a$11$5zjPGYTtvzZN8afzkFUnne4OAGrd8OFnVAuMk6wilOIF4ZdOEh66i";
@@ -318,39 +318,38 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
                 columns: new[] { "id", "code", "created_at", "description", "is_active", "name", "updated_at" },
                 values: new object[,]
                 {
-                    { groupTypeIdSystem, "SYSTEM", new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Grupos de acesso do sistema", true, "Sistema", null },
-                    { groupTypeIdTenant, "TENANT", new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Grupos de acesso do tenant", true, "Tenant", null }
+                    { groupTypeIdSystem, "SYSTEM", DateTime.UtcNow, "Grupos de acesso do sistema", true, "Sistema", null },
+                    { groupTypeIdTenant, "TENANT", DateTime.UtcNow, "Grupos de acesso do tenant", true, "Tenant", null }
                 });
+
+            migrationBuilder.InsertData(
+               table: "access_group",
+               columns: new[] { "id", "code", "created_at", "description", "group_type_id", "is_active", "name", "tenant_id", "updated_at" },
+               values: new object[] { accessGroupId, "OPAMENU_ANALYSTS", DateTime.UtcNow, "Grupo de acesso total para analistas da empresa", groupTypeIdSystem, true, "Analistas OpaMenu", null, null });
 
             migrationBuilder.InsertData(
                 table: "role",
                 columns: new[] { "id", "application_id", "code", "created_at", "description", "is_active", "name", "tenant_id", "updated_at" },
                 values: new object[,]
                 {
-                    { superAdminroleId, null, "SUPER_ADMIN", new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Administrador do Sistema", true, "Super Admin", null, null },
-                    { adminroleId, null, "ADMIN", new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Administrador do Tenant", true, "Admin", null, null }
+                    { superAdminroleId, null, "SUPER_ADMIN", DateTime.UtcNow, "Administrador do Sistema", true, "Super Admin", null, null },
+                    { adminroleId, null, "ADMIN", DateTime.UtcNow, "Administrador do Tenant", true, "Admin", null, null }
                 });
-
-            migrationBuilder.InsertData(
-                table: "access_group",
-                columns: new[] { "id", "code", "created_at", "description", "group_type_id", "is_active", "name", "tenant_id", "updated_at" },
-                values: new object[] { accessGroupId, "OPAMENU_ANALYSTS", new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Grupo de acesso total para analistas da empresa", groupTypeIdSystem, true, "Analistas OpaMenu", null, null });
 
             migrationBuilder.InsertData(
                 table: "role_access_group",
                 columns: new[] { "id", "access_group_id", "created_at", "is_active", "role_id", "updated_at" },
-                values: new object[] { roleAccessGroup, accessGroupId, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), true, superAdminroleId, null });
+                values: new object[] { roleAccessGroupId, accessGroupId, DateTime.UtcNow, true, superAdminroleId, null });
 
             migrationBuilder.InsertData(
                 table: "user_account",
                 columns: new[] { "id", "created_at", "email", "first_name", "is_email_verified", "last_name", "password_hash", "phone_number", "status", "tenant_id", "updated_at", "username" },
-                values: new object[] { userAccountId, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "admin@opamenu.com.br", "Samuel", true, "Silva", passwordHash, "27996640882", "Ativo", null, null, "admin@opamenu.com.br" }
-                );
+                values: new object[] { userAccountId, DateTime.UtcNow, "admin@opamenu.com.br", "Samuel", true, "Silva", passwordHash, "27996640882", "Ativo", null, null, "admin@opamenu.com.br" });
 
             migrationBuilder.InsertData(
                 table: "account_access_group",
                 columns: new[] { "id", "access_group_id", "created_at", "expires_at", "granted_at", "granted_by", "is_active", "user_account_id", "updated_at" },
-                values: new object[] { userAccessGroupId, accessGroupId, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, true, userAccountId, null }
+                values: new object[] { userAccessGroupId, accessGroupId, DateTime.UtcNow, null, DateTime.UtcNow, null, true, userAccountId, null }
                 );
             #endregion
 

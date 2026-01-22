@@ -364,13 +364,9 @@ async Task DropContextAsync<TContext>(
         var deleted = await context.Database.EnsureDeletedAsync();
         
         if (deleted)
-        {
             Console.WriteLine("SUCESSO: Banco de dados excluído.");
-        }
         else
-        {
              Console.WriteLine("INFO: Banco de dados não existia.");
-        }
     }
     catch (Exception ex)
     {

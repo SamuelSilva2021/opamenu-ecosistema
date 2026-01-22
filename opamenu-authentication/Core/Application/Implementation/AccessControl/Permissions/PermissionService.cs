@@ -73,9 +73,6 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Permis
                         .Include(x => x.PermissionOperations)
                             .ThenInclude(po => po.Operation));
 
-                if(!entities.Any())
-                    return StaticResponseBuilder<PagedResponseDTO<PermissionDTO>>.BuildOk(null!);
-
                 var dtos = _mapper.Map<IEnumerable<PermissionDTO>>(entities);
 
                 var pagedResponse = new PagedResponseDTO<PermissionDTO>
