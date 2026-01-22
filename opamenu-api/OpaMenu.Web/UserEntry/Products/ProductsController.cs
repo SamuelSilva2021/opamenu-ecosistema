@@ -58,7 +58,7 @@ public class ProductsController(
     /// Get products by category
     /// </summary>
     [HttpGet("by-category/{categoryId}")]
-    public async Task<ActionResult<ApiResponse<IEnumerable<ProductDto>>>> GetProductsByCategory(int categoryId)
+    public async Task<ActionResult<ApiResponse<IEnumerable<ProductDto>>>> GetProductsByCategory(Guid categoryId)
     {
         var serviceResponse = await _productService.GetProductsByCategoryAsync(categoryId);
         return BuildResponse(serviceResponse);
@@ -69,7 +69,7 @@ public class ProductsController(
     /// Get specific product by ID
     /// </summary>
     [HttpGet("{id}")]
-    public async Task<ActionResult<ApiResponse<ProductDto>>> GetProduct(int id)
+    public async Task<ActionResult<ApiResponse<ProductDto>>> GetProduct(Guid id)
     {
         var serviceResponse = await _productService.GetProductByIdAsync(id);
         return BuildResponse(serviceResponse);
@@ -103,7 +103,7 @@ public class ProductsController(
     /// Update existing product
     /// </summary>
     [HttpPut("{id}")]
-    public async Task<ActionResult<ApiResponse<ProductDto>>> UpdateProduct(int id, [FromBody] UpdateProductRequest request)
+    public async Task<ActionResult<ApiResponse<ProductDto>>> UpdateProduct(Guid id, [FromBody] UpdateProductRequest request)
     {
         if (!ModelState.IsValid)
         {
@@ -122,7 +122,7 @@ public class ProductsController(
     /// Delete product
     /// </summary>
     [HttpDelete("{id}")]
-    public async Task<ActionResult<ApiResponse<object>>> DeleteProduct(int id)
+    public async Task<ActionResult<ApiResponse<object>>> DeleteProduct(Guid id)
     {
         var product = await _productService.GetProductByIdAsync(id);
 
@@ -138,7 +138,7 @@ public class ProductsController(
     /// Toggle product active status
     /// </summary>
     [HttpPatch("{id}/toggle-status")]
-    public async Task<ActionResult<ApiResponse<ProductDto>>> ToggleProductStatus(int id)
+    public async Task<ActionResult<ApiResponse<ProductDto>>> ToggleProductStatus(Guid id)
     {
         var serviceResponse = await _productService.ToggleProductStatusAsync(id);
         return BuildResponse(serviceResponse);
@@ -158,7 +158,7 @@ public class ProductsController(
     /// Obter produtos que usam um grupo de adicionais específico
     /// </summary>
     [HttpGet("addon-groups/{addonGroupId:int}/products")]
-    public async Task<ActionResult<ApiResponse<IEnumerable<ProductDto>>>> GetProductsWithAddonGroup(int addonGroupId)
+    public async Task<ActionResult<ApiResponse<IEnumerable<ProductDto>>>> GetProductsWithAddonGroup(Guid addonGroupId)
     {
         var products = await _productAddonGroupService.GetProductsWithAddonGroupAsync(addonGroupId);
         return BuildResponse(products);

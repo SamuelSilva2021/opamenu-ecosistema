@@ -26,7 +26,7 @@ public class ProductAddonGroupValidationService(
     /// <summary>
     /// Valida se um produto existe e está ativo
     /// </summary>
-    public async Task<bool> IsProductValidAsync(int productId)
+    public async Task<bool> IsProductValidAsync(Guid productId)
     {
         var product = await _productRepository.GetByIdAsync(productId, _currentUserService.GetTenantGuid()!.Value);
         return product != null && product.IsActive;
@@ -35,7 +35,7 @@ public class ProductAddonGroupValidationService(
     /// <summary>
     /// Valida se um grupo de adicionais existe e está ativo
     /// </summary>
-    public async Task<bool> IsAddonGroupValidAsync(int addonGroupId)
+    public async Task<bool> IsAddonGroupValidAsync(Guid addonGroupId)
     {
         var addonGroup = await _addonGroupRepository.GetByIdAsync(addonGroupId, _currentUserService.GetTenantGuid()!.Value);
         return addonGroup != null && addonGroup.IsActive;
@@ -44,7 +44,7 @@ public class ProductAddonGroupValidationService(
     /// <summary>
     /// Valida se um grupo de adicionais já está associado a um produto
     /// </summary>
-    public async Task<bool> IsAddonGroupAlreadyAssignedAsync(int productId, int addonGroupId)
+    public async Task<bool> IsAddonGroupAlreadyAssignedAsync(Guid productId, Guid addonGroupId)
     {
         var productAddonGroups = await _productAddonGroupRepository.GetByProductIdAsync(productId);
         return productAddonGroups.Any(pag => pag.AddonGroupId == addonGroupId);
@@ -53,7 +53,7 @@ public class ProductAddonGroupValidationService(
     /// <summary>
     /// Valida se um ProductAddonGroup pode ser excluído (não está em pedidos ativos)
     /// </summary>
-    public async Task<bool> CanDeleteProductAddonGroupAsync(int productAddonGroupId)
+    public async Task<bool> CanDeleteProductAddonGroupAsync(Guid productAddonGroupId)
     {
         // Verifica se o ProductAddonGroup existe em pedidos ativos
         var activeOrders = await _orderRepository.GetActiveOrdersWithProductAddonGroupAsync(productAddonGroupId);
@@ -63,7 +63,7 @@ public class ProductAddonGroupValidationService(
     /// <summary>
     /// Valida dados de adição de grupo de adicionais a produto
     /// </summary>
-    public async Task<ValidationResult> ValidateAddAddonGroupToProductAsync(int productId, AddProductAddonGroupRequestDto request)
+    public async Task<ValidationResult> ValidateAddAddonGroupToProductAsync(Guid productId, AddProductAddonGroupRequestDto request)
     {
         var errors = new List<string>();
 
@@ -96,7 +96,7 @@ public class ProductAddonGroupValidationService(
     /// <summary>
     /// Valida dados de atualização de grupo de adicionais de produto
     /// </summary>
-    public async Task<ValidationResult> ValidateUpdateProductAddonGroupAsync(int productAddonGroupId, UpdateProductAddonGroupRequestDto request)
+    public async Task<ValidationResult> ValidateUpdateProductAddonGroupAsync(Guid productAddonGroupId, UpdateProductAddonGroupRequestDto request)
     {
         var errors = new List<string>();
 
@@ -123,7 +123,7 @@ public class ProductAddonGroupValidationService(
     /// <summary>
     /// Valida dados de adição em lote de grupos de adicionais
     /// </summary>
-    public async Task<ValidationResult> ValidateBulkAddAddonGroupsAsync(int productId, IEnumerable<AddProductAddonGroupRequestDto> requests)
+    public async Task<ValidationResult> ValidateBulkAddAddonGroupsAsync(Guid productId, IEnumerable<AddProductAddonGroupRequestDto> requests)
     {
         var errors = new List<string>();
         var requestList = requests.ToList();

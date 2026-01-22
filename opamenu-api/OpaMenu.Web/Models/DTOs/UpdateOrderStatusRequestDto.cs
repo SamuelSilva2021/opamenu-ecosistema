@@ -1,12 +1,13 @@
 ﻿using OpaMenu.Infrastructure.Shared.Entities;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 using System.ComponentModel.DataAnnotations;
 
 namespace OpaMenu.Web.Models.DTOs
 {
-    public class UpdateOrderStatusRequestDto
+    public class UpdatEOrderStatusRequestDto
     {
         [Required]
-        public OrderStatus Status { get; set; }
+        public EOrderStatus Status { get; set; }
     }
 }
 

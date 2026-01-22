@@ -21,7 +21,7 @@ namespace OpaMenu.Domain.DTOs
         public decimal Price { get; set; }
 
         [Required]
-        public int AddonGroupId { get; set; }
+        public Guid AddonGroupId { get; set; }
 
         public int DisplayOrder { get; set; } = 0;
 

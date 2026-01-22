@@ -48,7 +48,7 @@ public class ProductAddonGroupMapper(IUrlBuilderService urlBuilderService) : IPr
     /// <summary>
     /// Mapeia um AddProductAddonGroupRequestDto para entidade ProductAddonGroup
     /// </summary>
-    public ProductAddonGroupEntity MapToEntity(AddProductAddonGroupRequestDto request, int productId)
+    public ProductAddonGroupEntity MapToEntity(AddProductAddonGroupRequestDto request, Guid productId)
     {
         ArgumentNullException.ThrowIfNull(request);
         
@@ -93,7 +93,7 @@ public class ProductAddonGroupMapper(IUrlBuilderService urlBuilderService) : IPr
             ImageUrl = product.ImageUrl,
             AddonGroups = product.AddonGroups?.Select(pag => new AddonGroupResponseDto
             {
-                Id = pag.AddonGroup?.Id ?? 0,
+                Id = pag.AddonGroup.Id,
                 Name = pag.AddonGroup?.Name ?? string.Empty,
                 Description = pag.AddonGroup?.Description,
                 IsRequired = pag.IsRequired,

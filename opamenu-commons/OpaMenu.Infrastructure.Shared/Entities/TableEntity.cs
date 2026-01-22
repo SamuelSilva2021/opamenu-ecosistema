@@ -9,7 +9,7 @@ public class TableEntity : BaseEntity
     [Required]
     [MaxLength(50)]
     [Column("name")]
-    public string Name { get; set; } = string.Empty; // Ex: "Mesa 01", "05"
+    public string Name { get; set; } = string.Empty;
 
     [Column("capacity")]
     public int Capacity { get; set; }
@@ -21,7 +21,6 @@ public class TableEntity : BaseEntity
     [MaxLength(500)]
     public string? QrCodeUrl { get; set; }
 
-    // RelaÃ§Ã£o com pedidos (uma mesa pode ter vÃ¡rios pedidos ao longo do tempo)
     public virtual ICollection<OrderEntity> Orders { get; set; } = new List<OrderEntity>();
 }
 

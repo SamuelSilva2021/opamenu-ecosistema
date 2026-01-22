@@ -40,14 +40,14 @@ public class AddonService(
         }
     }
 
-    public async Task<IEnumerable<AddonResponseDto>> GetByAddonGroupIdAsync(int addonGroupId)
+    public async Task<IEnumerable<AddonResponseDto>> GetByAddonGroupIdAsync(Guid addonGroupId)
     {
         var addons = await _addonRepository.GetByAddonGroupIdAsync(addonGroupId);
 
         return _mapper.Map<IEnumerable<AddonResponseDto>>(addons);
     }
 
-    public async Task<ResponseDTO<AddonResponseDto?>> GetAddonByIdAsync(int id)
+    public async Task<ResponseDTO<AddonResponseDto?>> GetAddonByIdAsync(Guid id)
     {
         try
         {
@@ -86,7 +86,7 @@ public class AddonService(
         
     }
 
-    public async Task<ResponseDTO<AddonResponseDto>> UpdateAddonAsync(int id, UpdateAddonRequestDto request)
+    public async Task<ResponseDTO<AddonResponseDto>> UpdateAddonAsync(Guid id, UpdateAddonRequestDto request)
     {
         try
         {
@@ -119,7 +119,7 @@ public class AddonService(
         
     }
 
-    public async Task<ResponseDTO<bool>> DeleteAddonAsync(int id)
+    public async Task<ResponseDTO<bool>> DeleteAddonAsync(Guid id)
     {
         try
         {
@@ -143,7 +143,7 @@ public class AddonService(
         
     }
 
-    public async Task<ResponseDTO<AddonResponseDto>> ToggleAddonStatusAsync(int id)
+    public async Task<ResponseDTO<AddonResponseDto>> ToggleAddonStatusAsync(Guid id)
     {
         try
         {
@@ -169,10 +169,10 @@ public class AddonService(
         }
 
     }
-    public async Task<bool> IsNameUniqueInGroupAsync(string name, int addonGroupId, int? excludeId = null) =>
+    public async Task<bool> IsNameUniqueInGroupAsync(string name, Guid addonGroupId, Guid? excludeId = null) =>
         await _addonRepository.IsNameUniqueInGroupAsync(name, addonGroupId, excludeId);
 
-    public Task<bool> CanDeleteAddonAsync(int id)
+    public Task<bool> CanDeleteAddonAsync(Guid id)
     {
         //TODO:
         // Verificar se o adicional estÃ¡ sendo usado em algum pedido

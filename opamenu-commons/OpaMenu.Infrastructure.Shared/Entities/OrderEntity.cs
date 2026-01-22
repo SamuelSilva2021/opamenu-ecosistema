@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using OpaMenu.Infrastructure.Shared.Enums;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Infrastructure.Shared.Entities;
 
@@ -43,7 +43,7 @@ public class OrderEntity : BaseEntity
     public decimal Total { get; set; }
 
     [Column("status")]
-    public OrderStatus Status { get; set; } = OrderStatus.Pending;
+    public EOrderStatus Status { get; set; } = EOrderStatus.Pending;
 
     [MaxLength(1000)]
     [Column("notes")]
@@ -56,7 +56,7 @@ public class OrderEntity : BaseEntity
     public EOrderType OrderType { get; set; } = EOrderType.Delivery;
 
     [Column("table_id")]
-    public int? TableId { get; set; }
+    public Guid? TableId { get; set; }
 
     public virtual TableEntity? Table { get; set; }
 
@@ -84,15 +84,5 @@ public class OrderEntity : BaseEntity
     public virtual ICollection<PaymentEntity> Payments { get; set; } = new List<PaymentEntity>();
 }
 
-public enum OrderStatus
-{
-    Pending = 0,
-    Confirmed = 1,
-    Preparing = 2,
-    Ready = 3,
-    OutForDelivery = 4,
-    Delivered = 5,
-    Cancelled = 6,
-    Rejected = 7
-}
+
 

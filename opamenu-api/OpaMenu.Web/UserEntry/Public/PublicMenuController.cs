@@ -82,7 +82,7 @@ public class PublicMenuController(
     /// Obtém produtos de uma categoria específica para uma loja (slug)
     /// </summary>
     [HttpGet("products/by-category/{categoryId}")]
-    public async Task<ActionResult<ResponseDTO<IEnumerable<ProductDto>>>> GetProductsByCategory(string slug, int categoryId)
+    public async Task<ActionResult<ResponseDTO<IEnumerable<ProductDto>>>> GetProductsByCategory(string slug, Guid categoryId)
     {
         var response = await _productService.GetProductsByCategoryAndSlugAsync(categoryId, slug);
         return BuildResponse(response);
@@ -92,7 +92,7 @@ public class PublicMenuController(
     /// Obtém detalhes de um produto específico para uma loja (slug)
     /// </summary>
     [HttpGet("products/{id}")]
-    public async Task<ActionResult<ResponseDTO<ProductDto?>>> GetProduct(string slug, int id)
+    public async Task<ActionResult<ResponseDTO<ProductDto?>>> GetProduct(string slug, Guid id)
     {
         var response = await _productService.GetProductByIdAndSlugAsync(id, slug);
         return BuildResponse(response);
@@ -122,7 +122,7 @@ public class PublicMenuController(
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpGet("orders/{id}")]
-    public async Task<ActionResult<ApiResponse<OrderResponseDto>>> GetOrder(string slug, int id)
+    public async Task<ActionResult<ApiResponse<OrderResponseDto>>> GetOrder(string slug, Guid id)
     {
         if (!ModelState.IsValid)
             return BadRequest(ApiResponse<OrderResponseDto>.ErrorResponse("Dados inválidos"));
@@ -144,7 +144,7 @@ public class PublicMenuController(
     /// Cancela um pedido público (apenas se pendente)
     /// </summary>
     [HttpPut("orders/{id}/cancel")]
-    public async Task<ActionResult<ApiResponse<OrderResponseDto>>> CancelOrder(string slug, int id, [FromBody] CancelOrderRequestDto request)
+    public async Task<ActionResult<ApiResponse<OrderResponseDto>>> CancelOrder(string slug, Guid id, [FromBody] CancelOrderRequestDto request)
     {
         // TODO: Validar se pedido pertence ao tenant do slug e ao customer (se auth disponível)
         var serviceResponse = await _orderService.CancelOrderAsync(id, request);
@@ -155,7 +155,7 @@ public class PublicMenuController(
     /// Atualiza o método de pagamento de um pedido público (apenas se pendente)
     /// </summary>
     [HttpPut("orders/{id}/payment")]
-    public async Task<ActionResult<ApiResponse<OrderResponseDto>>> UpdatePaymentMethod(string slug, int id, [FromBody] UpdateOrderPaymentRequestDto request)
+    public async Task<ActionResult<ApiResponse<OrderResponseDto>>> UpdatePaymentMethod(string slug, Guid id, [FromBody] UpdateOrderPaymentRequestDto request)
     {
         var serviceResponse = await _orderService.UpdateOrderPaymentMethodAsync(id, request);
         return BuildResponse(serviceResponse);
@@ -165,7 +165,7 @@ public class PublicMenuController(
     /// Atualiza o tipo de entrega de um pedido público (apenas se pendente)
     /// </summary>
     [HttpPut("orders/{id}/delivery-type")]
-    public async Task<ActionResult<ApiResponse<OrderResponseDto>>> UpdateDeliveryType(string slug, int id, [FromBody] UpdateOrderDeliveryTypeRequestDto request)
+    public async Task<ActionResult<ApiResponse<OrderResponseDto>>> UpdateDeliveryType(string slug, Guid id, [FromBody] UpdateOrderDeliveryTypeRequestDto request)
     {
         var serviceResponse = await _orderService.UpdateOrderDeliveryTypeAsync(id, request);
         return BuildResponse(serviceResponse);

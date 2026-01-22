@@ -10,17 +10,17 @@ namespace OpaMenu.Domain.DTOs.Product
         /// <summary>
         /// ID da configuração produto-grupo
         /// </summary>
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         
         /// <summary>
         /// ID do produto
         /// </summary>
-        public int ProductId { get; set; }
+        public Guid ProductId { get; set; }
         
         /// <summary>
         /// ID do grupo de adicionais
         /// </summary>
-        public int AddonGroupId { get; set; }
+        public Guid AddonGroupId { get; set; }
         
         /// <summary>
         /// Informações do grupo de adicionais

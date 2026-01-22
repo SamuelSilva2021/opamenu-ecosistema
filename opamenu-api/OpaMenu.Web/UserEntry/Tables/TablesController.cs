@@ -32,7 +32,7 @@ namespace OpaMenu.Web.UserEntry.Tables
         /// Obtém uma mesa pelo ID
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<ResponseDTO<TableResponseDto>>> GetById(int id)
+        public async Task<ActionResult<ResponseDTO<TableResponseDto>>> GetById(Guid id)
         {
             var result = await _tableService.GetByIdAsync(id);
             return BuildResponse(result);
@@ -42,7 +42,7 @@ namespace OpaMenu.Web.UserEntry.Tables
         /// Obtém o pedido ativo da mesa
         /// </summary>
         [HttpGet("{id}/order")]
-        public async Task<ActionResult<ResponseDTO<OrderResponseDto?>>> GetActiveOrder(int id)
+        public async Task<ActionResult<ResponseDTO<OrderResponseDto?>>> GetActiveOrder(Guid id)
         {
             var result = await _orderService.GetActiveOrderByTableIdAsync(id);
             return BuildResponse(result);
@@ -62,7 +62,7 @@ namespace OpaMenu.Web.UserEntry.Tables
         /// Fecha a conta da mesa
         /// </summary>
         [HttpPost("{id}/close")]
-        public async Task<ActionResult<ResponseDTO<OrderResponseDto>>> CloseAccount(int id)
+        public async Task<ActionResult<ResponseDTO<OrderResponseDto>>> CloseAccount(Guid id)
         {
             var result = await _orderService.CloseTableAccountAsync(id);
             return BuildResponse(result);
@@ -72,7 +72,7 @@ namespace OpaMenu.Web.UserEntry.Tables
         /// Atualiza uma mesa existente
         /// </summary>
         [HttpPut("{id}")]
-        public async Task<ActionResult<ResponseDTO<TableResponseDto>>> Update(int id, [FromBody] UpdateTableRequestDto dto)
+        public async Task<ActionResult<ResponseDTO<TableResponseDto>>> Update(Guid id, [FromBody] UpdateTableRequestDto dto)
         {
             var result = await _tableService.UpdateAsync(id, dto);
             return BuildResponse(result);
@@ -82,7 +82,7 @@ namespace OpaMenu.Web.UserEntry.Tables
         /// Remove uma mesa
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<ActionResult<ResponseDTO<bool>>> Delete(int id)
+        public async Task<ActionResult<ResponseDTO<bool>>> Delete(Guid id)
         {
             var result = await _tableService.DeleteAsync(id);
             return BuildResponse(result);
@@ -92,7 +92,7 @@ namespace OpaMenu.Web.UserEntry.Tables
         /// Gera o QR Code para uma mesa
         /// </summary>
         [HttpPost("{id}/qrcode")]
-        public async Task<ActionResult<ResponseDTO<string>>> GenerateQrCode(int id)
+        public async Task<ActionResult<ResponseDTO<string>>> GenerateQrCode(Guid id)
         {
             var result = await _tableService.GenerateQrCodeAsync(id);
             return BuildResponse(result);

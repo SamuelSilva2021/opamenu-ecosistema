@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OpaMenu.Infrastructure.Shared.Entities;
@@ -8,7 +9,7 @@ public class PaymentEntity : BaseEntity
 {
     [Required]
     [Column("order_id")]
-    public int OrderId { get; set; }
+    public Guid OrderId { get; set; }
     
     [Required]
     [Range(0.01, double.MaxValue, ErrorMessage = "Amount must be greater than 0")]
@@ -17,11 +18,11 @@ public class PaymentEntity : BaseEntity
     
     [Required]
     [Column("method")]
-    public PaymentMethod Method { get; set; }
+    public EPaymentMethod Method { get; set; }
     
     [Required]
     [Column("status")]
-    public PaymentStatus Status { get; set; }
+    public EPaymentStatus Status { get; set; }
     
     [MaxLength(200)]
     [Column("gateway_transaction_id")]
@@ -42,23 +43,3 @@ public class PaymentEntity : BaseEntity
     public virtual OrderEntity Order { get; set; } = null!;
     public virtual ICollection<PaymentRefundEntity> Refunds { get; set; } = new List<PaymentRefundEntity>();
 }
-
-public enum PaymentMethod
-{
-    CreditCard = 0,
-    DebitCard = 1,
-    Pix = 2,
-    Cash = 3,
-    BankTransfer = 4
-}
-
-public enum PaymentStatus
-{
-    Pending = 0,
-    Processing = 1,
-    Approved = 2,
-    Declined = 3,
-    Cancelled = 4,
-    Refunded = 5
-}
-

@@ -19,7 +19,7 @@ public class ProductEntity : BaseEntity
     public decimal Price { get; set; }
 
     [Column("category_id")]
-    public int CategoryId { get; set; }
+    public Guid CategoryId { get; set; }
 
     [Column("display_order")]
     public int DisplayOrder { get; set; }

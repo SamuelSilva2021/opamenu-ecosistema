@@ -6,9 +6,9 @@ namespace OpaMenu.Application.Interfaces;
 public interface ITableService
 {
     Task<PagedResponseDTO<TableResponseDto>> GetPagedAsync(int pageNumber, int pageSize);
-    Task<ResponseDTO<TableResponseDto>> GetByIdAsync(int id);
+    Task<ResponseDTO<TableResponseDto>> GetByIdAsync(Guid id);
     Task<ResponseDTO<TableResponseDto>> CreateAsync(CreateTableRequestDto dto);
-    Task<ResponseDTO<TableResponseDto>> UpdateAsync(int id, UpdateTableRequestDto dto);
-    Task<ResponseDTO<bool>> DeleteAsync(int id);
-    Task<ResponseDTO<string>> GenerateQrCodeAsync(int id);
+    Task<ResponseDTO<TableResponseDto>> UpdateAsync(Guid id, UpdateTableRequestDto dto);
+    Task<ResponseDTO<bool>> DeleteAsync(Guid id);
+    Task<ResponseDTO<string>> GenerateQrCodeAsync(Guid id);
 }

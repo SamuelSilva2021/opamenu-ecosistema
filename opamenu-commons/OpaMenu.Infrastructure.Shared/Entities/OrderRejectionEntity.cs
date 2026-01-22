@@ -8,7 +8,7 @@ public class OrderRejectionEntity : BaseEntity
 {
     [Required]
     [Column("order_id")]
-    public int OrderId { get; set; }
+    public Guid OrderId { get; set; }
 
     [Required]
     [MaxLength(100)]
@@ -28,7 +28,6 @@ public class OrderRejectionEntity : BaseEntity
     [Column("rejected_by")]
     public string RejectedBy { get; set; } = string.Empty;
 
-    // Navigation property
     [ForeignKey("OrderId")]
     public virtual OrderEntity Order { get; set; } = null!;
 }

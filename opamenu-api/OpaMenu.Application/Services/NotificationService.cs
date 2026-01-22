@@ -4,6 +4,7 @@ using OpaMenu.Application.Services.Interfaces;
 using OpaMenu.Domain.DTOs;
 using OpaMenu.Domain.DTOs.Product;
 using OpaMenu.Infrastructure.Shared.Entities;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Application.Services;
 
@@ -31,7 +32,7 @@ public class NotificationService : INotificationService
     {
         try
         {
-            _logger.LogInformation("Iniciando envio de notificaÃ§Ã£o para novo pedido #{OrderId}", order.Id);
+            _logger.LogInformation("Iniciando envio de notificação para novo pedido #{OrderId}", order.Id);
             
             var notification = new
             {
@@ -47,29 +48,29 @@ public class NotificationService : INotificationService
             };
 
             var groupClients = _hubContext.Clients.Group("Administrators");
-            _logger.LogInformation("Enviando para grupo 'Administrators' - MÃ©todo: NewOrderReceived");
+            _logger.LogInformation("Enviando para grupo 'Administrators' - Método: NewOrderReceived");
             
             await groupClients.SendAsync("NewOrderReceived", notification);
 
-            _logger.LogInformation("NotificaÃ§Ã£o de novo pedido enviada para administradores: Pedido #{OrderId}", 
+            _logger.LogInformation("Notificação de novo pedido enviada para administradores: Pedido #{OrderId}", 
                 order.Id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao enviar notificaÃ§Ã£o de novo pedido {OrderId}", order.Id);
+            _logger.LogError(ex, "Erro ao enviar notificação de novo pedido {OrderId}", order.Id);
         }
     }
 
     /// <summary>
     /// Notifica cliente sobre mudanÃ§a de status do pedido
     /// </summary>
-    public async Task NotifyOrderStatusChangedAsync(int orderId, OrderStatus oldStatus, OrderStatus newStatus, string? notes = null)
+    public async Task NotifyEOrderStatusChangedAsync(Guid orderId, EOrderStatus oldStatus, EOrderStatus newStatus, string? notes = null)
     {
         try
         {
             var notification = new
             {
-                Type = "OrderStatusChanged",
+                Type = "EOrderStatusChanged",
                 OrderId = orderId,
                 OldStatus = oldStatus.ToString(),
                 NewStatus = newStatus.ToString(),
@@ -79,17 +80,17 @@ public class NotificationService : INotificationService
             };
 
             await _hubContext.Clients.Group($"Order_{orderId}")
-                .SendAsync("OrderStatusUpdated", notification);
+                .SendAsync("EOrderStatusUpdated", notification);
 
             await _hubContext.Clients.Group("Administrators")
-                .SendAsync("OrderStatusChanged", notification);
+                .SendAsync("EOrderStatusChanged", notification);
 
-            _logger.LogInformation("NotificaÃ§Ã£o de mudanÃ§a de status enviada: Pedido #{OrderId} - {OldStatus} â†’ {NewStatus}", 
+            _logger.LogInformation("Notificação de mudança de status enviada: Pedido #{OrderId} - {OldStatus} â†’ {NewStatus}", 
                 orderId, oldStatus, newStatus);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao enviar notificaÃ§Ã£o de mudanÃ§a de status do pedido {OrderId}", orderId);
+            _logger.LogError(ex, "Erro ao enviar notificação de mudança de status do pedido {OrderId}", orderId);
         }
     }
 
@@ -113,11 +114,11 @@ public class NotificationService : INotificationService
             await _hubContext.Clients.Group($"Order_{order.Id}")
                 .SendAsync("OrderAccepted", notification);
 
-            _logger.LogInformation("NotificaÃ§Ã£o de pedido aceito enviada: Pedido #{OrderId}", order.Id);
+            _logger.LogInformation("Notificação de pedido aceito enviada: Pedido #{OrderId}", order.Id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao enviar notificaÃ§Ã£o de pedido aceito {OrderId}", order.Id);
+            _logger.LogError(ex, "Erro ao enviar Notificação de pedido aceito {OrderId}", order.Id);
         }
     }
 
@@ -141,19 +142,19 @@ public class NotificationService : INotificationService
             await _hubContext.Clients.Group($"Order_{order.Id}")
                 .SendAsync("OrderRejected", notification);
 
-            _logger.LogInformation("NotificaÃ§Ã£o de pedido rejeitado enviada: Pedido #{OrderId} - Motivo: {Reason}", 
+            _logger.LogInformation("Notificação de pedido rejeitado enviada: Pedido #{OrderId} - Motivo: {Reason}", 
                 order.Id, reason);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao enviar notificaÃ§Ã£o de pedido rejeitado {OrderId}", order.Id);
+            _logger.LogError(ex, "Erro ao enviar notificação de pedido rejeitado {OrderId}", order.Id);
         }
     }
 
     /// <summary>
     /// Notifica cliente sobre pedido pronto para retirada/entrega
     /// </summary>
-    public async Task NotifyOrderReadyAsync(int orderId)
+    public async Task NotifyOrderReadyAsync(Guid orderId)
     {
         try
         {
@@ -161,25 +162,25 @@ public class NotificationService : INotificationService
             {
                 Type = "OrderReady",
                 OrderId = orderId,
-                Message = $"Seu pedido #{orderId} estÃ¡ pronto!",
+                Message = $"Seu pedido #{orderId} está pronto!",
                 Timestamp = DateTime.UtcNow
             };
 
             await _hubContext.Clients.Group($"Order_{orderId}")
                 .SendAsync("OrderReady", notification);
 
-            _logger.LogInformation("NotificaÃ§Ã£o de pedido pronto enviada: Pedido #{OrderId}", orderId);
+            _logger.LogInformation("Notificação de pedido pronto enviada: Pedido #{OrderId}", orderId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao enviar notificaÃ§Ã£o de pedido pronto {OrderId}", orderId);
+            _logger.LogError(ex, "Erro ao enviar notificação de pedido pronto {OrderId}", orderId);
         }
     }
 
     /// <summary>
     /// Notifica cliente sobre pedido entregue/concluÃ­do
     /// </summary>
-    public async Task NotifyOrderCompletedAsync(int orderId)
+    public async Task NotifyOrderCompletedAsync(Guid orderId)
     {
         try
         {
@@ -187,18 +188,18 @@ public class NotificationService : INotificationService
             {
                 Type = "OrderCompleted",
                 OrderId = orderId,
-                Message = $"Pedido #{orderId} foi concluÃ­do com sucesso!",
+                Message = $"Pedido #{orderId} foi concluído com sucesso!",
                 Timestamp = DateTime.UtcNow
             };
 
             await _hubContext.Clients.Group($"Order_{orderId}")
                 .SendAsync("OrderCompleted", notification);
 
-            _logger.LogInformation("NotificaÃ§Ã£o de pedido concluÃ­do enviada: Pedido #{OrderId}", orderId);
+            _logger.LogInformation("Notificação de pedido conclusão do enviada: Pedido #{OrderId}", orderId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao enviar notificaÃ§Ã£o de pedido concluÃ­do {OrderId}", orderId);
+            _logger.LogError(ex, "Erro ao enviar notificação de pedido concluÃsão do {OrderId}", orderId);
         }
     }
 
@@ -214,18 +215,18 @@ public class NotificationService : INotificationService
                 Type = "MenuUpdated",
                 ChangeType = changeType,
                 ChangedItem = changedItem,
-                Message = $"CardÃ¡pio atualizado: {changeType}",
+                Message = $"Cardápio atualizado: {changeType}",
                 Timestamp = DateTime.UtcNow
             };
 
             await _hubContext.Clients.Group("MenuUpdates")
                 .SendAsync("MenuUpdated", notification);
 
-            _logger.LogInformation("NotificaÃ§Ã£o de atualizaÃ§Ã£o do cardÃ¡pio enviada: {ChangeType}", changeType);
+            _logger.LogInformation("Notificação de atualização de cardápio enviada: {ChangeType}", changeType);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao enviar notificaÃ§Ã£o de atualizaÃ§Ã£o do cardÃ¡pio: {ChangeType}", changeType);
+            _logger.LogError(ex, "Erro ao enviar notificação de atualização de cardápio: {ChangeType}", changeType);
         }
     }
 
@@ -245,7 +246,7 @@ public class NotificationService : INotificationService
     /// <summary>
     /// Notifica sobre produto removido do cardÃ¡pio
     /// </summary>
-    public async Task NotifyProductRemovedAsync(int productId, string productName)
+    public async Task NotifyProductRemovedAsync(Guid productId, string productName)
     {
         await NotifyMenuUpdatedAsync("ProductRemoved", new { 
             ProductId = productId, 
@@ -256,7 +257,7 @@ public class NotificationService : INotificationService
     /// <summary>
     /// Notifica sobre mudanÃ§a de preÃ§o de produto
     /// </summary>
-    public async Task NotifyProductPriceChangedAsync(int productId, string productName, decimal oldPrice, decimal newPrice)
+    public async Task NotifyProductPriceChangedAsync(Guid productId, string productName, decimal oldPrice, decimal newPrice)
     {
         await NotifyMenuUpdatedAsync("ProductPriceChanged", new { 
             ProductId = productId, 
@@ -269,7 +270,7 @@ public class NotificationService : INotificationService
     /// <summary>
     /// Notifica sobre produto indisponÃ­vel
     /// </summary>
-    public async Task NotifyProductUnavailableAsync(int productId, string productName)
+    public async Task NotifyProductUnavailableAsync(Guid productId, string productName)
     {
         await NotifyMenuUpdatedAsync("ProductUnavailable", new { 
             ProductId = productId, 
@@ -348,16 +349,16 @@ public class NotificationService : INotificationService
     /// <summary>
     /// ObtÃ©m mensagem amigÃ¡vel para o status do pedido
     /// </summary>
-    private static string GetStatusMessage(OrderStatus status) => status switch
+    private static string GetStatusMessage(EOrderStatus status) => status switch
     {
-        OrderStatus.Pending => "Aguardando confirmaÃ§Ã£o",
-        OrderStatus.Confirmed => "Pedido confirmado",
-        OrderStatus.Preparing => "Em preparaÃ§Ã£o",
-        OrderStatus.Ready => "Pronto para retirada",
-        OrderStatus.OutForDelivery => "Saiu para entrega",
-        OrderStatus.Delivered => "Entregue",
-        OrderStatus.Cancelled => "Cancelado",
-        OrderStatus.Rejected => "Rejeitado",
+        EOrderStatus.Pending => "Aguardando confirmaÃ§Ã£o",
+        EOrderStatus.Confirmed => "Pedido confirmado",
+        EOrderStatus.Preparing => "Em preparaÃ§Ã£o",
+        EOrderStatus.Ready => "Pronto para retirada",
+        EOrderStatus.OutForDelivery => "Saiu para entrega",
+        EOrderStatus.Delivered => "Entregue",
+        EOrderStatus.Cancelled => "Cancelado",
+        EOrderStatus.Rejected => "Rejeitado",
         _ => "Status desconhecido"
     };
 }

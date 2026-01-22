@@ -37,7 +37,7 @@ public class AddonGroupService(
         
     }
 
-    public async Task<ResponseDTO<AddonGroupResponseDto?>> GetAddonGroupByIdAsync(int id)
+    public async Task<ResponseDTO<AddonGroupResponseDto?>> GetAddonGroupByIdAsync(Guid id)
     {
         try
         {
@@ -53,7 +53,7 @@ public class AddonGroupService(
         
     }
 
-    public async Task<ResponseDTO<AddonGroupResponseDto?>> GetAddonGroupWithAddonsAsync(int id)
+    public async Task<ResponseDTO<AddonGroupResponseDto?>> GetAddonGroupWithAddonsAsync(Guid id)
     {
         try
         {
@@ -69,7 +69,7 @@ public class AddonGroupService(
         
     }
 
-    public async Task<IEnumerable<AddonGroupEntity>> GetByProductIdAsync(int productId) =>
+    public async Task<IEnumerable<AddonGroupEntity>> GetByProductIdAsync(Guid productId) =>
         await _addonGroupRepository.GetByProductIdAsync(productId);
 
     public async Task<ResponseDTO<AddonGroupResponseDto>> CreateAddonGroupAsync(CreateAddonGroupRequestDto request)
@@ -106,7 +106,7 @@ public class AddonGroupService(
         
     }
 
-    public async Task<ResponseDTO<AddonGroupResponseDto>> UpdateAddonGroupAsync(int id, UpdateAddonGroupRequestDto request)
+    public async Task<ResponseDTO<AddonGroupResponseDto>> UpdateAddonGroupAsync(Guid id, UpdateAddonGroupRequestDto request)
     {
         try
         {
@@ -138,7 +138,7 @@ public class AddonGroupService(
         
     }
 
-    public async Task<ResponseDTO<bool>> DeleteAddonGroupAsync(int id)
+    public async Task<ResponseDTO<bool>> DeleteAddonGroupAsync(Guid id)
     {
         try
         {
@@ -159,7 +159,7 @@ public class AddonGroupService(
 
     }
 
-    public async Task<ResponseDTO<AddonGroupResponseDto>> ToggleAddonGroupStatusAsync(int id)
+    public async Task<ResponseDTO<AddonGroupResponseDto>> ToggleAddonGroupStatusAsync(Guid id)
     {
         try
         {
@@ -182,7 +182,7 @@ public class AddonGroupService(
     public async Task ReorderAddonGroupsAsync(Dictionary<int, int> groupOrders) => 
         await _addonGroupRepository.UpdateDisplayOrdersAsync(groupOrders);
 
-    public async Task<ProductAddonGroupEntity> AssignToProductAsync(int productId, int addonGroupId, AssignAddonGroupToProductRequestDto request)
+    public async Task<ProductAddonGroupEntity> AssignToProductAsync(Guid productId, Guid addonGroupId, AssignAddonGroupToProductRequestDto request)
     {
         // Verificar se produto existe
         var product = await _productRepository.GetByIdAsync(productId, _currentUserService.GetTenantGuid()!.Value) ?? throw new ArgumentException("Produto nÃ£o encontrado");
@@ -203,18 +203,18 @@ public class AddonGroupService(
         return productAddonGroup;
     }
 
-    public async Task RemoveFromProductAsync(int productId, int addonGroupId)
+    public async Task RemoveFromProductAsync(Guid productId, Guid addonGroupId)
     {
         //TODO:
         // Implementar remoÃ§Ã£o da associaÃ§Ã£o produto-grupo
         // Esta implementaÃ§Ã£o precisaria de um repositÃ³rio especÃ­fico para ProductAddonGroup
     }
 
-    public async Task<bool> IsNameUniqueAsync(string name, int? excludeId = null) 
+    public async Task<bool> IsNameUniqueAsync(string name, Guid? excludeId = null) 
     {
         return await _addonGroupRepository.IsNameUniqueAsync(name, excludeId, _currentUserService.GetTenantGuid()!.Value);
     }
 
-    public async Task<bool> CanDeleteAddonGroupAsync(int id) => 
+    public async Task<bool> CanDeleteAddonGroupAsync(Guid id) => 
         !await _addonGroupRepository.HasAddonsAsync(id);
 }

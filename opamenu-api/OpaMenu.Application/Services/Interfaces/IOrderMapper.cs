@@ -55,14 +55,14 @@ public interface IOrderMapper
     /// </summary>
     /// <param name="orderItemAddon">Entidade OrderItemAddon</param>
     /// <returns>OrderItemAddonResponseDto mapeado</returns>
-    OrderItemAddonResponseDto MapToOrderItemAddonDto(OrderItemAddon orderItemAddon);
+    OrderItemAddonResponseDto MapToOrderItemAddonDto(OrderItemAddonEntity orderItemAddon);
     
     /// <summary>
     /// Mapeia uma coleÃ§Ã£o de entidades OrderItemAddon para OrderItemAddonResponseDto
     /// </summary>
     /// <param name="orderItemAddons">ColeÃ§Ã£o de entidades OrderItemAddon</param>
     /// <returns>ColeÃ§Ã£o de OrderItemAddonResponseDto mapeados</returns>
-    IEnumerable<OrderItemAddonResponseDto> MapToOrderItemAddonDtos(IEnumerable<OrderItemAddon> orderItemAddons);
+    IEnumerable<OrderItemAddonResponseDto> MapToOrderItemAddonDtos(IEnumerable<OrderItemAddonEntity> orderItemAddons);
     
     /// <summary>
     /// Mapeia um CreateOrderItemRequestDto para entidade OrderItem
@@ -70,7 +70,7 @@ public interface IOrderMapper
     /// <param name="request">Request de criaÃ§Ã£o do item</param>
     /// <param name="orderId">ID do pedido</param>
     /// <returns>Entidade OrderItem</returns>
-    OrderItemEntity MapToOrderItemEntity(CreateOrderItemRequestDto request, int orderId);
+    OrderItemEntity MapToOrderItemEntity(CreateOrderItemRequestDto request, Guid orderId);
     
     /// <summary>
     /// Mapeia uma coleÃ§Ã£o de CreateOrderItemRequestDto para entidades OrderItem
@@ -78,5 +78,5 @@ public interface IOrderMapper
     /// <param name="requests">ColeÃ§Ã£o de requests de criaÃ§Ã£o</param>
     /// <param name="orderId">ID do pedido</param>
     /// <returns>ColeÃ§Ã£o de entidades OrderItem</returns>
-    IEnumerable<OrderItemEntity> MapToOrderItemEntities(IEnumerable<CreateOrderItemRequestDto> requests, int orderId);
+    IEnumerable<OrderItemEntity> MapToOrderItemEntities(IEnumerable<CreateOrderItemRequestDto> requests, Guid orderId);
 }

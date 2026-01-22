@@ -11,16 +11,16 @@ namespace OpaMenu.Application.Services.Interfaces
     {
         // CRUD Operations
         Task<ResponseDTO<IEnumerable<ProductDto>>> GetAllProductsAsync();
-        Task<ResponseDTO<IEnumerable<ProductDto>>> GetProductsByCategoryAsync(int categoryId);
-        Task<ResponseDTO<ProductDto?>> GetProductByIdAsync(int id);
+        Task<ResponseDTO<IEnumerable<ProductDto>>> GetProductsByCategoryAsync(Guid categoryId);
+        Task<ResponseDTO<ProductDto?>> GetProductByIdAsync(Guid id);
         Task<ResponseDTO<ProductDto>> UpdateProductAsync(ProductEntity product);
-        Task<ResponseDTO<bool>> DeleteProductAsync(int id);
+        Task<ResponseDTO<bool>> DeleteProductAsync(Guid id);
 
         // Business Operations
         Task<ResponseDTO<IEnumerable<ProductDto>>> GetProductsForMenuAsync();
-        Task<ResponseDTO<IEnumerable<ProductDto>>> ReorderProductsAsync(Dictionary<int, int> productOrders);
-        Task<ResponseDTO<ProductDto>> ToggleProductStatusAsync(int id);
-        Task<ResponseDTO<ProductDto>> UpdateProductPriceAsync(int id, decimal newPrice);
+        Task<ResponseDTO<IEnumerable<ProductDto>>> ReorderProductsAsync(Dictionary<Guid, int> productOrders);
+        Task<ResponseDTO<ProductDto>> ToggleProductStatusAsync(Guid id);
+        Task<ResponseDTO<ProductDto>> UpdateProductPriceAsync(Guid id, decimal newPrice);
 
         // Search and Filter
         Task<ResponseDTO<IEnumerable<ProductDto>>> SearchProductsAsync(string searchTerm);
@@ -28,19 +28,19 @@ namespace OpaMenu.Application.Services.Interfaces
 
         // DTO-based methods for better API integration
         Task<ResponseDTO<ProductDto>> CreateProductAsync(CreateProductRequestDto request);
-        Task<ResponseDTO<ProductDto>> UpdateProductFromDtoAsync(int id, UpdateProductRequest request);
+        Task<ResponseDTO<ProductDto>> UpdateProductFromDtoAsync(Guid id, UpdateProductRequest request);
 
         // Story 2.3: Quick Operations
-        Task UpdateProductAvailabilityAsync(int id, bool isActive);
+        Task UpdateProductAvailabilityAsync(Guid id, bool isActive);
         Task<BulkOperationResult> BulkUpdateProductsAsync(BulkUpdateRequest request);
-        Task<IEnumerable<object>> GetProductPriceHistoryAsync(int productId);
-        Task LogProductActivityAsync(int productId, string action, string? previousValue, string? newValue, string? userId = null);
+        Task<IEnumerable<object>> GetProductPriceHistoryAsync(Guid productId);
+        Task LogProductActivityAsync(Guid productId, string action, string? previousValue, string? newValue, Guid? userId = null);
 
         // Public Menu Operations (Slug-based)
         Task<ResponseDTO<IEnumerable<ProductDto>>> GetActiveProductsBySlugAsync(string slug);
         Task<ResponseDTO<MenuResponseDto>> GetProductsForMenuBySlugAsync(string slug);
-        Task<ResponseDTO<IEnumerable<ProductDto>>> GetProductsByCategoryAndSlugAsync(int categoryId, string slug);
-        Task<ResponseDTO<ProductDto?>> GetProductByIdAndSlugAsync(int id, string slug);
+        Task<ResponseDTO<IEnumerable<ProductDto>>> GetProductsByCategoryAndSlugAsync(Guid categoryId, string slug);
+        Task<ResponseDTO<ProductDto?>> GetProductByIdAndSlugAsync(Guid id, string slug);
     }
 }
 

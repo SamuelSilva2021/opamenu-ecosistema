@@ -19,7 +19,7 @@ public class AddonRepository(OpamenuDbContext context) : OpamenuRepository<Addon
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<AddonEntity>> GetByAddonGroupIdAsync(int addonGroupId)
+    public async Task<IEnumerable<AddonEntity>> GetByAddonGroupIdAsync(Guid addonGroupId)
     {
         return await _dbSet
             .Where(a => a.AddonGroupId == addonGroupId)
@@ -29,7 +29,7 @@ public class AddonRepository(OpamenuDbContext context) : OpamenuRepository<Addon
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<AddonEntity>> GetActiveByAddonGroupIdAsync(int addonGroupId)
+    public async Task<IEnumerable<AddonEntity>> GetActiveByAddonGroupIdAsync(Guid addonGroupId)
     {
         return await _dbSet
             .Where(a => a.AddonGroupId == addonGroupId && a.IsActive)
@@ -39,7 +39,7 @@ public class AddonRepository(OpamenuDbContext context) : OpamenuRepository<Addon
             .ToListAsync();
     }
 
-    public async Task<bool> IsNameUniqueInGroupAsync(string name, int addonGroupId, int? excludeId = null)
+    public async Task<bool> IsNameUniqueInGroupAsync(string name, Guid addonGroupId, Guid? excludeId = null)
     {
         var query = _dbSet.Where(a => a.Name.ToLower() == name.ToLower() && 
                                      a.AddonGroupId == addonGroupId);
@@ -50,7 +50,7 @@ public class AddonRepository(OpamenuDbContext context) : OpamenuRepository<Addon
         return !await query.AnyAsync();
     }
 
-    public async Task<int> GetNextDisplayOrderAsync(int addonGroupId)
+    public async Task<int> GetNextDisplayOrderAsync(Guid addonGroupId)
     {
         var maxOrder = await _dbSet
             .Where(a => a.AddonGroupId == addonGroupId)

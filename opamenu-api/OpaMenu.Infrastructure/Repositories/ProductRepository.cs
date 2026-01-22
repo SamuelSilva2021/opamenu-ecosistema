@@ -18,7 +18,7 @@ public class ProductRepository(
             .OrderBy(p => p.DisplayOrder)
             .ToListAsync();
 
-    public override async Task<ProductEntity?> GetByIdAsync(int id, Guid tenantId) =>
+    public override async Task<ProductEntity?> GetByIdAsync(Guid id, Guid tenantId) =>
         await _dbSet
             .Where(p => p.TenantId == tenantId)
             .Include(p => p.Category)
@@ -33,7 +33,7 @@ public class ProductRepository(
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<ProductEntity>> GetProductsByCategoryAsync(int categoryId)
+    public async Task<IEnumerable<ProductEntity>> GetProductsByCategoryAsync(Guid categoryId)
     {
         return await _dbSet
             .Where(p => p.CategoryId == categoryId)
@@ -42,7 +42,7 @@ public class ProductRepository(
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<ProductEntity>> GetActiveProductsByCategoryAsync(int categoryId)
+    public async Task<IEnumerable<ProductEntity>> GetActiveProductsByCategoryAsync(Guid categoryId)
     {
         return await _dbSet
             .Where(p => p.CategoryId == categoryId && p.IsActive)
@@ -51,7 +51,7 @@ public class ProductRepository(
             .ToListAsync();
     }
 
-    public async Task<int> GetNextDisplayOrderAsync(int categoryId)
+    public async Task<int> GetNextDisplayOrderAsync(Guid categoryId)
     {
         var maxOrder = await _dbSet
             .Where(p => p.CategoryId == categoryId)
@@ -60,7 +60,7 @@ public class ProductRepository(
         return (maxOrder ?? 0) + 1;
     }
 
-    public async Task UpdateDisplayOrdersAsync(Dictionary<int, int> productDisplayOrders)
+    public async Task UpdateDisplayOrdersAsync(Dictionary<Guid, int> productDisplayOrders)
     {
         foreach (var item in productDisplayOrders)
         {
@@ -75,7 +75,7 @@ public class ProductRepository(
         await _context.SaveChangesAsync();
     }
 
-    public async Task<bool> IsNameUniqueInCategoryAsync(string name, int categoryId, int? excludeId = null)
+    public async Task<bool> IsNameUniqueInCategoryAsync(string name, Guid categoryId, Guid? excludeId = null)
     {
         var query = _dbSet.Where(p => 
             p.Name.ToLower() == name.ToLower() && 
@@ -89,7 +89,7 @@ public class ProductRepository(
         return !await query.AnyAsync();
     }
 
-    public async Task<bool> HasProductsInCategoryAsync(int categoryId)
+    public async Task<bool> HasProductsInCategoryAsync(Guid categoryId)
     {
         return await _dbSet.AnyAsync(p => p.CategoryId == categoryId);
     }
@@ -120,7 +120,7 @@ public class ProductRepository(
             .ToListAsync();
     }
 
-    public async Task ReorderProductsAsync(Dictionary<int, int> productOrders)
+    public async Task ReorderProductsAsync(Dictionary<Guid, int> productOrders)
     {
         foreach (var productOrder in productOrders)
         {
@@ -145,7 +145,7 @@ public class ProductRepository(
             .ToListAsync();
     }
 
-    public async Task<ProductEntity?> GetProductWithDetailsAsync(int id, Guid tenantId)
+    public async Task<ProductEntity?> GetProductWithDetailsAsync(Guid id, Guid tenantId)
     {
         return await _dbSet
             .Include(p => p.Category)

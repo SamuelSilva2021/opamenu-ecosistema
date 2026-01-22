@@ -11,7 +11,7 @@ namespace OpaMenu.Domain.Interfaces
     {
         Task<IEnumerable<CustomerEntity>> GetByTenantIdAsync(Guid tenantId);
         Task<CustomerEntity?> GetByPhoneAsync(Guid tenantId, string phone);
-        Task<CustomerEntity?> CreateAsync(CustomerEntity entity);
+        Task<CustomerEntity> CreateAsync(CustomerEntity entity);
         Task<CustomerEntity?> UpdateAsync(CustomerEntity entity);
         Task<CustomerEntity?> GetByIdAsync(Guid id);
     }

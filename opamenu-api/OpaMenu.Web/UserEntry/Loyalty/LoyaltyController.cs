@@ -66,7 +66,7 @@ public class LoyaltyController(
 
     [HttpPatch("program/{id}/toggle-status")]
     [Authorize]
-    public async Task<ActionResult> ToggleProgramStatus(int id, [FromQuery] bool status)
+    public async Task<ActionResult> ToggleProgramStatus(Guid id, [FromQuery] bool status)
     {
         var tenantId = _currentUserService.GetTenantGuid();
         if (!tenantId.HasValue)

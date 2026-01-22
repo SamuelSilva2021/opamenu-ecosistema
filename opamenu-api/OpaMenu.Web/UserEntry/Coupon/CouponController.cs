@@ -23,7 +23,7 @@ public class CouponController(ICouponService couponService) : BaseController
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<ResponseDTO<CouponDto?>>> GetById(int id)
+    public async Task<ActionResult<ResponseDTO<CouponDto?>>> GetById(Guid id)
     {
         var result = await _couponService.GetByIdAsync(id);
         return BuildResponse(result);
@@ -37,14 +37,14 @@ public class CouponController(ICouponService couponService) : BaseController
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<ResponseDTO<CouponDto>>> Update(int id, UpdateCouponRequestDto dto)
+    public async Task<ActionResult<ResponseDTO<CouponDto>>> Update(Guid id, UpdateCouponRequestDto dto)
     {
         var result = await _couponService.UpdateAsync(id, dto);
         return BuildResponse(result);
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult<ResponseDTO<bool>>> Delete(int id)
+    public async Task<ActionResult<ResponseDTO<bool>>> Delete(Guid id)
     {
         var result = await _couponService.DeleteAsync(id);
         return BuildResponse(result);

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using OpaMenu.Infrastructure.Shared.Enums;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Infrastructure.Shared.Entities;
 

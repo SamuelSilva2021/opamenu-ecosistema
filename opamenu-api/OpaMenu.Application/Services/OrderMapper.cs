@@ -1,11 +1,12 @@
 ﻿using OpaMenu.Application.Services.Interfaces;
 using OpaMenu.Domain.DTOs;
 using OpaMenu.Infrastructure.Shared.Entities;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Application.Services;
 
 /// <summary>
-/// ImplementaÃ§Ã£o do mapeador para entidades Order e DTOs
+/// Implementação do mapeador para entidades Order e DTOs
 /// </summary>
 public class OrderMapper : IOrderMapper
 {
@@ -64,8 +65,8 @@ public class OrderMapper : IOrderMapper
         {
             CustomerName = request.CustomerName,
             CustomerPhone = request.CustomerPhone,
-            Status = OrderStatus.Pending,
-            Total = 0, // SerÃ¡ calculado apÃ³s adicionar os itens
+            Status = EOrderStatus.Pending,
+            Total = 0,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             Notes = request.Notes,
@@ -77,7 +78,7 @@ public class OrderMapper : IOrderMapper
         {
             foreach (var itemRequest in request.Items)
             {
-                var orderItem = MapToOrderItemEntity(itemRequest, 0); // OrderId serÃ¡ definido apÃ³s salvar
+                var orderItem = MapToOrderItemEntity(itemRequest, order.Id);
                 order.Items.Add(orderItem);
             }
         }
@@ -151,7 +152,7 @@ public class OrderMapper : IOrderMapper
     /// </summary>
     /// <param name="orderItemAddon">Entidade OrderItemAddon</param>
     /// <returns>OrderItemAddonResponseDto mapeado</returns>
-    public OrderItemAddonResponseDto MapToOrderItemAddonDto(OrderItemAddon orderItemAddon)
+    public OrderItemAddonResponseDto MapToOrderItemAddonDto(OrderItemAddonEntity orderItemAddon)
     {
         if (orderItemAddon == null)
             throw new ArgumentNullException(nameof(orderItemAddon));
@@ -172,7 +173,7 @@ public class OrderMapper : IOrderMapper
     /// </summary>
     /// <param name="orderItemAddons">ColeÃ§Ã£o de entidades OrderItemAddon</param>
     /// <returns>ColeÃ§Ã£o de OrderItemAddonResponseDto mapeados</returns>
-    public IEnumerable<OrderItemAddonResponseDto> MapToOrderItemAddonDtos(IEnumerable<OrderItemAddon> orderItemAddons)
+    public IEnumerable<OrderItemAddonResponseDto> MapToOrderItemAddonDtos(IEnumerable<OrderItemAddonEntity> orderItemAddons)
     {
         if (orderItemAddons == null)
             return Enumerable.Empty<OrderItemAddonResponseDto>();
@@ -186,7 +187,7 @@ public class OrderMapper : IOrderMapper
     /// <param name="request">Request de criaÃ§Ã£o do item</param>
     /// <param name="orderId">ID do pedido</param>
     /// <returns>Entidade OrderItem</returns>
-    public OrderItemEntity MapToOrderItemEntity(CreateOrderItemRequestDto request, int orderId)
+    public OrderItemEntity MapToOrderItemEntity(CreateOrderItemRequestDto request, Guid orderId)
     {
         if (request == null)
             throw new ArgumentNullException(nameof(request));
@@ -196,10 +197,10 @@ public class OrderMapper : IOrderMapper
             OrderId = orderId,
             ProductId = request.ProductId,
             Quantity = request.Quantity,
-            UnitPrice = 0, // SerÃ¡ definido no serviÃ§o baseado no produto
-            Subtotal = 0, // SerÃ¡ calculado no serviÃ§o
+            UnitPrice = 0,
+            Subtotal = 0, 
             Notes = request.Notes,
-            Addons = new List<OrderItemAddon>()
+            Addons = new List<OrderItemAddonEntity>()
         };
 
         // Mapear addons
@@ -207,13 +208,13 @@ public class OrderMapper : IOrderMapper
         {
             foreach (var addonRequest in request.Addons)
             {
-                var addon = new OrderItemAddon
+                var addon = new OrderItemAddonEntity
                 {
-                    OrderItemId = 0, // SerÃ¡ definido apÃ³s salvar o OrderItem
+                    OrderItemId = orderId, 
                     AddonId = addonRequest.AddonId,
                     Quantity = addonRequest.Quantity,
-                    UnitPrice = 0, // SerÃ¡ calculado no serviÃ§o baseado no Addon
-                    Subtotal = 0 // SerÃ¡ calculado no serviÃ§o
+                    UnitPrice = 0,
+                    Subtotal = 0 
                 };
                 orderItem.Addons.Add(addon);
             }
@@ -228,7 +229,7 @@ public class OrderMapper : IOrderMapper
     /// <param name="requests">ColeÃ§Ã£o de requests de criaÃ§Ã£o</param>
     /// <param name="orderId">ID do pedido</param>
     /// <returns>ColeÃ§Ã£o de entidades OrderItem</returns>
-    public IEnumerable<OrderItemEntity> MapToOrderItemEntities(IEnumerable<CreateOrderItemRequestDto> requests, int orderId)
+    public IEnumerable<OrderItemEntity> MapToOrderItemEntities(IEnumerable<CreateOrderItemRequestDto> requests, Guid orderId)
     {
         if (requests == null)
             return Enumerable.Empty<OrderItemEntity>();

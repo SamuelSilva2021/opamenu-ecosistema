@@ -14,7 +14,7 @@ namespace OpaMenu.Infrastructure.Repositories
     {
         private readonly OpamenuDbContext _context = context;
 
-        public async Task<CustomerEntity?> CreateAsync(CustomerEntity entity)
+        public async Task<CustomerEntity> CreateAsync(CustomerEntity entity)
         {
             var createdEntity = await _context.Customers.AddAsync(entity);
             await _context.SaveChangesAsync();

@@ -4,6 +4,7 @@ using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Domain.Interfaces;
 using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Commons.Api.Commons;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Application.Services;
 
@@ -42,16 +43,16 @@ public class DashboardService(
                 o.TenantId == tenantId && 
                 o.CreatedAt >= startOfMonth && 
                 o.CreatedAt <= endOfMonth &&
-                o.Status != OrderStatus.Cancelled && 
-                o.Status != OrderStatus.Rejected)).ToList();
+                o.Status != EOrderStatus.Cancelled && 
+                o.Status != EOrderStatus.Rejected)).ToList();
                 
             // Fetch last month orders
             var lastMonthOrders = (await _orderRepository.FindAsync(o => 
                 o.TenantId == tenantId && 
                 o.CreatedAt >= startOfLastMonth && 
                 o.CreatedAt <= endOfLastMonth &&
-                o.Status != OrderStatus.Cancelled && 
-                o.Status != OrderStatus.Rejected)).ToList();
+                o.Status != EOrderStatus.Cancelled && 
+                o.Status != EOrderStatus.Rejected)).ToList();
                 
             // Fetch today orders
             var todayOrders = currentMonthOrders
@@ -63,8 +64,8 @@ public class DashboardService(
                 o.TenantId == tenantId && 
                 o.CreatedAt >= startOfYesterday && 
                 o.CreatedAt <= endOfYesterday &&
-                o.Status != OrderStatus.Cancelled && 
-                o.Status != OrderStatus.Rejected)).ToList();
+                o.Status != EOrderStatus.Cancelled && 
+                o.Status != EOrderStatus.Rejected)).ToList();
                 
             // Active Customers (Total)
             var allCustomers = await _customerRepository.GetByTenantIdAsync(tenantId.Value);

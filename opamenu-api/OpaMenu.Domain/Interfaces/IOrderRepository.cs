@@ -1,5 +1,6 @@
 ﻿
 using OpaMenu.Infrastructure.Shared.Entities;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Domain.Interfaces;
 
@@ -13,7 +14,7 @@ public interface IOrderRepository : IRepository<OrderEntity>
     /// </summary>
     /// <param name="productId">ID do produto</param>
     /// <returns>ColeÃ§Ã£o de pedidos ativos com o produto</returns>
-    Task<IEnumerable<OrderEntity>> GetActiveOrdersWithProductAsync(int productId);
+    Task<IEnumerable<OrderEntity>> GetActiveOrdersWithProductAsync(Guid productId);
 
     /// <summary>
     /// ObtÃ©m pedidos por ID do cliente e ID do locatÃ¡rio
@@ -27,7 +28,7 @@ public interface IOrderRepository : IRepository<OrderEntity>
     /// </summary>
     /// <param name="status">Status do pedido</param>
     /// <returns>ColeÃ§Ã£o de pedidos com o status especificado</returns>
-    Task<IEnumerable<OrderEntity>> GetOrdersByStatusAsync(OrderStatus status);
+    Task<IEnumerable<OrderEntity>> GetOrdersByStatusAsync(EOrderStatus status);
     
     /// <summary>
     /// ObtÃ©m pedidos de um perÃ­odo especÃ­fico
@@ -42,7 +43,7 @@ public interface IOrderRepository : IRepository<OrderEntity>
     /// </summary>
     /// <param name="productAddonGroupId">ID do ProductAddonGroup</param>
     /// <returns>ColeÃ§Ã£o de pedidos ativos com o ProductAddonGroup</returns>
-    Task<IEnumerable<OrderEntity>> GetActiveOrdersWithProductAddonGroupAsync(int productAddonGroupId);
+    Task<IEnumerable<OrderEntity>> GetActiveOrdersWithProductAddonGroupAsync(Guid productAddonGroupId);
 
     /// <summary>
     /// ObtÃ©m pedidos paginados por TenantId com todos os detalhes (Items, Product, StatusHistory, Rejection)

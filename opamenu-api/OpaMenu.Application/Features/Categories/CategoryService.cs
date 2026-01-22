@@ -80,7 +80,7 @@ public class CategoryService(
         }
     }
 
-    public async Task<ResponseDTO<CategoryResponseDto?>> GetCategoryByIdAsync(int id)
+    public async Task<ResponseDTO<CategoryResponseDto?>> GetCategoryByIdAsync(Guid id)
     {
         try
         {
@@ -130,7 +130,7 @@ public class CategoryService(
         
     }
 
-    public async Task<ResponseDTO<CategoryResponseDto>> UpdateCategoryAsync(int id, UpdateCategoryRequestDto updateDto)
+    public async Task<ResponseDTO<CategoryResponseDto>> UpdateCategoryAsync(Guid id, UpdateCategoryRequestDto updateDto)
     {
         try
         {
@@ -161,7 +161,7 @@ public class CategoryService(
         
     }
 
-    public async Task<ResponseDTO<bool>> DeleteCategoryAsync(int id)
+    public async Task<ResponseDTO<bool>> DeleteCategoryAsync(Guid id)
     {
         try
         {
@@ -186,9 +186,9 @@ public class CategoryService(
         
     }
 
-    public async Task<bool> CanDeleteCategoryAsync(int id) => !await _categoryRepository.HasProductsAsync(id);
+    public async Task<bool> CanDeleteCategoryAsync(Guid id) => !await _categoryRepository.HasProductsAsync(id);
 
-    public async Task<ResponseDTO<CategoryResponseDto>> ToggleCategoryActiveAsync(int id)
+    public async Task<ResponseDTO<CategoryResponseDto>> ToggleCategoryActiveAsync(Guid id)
     {
         try
         {

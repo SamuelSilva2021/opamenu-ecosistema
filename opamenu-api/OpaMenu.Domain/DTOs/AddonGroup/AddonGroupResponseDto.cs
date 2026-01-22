@@ -1,5 +1,5 @@
 ﻿using OpaMenu.Domain.DTOs.Addons;
-using OpaMenu.Infrastructure.Shared.Enums;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Domain.DTOs.AddonGroup
 {
@@ -8,7 +8,7 @@ namespace OpaMenu.Domain.DTOs.AddonGroup
     /// </summary>
     public class AddonGroupResponseDto
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
         public EAddonGroupType Type { get; set; }

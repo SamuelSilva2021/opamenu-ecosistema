@@ -11,18 +11,8 @@ namespace OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts
     /// <summary>
     /// Entidade que representa um usuário no sistema de controle de acesso
     /// </summary>
-    public class UserAccountEntity
+    public class UserAccountEntity: BaseEntity
     {
-        /// <summary>
-        /// ID único do usuário
-        /// </summary>
-        public Guid Id { get; set; }
-
-        /// <summary>
-        /// ID do tenant ao qual o usuário pertence
-        /// </summary>
-        public Guid? TenantId { get; set; }
-
         /// <summary>
         /// Nome de usuário (username)
         /// </summary>
@@ -70,16 +60,6 @@ namespace OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts
         /// Se o email foi verificado
         /// </summary>
         public bool IsEmailVerified { get; set; } = false;
-
-        /// <summary>
-        /// Data de criação
-        /// </summary>
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        /// <summary>
-        /// Data de atualização
-        /// </summary>
-        public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Data de exclusão (soft delete)

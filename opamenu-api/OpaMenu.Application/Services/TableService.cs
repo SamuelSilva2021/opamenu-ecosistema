@@ -57,7 +57,7 @@ public class TableService : ITableService
         }
     }
 
-    public async Task<ResponseDTO<TableResponseDto>> GetByIdAsync(int id)
+    public async Task<ResponseDTO<TableResponseDto>> GetByIdAsync(Guid id)
     {
         try
         {
@@ -99,7 +99,7 @@ public class TableService : ITableService
         }
     }
 
-    public async Task<ResponseDTO<TableResponseDto>> UpdateAsync(int id, UpdateTableRequestDto dto)
+    public async Task<ResponseDTO<TableResponseDto>> UpdateAsync(Guid id, UpdateTableRequestDto dto)
     {
         try
         {
@@ -128,7 +128,7 @@ public class TableService : ITableService
         }
     }
 
-    public async Task<ResponseDTO<bool>> DeleteAsync(int id)
+    public async Task<ResponseDTO<bool>> DeleteAsync(Guid id)
     {
         try
         {
@@ -148,7 +148,7 @@ public class TableService : ITableService
         }
     }
     
-    public async Task<ResponseDTO<string>> GenerateQrCodeAsync(int id)
+    public async Task<ResponseDTO<string>> GenerateQrCodeAsync(Guid id)
     {
         try
         {

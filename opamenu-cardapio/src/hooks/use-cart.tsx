@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useMemo, createContext, useContext, ReactNode } from 'react';
 import { CartItem } from '@/types/cart';
-import { Product, ProductSelection, Coupon } from '@/types/api';
+import { Product, ProductSelection, Coupon, EDiscountType } from '@/types/api';
 
 export interface CartContextType {
   items: CartItem[];
@@ -11,10 +11,10 @@ export interface CartContextType {
   coupon: Coupon | null;
   addToCart: (product: Product, quantity?: number) => void;
   addProductSelection: (selection: ProductSelection) => void;
-  removeFromCart: (productId: number) => void;
-  updateQuantity: (productId: number, quantity: number) => void;
-  increaseQuantity: (productId: number) => void;
-  decreaseQuantity: (productId: number) => void;
+  removeFromCart: (itemId: number | string) => void;
+  updateQuantity: (itemId: number | string, quantity: number) => void;
+  increaseQuantity: (itemId: number | string) => void;
+  decreaseQuantity: (itemId: number | string) => void;
   clearCart: () => void;
   getItemQuantity: (productId: number) => number;
   applyCoupon: (coupon: Coupon) => void;
@@ -36,6 +36,22 @@ const calculateUnitPrice = (basePrice: number, selectedAddons: any[] = []): numb
   return basePrice + addonsPrice;
 };
 
+// Helper para comparar addons
+const areAddonsEqual = (addons1: any[] = [], addons2: any[] = []) => {
+  if (addons1.length !== addons2.length) return false;
+  
+  // Ordenar para garantir comparação consistente
+  const sorted1 = [...addons1].sort((a, b) => a.addon.id - b.addon.id);
+  const sorted2 = [...addons2].sort((a, b) => a.addon.id - b.addon.id);
+  
+  return sorted1.every((item, index) => {
+    const item2 = sorted2[index];
+    return item.addon.id === item2.addon.id && item.quantity === item2.quantity;
+  });
+};
+
+const generateCartItemId = () => Math.random().toString(36).substr(2, 9);
+
 export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: string }) => {
   const [items, setItems] = useState<CartItem[]>([]);
   const [coupon, setCoupon] = useState<Coupon | null>(null);
@@ -49,7 +65,12 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
       const savedCart = localStorage.getItem(storageKey);
       if (savedCart) {
         const parsedCart = JSON.parse(savedCart);
-        setItems(parsedCart);
+        // Migração: garantir que itens antigos tenham ID se possível
+        const migratedCart = parsedCart.map((item: CartItem) => ({
+            ...item,
+            cartItemId: item.cartItemId || generateCartItemId()
+        }));
+        setItems(migratedCart);
       } else {
         // Se mudou de loja ou não tem carrinho salvo, inicia vazio
         setItems([]);
@@ -72,6 +93,14 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
     }
   }, [items, storageKey, slug, isInitialized]);
 
+  // Helper para encontrar item
+  const findItemIndex = useCallback((currentItems: CartItem[], itemId: number | string) => {
+    if (typeof itemId === 'string') {
+        return currentItems.findIndex(item => item.cartItemId === itemId);
+    }
+    return currentItems.findIndex(item => item.product.id === itemId);
+  }, []);
+
   // Adicionar produto simples ao carrinho (sem adicionais)
   const addToCart = useCallback((product: Product, quantity: number = 1) => {
     if (quantity <= 0) return;
@@ -81,7 +110,7 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
 
     setItems(currentItems => {
       const existingItemIndex = currentItems.findIndex(item => 
-        item.product.id === product.id && !item.selectedAddons?.length
+        item.product.id === product.id && (!item.selectedAddons || item.selectedAddons.length === 0)
       );
       
       if (existingItemIndex >= 0) {
@@ -98,6 +127,7 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
       } else {
         // Adicionar novo item
         const newItem: CartItem = {
+          cartItemId: generateCartItemId(),
           product,
           quantity,
           selectedAddons: [],
@@ -119,9 +149,27 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
     const totalPrice = unitPrice * quantity;
 
     setItems(currentItems => {
-      // Para produtos com adicionais, sempre criar um novo item
-      // (porque diferentes combinações de adicionais são itens separados)
+        // Verificar se já existe um item com os mesmos adicionais
+        const existingItemIndex = currentItems.findIndex(item => 
+            item.product.id === product.id && 
+            areAddonsEqual(item.selectedAddons, selectedAddons)
+        );
+
+        if (existingItemIndex >= 0) {
+            // Atualizar item existente
+            return currentItems.map((item, index) =>
+              index === existingItemIndex
+                ? { 
+                    ...item, 
+                    quantity: item.quantity + quantity,
+                    totalPrice: item.unitPrice * (item.quantity + quantity)
+                  }
+                : item
+            );
+        }
+
       const newItem: CartItem = {
+        cartItemId: generateCartItemId(),
         product,
         quantity,
         selectedAddons,
@@ -134,52 +182,67 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
   }, []);
 
   // Remover produto do carrinho
-  const removeFromCart = useCallback((productId: number) => {
-    setItems(currentItems => 
-      currentItems.filter(item => item.product.id !== productId)
-    );
+  const removeFromCart = useCallback((itemId: number | string) => {
+    setItems(currentItems => {
+        if (typeof itemId === 'string') {
+            return currentItems.filter(item => item.cartItemId !== itemId);
+        }
+        return currentItems.filter(item => item.product.id !== itemId);
+    });
   }, []);
 
   // Atualizar quantidade
-  const updateQuantity = useCallback((productId: number, quantity: number) => {
+  const updateQuantity = useCallback((itemId: number | string, quantity: number) => {
     if (quantity <= 0) {
-      removeFromCart(productId);
+      removeFromCart(itemId);
       return;
     }
 
     setItems(currentItems =>
-      currentItems.map(item =>
-        item.product.id === productId
+      currentItems.map(item => {
+        const isTarget = typeof itemId === 'string' 
+            ? item.cartItemId === itemId 
+            : item.product.id === itemId;
+
+        return isTarget
           ? { 
               ...item, 
               quantity,
               totalPrice: item.unitPrice * quantity
             }
-          : item
-      )
+          : item;
+      })
     );
   }, [removeFromCart]);
 
   // Aumentar quantidade
-  const increaseQuantity = useCallback((productId: number) => {
+  const increaseQuantity = useCallback((itemId: number | string) => {
     setItems(currentItems =>
-      currentItems.map(item =>
-        item.product.id === productId
+      currentItems.map(item => {
+        const isTarget = typeof itemId === 'string' 
+            ? item.cartItemId === itemId 
+            : item.product.id === itemId;
+
+        return isTarget
           ? { 
               ...item, 
               quantity: item.quantity + 1,
               totalPrice: item.unitPrice * (item.quantity + 1)
             }
-          : item
-      )
+          : item;
+      })
     );
   }, []);
 
   // Diminuir quantidade
-  const decreaseQuantity = useCallback((productId: number) => {
+  const decreaseQuantity = useCallback((itemId: number | string) => {
     setItems(currentItems =>
       currentItems.map(item => {
-        if (item.product.id === productId) {
+        const isTarget = typeof itemId === 'string' 
+            ? item.cartItemId === itemId 
+            : item.product.id === itemId;
+
+        if (isTarget) {
           const newQuantity = item.quantity - 1;
           if (newQuantity <= 0) {
             return null; // Remover item
@@ -200,56 +263,43 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
     setItems([]);
   }, []);
 
-  // Obter quantidade total de um produto (somando todos os itens com o mesmo produto)
-  const getItemQuantity = useCallback((productId: number): number => {
+  // Obter quantidade de um produto específico
+  const getItemQuantity = useCallback((productId: number) => {
     return items
       .filter(item => item.product.id === productId)
       .reduce((total, item) => total + item.quantity, 0);
   }, [items]);
 
-  // Aplicar cupom
   const applyCoupon = useCallback((newCoupon: Coupon) => {
     setCoupon(newCoupon);
   }, []);
 
-  // Remover cupom
   const removeCoupon = useCallback(() => {
     setCoupon(null);
   }, []);
 
-  // Cálculos de totais
-  const { totalItems, subtotal, discount, totalPrice } = useMemo(() => {
-    const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-    const subtotal = items.reduce((sum, item) => sum + item.totalPrice, 0);
+  // Cálculos totais
+  const totalItems = useMemo(() => {
+    return items.reduce((total, item) => total + item.quantity, 0);
+  }, [items]);
+
+  const subtotal = useMemo(() => {
+    return items.reduce((total, item) => total + item.totalPrice, 0);
+  }, [items]);
+
+  const discount = useMemo(() => {
+    if (!coupon) return 0;
     
-    let discount = 0;
-    if (coupon) {
-      // Validar valor mínimo do pedido
-      if (coupon.minOrderValue && subtotal < coupon.minOrderValue) {
-        // Se o valor do pedido cair abaixo do mínimo, o desconto é 0 (ou poderíamos remover o cupom)
-        // Por enquanto, vamos manter o cupom mas sem aplicar desconto efetivo
-        discount = 0;
-      } else {
-        if (coupon.discountType === 1) { // Porcentagem
-          discount = subtotal * (coupon.discountValue / 100);
-          if (coupon.maxDiscountValue && discount > coupon.maxDiscountValue) {
-            discount = coupon.maxDiscountValue;
-          }
-        } else if (coupon.discountType === 2) { // Valor fixo
-          discount = coupon.discountValue;
-        }
-      }
+    if (coupon.eDiscountType === EDiscountType.Porcentagem) {
+      return (subtotal * coupon.discountValue) / 100;
+    } else {
+      return Math.min(coupon.discountValue, subtotal);
     }
+  }, [subtotal, coupon]);
 
-    // Garantir que desconto não seja maior que subtotal
-    if (discount > subtotal) {
-      discount = subtotal;
-    }
-
-    const totalPrice = Math.max(0, subtotal - discount);
-
-    return { totalItems, subtotal, discount, totalPrice };
-  }, [items, coupon]);
+  const totalPrice = useMemo(() => {
+    return Math.max(0, subtotal - discount);
+  }, [subtotal, discount]);
 
   const value = {
     items,
@@ -267,7 +317,7 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
     clearCart,
     getItemQuantity,
     applyCoupon,
-    removeCoupon
+    removeCoupon,
   };
 
   return (
@@ -277,16 +327,10 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
   );
 };
 
-// Hook para consumir o contexto do carrinho
-export const useCart = (slug?: string): CartContextType => {
+export const useCart = () => {
   const context = useContext(CartContext);
-  
   if (context === undefined) {
-    // Se não estiver dentro do Provider, retorna um erro ou um fallback
-    // Para manter compatibilidade durante a migração, você pode retornar a lógica original aqui se slug for fornecido,
-    // mas o ideal é garantir que o Provider esteja sempre presente.
     throw new Error('useCart must be used within a CartProvider');
   }
-  
   return context;
 };

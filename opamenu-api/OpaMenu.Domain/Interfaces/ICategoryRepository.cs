@@ -7,10 +7,10 @@ namespace OpaMenu.Domain.Interfaces
         Task<IEnumerable<CategoryEntity>> GetActiveCategoriesAsync();
         Task<IEnumerable<CategoryEntity>> GetActiveCategoriesAsync(Guid tenantId);
         Task<IEnumerable<CategoryEntity>> GetCategoriesOrderedAsync(Guid tenantId);
-        Task<bool> HasProductsAsync(int categoryId);
+        Task<bool> HasProductsAsync(Guid categoryId);
         Task<int> GetNextDisplayOrderAsync();
         Task UpdateDisplayOrdersAsync(Dictionary<int, int> categoryDisplayOrders);
-        Task<bool> IsNameUniqueAsync(Guid tenantId, string name, int? excludeId = null);
+        Task<bool> IsNameUniqueAsync(Guid tenantId, string name, Guid? excludeId = null);
     }
 }
 

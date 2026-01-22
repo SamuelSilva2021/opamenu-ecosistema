@@ -1,6 +1,7 @@
 ﻿using OpaMenu.Domain.DTOs;
 using OpaMenu.Domain.DTOs.Product;
 using OpaMenu.Infrastructure.Shared.Entities;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Application.Services.Interfaces;
 
@@ -17,7 +18,7 @@ public interface INotificationService
     /// <summary>
     /// Notifica cliente sobre mudanÃ§a de status do pedido
     /// </summary>
-    Task NotifyOrderStatusChangedAsync(int orderId, OrderStatus oldStatus, OrderStatus newStatus, string? notes = null);
+    Task NotifyEOrderStatusChangedAsync(Guid orderId, EOrderStatus oldStatus, EOrderStatus newStatus, string? notes = null);
 
     /// <summary>
     /// Notifica administradores sobre pedido aceito
@@ -32,12 +33,12 @@ public interface INotificationService
     /// <summary>
     /// Notifica cliente sobre pedido pronto para retirada/entrega
     /// </summary>
-    Task NotifyOrderReadyAsync(int orderId);
+    Task NotifyOrderReadyAsync(Guid orderId);
 
     /// <summary>
     /// Notifica cliente sobre pedido entregue/concluÃ­do
     /// </summary>
-    Task NotifyOrderCompletedAsync(int orderId);
+    Task NotifyOrderCompletedAsync(Guid orderId);
 
     /// <summary>
     /// Notifica todos os clientes sobre atualizaÃ§Ã£o do cardÃ¡pio
@@ -52,17 +53,17 @@ public interface INotificationService
     /// <summary>
     /// Notifica sobre produto removido do cardÃ¡pio
     /// </summary>
-    Task NotifyProductRemovedAsync(int productId, string productName);
+    Task NotifyProductRemovedAsync(Guid productId, string productName);
 
     /// <summary>
     /// Notifica sobre mudanÃ§a de preÃ§o de produto
     /// </summary>
-    Task NotifyProductPriceChangedAsync(int productId, string productName, decimal oldPrice, decimal newPrice);
+    Task NotifyProductPriceChangedAsync(Guid productId, string productName, decimal oldPrice, decimal newPrice);
 
     /// <summary>
     /// Notifica sobre produto indisponÃ­vel
     /// </summary>
-    Task NotifyProductUnavailableAsync(int productId, string productName);
+    Task NotifyProductUnavailableAsync(Guid productId, string productName);
 
     /// <summary>
     /// Envia notificaÃ§Ã£o personalizada para um grupo especÃ­fico

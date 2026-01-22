@@ -45,7 +45,9 @@ namespace OpaMenu.Infrastructure.Shared.Entities
         [Column(name: "updated_at")]
         public DateTime UpdatedAt { get; set; }
 
+        public ICollection<OrderEntity> Orders { get; set; } = new List<OrderEntity>();
         public ICollection<TenantCustomerEntity> TenantCustomers { get; set; } = new List<TenantCustomerEntity>();
+
     }
 }
 

@@ -8,7 +8,7 @@ namespace OpaMenu.Domain.DTOs
         /// <summary>
         /// ID do grupo de adicionais
         /// </summary>
-        public int AddonGroupId { get; set; }
+        public Guid AddonGroupId { get; set; }
         
         /// <summary>
         /// Ordem de exibição deste grupo para o produto

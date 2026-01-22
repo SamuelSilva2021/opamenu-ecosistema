@@ -11,15 +11,15 @@ public interface IAddonService
 {
     // CRUD Operations
     Task<ResponseDTO<IEnumerable<AddonResponseDto>>> GetAllAddonsAsync();
-    Task<IEnumerable<AddonResponseDto>> GetByAddonGroupIdAsync(int addonGroupId);
-    Task<ResponseDTO<AddonResponseDto?>> GetAddonByIdAsync(int id);
+    Task<IEnumerable<AddonResponseDto>> GetByAddonGroupIdAsync(Guid addonGroupId);
+    Task<ResponseDTO<AddonResponseDto?>> GetAddonByIdAsync(Guid id);
     Task<ResponseDTO<AddonResponseDto?>> CreateAddonAsync(CreateAddonRequestDto request);
-    Task<ResponseDTO<AddonResponseDto>> UpdateAddonAsync(int id, UpdateAddonRequestDto request);
-    Task<ResponseDTO<bool>> DeleteAddonAsync(int id);
+    Task<ResponseDTO<AddonResponseDto>> UpdateAddonAsync(Guid id, UpdateAddonRequestDto request);
+    Task<ResponseDTO<bool>> DeleteAddonAsync(Guid id);
     // Business Operations
-    Task<ResponseDTO<AddonResponseDto>> ToggleAddonStatusAsync(int id);
+    Task<ResponseDTO<AddonResponseDto>> ToggleAddonStatusAsync(Guid id);
 
     // Validation
-    Task<bool> IsNameUniqueInGroupAsync(string name, int addonGroupId, int? excludeId = null);
-    Task<bool> CanDeleteAddonAsync(int id);
+    Task<bool> IsNameUniqueInGroupAsync(string name, Guid addonGroupId, Guid? excludeId = null);
+    Task<bool> CanDeleteAddonAsync(Guid id);
 }

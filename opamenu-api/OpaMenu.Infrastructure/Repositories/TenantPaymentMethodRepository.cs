@@ -16,7 +16,7 @@ public class TenantPaymentMethodRepository(OpamenuDbContext context) : BaseRepos
             .ToListAsync();
     }
 
-    public async Task<TenantPaymentMethodEntity?> GetByIdWithPaymentMethodAsync(int id, Guid tenantId)
+    public async Task<TenantPaymentMethodEntity?> GetByIdWithPaymentMethodAsync(Guid id, Guid tenantId)
     {
         return await _dbSet
             .Include(x => x.PaymentMethod)

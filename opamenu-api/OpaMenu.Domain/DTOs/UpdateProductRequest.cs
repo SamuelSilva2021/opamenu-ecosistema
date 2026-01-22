@@ -16,7 +16,7 @@ namespace OpaMenu.Domain.DTOs
         public decimal Price { get; set; }
         
         [Required]
-        public int CategoryId { get; set; }
+        public Guid CategoryId { get; set; }
         
         public string? ImageUrl { get; set; }
         

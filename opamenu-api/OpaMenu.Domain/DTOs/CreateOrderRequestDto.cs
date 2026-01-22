@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using OpaMenu.Infrastructure.Shared.Enums;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Domain.DTOs
 {
@@ -23,13 +23,15 @@ namespace OpaMenu.Domain.DTOs
 
         public EOrderType OrderType { get; set; } = EOrderType.Delivery;
 
-        public int? TableId { get; set; }
+        public Guid? TableId { get; set; }
 
         [StringLength(1000)]
         public string? Notes { get; set; }
 
         [StringLength(50)]
         public string? CouponCode { get; set; }
+
+        public decimal? DeliveryFee { get; set; }
 
         [Required]
         [MinLength(1, ErrorMessage = "At least one item is required")]

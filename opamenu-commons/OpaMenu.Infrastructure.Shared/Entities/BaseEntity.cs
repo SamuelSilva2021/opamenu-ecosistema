@@ -8,7 +8,7 @@ public abstract class BaseEntity
     /// Primary key da entidade.
     /// </summary>
     [Column(name: "id")]
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     /// <summary>
     /// Data de criação da entidade.
     /// </summary>

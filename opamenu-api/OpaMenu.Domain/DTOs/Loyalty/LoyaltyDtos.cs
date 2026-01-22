@@ -5,7 +5,7 @@ namespace OpaMenu.Domain.DTOs.Loyalty;
 
 public class LoyaltyProgramDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
     public decimal PointsPerCurrency { get; set; }
@@ -35,7 +35,7 @@ public class CustomerLoyaltySummaryDto
 
 public class LoyaltyTransactionDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public int Points { get; set; }
     public string Type { get; set; } = null!;
     public string? Description { get; set; }

@@ -41,7 +41,7 @@ public partial class Order
 
     public virtual OrderRejection? OrderRejection { get; set; }
 
-    public virtual ICollection<OrderStatusHistory> OrderStatusHistories { get; set; } = new List<OrderStatusHistory>();
+    public virtual ICollection<EOrderStatusHistory> EOrderStatusHistories { get; set; } = new List<EOrderStatusHistory>();
 
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 }

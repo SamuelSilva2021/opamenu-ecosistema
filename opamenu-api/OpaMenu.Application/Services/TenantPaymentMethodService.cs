@@ -30,7 +30,7 @@ public class TenantPaymentMethodService(
         }
     }
 
-    public async Task<ResponseDTO<TenantPaymentMethodResponseDto?>> GetByIdAsync(int id)
+    public async Task<ResponseDTO<TenantPaymentMethodResponseDto?>> GetByIdAsync(Guid id)
     {
         try
         {
@@ -77,7 +77,7 @@ public class TenantPaymentMethodService(
         }
     }
 
-    public async Task<ResponseDTO<TenantPaymentMethodResponseDto>> UpdateAsync(int id, UpdateTenantPaymentMethodRequestDto dto)
+    public async Task<ResponseDTO<TenantPaymentMethodResponseDto>> UpdateAsync(Guid id, UpdateTenantPaymentMethodRequestDto dto)
     {
         try
         {
@@ -102,7 +102,7 @@ public class TenantPaymentMethodService(
         }
     }
 
-    public async Task<ResponseDTO<bool>> DeleteAsync(int id)
+    public async Task<ResponseDTO<bool>> DeleteAsync(Guid id)
     {
         try
         {
@@ -118,7 +118,7 @@ public class TenantPaymentMethodService(
         }
     }
 
-    public async Task<ResponseDTO<bool>> ToggleActiveAsync(int id)
+    public async Task<ResponseDTO<bool>> ToggleActiveAsync(Guid id)
     {
         try
         {
@@ -139,7 +139,7 @@ public class TenantPaymentMethodService(
         }
     }
     
-    public async Task<ResponseDTO<bool>> ReorderAsync(List<int> orderedIds)
+    public async Task<ResponseDTO<bool>> ReorderAsync(List<Guid> orderedIds)
     {
         try
         {

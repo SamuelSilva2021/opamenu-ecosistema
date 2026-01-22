@@ -1,4 +1,4 @@
-﻿namespace OpaMenu.Infrastructure.Shared.Enums;
+﻿namespace OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 /// <summary>
 /// Tipos de grupos de adicionais disponÃ­veis

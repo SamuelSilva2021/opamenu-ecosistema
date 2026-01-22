@@ -1,16 +1,17 @@
+using AutoMapper;
 using Microsoft.Extensions.Logging;
 using OpaMenu.Application.DTOs;
 using OpaMenu.Application.Services.Interfaces;
+using OpaMenu.Commons.Api.Commons;
+using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Domain.DTOs;
 using OpaMenu.Domain.DTOs.Addons;
 using OpaMenu.Domain.DTOs.Order;
-using OpaMenu.Infrastructure.Shared.Entities;
-using OpaMenu.Infrastructure.Shared.Enums;
 using OpaMenu.Domain.Interfaces;
+using OpaMenu.Infrastructure.Shared.Entities;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 using OpaMenu.Web.Models.DTOs;
 using System.Threading.Tasks;
-using OpaMenu.Commons.Api.DTOs;
-using OpaMenu.Commons.Api.Commons;
 
 namespace OpaMenu.Application.Services;
 
@@ -29,7 +30,8 @@ public class OrderService(
     ICustomerRepository customerRepository,
     ITenantRepository tenantRepository,
     ITableRepository tableRepository,
-    ILoyaltyService loyaltyService
+    ILoyaltyService loyaltyService,
+    IMapper mapper
     ) : IOrderService
 {
     private readonly IOrderRepository _orderRepository = orderRepository;
@@ -44,6 +46,7 @@ public class OrderService(
     private readonly ITableRepository _tableRepository = tableRepository;
     private readonly ILoyaltyService _loyaltyService = loyaltyService;
     private readonly ILogger<OrderService> _logger = logger;
+    private readonly IMapper _mapper = mapper;
 
     /// <summary>
     /// ObtÃ©m todos os pedidos
@@ -55,9 +58,10 @@ public class OrderService(
             var orders = await _orderRepository.GetAllByTenantIdWithIncludesAsync(_currentUserService.GetTenantGuid()!.Value,
                 o => o.Items,
                 o => o.StatusHistory,
-                o => o.Rejection);
+                o => o.Rejection!);
 
-            var orderDtos = orders.Select(MapToOrderResponseDto);
+            var orderDtos = _mapper.Map<IEnumerable<OrderResponseDto>>(orders);
+
             return StaticResponseBuilder<IEnumerable<OrderResponseDto>>.BuildOk(orderDtos);
         }
         catch (Exception ex)
@@ -66,23 +70,19 @@ public class OrderService(
             return StaticResponseBuilder<IEnumerable<OrderResponseDto>>.BuildError("Erro interno do servidor");
         }
     }
-
     /// <summary>
     /// ObtÃ©m um pedido por ID
     /// </summary>
-    public async Task<ResponseDTO<OrderResponseDto>> GetOrderByIdAsync(int id)
+    public async Task<ResponseDTO<OrderResponseDto>> GetOrderByIdAsync(Guid id)
     {
         try
         {
             var order = await _orderRepository.GetByIdWithIncludesAsync(id,
                 o => o.Items,
                 o => o.StatusHistory,
-                o => o.Rejection);
+                o => o.Rejection!);
 
-            if (order == null)
-                return StaticResponseBuilder<OrderResponseDto>.BuildNotFound(null!);
-
-            var orderDto = MapToOrderResponseDto(order);
+            var orderDto = _mapper.Map<OrderResponseDto>(order);
             return StaticResponseBuilder<OrderResponseDto>.BuildOk(orderDto);
         }
         catch (Exception ex)
@@ -91,8 +91,7 @@ public class OrderService(
             return StaticResponseBuilder<OrderResponseDto>.BuildError("Erro interno do servidor");
         }
     }
-
-    public async Task<ResponseDTO<OrderResponseDto>> GetPublicOrderByIdAsync(string slug, int id)
+    public async Task<ResponseDTO<OrderResponseDto>> GetPublicOrderByIdAsync(string slug, Guid id)
     {
         try
         {
@@ -100,15 +99,12 @@ public class OrderService(
             if (tenant == null)
                 return StaticResponseBuilder<OrderResponseDto>.BuildOk(new OrderResponseDto { });
 
-            var order = await _orderRepository.GetByIdWithIncludesAsync(id,
+            var order = await _orderRepository.GetByIdWithIncludesAsync(id, o => o.TenantId == tenant.Id,
                 o => o.Items,
                 o => o.StatusHistory,
-                o => o.Rejection);
+                o => o.Rejection!);
 
-            if (order == null || order.TenantId != tenant.Id)
-                return StaticResponseBuilder<OrderResponseDto>.BuildNotFound(new OrderResponseDto { });
-
-            var orderDto = MapToOrderResponseDto(order);
+            var orderDto = _mapper.Map<OrderResponseDto>(order);
             return StaticResponseBuilder<OrderResponseDto>.BuildOk(orderDto);
         }
         catch (Exception ex)
@@ -117,66 +113,43 @@ public class OrderService(
             return StaticResponseBuilder<OrderResponseDto>.BuildError("Erro interno do servidor");
         }
     }
-
-    public async Task<ResponseDTO<IEnumerable<OrderResponseDto?>>> GetPublicOrdersByCustomerIdAsync(string slug, Guid customerId)
+    public async Task<ResponseDTO<IEnumerable<OrderResponseDto>>> GetPublicOrdersByCustomerIdAsync(string slug, Guid customerId)
     {
         try
         {
             var tenant = await _tenantRepository.GetBySlugAsync(slug);
             if (tenant == null)
-                return StaticResponseBuilder<IEnumerable<OrderResponseDto?>>.BuildNotFound([]);
+                return StaticResponseBuilder<IEnumerable<OrderResponseDto>>.BuildOk([]);
 
             var order = await _orderRepository.GetByCustomerIdAndTenantIdAsync(tenant!.Id, customerId);
 
-            if (order == null || !order.Any())
-                return StaticResponseBuilder<IEnumerable<OrderResponseDto?>>.BuildOk([]);
-
-            var orderDtos = order.Select(MapToOrderResponseDto);
-            return StaticResponseBuilder<IEnumerable<OrderResponseDto?>>.BuildOk(orderDtos);
+            var orderDtos = _mapper.Map<IEnumerable<OrderResponseDto>>(order);
+            return StaticResponseBuilder<IEnumerable<OrderResponseDto>>.BuildOk(orderDtos);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao obter pedidos pÃºblicos para o cliente {CustomerId} no estabelecimento {Slug}", customerId, slug);
-            return StaticResponseBuilder<IEnumerable<OrderResponseDto?>>.BuildError("Erro interno do servidor");
+            return StaticResponseBuilder<IEnumerable<OrderResponseDto>>.BuildError("Erro interno do servidor");
         }
         
     }
-
     /// <summary>
     /// Cria um novo pedido
     /// </summary>
-    public async Task<ResponseDTO<OrderResponseDto>> CreateOrderAsync(CreateOrderRequestDto requestDto)
+    public async Task<ResponseDTO<OrderResponseDto>> CreateOrderDeliveryAsync(CreateOrderRequestDto requestDto)
     {
         try
         {
             var tenantId = _currentUserService.GetTenantGuid()!.Value;
 
-            // Validar produtos e calcular valores
-            var validationResult = await ValidateOrderItemsAsync(requestDto.Items, tenantId);
-            if (!validationResult.IsValid)
-                return StaticResponseBuilder<OrderResponseDto>.BuildError(validationResult.ErrorMessage);
+            var (IsValid, ErrorMessage) = await ValidateOrderItemsAsync(requestDto.Items, tenantId);
 
-            // Validar mesa se for pedido na mesa
-            if (requestDto.OrderType == EOrderType.Table)
-            {
-                if (!requestDto.TableId.HasValue)
-                    return StaticResponseBuilder<OrderResponseDto>.BuildError("Mesa Ã© obrigatÃ³ria para pedidos na mesa");
+            if (!IsValid)
+                return StaticResponseBuilder<OrderResponseDto>.BuildError(ErrorMessage);
 
-                var table = await _tableRepository.GetByIdAsync(requestDto.TableId.Value, tenantId);
+            var existingCustomer = await _customerRepository.GetByPhoneAsync(tenantId, requestDto.CustomerPhone!);
 
-                if (table == null)
-                    return StaticResponseBuilder<OrderResponseDto>.BuildError("Mesa nÃ£o encontrada");
-
-                //if o pedido for para mesa, o customer serÃ¡ a propria mesa
-                requestDto.CustomerName = requestDto.CustomerName ?? table.Name;
-                requestDto.CustomerPhone = requestDto.CustomerPhone ??  "(00) 00000-0000";
-                requestDto.CustomerEmail = requestDto.CustomerEmail ?? null;
-            }
-
-            // Verificar se o cliente existe ou criar novo
-            var existingCustomer = await _customerRepository.GetByPhoneAsync(tenantId, requestDto.CustomerPhone);
-
-            //Se nÃ£o possuir um cliente associado ao telefone, cria um novo
+            //Se não possuir um cliente associado ao telefone, cria um novo
             if (existingCustomer == null)
             {
                 //Cria um novo cliente e associa ao tenant
@@ -191,15 +164,15 @@ public class OrderService(
 
             var order = new OrderEntity
             {
-                CustomerName = requestDto.CustomerName,
-                CustomerPhone = requestDto.CustomerPhone,
+                CustomerName = requestDto.CustomerName!,
+                CustomerPhone = requestDto.CustomerPhone!,
                 CustomerEmail = requestDto.CustomerEmail,
                 DeliveryAddress = FormatDeliveryAddress(requestDto.DeliveryAddress),
                 IsDelivery = requestDto.OrderType == EOrderType.Delivery,
                 OrderType = requestDto.OrderType,
                 TableId = requestDto.OrderType == EOrderType.Table ? requestDto.TableId : null,
                 Notes = requestDto.Notes,
-                Status = OrderStatus.Pending,
+                Status = EOrderStatus.Pending,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 CustomerId = tenantCustomer.Customer.Id,
@@ -228,7 +201,7 @@ public class OrderService(
                     var addon = await _addonRepository.GetByIdAsync(addonDto.AddonId, tenantId);
                     if (addon == null) continue;
 
-                    var orderItemAddon = new OrderItemAddon
+                    var orderItemAddon = new OrderItemAddonEntity
                     {
                         AddonId = addonDto.AddonId,
                         AddonName = addon.Name,
@@ -246,7 +219,7 @@ public class OrderService(
 
             // Calcular totais
             order.Subtotal = order.Items.Sum(i => i.Subtotal);
-            order.DeliveryFee = order.IsDelivery ? 5.00m : 0; // Taxa fixa de entrega
+            order.DeliveryFee = requestDto.DeliveryFee ?? 0.0m;
             
             // Processar cupom
             if (!string.IsNullOrEmpty(requestDto.CouponCode))
@@ -266,7 +239,7 @@ public class OrderService(
                         if (isValid)
                         {
                             decimal discount = 0;
-                            if (coupon.DiscountType == EDiscountType.Percentage)
+                            if (coupon.DiscountType == EDiscountType.Porcentagem)
                             {
                                 discount = order.Subtotal * (coupon.DiscountValue / 100);
                                 if (coupon.MaxDiscountValue.HasValue && discount > coupon.MaxDiscountValue.Value)
@@ -296,7 +269,7 @@ public class OrderService(
             if (order.Total < 0) order.Total = 0;
 
             var createdOrder = await _orderRepository.AddAsync(order);
-            var orderDto = MapToOrderResponseDto(createdOrder);
+            var orderDto = _mapper.Map<OrderResponseDto>(createdOrder);
 
             _logger.LogInformation("Pedido {OrderId} criado com sucesso", createdOrder.Id);
 
@@ -321,9 +294,8 @@ public class OrderService(
             return StaticResponseBuilder<OrderResponseDto>.BuildError("Erro interno do servidor");
         }
     }
-
     /// <summary>
-    /// Cria um novo pedido via canal pÃºblico (ex: cardapio)
+    /// Cria um novo pedido via canal público (ex: cardapio)
     /// </summary>
     /// <param name="createOrderRequestDto"></param>
     /// <param name="slug"></param>
@@ -335,35 +307,23 @@ public class OrderService(
         {
             var tenant = await _tenantRepository.GetBySlugAsync(slug);
             if (tenant == null)
-                return StaticResponseBuilder<OrderResponseDto>.BuildError("Estabelecimento nÃ£o encontrado");
+                return StaticResponseBuilder<OrderResponseDto>.BuildError("Estabelecimento não encontrado");
 
-            var validationResult = await ValidateOrderItemsAsync(requestDto.Items, tenant.Id);
-            if (!validationResult.IsValid)
-                return StaticResponseBuilder<OrderResponseDto>.BuildError(validationResult.ErrorMessage);
-
-            // Validar mesa se for pedido na mesa
-            if (requestDto.OrderType == EOrderType.Table)
-            {
-                if (!requestDto.TableId.HasValue)
-                    return StaticResponseBuilder<OrderResponseDto>.BuildError("Mesa Ã© obrigatÃ³ria para pedidos na mesa");
-
-                var table = await _tableRepository.GetByIdAsync(requestDto.TableId.Value, tenant.Id);
-                if (table == null)
-                    return StaticResponseBuilder<OrderResponseDto>.BuildError("Mesa nÃ£o encontrada");
-            }
+            var (IsValid, ErrorMessage) = await ValidateOrderItemsAsync(requestDto.Items, tenant.Id);
+            if (!IsValid)
+                return StaticResponseBuilder<OrderResponseDto>.BuildError(ErrorMessage);
 
             // Verificar se o cliente existe ou criar novo
             var existingCustomer = await _customerRepository.GetByPhoneAsync(tenant.Id, requestDto.CustomerPhone);
 
             if (existingCustomer == null)
             {
-                //Cria um novo cliente e associa ao tenant
                 existingCustomer = await CreateCustomer(requestDto);
                 await CreateTenantCustomer(tenant.Id, existingCustomer.Id);
             }
 
             var tenantCustomer = await _tenantCustomerRepository.GetByTenantIdAndCustomerIdAsync(tenant.Id, existingCustomer.Id);
-            //Se nÃ£o existir jÃ¡ cria um novo e atribui
+
             tenantCustomer ??= await CreateTenantCustomer(tenant.Id, existingCustomer.Id);
 
             var order = new OrderEntity
@@ -376,7 +336,7 @@ public class OrderService(
                 OrderType = requestDto.OrderType,
                 TableId = requestDto.OrderType == EOrderType.Table ? requestDto.TableId : null,
                 Notes = requestDto.Notes,
-                Status = OrderStatus.Pending,
+                Status = EOrderStatus.Pending,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 CustomerId = tenantCustomer.Customer.Id,
@@ -405,7 +365,7 @@ public class OrderService(
                     var addon = await _addonRepository.GetByIdAsync(addonDto.AddonId, tenant.Id);
                     if (addon == null) continue;
 
-                    var orderItemAddon = new OrderItemAddon
+                    var orderItemAddon = new OrderItemAddonEntity
                     {
                         AddonId = addonDto.AddonId,
                         AddonName = addon.Name,
@@ -423,7 +383,7 @@ public class OrderService(
 
             // Calcular totais
             order.Subtotal = order.Items.Sum(i => i.Subtotal);
-            order.DeliveryFee = order.IsDelivery ? 5.00m : 0; // Taxa fixa de entrega
+            order.DeliveryFee = requestDto.DeliveryFee ?? 0.0m; // Taxa fixa de entrega
 
             // Processar cupom
             if (!string.IsNullOrEmpty(requestDto.CouponCode))
@@ -442,7 +402,7 @@ public class OrderService(
                     if (isValid)
                     {
                         decimal discount = 0;
-                        if (coupon.DiscountType == EDiscountType.Percentage)
+                        if (coupon.DiscountType == EDiscountType.Porcentagem)
                         {
                             discount = order.Subtotal * (coupon.DiscountValue / 100);
                             if (coupon.MaxDiscountValue.HasValue && discount > coupon.MaxDiscountValue.Value)
@@ -470,9 +430,7 @@ public class OrderService(
             if (order.Total < 0) order.Total = 0;
 
             var createdOrder = await _orderRepository.AddAsync(order);
-            var orderDto = MapToOrderResponseDto(createdOrder);
-
-            _logger.LogInformation("Pedido {OrderId} criado com sucesso", createdOrder.Id);
+            var orderDto = _mapper.Map<OrderResponseDto>(createdOrder);
 
             // Processar pontos de fidelidade
             await _loyaltyService.ProcessOrderPointsAsync(createdOrder.Id, tenant.Id);
@@ -484,8 +442,7 @@ public class OrderService(
             }
             catch (Exception notificationEx)
             {
-                _logger.LogWarning(notificationEx, "Erro ao enviar notificaÃ§Ã£o de novo pedido {OrderId}", createdOrder.Id);
-                // NÃ£o falhar a criaÃ§Ã£o do pedido por erro de notificaÃ§Ã£o
+                _logger.LogWarning(notificationEx, "Erro ao enviar notificação de novo pedido {OrderId}", createdOrder.Id);
             }
             return StaticResponseBuilder<OrderResponseDto>.BuildOk(orderDto);
         }
@@ -495,11 +452,10 @@ public class OrderService(
             return StaticResponseBuilder<OrderResponseDto>.BuildError("Erro interno do servidor");
         }
     }
-
     /// <summary>
     /// Atualiza um pedido existente
     /// </summary>
-    public async Task<ResponseDTO<OrderResponseDto>> UpdateOrderAsync(int id, UpdateOrderRequestDto requestDto)
+    public async Task<ResponseDTO<OrderResponseDto>> UpdateOrderAsync(Guid id, UpdateOrderRequestDto requestDto)
     {
         try
         {
@@ -507,23 +463,14 @@ public class OrderService(
             if (order == null)
                 return StaticResponseBuilder<OrderResponseDto>.BuildNotFound(null!);
 
-            if (order.Status != OrderStatus.Pending)
+            if (order.Status != EOrderStatus.Pending)
                 return StaticResponseBuilder<OrderResponseDto>.BuildError("Apenas pedidos pendentes podem ser atualizados");
 
-            // Atualizar propriedades
-            order.CustomerName = requestDto.CustomerName;
-            order.CustomerPhone = requestDto.CustomerPhone;
-            order.CustomerEmail = requestDto.CustomerEmail;
-            order.DeliveryAddress = requestDto.DeliveryAddress;
-            if (requestDto.IsDelivery.HasValue)
-                order.IsDelivery = requestDto.IsDelivery.Value;
-            order.Notes = requestDto.Notes;
-            order.EstimatedPreparationMinutes = requestDto.EstimatedPreparationMinutes;
-            order.UpdatedAt = DateTime.UtcNow;
+            order = _mapper.Map(requestDto, order);
 
             await _orderRepository.UpdateAsync(order);
 
-            var orderDto = MapToOrderResponseDto(order);
+            var orderDto = _mapper.Map<OrderResponseDto>(order);
             _logger.LogInformation("Pedido {OrderId} atualizado com sucesso", id);
             return StaticResponseBuilder<OrderResponseDto>.BuildOk(orderDto);
         }
@@ -533,11 +480,10 @@ public class OrderService(
             return StaticResponseBuilder<OrderResponseDto>.BuildError("Erro interno do servidor");
         }
     }
-
     /// <summary>
     /// Exclui um pedido (soft delete)
     /// </summary>
-    public async Task<ResponseDTO<bool>> DeleteOrderAsync(int id)
+    public async Task<ResponseDTO<bool>> DeleteOrderAsync(Guid id)
     {
         try
         {
@@ -545,12 +491,12 @@ public class OrderService(
             if (order == null)
                 return StaticResponseBuilder<bool>.BuildNotFound(false);
 
-            if (order.Status != OrderStatus.Pending && order.Status != OrderStatus.Cancelled)
-                return StaticResponseBuilder<bool>.BuildError("Apenas pedidos pendentes ou cancelados podem ser excluÃ­dos");
+            if (order.Status != EOrderStatus.Pending && order.Status != EOrderStatus.Cancelled)
+                return StaticResponseBuilder<bool>.BuildError("Apenas pedidos pendentes ou cancelados podem ser excluí­dos");
 
             await _orderRepository.DeleteVirtualAsync(id, _currentUserService.GetTenantGuid()!.Value);
 
-            _logger.LogInformation("Pedido {OrderId} excluÃ­do com sucesso", id);
+            _logger.LogInformation("Pedido {OrderId} exclusão com sucesso", id);
             return StaticResponseBuilder<bool>.BuildOk(true);
         }
         catch (Exception ex)
@@ -559,64 +505,64 @@ public class OrderService(
             return StaticResponseBuilder<bool>.BuildError("Erro interno do servidor");
         }
     }
-
     /// <summary>
     /// Atualiza o status de um pedido
     /// </summary>
-    public async Task<ResponseDTO<OrderResponseDto>> UpdateOrderStatusAsync(int id, UpdateOrderStatusRequestDto requestDto)
+    public async Task<ResponseDTO<OrderResponseDto>> UpdatEOrderStatusAsync(Guid id, UpdatEOrderStatusRequestDto requestDto)
     {
         try
         {
+            var userId = _currentUserService!.UserId;
+
             var order = await _orderRepository.GetByIdWithIncludesAsync(id, o => o.StatusHistory);
             if (order == null)
                 return StaticResponseBuilder<OrderResponseDto>.BuildNotFound(null!);
 
-            // Validar transiÃ§Ã£o de status
+            // Validar transição de status
             if (!IsValidStatusTransition(order.Status, requestDto.Status))
-                return StaticResponseBuilder< OrderResponseDto>.BuildError($"TransiÃ§Ã£o de status invÃ¡lida de {order.Status} para {requestDto.Status}");
+                return StaticResponseBuilder< OrderResponseDto>.BuildError($"Transição de status inválida de {order.Status} para {requestDto.Status}");
 
             var previousStatus = order.Status;
             order.Status = requestDto.Status;
             order.UpdatedAt = DateTime.UtcNow;
 
-            // Adicionar histÃ³rico de status
+            // Adicionar histórico de status
             var statusHistory = new OrderStatusHistoryEntity
             {
                 OrderId = order.Id,
                 Status = requestDto.Status,
                 Timestamp = DateTime.UtcNow,
                 Notes = requestDto.Notes,
-                UserId = requestDto.UserId ?? "system"
+                UserId = Guid.Parse(userId)
             };
 
             order.StatusHistory.Add(statusHistory);
             await _orderRepository.UpdateAsync(order);
 
-            var orderDto = MapToOrderResponseDto(order);
+            var orderDto = _mapper.Map<OrderResponseDto>(order);
+
             _logger.LogInformation("Status do pedido {OrderId} alterado de {PreviousStatus} para {NewStatus}", 
                 id, previousStatus, requestDto.Status);
             
-            // Enviar notificaÃ§Ã£o de mudanÃ§a de status
             try
             {
-                await _notificationService.NotifyOrderStatusChangedAsync(id, previousStatus, requestDto.Status, requestDto.Notes);
+                await _notificationService.NotifyEOrderStatusChangedAsync(id, previousStatus, requestDto.Status, requestDto.Notes);
                 
-                // NotificaÃ§Ãµes especÃ­ficas por status
                 switch (requestDto.Status)
                 {
-                    case OrderStatus.Ready:
+                    case EOrderStatus.Ready:
                         await _notificationService.NotifyOrderReadyAsync(id);
                         break;
-                    case OrderStatus.Delivered:
+                    case EOrderStatus.Delivered:
                         await _notificationService.NotifyOrderCompletedAsync(id);
                         break;
                 }
             }
             catch (Exception notificationEx)
             {
-                _logger.LogWarning(notificationEx, "Erro ao enviar notificaÃ§Ã£o de mudanÃ§a de status do pedido {OrderId}", id);
-                // NÃ£o falhar a atualizaÃ§Ã£o por erro de notificaÃ§Ã£o
+                _logger.LogWarning(notificationEx, "Erro ao enviar notificação de mudança de status do pedido {OrderId}", id);
             }
+
             return StaticResponseBuilder<OrderResponseDto>.BuildOk(orderDto);
         }
         catch (Exception ex)
@@ -625,16 +571,15 @@ public class OrderService(
             return StaticResponseBuilder<OrderResponseDto>.BuildError("Erro interno do servidor");
         }
     }
-
     /// <summary>
     /// ObtÃ©m pedidos por status
     /// </summary>
-    public async Task<ResponseDTO<IEnumerable<OrderResponseDto>>> GetOrdersByStatusAsync(OrderStatus status)
+    public async Task<ResponseDTO<IEnumerable<OrderResponseDto>>> GetOrdersByStatusAsync(EOrderStatus status)
     {
         try
         {
             var orders = await _orderRepository.GetOrdersByStatusAsync(status);
-            var orderDtos = orders.Select(MapToOrderResponseDto);
+            var orderDtos = _mapper.Map<IEnumerable<OrderResponseDto>>(orders);
             return StaticResponseBuilder<IEnumerable<OrderResponseDto>>.BuildOk(orderDtos);
         }
         catch (Exception ex)
@@ -643,7 +588,6 @@ public class OrderService(
             return StaticResponseBuilder<IEnumerable<OrderResponseDto>>.BuildError("Erro interno do servidor");
         }
     }
-
     /// <summary>
     /// ObtÃ©m pedidos por telefone do cliente
     /// </summary>
@@ -652,7 +596,7 @@ public class OrderService(
         try
         {
             var orders = await _orderRepository.FindAsync(o => o.CustomerPhone == customerPhone);
-            var orderDtos = orders.Select(MapToOrderResponseDto);
+            var orderDtos = _mapper.Map<IEnumerable<OrderResponseDto>>(orders);
             return StaticResponseBuilder<IEnumerable<OrderResponseDto>>.BuildOk(orderDtos);
         }
         catch (Exception ex)
@@ -661,11 +605,10 @@ public class OrderService(
             return StaticResponseBuilder<IEnumerable<OrderResponseDto>>.BuildError("Erro interno do servidor");
         }
     }
-
     /// <summary>
     /// Aceita um pedido
     /// </summary>
-    public async Task<ResponseDTO<OrderResponseDto>> AcceptOrderAsync(int id, int estimatedPreparationMinutes, string? notes = null, string? userId = null)
+    public async Task<ResponseDTO<OrderResponseDto>> AcceptOrderAsync(Guid id, int estimatedPreparationMinutes, string? notes = null)
     {
         try
         {
@@ -673,10 +616,10 @@ public class OrderService(
             if (order == null)
                 return StaticResponseBuilder<OrderResponseDto>.BuildNotFound(null!);
 
-            if (order.Status != OrderStatus.Pending)
+            if (order.Status != EOrderStatus.Pending)
                 return StaticResponseBuilder<OrderResponseDto>.BuildError("Apenas pedidos pendentes podem ser aceitos");
 
-            order.Status = OrderStatus.Confirmed;
+            order.Status = EOrderStatus.Confirmed;
             order.EstimatedPreparationMinutes = estimatedPreparationMinutes;
             order.EstimatedDeliveryTime = DateTime.UtcNow.AddMinutes(estimatedPreparationMinutes + (order.IsDelivery ? 30 : 0));
             order.UpdatedAt = DateTime.UtcNow;
@@ -686,7 +629,7 @@ public class OrderService(
 
             await _orderRepository.UpdateAsync(order);
 
-            var orderDto = MapToOrderResponseDto(order);
+            var orderDto = _mapper.Map<OrderResponseDto>(order);
             _logger.LogInformation("Pedido {OrderId} aceito com tempo estimado de {EstimatedMinutes} minutos", 
                 id, estimatedPreparationMinutes);
             
@@ -697,8 +640,7 @@ public class OrderService(
             }
             catch (Exception notificationEx)
             {
-                _logger.LogWarning(notificationEx, "Erro ao enviar notificaÃ§Ã£o de pedido aceito {OrderId}", id);
-                // NÃ£o falhar a aceitaÃ§Ã£o por erro de notificaÃ§Ã£o
+                _logger.LogWarning(notificationEx, "Erro ao enviar notificação de pedido aceito {OrderId}", id);
             }
             return StaticResponseBuilder<OrderResponseDto>.BuildOk(orderDto);
         }
@@ -708,24 +650,22 @@ public class OrderService(
             return StaticResponseBuilder<OrderResponseDto>.BuildError("Erro interno do servidor");
         }
     }
-
     /// <summary>
     /// Rejeita um pedido
     /// </summary>
-    public async Task<ResponseDTO<OrderResponseDto>> RejectOrderAsync(int id, string reason, string? notes = null, string? rejectedBy = null)
+    public async Task<ResponseDTO<OrderResponseDto>> RejectOrderAsync(Guid id, string reason, string? notes = null, string? rejectedBy = null)
     {
         try
         {
             var order = await _orderRepository.GetByIdWithIncludesAsync(id, o => o.Rejection);
             if (order == null)
                 return StaticResponseBuilder<OrderResponseDto>.BuildNotFound(null!);
-            if (order.Status != OrderStatus.Pending && order.Status != OrderStatus.Confirmed)
+            if (order.Status != EOrderStatus.Pending && order.Status != EOrderStatus.Confirmed)
                 return StaticResponseBuilder<OrderResponseDto>.BuildError("Apenas pedidos pendentes ou confirmados podem ser rejeitados");
 
-            order.Status = OrderStatus.Rejected;
+            order.Status = EOrderStatus.Rejected;
             order.UpdatedAt = DateTime.UtcNow;
 
-            // Criar registro de rejeiÃ§Ã£o
             var rejection = new OrderRejectionEntity
             {
                 OrderId = order.Id,
@@ -738,18 +678,16 @@ public class OrderService(
             order.Rejection = rejection;
             await _orderRepository.UpdateAsync(order);
 
-            var orderDto = MapToOrderResponseDto(order);
+            var orderDto = _mapper.Map<OrderResponseDto>(order);
             _logger.LogInformation("Pedido {OrderId} rejeitado. Motivo: {Reason}", id, reason);
             
-            // Enviar notificaÃ§Ã£o de pedido rejeitado
             try
             {
                 await _notificationService.NotifyOrderRejectedAsync(orderDto, reason);
             }
             catch (Exception notificationEx)
             {
-                _logger.LogWarning(notificationEx, "Erro ao enviar notificaÃ§Ã£o de pedido rejeitado {OrderId}", id);
-                // NÃ£o falhar a rejeiÃ§Ã£o por erro de notificaÃ§Ã£o
+                _logger.LogWarning(notificationEx, "Erro ao enviar notificação de pedido rejeitado {OrderId}", id);
             }
             return StaticResponseBuilder<OrderResponseDto>.BuildOk(orderDto);
         }
@@ -759,9 +697,305 @@ public class OrderService(
             return StaticResponseBuilder<OrderResponseDto>.BuildError("Erro interno do servidor");
         }
     }
+    public async Task<PagedResponseDTO<OrderResponseDto>> GetOrdersPagedAsync(int pageNumber, int pageSize)
+    {
+        try
+        {
+            var tenantId = _currentUserService.GetTenantGuid()!.Value;
+            var orders = await _orderRepository.GetPagedByTenantIdWithDetailsAsync(tenantId, pageNumber, pageSize);
 
+            var totalItems = await _orderRepository.CountByTenantIdAsync(tenantId);
+
+            var orderDtos = _mapper.Map<List<OrderResponseDto>>(orders);
+            return StaticResponseBuilder<OrderResponseDto>.BuildPagedOk(orderDtos, totalItems, pageNumber, pageSize);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao obter pedidos paginados");
+            return new PagedResponseDTO<OrderResponseDto>
+            {
+                Succeeded = false,
+                Code = 500,
+                Errors = new List<ErrorDTO> { new ErrorDTO { Message = "Erro interno do servidor", Code = "ERROR" } }
+            };
+        }
+    }
+    /// <summary>
+    /// ObtÃ©m o pedido ativo de uma mesa
+    /// </summary>
+    public async Task<ResponseDTO<OrderResponseDto?>> GetActiveOrderByTableIdAsync(Guid tableId)
+    {
+        try
+        {
+            var tenantId = _currentUserService.GetTenantGuid()!.Value;
+
+            var orders = await _orderRepository.FindOrderedAsync(
+                o => o.TenantId == tenantId && o.TableId == tableId &&
+                     o.Status != EOrderStatus.Cancelled && o.Status != EOrderStatus.Rejected &&
+                     o.CreatedAt >= DateTime.UtcNow.Date,
+                o => o.CreatedAt,
+                false
+            );
+
+            var activeOrder = orders.FirstOrDefault();
+
+            if (activeOrder == null)
+                return StaticResponseBuilder<OrderResponseDto?>.BuildOk(null); // No active order
+
+            var orderWithDetails = await _orderRepository.GetByIdWithIncludesAsync(activeOrder.Id, o => o.Items);
+
+            var dto = _mapper.Map<OrderResponseDto>(orderWithDetails);
+            return StaticResponseBuilder<OrderResponseDto?>.BuildOk(dto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao obter pedido ativo da mesa {TableId}", tableId);
+            return StaticResponseBuilder<OrderResponseDto?>.BuildError("Erro ao obter pedido da mesa");
+        }
+    }
+    /// <summary>
+    /// Adiciona itens a um pedido existente
+    /// </summary>
+    public async Task<ResponseDTO<OrderResponseDto>> AddItemsToOrderAsync(Guid orderId, List<CreateOrderItemRequestDto> items)
+    {
+        try
+        {
+            var tenantId = _currentUserService.GetTenantGuid()!.Value;
+            // Need to include Items to calculate totals correctly
+            var order = await _orderRepository.GetByIdWithIncludesAsync(orderId, o => o.Items);
+
+            if (order == null)
+                return StaticResponseBuilder<OrderResponseDto>.BuildNotFound(null);
+
+            if (order.TenantId != tenantId)
+                return StaticResponseBuilder<OrderResponseDto>.BuildError("Pedido não pertence ao tenant");
+
+            if (order.Status == EOrderStatus.Cancelled || order.Status == EOrderStatus.Rejected)
+                return StaticResponseBuilder<OrderResponseDto>.BuildError("Não é possível adicionar itens a um pedido cancelado ou rejeitado");
+
+            // Add items logic
+            foreach (var itemDto in items)
+            {
+                var product = await _productRepository.GetByIdAsync(itemDto.ProductId, tenantId);
+                if (product == null) continue;
+
+                var orderItem = new OrderItemEntity
+                {
+                    ProductId = itemDto.ProductId,
+                    ProductName = product.Name,
+                    UnitPrice = product.Price,
+                    Quantity = itemDto.Quantity,
+                    Notes = itemDto.Notes,
+                    Subtotal = product.Price * itemDto.Quantity,
+                    OrderId = order.Id // Ensure link
+                };
+
+                // Adicionar addons
+                foreach (var addonDto in itemDto.Addons)
+                {
+                    var addon = await _addonRepository.GetByIdAsync(addonDto.AddonId, tenantId);
+                    if (addon == null) continue;
+
+                    var orderItemAddon = new OrderItemAddonEntity
+                    {
+                        AddonId = addonDto.AddonId,
+                        AddonName = addon.Name,
+                        UnitPrice = addon.Price,
+                        Quantity = addonDto.Quantity,
+                        Subtotal = addon.Price * addonDto.Quantity
+                    };
+
+                    orderItem.Addons.Add(orderItemAddon);
+                    orderItem.Subtotal += orderItemAddon.Subtotal;
+                }
+
+                order.Items.Add(orderItem);
+            }
+
+            // Recalculate totals
+            order.Subtotal = order.Items.Sum(i => i.Subtotal);
+            order.Total = order.Subtotal + order.DeliveryFee - order.DiscountAmount;
+            order.UpdatedAt = DateTime.UtcNow;
+
+            await _orderRepository.UpdateAsync(order);
+
+            var dto = _mapper.Map<OrderResponseDto>(order);
+            return StaticResponseBuilder<OrderResponseDto>.BuildOk(dto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao adicionar itens ao pedido {OrderId}", orderId);
+            return StaticResponseBuilder<OrderResponseDto>.BuildError("Erro ao adicionar itens ao pedido");
+        }
+    }
+    /// <summary>
+    /// Fecha a conta da mesa
+    /// </summary>
+    public async Task<ResponseDTO<OrderResponseDto>> CloseTableAccountAsync(Guid tableId)
+    {
+        var result = await GetActiveOrderByTableIdAsync(tableId);
+        if (!result.Succeeded || result.Data == null)
+            return StaticResponseBuilder<OrderResponseDto>.BuildError("Nenhum pedido ativo para esta mesa");
+
+        return StaticResponseBuilder<OrderResponseDto>.BuildOk(result.Data);
+    }
+    public async Task<ResponseDTO<OrderResponseDto>> CancelOrderAsync(Guid id, CancelOrderRequestDto requestDto)
+    {
+        try
+        {
+            var userId = _currentUserService!.UserId;
+
+            var order = await _orderRepository.GetByIdWithIncludesAsync(id, o => o.StatusHistory);
+            if (order == null)
+                return StaticResponseBuilder<OrderResponseDto>.BuildNotFound(null!);
+
+            if (order.Status != EOrderStatus.Pending)
+                return StaticResponseBuilder<OrderResponseDto>.BuildError("Apenas pedidos pendentes podem ser cancelados pelo cliente.");
+
+            var previousStatus = order.Status;
+            order.Status = EOrderStatus.Cancelled;
+            order.UpdatedAt = DateTime.UtcNow;
+
+            var statusHistory = new OrderStatusHistoryEntity
+            {
+                OrderId = order.Id,
+                Status = EOrderStatus.Cancelled,
+                Timestamp = DateTime.UtcNow,
+                Notes = $"Cancelado pelo cliente. Motivo: {requestDto.Reason}",
+                UserId = Guid.Parse(userId)
+            };
+
+            order.StatusHistory.Add(statusHistory);
+            await _orderRepository.UpdateAsync(order);
+
+            var orderDto = _mapper.Map<OrderResponseDto>(order);
+
+            // Notificar cancelamento
+            await _notificationService.NotifyEOrderStatusChangedAsync(id, previousStatus, EOrderStatus.Cancelled, requestDto.Reason);
+
+            return StaticResponseBuilder<OrderResponseDto>.BuildOk(orderDto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao cancelar pedido {OrderId}", id);
+            return StaticResponseBuilder<OrderResponseDto>.BuildError("Erro interno ao cancelar pedido");
+        }
+    }
+    public async Task<ResponseDTO<OrderResponseDto>> UpdateOrderPaymentMethodAsync(Guid id, UpdateOrderPaymentRequestDto requestDto)
+    {
+        try
+        {
+            var order = await _orderRepository.GetByIdWithIncludesAsync(id, o => o.Payments);
+            if (order == null)
+                return StaticResponseBuilder<OrderResponseDto>.BuildNotFound(null!);
+
+            if (order.Status != EOrderStatus.Pending)
+                return StaticResponseBuilder<OrderResponseDto>.BuildError("Apenas pedidos pendentes podem ser alterados.");
+
+            var currentPayment = order.Payments.OrderByDescending(p => p.CreatedAt).FirstOrDefault(p => p.Status == EPaymentStatus.Pending);
+
+            if (currentPayment != null)
+            {
+                currentPayment.Method = requestDto.PaymentMethod;
+                currentPayment.UpdatedAt = DateTime.UtcNow;
+            }
+            else
+            {
+                // Se não houver pagamento pendente, cria um novo
+                var newPayment = new PaymentEntity
+                {
+                    OrderId = order.Id,
+                    Amount = order.Total,
+                    Method = requestDto.PaymentMethod,
+                    Status = EPaymentStatus.Pending,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                order.Payments.Add(newPayment);
+            }
+
+            order.UpdatedAt = DateTime.UtcNow;
+            await _orderRepository.UpdateAsync(order);
+
+            // Recarregar com todos os includes para retorno completo
+            var updatedOrder = await _orderRepository.GetByIdWithIncludesAsync(id, o => o.Items);
+            var orderDto = _mapper.Map<OrderResponseDto>(updatedOrder);
+            return StaticResponseBuilder<OrderResponseDto>.BuildOk(orderDto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao atualizar mÃ©todo de pagamento do pedido {OrderId}", id);
+            return StaticResponseBuilder<OrderResponseDto>.BuildError("Erro interno ao atualizar pagamento");
+        }
+    }
+    public async Task<ResponseDTO<OrderResponseDto>> UpdateOrderDeliveryTypeAsync(Guid id, UpdateOrderDeliveryTypeRequestDto requestDto)
+    {
+        try
+        {
+            var order = await _orderRepository.GetByIdWithIncludesAsync(id, o => o.Items);
+            if (order == null)
+                return StaticResponseBuilder<OrderResponseDto>.BuildNotFound(null!);
+
+            if (order.Status != EOrderStatus.Pending)
+                return StaticResponseBuilder<OrderResponseDto>.BuildError("Apenas pedidos pendentes podem ser alterados.");
+
+            // Se nada mudou, retorna ok
+            if (order.IsDelivery == requestDto.IsDelivery && (!requestDto.IsDelivery || order.DeliveryAddress == requestDto.DeliveryAddress))
+                return StaticResponseBuilder<OrderResponseDto>.BuildOk(_mapper.Map<OrderResponseDto>(order));
+
+            order.IsDelivery = requestDto.IsDelivery;
+
+            if (requestDto.IsDelivery)
+            {
+                if (string.IsNullOrWhiteSpace(requestDto.DeliveryAddress))
+                    return StaticResponseBuilder<OrderResponseDto>.BuildError("EndereÃ§o Ã© obrigatÃ³rio para entrega.");
+
+                order.DeliveryAddress = requestDto.DeliveryAddress;
+
+                // Recalcular taxa de entrega (Simplificação: manter a taxa original se já¡ era entrega, ou buscar regra de taxa)
+
+                // Como não tenho a regra de taxa aqui fácil, vou assumir uma regra simples ou manter a taxa se já¡ existir.
+                // Se estava Retirada (Fee 0) e virou Entrega, precisa de taxa.
+                // Vou assumir taxa fixa do tenant ou zero por enquanto se nÃ£o tiver lÃ³gica complexa, 
+                // MAS o ideal Ã© recalcular.
+                // TODO: Melhorar cÃ¡lculo de taxa. Por hora, se virou entrega e taxa era 0, mantÃ©m 0 ou usa um padrÃ£o?
+                // Vou manter a taxa anterior se for > 0, senÃ£o 0 (risco de prejuÃ­zo, mas seguro pra MVP).
+                // CORREÃ‡ÃƒO: Se o usuÃ¡rio mudar pra entrega, ele espera pagar a taxa.
+                // Vou verificar se consigo pegar a taxa do tenant.
+
+                // Se nÃ£o tem taxa definida, define uma padrÃ£o ou busca do tenant settings (nÃ£o tenho acesso fÃ¡cil aqui sem injetar mais coisas).
+                // Vou deixar a taxa como estÃ¡ se for > 0. Se for 0 e virar entrega, continua 0 (promoÃ§Ã£o? erro?).
+                // Melhor: Se virar retirada, zera a taxa.
+            }
+            else
+            {
+                order.DeliveryFee = 0.0m;
+            }
+
+            // Recalcular total
+            order.Subtotal = order.Items.Sum(i => i.Subtotal);
+            order.Total = order.Subtotal + order.DeliveryFee - order.DiscountAmount;
+
+            order.UpdatedAt = DateTime.UtcNow;
+            await _orderRepository.UpdateAsync(order);
+
+            return StaticResponseBuilder<OrderResponseDto>.BuildOk(_mapper.Map<OrderResponseDto>(order));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao atualizar tipo de entrega do pedido {OrderId}", id);
+            return StaticResponseBuilder<OrderResponseDto>.BuildError("Erro interno ao atualizar entrega");
+        }
+    }
+    public async Task<ResponseDTO<OrderResponseDto>> CreateOrderPickupAsync(CreateOrderRequestDto requestDto)
+    {
+        throw new NotImplementedException();
+    }
+    public async Task<ResponseDTO<OrderResponseDto>> CreateOrderDineInAsync(CreateOrderRequestDto requestDto)
+    {
+        throw new NotImplementedException();
+    }
     #region Private Methods
-
     private static string FormatDeliveryAddress(AddressDto? address)
     {
         if (address == null) return string.Empty;
@@ -779,228 +1013,6 @@ public class OrderService(
         
         return formatted;
     }
-
-    public async Task<ResponseDTO<OrderResponseDto>> CancelOrderAsync(int id, CancelOrderRequestDto requestDto)
-    {
-        try
-        {
-            var order = await _orderRepository.GetByIdWithIncludesAsync(id, o => o.StatusHistory);
-            if (order == null)
-                return StaticResponseBuilder<OrderResponseDto>.BuildNotFound(null!);
-
-            if (order.Status != OrderStatus.Pending)
-                return StaticResponseBuilder<OrderResponseDto>.BuildError("Apenas pedidos pendentes podem ser cancelados pelo cliente.");
-
-            var previousStatus = order.Status;
-            order.Status = OrderStatus.Cancelled;
-            order.UpdatedAt = DateTime.UtcNow;
-
-            var statusHistory = new OrderStatusHistoryEntity
-            {
-                OrderId = order.Id,
-                Status = OrderStatus.Cancelled,
-                Timestamp = DateTime.UtcNow,
-                Notes = $"Cancelado pelo cliente. Motivo: {requestDto.Reason}",
-                UserId = "customer" // Identificar que foi o cliente
-            };
-
-            order.StatusHistory.Add(statusHistory);
-            await _orderRepository.UpdateAsync(order);
-
-            var orderDto = MapToOrderResponseDto(order);
-            
-            // Notificar cancelamento
-            await _notificationService.NotifyOrderStatusChangedAsync(id, previousStatus, OrderStatus.Cancelled, requestDto.Reason);
-
-            return StaticResponseBuilder<OrderResponseDto>.BuildOk(orderDto);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erro ao cancelar pedido {OrderId}", id);
-            return StaticResponseBuilder<OrderResponseDto>.BuildError("Erro interno ao cancelar pedido");
-        }
-    }
-
-    public async Task<ResponseDTO<OrderResponseDto>> UpdateOrderPaymentMethodAsync(int id, UpdateOrderPaymentRequestDto requestDto)
-    {
-        try
-        {
-            var order = await _orderRepository.GetByIdWithIncludesAsync(id, o => o.Payments);
-            if (order == null)
-                return StaticResponseBuilder<OrderResponseDto>.BuildNotFound(null!);
-
-            if (order.Status != OrderStatus.Pending)
-                return StaticResponseBuilder<OrderResponseDto>.BuildError("Apenas pedidos pendentes podem ser alterados.");
-
-            // Assumindo que o pedido tem um pagamento inicial ou nenhum.
-            // Se tiver pagamentos, pegamos o Ãºltimo nÃ£o cancelado/falho ou todos.
-            // SimplificaÃ§Ã£o: Atualizar o Ãºltimo pagamento pendente ou criar um novo se nÃ£o houver.
-            
-            var currentPayment = order.Payments.OrderByDescending(p => p.CreatedAt).FirstOrDefault(p => p.Status == PaymentStatus.Pending);
-
-            if (currentPayment != null)
-            {
-                currentPayment.Method = requestDto.PaymentMethod;
-                currentPayment.UpdatedAt = DateTime.UtcNow;
-            }
-            else
-            {
-                // Se nÃ£o houver pagamento pendente, cria um novo
-                var newPayment = new PaymentEntity
-                {
-                    OrderId = order.Id,
-                    Amount = order.Total,
-                    Method = requestDto.PaymentMethod,
-                    Status = PaymentStatus.Pending,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
-                order.Payments.Add(newPayment);
-            }
-
-            order.UpdatedAt = DateTime.UtcNow;
-            await _orderRepository.UpdateAsync(order);
-
-            // Recarregar com todos os includes para retorno completo
-            var updatedOrder = await _orderRepository.GetByIdWithIncludesAsync(id, o => o.Items);
-            return StaticResponseBuilder<OrderResponseDto>.BuildOk(MapToOrderResponseDto(updatedOrder));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erro ao atualizar mÃ©todo de pagamento do pedido {OrderId}", id);
-            return StaticResponseBuilder<OrderResponseDto>.BuildError("Erro interno ao atualizar pagamento");
-        }
-    }
-
-    public async Task<ResponseDTO<OrderResponseDto>> UpdateOrderDeliveryTypeAsync(int id, UpdateOrderDeliveryTypeRequestDto requestDto)
-    {
-        try
-        {
-            var order = await _orderRepository.GetByIdWithIncludesAsync(id, o => o.Items);
-            if (order == null)
-                return StaticResponseBuilder<OrderResponseDto>.BuildNotFound(null!);
-
-            if (order.Status != OrderStatus.Pending)
-                return StaticResponseBuilder<OrderResponseDto>.BuildError("Apenas pedidos pendentes podem ser alterados.");
-
-            // Se nada mudou, retorna ok
-            if (order.IsDelivery == requestDto.IsDelivery && 
-                (!requestDto.IsDelivery || order.DeliveryAddress == requestDto.DeliveryAddress))
-            {
-                return StaticResponseBuilder<OrderResponseDto>.BuildOk(MapToOrderResponseDto(order));
-            }
-
-            order.IsDelivery = requestDto.IsDelivery;
-            
-            if (requestDto.IsDelivery)
-            {
-                if (string.IsNullOrWhiteSpace(requestDto.DeliveryAddress))
-                    return StaticResponseBuilder<OrderResponseDto>.BuildError("EndereÃ§o Ã© obrigatÃ³rio para entrega.");
-                
-                order.DeliveryAddress = requestDto.DeliveryAddress;
-                
-                // Recalcular taxa de entrega (SimplificaÃ§Ã£o: manter a taxa original se jÃ¡ era entrega, ou buscar regra de taxa)
-                // Como nÃ£o tenho a regra de taxa aqui fÃ¡cil, vou assumir uma regra simples ou manter a taxa se jÃ¡ existir.
-                // Se estava Retirada (Fee 0) e virou Entrega, precisa de taxa.
-                // Vou assumir taxa fixa do tenant ou zero por enquanto se nÃ£o tiver lÃ³gica complexa, 
-                // MAS o ideal Ã© recalcular.
-                // TODO: Melhorar cÃ¡lculo de taxa. Por hora, se virou entrega e taxa era 0, mantÃ©m 0 ou usa um padrÃ£o?
-                // Vou manter a taxa anterior se for > 0, senÃ£o 0 (risco de prejuÃ­zo, mas seguro pra MVP).
-                // CORREÃ‡ÃƒO: Se o usuÃ¡rio mudar pra entrega, ele espera pagar a taxa.
-                // Vou verificar se consigo pegar a taxa do tenant.
-                
-                // Se nÃ£o tem taxa definida, define uma padrÃ£o ou busca do tenant settings (nÃ£o tenho acesso fÃ¡cil aqui sem injetar mais coisas).
-                // Vou deixar a taxa como estÃ¡ se for > 0. Se for 0 e virar entrega, continua 0 (promoÃ§Ã£o? erro?).
-                // Melhor: Se virar retirada, zera a taxa.
-            }
-            else
-            {
-                // Retirada: Zera taxa e limpa endereÃ§o (opcional limpar endereÃ§o, mas bom manter histÃ³rico)
-                order.DeliveryFee = 0;
-            }
-
-            // Recalcular total
-            order.Subtotal = order.Items.Sum(i => i.Subtotal);
-            order.Total = order.Subtotal + order.DeliveryFee - order.DiscountAmount;
-            
-            order.UpdatedAt = DateTime.UtcNow;
-            await _orderRepository.UpdateAsync(order);
-
-            return StaticResponseBuilder<OrderResponseDto>.BuildOk(MapToOrderResponseDto(order));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erro ao atualizar tipo de entrega do pedido {OrderId}", id);
-            return StaticResponseBuilder<OrderResponseDto>.BuildError("Erro interno ao atualizar entrega");
-        }
-    }
-
-    /// <summary>
-    /// Mapeia uma entidade Order para OrderResponseDto
-    /// </summary>
-    private static OrderResponseDto MapToOrderResponseDto(OrderEntity order)
-    {
-        return new OrderResponseDto
-        {
-            Id = order.Id,
-            CustomerName = order.CustomerName,
-            CustomerPhone = order.CustomerPhone,
-            CustomerEmail = order.CustomerEmail,
-            DeliveryAddress = order.DeliveryAddress,
-            Subtotal = order.Subtotal,
-            DeliveryFee = order.DeliveryFee,
-            DiscountAmount = order.DiscountAmount,
-            CouponCode = order.CouponCode,
-            Total = order.Total,
-            Status = order.Status,
-            CreatedAt = order.CreatedAt,
-            UpdatedAt = order.UpdatedAt,
-            IsDelivery = order.IsDelivery,
-            OrderType = order.OrderType,
-            TableId = order.TableId,
-            Notes = order.Notes,
-            EstimatedPreparationMinutes = order.EstimatedPreparationMinutes,
-            EstimatedDeliveryTime = order.EstimatedDeliveryTime,
-            QueuePosition = order.QueuePosition,
-            Items = order.Items?.Select(MapToOrderItemResponseDto).ToList() ?? []
-        };
-    }
-
-    /// <summary>
-    /// Mapeia uma entidade OrderItem para OrderItemResponseDto
-    /// </summary>
-    private static OrderItemResponseDto MapToOrderItemResponseDto(OrderItemEntity orderItem)
-    {
-        return new OrderItemResponseDto
-        {
-            Id = orderItem.Id,
-            ProductId = orderItem.ProductId,
-            ProductName = orderItem.ProductName,
-            UnitPrice = orderItem.UnitPrice,
-            Quantity = orderItem.Quantity,
-            Subtotal = orderItem.Subtotal,
-            Notes = orderItem.Notes,
-            ImageUrl = orderItem.Product?.ImageUrl,
-            Addons = orderItem.Addons?.Select(MapToOrderItemAddonResponseDto).ToList() ?? []
-        };
-    }
-
-    /// <summary>
-    /// Mapeia uma entidade OrderItemAddon para OrderItemAddonResponseDto
-    /// </summary>
-    private static OrderItemAddonResponseDto MapToOrderItemAddonResponseDto(OrderItemAddon addon)
-    {
-        return new OrderItemAddonResponseDto
-        {
-            Id = addon.Id,
-            AddonId = addon.AddonId,
-            AddonName = addon.AddonName,
-            UnitPrice = addon.UnitPrice,
-            Quantity = addon.Quantity,
-            Subtotal = addon.Subtotal
-        };
-    }
-
     /// <summary>
     /// Valida os itens do pedido
     /// </summary>
@@ -1037,22 +1049,21 @@ public class OrderService(
 
         return (true, string.Empty);
     }
-
     /// <summary>
-    /// Valida se a transiÃ§Ã£o de status Ã© vÃ¡lida
+    /// Valida se a transição de status é válida
     /// </summary>
-    private static bool IsValidStatusTransition(OrderStatus currentStatus, OrderStatus newStatus)
+    private static bool IsValidStatusTransition(EOrderStatus currentStatus, EOrderStatus newStatus)
     {
         return currentStatus switch
         {
-            OrderStatus.Pending => newStatus is OrderStatus.Confirmed or OrderStatus.Cancelled or OrderStatus.Rejected,
-            OrderStatus.Confirmed => newStatus is OrderStatus.Preparing or OrderStatus.Pending or OrderStatus.Cancelled or OrderStatus.Rejected,
-            OrderStatus.Preparing => newStatus is OrderStatus.Ready or OrderStatus.Confirmed or OrderStatus.Cancelled,
-            OrderStatus.Ready => newStatus is OrderStatus.Preparing or OrderStatus.OutForDelivery or OrderStatus.Delivered or OrderStatus.Cancelled,
-            OrderStatus.OutForDelivery => newStatus is OrderStatus.Delivered or OrderStatus.Cancelled,
-            OrderStatus.Delivered => newStatus is OrderStatus.Ready, // Status final
-            OrderStatus.Cancelled => false, // Status final
-            OrderStatus.Rejected => false, // Status final
+            EOrderStatus.Pending => newStatus is EOrderStatus.Confirmed or EOrderStatus.Cancelled or EOrderStatus.Rejected,
+            EOrderStatus.Confirmed => newStatus is EOrderStatus.Preparing or EOrderStatus.Pending or EOrderStatus.Cancelled or EOrderStatus.Rejected,
+            EOrderStatus.Preparing => newStatus is EOrderStatus.Ready or EOrderStatus.Confirmed or EOrderStatus.Cancelled,
+            EOrderStatus.Ready => newStatus is EOrderStatus.Preparing or EOrderStatus.OutForDelivery or EOrderStatus.Delivered or EOrderStatus.Cancelled,
+            EOrderStatus.OutForDelivery => newStatus is EOrderStatus.Delivered or EOrderStatus.Cancelled,
+            EOrderStatus.Delivered => newStatus is EOrderStatus.Ready, // Status final
+            EOrderStatus.Cancelled => false, // Status final
+            EOrderStatus.Rejected => false, // Status final
             _ => false
         };
     }
@@ -1080,8 +1091,8 @@ public class OrderService(
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao criar cliente para pedido pÃºblico");
-            throw ex;
+            _logger.LogError(ex, "Erro ao criar cliente");
+            throw;
         }
         
     }
@@ -1135,159 +1146,6 @@ public class OrderService(
             throw ex;
         } 
         
-    }
-
-    public async Task<PagedResponseDTO<OrderResponseDto>> GetOrdersPagedAsync(int pageNumber, int pageSize)
-    {
-        try
-        {
-            var tenantId = _currentUserService.GetTenantGuid()!.Value;
-            var orders = await _orderRepository.GetPagedByTenantIdWithDetailsAsync(tenantId, pageNumber, pageSize);
-            
-            var totalItems = await _orderRepository.CountByTenantIdAsync(tenantId);
-
-            var orderDtos = orders.Select(MapToOrderResponseDto);
-            return StaticResponseBuilder<OrderResponseDto>.BuildPagedOk(orderDtos, totalItems, pageNumber, pageSize);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erro ao obter pedidos paginados");
-             return new PagedResponseDTO<OrderResponseDto>
-            {
-                Succeeded = false,
-                Code = 500,
-                Errors = new List<ErrorDTO> { new ErrorDTO { Message = "Erro interno do servidor", Code = "ERROR" } }
-            };
-        }
-    }
-
-    /// <summary>
-    /// ObtÃ©m o pedido ativo de uma mesa
-    /// </summary>
-    public async Task<ResponseDTO<OrderResponseDto?>> GetActiveOrderByTableIdAsync(int tableId)
-    {
-        try
-        {
-            var tenantId = _currentUserService.GetTenantGuid()!.Value;
-            // Get latest non-cancelled/rejected order for the table created today
-            var orders = await _orderRepository.FindOrderedAsync(
-                o => o.TenantId == tenantId && o.TableId == tableId && 
-                     o.Status != OrderStatus.Cancelled && o.Status != OrderStatus.Rejected &&
-                     o.CreatedAt >= DateTime.UtcNow.Date, 
-                o => o.CreatedAt, 
-                false
-            );
-            
-            var activeOrder = orders.FirstOrDefault();
-            
-            if (activeOrder == null)
-                return StaticResponseBuilder<OrderResponseDto?>.BuildOk(null); // No active order
-            
-            // Need to load details (Items)
-            var orderWithDetails = await _orderRepository.GetByIdWithIncludesAsync(activeOrder.Id, o => o.Items);
-            
-            // Manually load Addons for items if needed, but GetByIdWithIncludesAsync usually only does one level? 
-            // OrderRepository implementation of GetByIdWithIncludesAsync should be checked if it includes sub-includes (ThenInclude).
-            // Assuming it does or we need to fix it.
-            // Actually OrderItem -> Addons is a collection. EF Core Include usually needs ThenInclude.
-            // Let's assume standard repository handles it or we might need a specific query.
-            // Looking at CreateOrder, it creates entities.
-            // Looking at MapToOrderResponseDto, it maps items.
-            
-            return StaticResponseBuilder<OrderResponseDto?>.BuildOk(MapToOrderResponseDto(orderWithDetails!));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erro ao obter pedido ativo da mesa {TableId}", tableId);
-            return StaticResponseBuilder<OrderResponseDto?>.BuildError("Erro ao obter pedido da mesa");
-        }
-    }
-
-    /// <summary>
-    /// Adiciona itens a um pedido existente
-    /// </summary>
-    public async Task<ResponseDTO<OrderResponseDto>> AddItemsToOrderAsync(int orderId, List<CreateOrderItemRequestDto> items)
-    {
-        try
-        {
-            var tenantId = _currentUserService.GetTenantGuid()!.Value;
-            // Need to include Items to calculate totals correctly
-            var order = await _orderRepository.GetByIdWithIncludesAsync(orderId, o => o.Items);
-            
-            if (order == null)
-                return StaticResponseBuilder<OrderResponseDto>.BuildNotFound(null);
-                
-            if (order.TenantId != tenantId)
-                 return StaticResponseBuilder<OrderResponseDto>.BuildError("Pedido nÃ£o pertence ao tenant");
-                 
-            if (order.Status == OrderStatus.Cancelled || order.Status == OrderStatus.Rejected)
-                return StaticResponseBuilder<OrderResponseDto>.BuildError("NÃ£o Ã© possÃ­vel adicionar itens a um pedido cancelado ou rejeitado");
-
-            // Add items logic
-             foreach (var itemDto in items)
-            {
-                var product = await _productRepository.GetByIdAsync(itemDto.ProductId, tenantId);
-                if (product == null) continue;
-
-                var orderItem = new OrderItemEntity
-                {
-                    ProductId = itemDto.ProductId,
-                    ProductName = product.Name,
-                    UnitPrice = product.Price,
-                    Quantity = itemDto.Quantity,
-                    Notes = itemDto.Notes,
-                    Subtotal = product.Price * itemDto.Quantity,
-                    OrderId = order.Id // Ensure link
-                };
-
-                // Adicionar addons
-                foreach (var addonDto in itemDto.Addons)
-                {
-                    var addon = await _addonRepository.GetByIdAsync(addonDto.AddonId, tenantId);
-                    if (addon == null) continue;
-
-                    var orderItemAddon = new OrderItemAddon
-                    {
-                        AddonId = addonDto.AddonId,
-                        AddonName = addon.Name,
-                        UnitPrice = addon.Price,
-                        Quantity = addonDto.Quantity,
-                        Subtotal = addon.Price * addonDto.Quantity
-                    };
-
-                    orderItem.Addons.Add(orderItemAddon);
-                    orderItem.Subtotal += orderItemAddon.Subtotal;
-                }
-
-                order.Items.Add(orderItem);
-            }
-            
-            // Recalculate totals
-            order.Subtotal = order.Items.Sum(i => i.Subtotal);
-            order.Total = order.Subtotal + order.DeliveryFee - order.DiscountAmount;
-            order.UpdatedAt = DateTime.UtcNow;
-            
-            await _orderRepository.UpdateAsync(order);
-            
-            return StaticResponseBuilder<OrderResponseDto>.BuildOk(MapToOrderResponseDto(order));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erro ao adicionar itens ao pedido {OrderId}", orderId);
-            return StaticResponseBuilder<OrderResponseDto>.BuildError("Erro ao adicionar itens ao pedido");
-        }
-    }
-
-    /// <summary>
-    /// Fecha a conta da mesa
-    /// </summary>
-    public async Task<ResponseDTO<OrderResponseDto>> CloseTableAccountAsync(int tableId)
-    {
-        var result = await GetActiveOrderByTableIdAsync(tableId);
-        if (!result.Succeeded || result.Data == null)
-            return StaticResponseBuilder<OrderResponseDto>.BuildError("Nenhum pedido ativo para esta mesa");
-            
-        return StaticResponseBuilder<OrderResponseDto>.BuildOk(result.Data);
     }
     #endregion
 }

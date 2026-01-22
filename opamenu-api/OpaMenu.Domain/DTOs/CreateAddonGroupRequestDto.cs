@@ -1,4 +1,4 @@
-﻿using OpaMenu.Infrastructure.Shared.Enums;
+﻿using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 using System.ComponentModel.DataAnnotations;
 
 

@@ -37,7 +37,7 @@ public class AddonGroupRepository(OpamenuDbContext context) : OpamenuRepository<
             .ToListAsync();
     }
 
-    public async Task<AddonGroupEntity?> GetWithAddonsAsync(int id)
+    public async Task<AddonGroupEntity?> GetWithAddonsAsync(Guid id)
     {
         return await _dbSet
             .Where(ag => ag.Id == id)
@@ -45,7 +45,7 @@ public class AddonGroupRepository(OpamenuDbContext context) : OpamenuRepository<
             .FirstOrDefaultAsync();
     }
 
-    public async Task<IEnumerable<AddonGroupEntity>> GetByProductIdAsync(int productId)
+    public async Task<IEnumerable<AddonGroupEntity>> GetByProductIdAsync(Guid productId)
     {
         var context = (OpamenuDbContext)_context;
         return await context.ProductAddonGroups
@@ -58,7 +58,7 @@ public class AddonGroupRepository(OpamenuDbContext context) : OpamenuRepository<
             .ToListAsync();
     }
 
-    public async Task<bool> IsNameUniqueAsync(string name, int? excludeId = null, Guid? tenantId = null)
+    public async Task<bool> IsNameUniqueAsync(string name, Guid? excludeId = null, Guid? tenantId = null)
     {
         var query = _dbSet.Where(ag => ag.Name.ToLower() == name.ToLower() && ag.IsActive);
         
@@ -98,7 +98,7 @@ public class AddonGroupRepository(OpamenuDbContext context) : OpamenuRepository<
         await _context.SaveChangesAsync();
     }
 
-    public async Task<bool> HasAddonsAsync(int addonGroupId)
+    public async Task<bool> HasAddonsAsync(Guid addonGroupId)
     {
         var context = (OpamenuDbContext)_context;
         return await context.Addons

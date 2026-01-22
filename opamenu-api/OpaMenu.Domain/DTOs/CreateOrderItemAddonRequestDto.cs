@@ -9,7 +9,7 @@ namespace OpaMenu.Domain.DTOs
     {
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Id do addon precisa ser maior que 0")]
-        public int AddonId { get; set; }
+        public Guid AddonId { get; set; }
 
         [Required]
         [Range(1, 99, ErrorMessage = "Quantidade deve estar entre 1 e 99")]

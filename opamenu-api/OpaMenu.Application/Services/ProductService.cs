@@ -51,7 +51,7 @@ public class ProductService(
 
     }
 
-    public async Task<ResponseDTO<IEnumerable<ProductDto>>> GetProductsByCategoryAsync(int categoryId)
+    public async Task<ResponseDTO<IEnumerable<ProductDto>>> GetProductsByCategoryAsync(Guid categoryId)
     {
         try
         {
@@ -65,7 +65,7 @@ public class ProductService(
         }
     }
 
-    public async Task<ResponseDTO<ProductDto?>> GetProductByIdAsync(int id)
+    public async Task<ResponseDTO<ProductDto?>> GetProductByIdAsync(Guid id)
     {
         try
         {
@@ -111,7 +111,7 @@ public class ProductService(
 
     }
 
-    public async Task<ResponseDTO<bool>> DeleteProductAsync(int id)
+    public async Task<ResponseDTO<bool>> DeleteProductAsync(Guid id)
     {
         try
         {
@@ -140,7 +140,7 @@ public class ProductService(
         }
     }
 
-    public async Task<ResponseDTO<IEnumerable<ProductDto>>> ReorderProductsAsync(Dictionary<int, int> productOrders)
+    public async Task<ResponseDTO<IEnumerable<ProductDto>>> ReorderProductsAsync(Dictionary<Guid, int> productOrders)
     {
         try
         {
@@ -162,7 +162,7 @@ public class ProductService(
 
     }
 
-    public async Task<ResponseDTO<ProductDto>> ToggleProductStatusAsync(int id)
+    public async Task<ResponseDTO<ProductDto>> ToggleProductStatusAsync(Guid id)
     {
         try
         {
@@ -179,7 +179,7 @@ public class ProductService(
 
     }
 
-    public async Task<ResponseDTO<ProductDto>> UpdateProductPriceAsync(int id, decimal newPrice)
+    public async Task<ResponseDTO<ProductDto>> UpdateProductPriceAsync(Guid id, decimal newPrice)
     {
         try
         {
@@ -239,7 +239,7 @@ public class ProductService(
         }
     }
 
-    public async Task<ResponseDTO<bool>> CanDeleteCategoryAsync(int categoryId) {
+    public async Task<ResponseDTO<bool>> CanDeleteCategoryAsync(Guid categoryId) {
         try
         {
             var result = !await _productRepository.HasProductsInCategoryAsync(categoryId);
@@ -293,7 +293,7 @@ public class ProductService(
     /// <param name="request">Dados de atualizaÃ§Ã£o</param>
     /// <returns>Produto atualizado</returns>
     /// <exception cref="ArgumentException">Produto nÃ£o encontrado</exception>
-    public async Task<ResponseDTO<ProductDto>> UpdateProductFromDtoAsync(int id, UpdateProductRequest request)
+    public async Task<ResponseDTO<ProductDto>> UpdateProductFromDtoAsync(Guid id, UpdateProductRequest request)
     {
         try
         {
@@ -361,13 +361,13 @@ public class ProductService(
 
     }
 
-    public async Task<IEnumerable<object>> GetProductPriceHistoryAsync(int productId)
+    public async Task<IEnumerable<object>> GetProductPriceHistoryAsync(Guid productId)
     {
         await Task.CompletedTask;
         return [];
     }
 
-    public async Task LogProductActivityAsync(int productId, string action, string? previousValue, string? newValue, string? userId = null)
+    public async Task LogProductActivityAsync(Guid productId, string action, string? previousValue, string? newValue, Guid? userId = null)
     {
         await Task.CompletedTask;
     }
@@ -378,7 +378,7 @@ public class ProductService(
         return new BulkOperationResult { SuccessCount = 0, FailureCount = 0, Errors = new List<string>() };
     }
 
-    public async Task UpdateProductAvailabilityAsync(int id, bool isActive)
+    public async Task UpdateProductAvailabilityAsync(Guid id, bool isActive)
     {
         var product = await _productRepository.GetByIdAsync(id, _currentUserService.GetTenantGuid()!.Value);
         if (product != null)
@@ -445,7 +445,7 @@ public class ProductService(
         }
     }
 
-    public async Task<ResponseDTO<IEnumerable<ProductDto>>> GetProductsByCategoryAndSlugAsync(int categoryId, string slug)
+    public async Task<ResponseDTO<IEnumerable<ProductDto>>> GetProductsByCategoryAndSlugAsync(Guid categoryId, string slug)
     {
         try
         {
@@ -466,7 +466,7 @@ public class ProductService(
         }
     }
 
-    public async Task<ResponseDTO<ProductDto?>> GetProductByIdAndSlugAsync(int id, string slug)
+    public async Task<ResponseDTO<ProductDto?>> GetProductByIdAndSlugAsync(Guid id, string slug)
     {
         try
         {

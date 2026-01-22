@@ -14,12 +14,12 @@ namespace OpaMenu.Infrastructure.Shared.Entities
         /// Identificador do produto associado a este grupo de adicionais.
         /// </summary>
         [Column("product_id")]
-        public int ProductId { get; set; }
+        public Guid ProductId { get; set; }
         /// <summary>
         /// Identificador do grupo de adicionais associado a este produto.
         /// </summary>
         [Column("addon_group_id")]
-        public int AddonGroupId { get; set; }
+        public Guid AddonGroupId { get; set; }
         /// <summary>
         /// Ordem de exibiÃ§Ã£o do grupo de adicionais para este produto.
         /// </summary>

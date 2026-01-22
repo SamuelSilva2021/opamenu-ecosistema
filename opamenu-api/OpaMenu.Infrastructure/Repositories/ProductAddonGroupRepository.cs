@@ -9,7 +9,7 @@ public class ProductAddonGroupRepository(OpamenuDbContext context) : IProductAdd
 {
     private readonly OpamenuDbContext _context = context;
 
-    public async Task<ProductAddonGroupEntity?> GetByIdAsync(int id)
+    public async Task<ProductAddonGroupEntity?> GetByIdAsync(Guid id)
     {
         return await _context.ProductAddonGroups
             .Include(pag => pag.AddonGroup)
@@ -17,7 +17,7 @@ public class ProductAddonGroupRepository(OpamenuDbContext context) : IProductAdd
             .FirstOrDefaultAsync(pag => pag.Id == id);
     }
 
-    public async Task<IEnumerable<ProductAddonGroupEntity>> GetByProductIdAsync(int productId)
+    public async Task<IEnumerable<ProductAddonGroupEntity>> GetByProductIdAsync(Guid productId)
     {
         return await _context.ProductAddonGroups
             .Include(pag => pag.AddonGroup)
@@ -27,7 +27,7 @@ public class ProductAddonGroupRepository(OpamenuDbContext context) : IProductAdd
             .ToListAsync();
     }
 
-    public async Task<ProductAddonGroupEntity?> GetByProductAndAddonGroupAsync(int productId, int addonGroupId)
+    public async Task<ProductAddonGroupEntity?> GetByProductAndAddonGroupAsync(Guid productId, Guid addonGroupId)
     {
         return await _context.ProductAddonGroups
             .Include(pag => pag.AddonGroup)
@@ -76,13 +76,13 @@ public class ProductAddonGroupRepository(OpamenuDbContext context) : IProductAdd
         await _context.SaveChangesAsync();
     }
 
-    public async Task<bool> ExistsAsync(int productId, int addonGroupId)
+    public async Task<bool> ExistsAsync(Guid productId, Guid addonGroupId)
     {
         return await _context.ProductAddonGroups
             .AnyAsync(pag => pag.ProductId == productId && pag.AddonGroupId == addonGroupId);
     }
 
-    public async Task<IEnumerable<ProductEntity>> GetProductsByAddonGroupAsync(int addonGroupId)
+    public async Task<IEnumerable<ProductEntity>> GetProductsByAddonGroupAsync(Guid addonGroupId)
     {
         return await _context.ProductAddonGroups
             .Include(pag => pag.Product)

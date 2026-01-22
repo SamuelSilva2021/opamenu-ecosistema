@@ -2,6 +2,8 @@
 using OpaMenu.Application.Services.Interfaces;
 using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Domain.Interfaces;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
+using OpaMenu.Domain.DTOs.Payments;
 
 namespace OpaMenu.Application.Services;
 
@@ -46,7 +48,7 @@ public class PaymentService(
         }
     }
 
-    public async Task<PaymentResponseDto> ProcessPaymentAsync(PaymentRequest request)
+    public async Task<PaymentResponseDto> ProcessPaymentAsync(PaymentRequestDto request)
     {
         try
         {
@@ -60,22 +62,22 @@ public class PaymentService(
                 OrderId = request.OrderId,
                 Amount = request.Amount,
                 Method = request.Method,
-                Status = PaymentStatus.Pending,
+                Status = EPaymentStatus.Pending,
                 Notes = request.Notes
             };
             
             // Simular processamento baseado no mÃ©todo
             switch (request.Method)
             {
-                case PaymentMethod.Cash:
-                    payment.Status = PaymentStatus.Approved;
+                case EPaymentMethod.Cash:
+                    payment.Status = EPaymentStatus.Approved;
                     payment.ProcessedAt = DateTime.UtcNow;
                     break;
-                case PaymentMethod.Pix:
-                    payment.Status = PaymentStatus.Processing;
+                case EPaymentMethod.Pix:
+                    payment.Status = EPaymentStatus.Processing;
                     break;
                 default:
-                    payment.Status = PaymentStatus.Processing;
+                    payment.Status = EPaymentStatus.Processing;
                     break;
             }
             
@@ -101,7 +103,7 @@ public class PaymentService(
         }
     }
 
-    public async Task<PixResponseDto> GeneratePixPaymentAsync(PixRequest request)
+    public async Task<PixResponseDto> GeneratePixPaymentAsync(PixRequestDto request)
     {
         try
         {
@@ -116,8 +118,8 @@ public class PaymentService(
             {
                 OrderId = request.OrderId,
                 Amount = request.Amount,
-                Method = PaymentMethod.Pix,
-                Status = PaymentStatus.Pending,
+                Method = EPaymentMethod.Pix,
+                Status = EPaymentStatus.Pending,
                 GatewayTransactionId = pixId,
                 Notes = "Pagamento PIX gerado"
             };
@@ -140,7 +142,7 @@ public class PaymentService(
         }
     }
 
-    public async Task<PaymentStatusDto> GetPaymentStatusAsync(int paymentId)
+    public async Task<PaymentStatusDto> GetPaymentStatusAsync(Guid paymentId)
     {
         try
         {
@@ -168,7 +170,7 @@ public class PaymentService(
         }
     }
 
-    public async Task<RefundResponseDto> RefundPaymentAsync(RefundRequest request)
+    public async Task<RefundResponseDto> RefundPaymentAsync(RefundRequestDto request)
     {
         try
         {
@@ -179,7 +181,7 @@ public class PaymentService(
             if (payment == null)
                 throw new ArgumentException("Pagamento nÃ£o encontrado");
             
-            if (payment.Status != PaymentStatus.Approved)
+            if (payment.Status != EPaymentStatus.Approved)
                 throw new ArgumentException("Apenas pagamentos aprovados podem ser estornados");
             
             if (request.Amount <= 0 || request.Amount > payment.Amount)
@@ -201,7 +203,7 @@ public class PaymentService(
             
             if (request.Amount >= payment.Amount)
             {
-                payment.Status = PaymentStatus.Refunded;
+                payment.Status = EPaymentStatus.Refunded;
                 await _paymentRepository.UpdateAsync(payment);
             }
             
@@ -221,24 +223,5 @@ public class PaymentService(
             _logger.LogError(ex, "Erro ao processar estorno");
             throw;
         }
-    }
-
-    /// <summary>
-    /// Mapear Payment para PaymentResponseDto
-    /// </summary>
-    private static PaymentResponseDto MapToPaymentResponseDto(PaymentEntity payment)
-    {
-        return new PaymentResponseDto
-        {
-            Id = payment.Id,
-            OrderId = payment.OrderId,
-            Amount = payment.Amount,
-            Method = payment.Method,
-            Status = payment.Status,
-            GatewayTransactionId = payment.GatewayTransactionId,
-            CreatedAt = payment.CreatedAt,
-            ProcessedAt = payment.ProcessedAt,
-            Notes = payment.Notes
-        };
     }
 }

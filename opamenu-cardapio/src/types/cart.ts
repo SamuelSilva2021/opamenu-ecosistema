@@ -1,6 +1,7 @@
 import { Product, SelectedAddon } from '@/types/api';
 
 export interface CartItem {
+  cartItemId?: string; // Identificador único do item no carrinho
   product: Product;
   quantity: number;
   selectedAddons?: SelectedAddon[]; // Adicionais selecionados

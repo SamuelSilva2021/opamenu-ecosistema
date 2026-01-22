@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OpaMenu.Infrastructure.Shared.Entities;
@@ -8,11 +9,11 @@ public class OrderStatusHistoryEntity : BaseEntity
 {
     [Required]
     [Column("order_id")]
-    public int OrderId { get; set; }
+    public Guid OrderId { get; set; }
 
     [Required]
     [Column("status")]
-    public OrderStatus Status { get; set; }
+    public EOrderStatus Status { get; set; }
 
     [Required]
     [Column("timestamp")]
@@ -25,9 +26,8 @@ public class OrderStatusHistoryEntity : BaseEntity
     [Required]
     [MaxLength(50)]
     [Column("user_id")]
-    public string UserId { get; set; } = string.Empty;
+    public Guid UserId { get; set; }
 
-    // Navigation property
     [ForeignKey("OrderId")]
     public virtual OrderEntity Order { get; set; } = null!;
 }

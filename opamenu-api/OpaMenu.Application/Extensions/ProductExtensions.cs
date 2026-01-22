@@ -39,12 +39,9 @@ public static class ProductExtensions
     /// <param name="product">Produto a ser atualizado</param>
     /// <param name="categoryId">ID da nova categoria</param>
     /// <returns>O prÃ³prio produto para encadeamento fluente</returns>
-    public static ProductEntity UpdateCategory(this ProductEntity product, int categoryId)
+    public static ProductEntity UpdateCategory(this ProductEntity product, Guid categoryId)
     {
         ArgumentNullException.ThrowIfNull(product);
-        
-        if (categoryId <= 0)
-            throw new ArgumentException("Category ID must be greater than zero", nameof(categoryId));
 
         product.CategoryId = categoryId;
         product.UpdatedAt = DateTime.UtcNow;
@@ -123,7 +120,7 @@ public static class ProductExtensions
     }
 
     /// <summary>
-    /// Verifica se o produto estÃ¡ vÃ¡lido para criaÃ§Ã£o/atualizaÃ§Ã£o
+    /// Verifica se o produto é válido de acordo com as regras de negócio
     /// </summary>
     /// <param name="product">Produto a ser validado</param>
     /// <returns>True se vÃ¡lido, caso contrÃ¡rio lanÃ§a exceÃ§Ã£o</returns>
@@ -132,13 +129,14 @@ public static class ProductExtensions
     {
         ArgumentNullException.ThrowIfNull(product);
 
+        var guidDefault = new Guid();
+
         return product switch
         {
             { Name: null or "" } => throw new ArgumentException("Product name is required"),
             { Name.Length: > 100 } => throw new ArgumentException("Product name cannot exceed 100 characters"),
             { Description.Length: > 1000 } => throw new ArgumentException("Product description cannot exceed 1000 characters"),
             { Price: <= 0 } => throw new ArgumentException("Product price must be greater than zero"),
-            { CategoryId: <= 0 } => throw new ArgumentException("Product must have a valid category"),
             { DisplayOrder: < 0 } => throw new ArgumentException("Display order cannot be negative"),
             _ => true
         };

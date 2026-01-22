@@ -6,8 +6,8 @@ import { Trash2 } from "lucide-react";
 interface InlineCartProps {
   cartItems: CartItem[];
   total: number;
-  onUpdateQuantity: (productId: number, quantity: number) => void;
-  onRemoveItem: (productId: number) => void;
+  onUpdateQuantity: (itemId: number | string, quantity: number) => void;
+  onRemoveItem: (itemId: number | string) => void;
   onClearCart: () => void;
   onCheckout: () => void;
 }
@@ -49,20 +49,20 @@ const InlineCart = ({
       <CardContent className="space-y-4">
         <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
             {cartItems.map((item, index) => (
-                <div key={`${item.product.id}-${index}`} className="flex gap-2 text-sm">
+                <div key={item.cartItemId || `${item.product.id}-${index}`} className="flex gap-2 text-sm">
                     <div className="font-semibold text-gray-500 w-4 pt-0.5">{item.quantity}x</div>
                     <div className="flex-1 space-y-1">
                         <p className="font-medium text-gray-800">{item.product.name}</p>
                         {item.notes && <p className="text-xs text-gray-500">Obs: {item.notes}</p>}
                         <div className="flex items-center gap-3 mt-1">
                             <button 
-                                onClick={() => onUpdateQuantity(item.product.id, item.quantity - 1)}
+                                onClick={() => onUpdateQuantity(item.cartItemId || item.product.id, item.quantity - 1)}
                                 className="text-primary text-xs font-semibold hover:underline"
                             >
                                 Editar
                             </button>
                             <button 
-                                onClick={() => onRemoveItem(item.product.id)}
+                                onClick={() => onRemoveItem(item.cartItemId || item.product.id)}
                                 className="text-gray-400 text-xs hover:text-red-500 transition-colors"
                             >
                                 Remover

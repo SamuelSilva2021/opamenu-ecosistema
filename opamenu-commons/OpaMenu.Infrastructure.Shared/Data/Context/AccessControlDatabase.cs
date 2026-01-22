@@ -341,6 +341,7 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context
                 !_tenantContext.HasTenant || e.Permission.TenantId == _tenantContext.TenantId);
 
             modelBuilder.ApplyUtcDateTimeConvention();
+            modelBuilder.Seed();
         }
     }
 

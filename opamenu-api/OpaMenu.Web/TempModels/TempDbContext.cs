@@ -25,7 +25,7 @@ public partial class TempDbContext : DbContext
 
     public virtual DbSet<OrderRejection> OrderRejections { get; set; }
 
-    public virtual DbSet<OrderStatusHistory> OrderStatusHistories { get; set; }
+    public virtual DbSet<EOrderStatusHistory> EOrderStatusHistories { get; set; }
 
     public virtual DbSet<Payment> Payments { get; set; }
 
@@ -170,20 +170,20 @@ public partial class TempDbContext : DbContext
             entity.HasOne(d => d.Order).WithOne(p => p.OrderRejection).HasForeignKey<OrderRejection>(d => d.OrderId);
         });
 
-        modelBuilder.Entity<OrderStatusHistory>(entity =>
+        modelBuilder.Entity<EOrderStatusHistory>(entity =>
         {
-            entity.ToTable("OrderStatusHistory");
+            entity.ToTable("EOrderStatusHistory");
 
-            entity.HasIndex(e => e.OrderId, "IX_OrderStatusHistory_OrderId");
+            entity.HasIndex(e => e.OrderId, "IX_EOrderStatusHistory_OrderId");
 
-            entity.HasIndex(e => e.Status, "IX_OrderStatusHistory_Status");
+            entity.HasIndex(e => e.Status, "IX_EOrderStatusHistory_Status");
 
-            entity.HasIndex(e => e.Timestamp, "IX_OrderStatusHistory_Timestamp");
+            entity.HasIndex(e => e.Timestamp, "IX_EOrderStatusHistory_Timestamp");
 
             entity.Property(e => e.Notes).HasMaxLength(500);
             entity.Property(e => e.UserId).HasMaxLength(50);
 
-            entity.HasOne(d => d.Order).WithMany(p => p.OrderStatusHistories).HasForeignKey(d => d.OrderId);
+            entity.HasOne(d => d.Order).WithMany(p => p.EOrderStatusHistories).HasForeignKey(d => d.OrderId);
         });
 
         modelBuilder.Entity<Payment>(entity =>

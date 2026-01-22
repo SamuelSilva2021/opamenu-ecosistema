@@ -5,8 +5,8 @@ namespace OpaMenu.Domain.DTOs
     /// </summary>
     public class OrderItemAddonResponseDto
     {
-        public int Id { get; set; }
-        public int AddonId { get; set; }
+        public Guid Id { get; set; }
+        public Guid AddonId { get; set; }
         public string AddonName { get; set; } = string.Empty;
         public decimal UnitPrice { get; set; }
         public int Quantity { get; set; }

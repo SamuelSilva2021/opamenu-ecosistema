@@ -9,7 +9,7 @@ public class PaymentRefundEntity : BaseEntity
         
         [Required]
         [Column("payment_id")]
-        public int PaymentId { get; set; }
+        public Guid PaymentId { get; set; }
         
         [Required]
         [Range(0.01, double.MaxValue, ErrorMessage = "Refund amount must be greater than 0")]
@@ -37,7 +37,6 @@ public class PaymentRefundEntity : BaseEntity
         [Column("gateway_response")]
         public string? GatewayResponse { get; set; }
         
-        // Navigation property
         public virtual PaymentEntity Payment { get; set; } = null!;
 }
 

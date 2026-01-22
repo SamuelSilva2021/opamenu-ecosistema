@@ -313,25 +313,26 @@ export interface ProductSelection {
 }
 
 // Coupon Types
-export enum DiscountType {
-  Percentage = 1,
-  FixedAmount = 2
+export enum EDiscountType {
+  Porcentagem = 0,
+  ValorFixo = 1
 }
 
 export interface Coupon {
   id: number;
   code: string;
   description?: string;
-  discountType: DiscountType;
+  eDiscountType: EDiscountType;
   discountValue: number;
   minOrderValue?: number;
   maxDiscountValue?: number;
   usageLimit?: number;
-  usageCount?: number;
+  usageCount: number;
   startDate?: string;
   expirationDate?: string;
   isActive: boolean;
-  firstOrderOnly?: boolean;
+  firstOrderOnly: boolean;
+  createdAt: string;
 }
 
 export type CouponDto = Coupon;

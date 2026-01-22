@@ -27,6 +27,6 @@ namespace OpaMenu.Web.Models.DTOs
         /// <summary>
         /// ID da categoria para filtro
         /// </summary>
-        public int? CategoryId { get; set; }      
+        public Guid? CategoryId { get; set; }      
     }
 }

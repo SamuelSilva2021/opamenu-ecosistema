@@ -1,6 +1,6 @@
-﻿
+
 using OpaMenu.Infrastructure.Shared.Entities;
-using OpaMenu.Infrastructure.Shared.Enums;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Domain.DTOs
 {
@@ -9,7 +9,8 @@ namespace OpaMenu.Domain.DTOs
     /// </summary>
     public class OrderResponseDto
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
+        public Guid CustomerId { get; set; }
         public string CustomerName { get; set; } = string.Empty;
         public string CustomerPhone { get; set; } = string.Empty;
         public string? CustomerEmail { get; set; }
@@ -19,12 +20,12 @@ namespace OpaMenu.Domain.DTOs
         public decimal DiscountAmount { get; set; }
         public string? CouponCode { get; set; }
         public decimal Total { get; set; }
-        public OrderStatus Status { get; set; }
+        public EOrderStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public bool IsDelivery { get; set; }
         public EOrderType OrderType { get; set; }
-        public int? TableId { get; set; }
+        public Guid? TableId { get; set; }
         public string? Notes { get; set; }
         public int? EstimatedPreparationMinutes { get; set; }
         public DateTime? EstimatedDeliveryTime { get; set; }

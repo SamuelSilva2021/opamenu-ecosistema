@@ -24,7 +24,7 @@ public class CouponRepository(OpamenuDbContext context) : OpamenuRepository<Coup
         return await _dbSet.FirstOrDefaultAsync(c => c.TenantId == tenantId && c.Code == code);
     }
 
-    public async Task<bool> IsCodeUniqueAsync(string code, Guid tenantId, int? excludeId = null)
+    public async Task<bool> IsCodeUniqueAsync(string code, Guid tenantId, Guid? excludeId = null)
     {
         var query = _dbSet.Where(c => c.TenantId == tenantId && c.Code == code);
         if (excludeId.HasValue)

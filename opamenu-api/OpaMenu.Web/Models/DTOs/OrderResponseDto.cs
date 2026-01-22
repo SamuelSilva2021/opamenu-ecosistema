@@ -1,5 +1,6 @@
 ﻿using OpaMenu.Domain.DTOs;
 using OpaMenu.Infrastructure.Shared.Entities;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Web.Models.DTOs
 {
@@ -13,7 +14,7 @@ namespace OpaMenu.Web.Models.DTOs
         public decimal Subtotal { get; set; }
         public decimal DeliveryFee { get; set; }
         public decimal Total { get; set; }
-        public OrderStatus Status { get; set; }
+        public EOrderStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public bool IsDelivery { get; set; }
         public string? Notes { get; set; }

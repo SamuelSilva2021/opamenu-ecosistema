@@ -33,7 +33,7 @@ namespace OpaMenu.Infrastructure.Shared.Entities
         /// Identificador do grupo de adicionais ao qual este adicional pertence.
         /// </summary>
         [Column(name: "addon_group_id")]
-        public int AddonGroupId { get; set; }
+        public Guid AddonGroupId { get; set; }
         /// <summary>
         /// Ordem de exibiÃ§Ã£o do adicional dentro do grupo, permitindo que sejam exibidos em uma ordem especÃ­fica.
         /// </summary>
@@ -54,7 +54,7 @@ namespace OpaMenu.Infrastructure.Shared.Entities
         /// Grupo de adicionais ao qual este adicional pertence, permitindo que o adicional seja organizado dentro de um grupo especÃ­fico.
         /// </summary>
         public virtual AddonGroupEntity AddonGroup { get; set; } = null!;
-        public virtual ICollection<OrderItemAddon> OrderItemAddons { get; set; } = new List<OrderItemAddon>();
+        public virtual ICollection<OrderItemAddonEntity> OrderItemAddons { get; set; } = new List<OrderItemAddonEntity>();
     }
 }
 

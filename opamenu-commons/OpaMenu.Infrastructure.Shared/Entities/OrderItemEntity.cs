@@ -4,17 +4,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace OpaMenu.Infrastructure.Shared.Entities;
 
 [Table("order_items")]
-public class OrderItemEntity
+public class OrderItemEntity : BaseEntity
 {
-    [Key]
-    [Column("id")]
-    public int Id { get; set; }
-
     [Column("order_id")]
-    public int OrderId { get; set; }
+    public Guid OrderId { get; set; }
 
     [Column("product_id")]
-    public int ProductId { get; set; }
+    public Guid ProductId { get; set; }
 
     [Required]
     [MaxLength(100)]
@@ -34,9 +30,8 @@ public class OrderItemEntity
     [Column("notes")]
     public string? Notes { get; set; }
 
-    // Navigation properties
     public virtual OrderEntity Order { get; set; } = null!;
     public virtual ProductEntity Product { get; set; } = null!;
-    public virtual ICollection<OrderItemAddon> Addons { get; set; } = new List<OrderItemAddon>();
+    public virtual ICollection<OrderItemAddonEntity> Addons { get; set; } = new List<OrderItemAddonEntity>();
 }
 

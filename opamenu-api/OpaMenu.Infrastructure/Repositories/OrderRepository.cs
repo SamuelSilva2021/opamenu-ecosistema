@@ -3,6 +3,7 @@ using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Domain.Interfaces;
 using OpaMenu.Infrastructure.Shared.Data.Context;
 using OpaMenu.Infrastructure.Repositories;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Infrastructure.Repositories;
 
@@ -14,11 +15,11 @@ public class OrderRepository(OpamenuDbContext context) : OpamenuRepository<Order
     /// </summary>
     /// <param name="productId">ID do produto</param>
     /// <returns>ColeÃ§Ã£o de pedidos ativos com o produto</returns>
-    public async Task<IEnumerable<OrderEntity>> GetActiveOrdersWithProductAsync(int productId)
+    public async Task<IEnumerable<OrderEntity>> GetActiveOrdersWithProductAsync(Guid productId)
     {
         return await _dbSet
-            .Where(o =>o.Status != OrderStatus.Cancelled && 
-                       o.Status != OrderStatus.Delivered &&
+            .Where(o =>o.Status != EOrderStatus.Cancelled && 
+                       o.Status != EOrderStatus.Delivered &&
                        o.Items.Any(i => i.ProductId == productId))
             .Include(o => o.Items)
             .ThenInclude(i => i.Product)
@@ -44,7 +45,7 @@ public class OrderRepository(OpamenuDbContext context) : OpamenuRepository<Order
     /// </summary>
     /// <param name="status">Status do pedido</param>
     /// <returns>ColeÃ§Ã£o de pedidos com o status especificado</returns>
-    public async Task<IEnumerable<OrderEntity>> GetOrdersByStatusAsync(OrderStatus status)
+    public async Task<IEnumerable<OrderEntity>> GetOrdersByStatusAsync(EOrderStatus status)
     {
         return await _dbSet
             .Where(o => o.Status == status)
@@ -78,11 +79,11 @@ public class OrderRepository(OpamenuDbContext context) : OpamenuRepository<Order
     /// </summary>
     /// <param name="productAddonGroupId">ID do ProductAddonGroup</param>
     /// <returns>ColeÃ§Ã£o de pedidos ativos com o ProductAddonGroup</returns>
-    public async Task<IEnumerable<OrderEntity>> GetActiveOrdersWithProductAddonGroupAsync(int productAddonGroupId)
+    public async Task<IEnumerable<OrderEntity>> GetActiveOrdersWithProductAddonGroupAsync(Guid productAddonGroupId)
     {
         return await _dbSet
-            .Where(o => o.Status != OrderStatus.Cancelled && 
-                       o.Status != OrderStatus.Delivered &&
+            .Where(o => o.Status != EOrderStatus.Cancelled && 
+                       o.Status != EOrderStatus.Delivered &&
                        o.Items.Any(i => i.Addons.Any(a => a.Addon.AddonGroupId == productAddonGroupId)))
             .Include(o => o.Items)
                 .ThenInclude(i => i.Product)

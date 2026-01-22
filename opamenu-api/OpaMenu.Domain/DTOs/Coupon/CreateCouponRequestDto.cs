@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using OpaMenu.Infrastructure.Shared.Enums;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Domain.DTOs.Coupon;
 

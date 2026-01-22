@@ -8,7 +8,7 @@ public class ProductImageEntity : BaseEntity
 {
     [Required]
     [Column("product_id")]
-    public int ProductId { get; set; }
+    public Guid ProductId { get; set; }
 
     [Required]
     [MaxLength(255)]

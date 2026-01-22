@@ -5,6 +5,7 @@ using OpaMenu.Domain.DTOs;
 using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Web.Utils;
 using OpaMenu.Web.UserEntry;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Web.UserEntry.Order;
 
@@ -27,7 +28,7 @@ public class OrderQueueController : BaseController
     /// </summary>
     [HttpGet]
     public async Task<ActionResult<ApiResponse<IEnumerable<OrderResponseDto>>>> GetOrderQueue(
-        [FromQuery] OrderStatus? status = null,
+        [FromQuery] EOrderStatus? status = null,
         [FromQuery] DateTime? fromDate = null,
         [FromQuery] DateTime? toDate = null,
         [FromQuery] string? searchTerm = null,
@@ -42,9 +43,9 @@ public class OrderQueueController : BaseController
     /// Accept an order and add it to the preparation queue
     /// </summary>
     [HttpPost("{id}/accept")]
-    public async Task<ActionResult<ApiResponse<OrderResponseDto>>> AcceptOrder(int id, [FromBody] AcceptOrderRequestDto request)
+    public async Task<ActionResult<ApiResponse<OrderResponseDto>>> AcceptOrder(Guid id, [FromBody] AcceptOrderRequestDto request)
     {
-        var result = await _orderService.AcceptOrderAsync(id, request.EstimatedPreparationMinutes, request.Notes, request.UserId);
+        var result = await _orderService.AcceptOrderAsync(id, request.EstimatedPreparationMinutes, request.Notes);
         return BuildResponse(result);
     }
 
@@ -52,7 +53,7 @@ public class OrderQueueController : BaseController
     /// Reject an order with a reason
     /// </summary>
     [HttpPost("{id}/reject")]
-    public async Task<ActionResult<ApiResponse<OrderResponseDto>>> RejectOrder(int id, [FromBody] RejectOrderRequestDto request)
+    public async Task<ActionResult<ApiResponse<OrderResponseDto>>> RejectOrder(Guid id, [FromBody] RejectOrderRequestDto request)
     {
         var result = await _orderService.RejectOrderAsync(id, request.Reason, request.Notes, request.RejectedBy);
         return BuildResponse(result);
@@ -62,9 +63,9 @@ public class OrderQueueController : BaseController
     /// Update order status in the preparation workflow
     /// </summary>
     [HttpPut("{id}/status")]
-    public async Task<ActionResult<ApiResponse<OrderResponseDto>>> UpdateOrderStatus(int id, [FromBody] UpdateOrderStatusRequestDto request)
+    public async Task<ActionResult<ApiResponse<OrderResponseDto>>> UpdatEOrderStatus(Guid id, [FromBody] UpdatEOrderStatusRequestDto request)
     {
-        var result = await _orderService.UpdateOrderStatusAsync(id, request);
+        var result = await _orderService.UpdatEOrderStatusAsync(id, request);
         return BuildResponse(result);
     }
 

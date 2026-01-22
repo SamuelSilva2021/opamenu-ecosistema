@@ -1,4 +1,4 @@
-import { Coupon } from '@/types/api';
+import { Coupon, EDiscountType } from '@/types/api';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -14,7 +14,7 @@ export const CouponCard = ({ coupon, className }: CouponCardProps) => {
     toast.success('Cupom copiado!');
   };
 
-  const isPercentage = coupon.discountType === 1;
+  const isPercentage = coupon.eDiscountType === EDiscountType.Porcentagem;
 
   return (
     <div className={cn("bg-primary/5 rounded-lg p-4 flex justify-between items-center border border-primary/10 min-w-[300px] flex-shrink-0 snap-center", className)}>

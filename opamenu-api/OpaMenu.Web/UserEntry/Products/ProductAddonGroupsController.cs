@@ -27,7 +27,7 @@ public class ProductAddonGroupsController(
     /// Obter grupos de adicionais de um produto
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<IEnumerable<ProductAddonGroupResponseDto>>>> GetProductAddonGroups(int productId)
+    public async Task<ActionResult<ApiResponse<IEnumerable<ProductAddonGroupResponseDto>>>> GetProductAddonGroups(Guid productId)
     {
         var serviceResponse = await _productAddonGroupService.GetProductAddonGroupsAsync(productId);
         return BuildResponse(serviceResponse);
@@ -37,7 +37,7 @@ public class ProductAddonGroupsController(
     /// Obter produto com todos os grupos de adicionais
     /// </summary>
     [HttpGet("~/api/products/{productId:int}/with-addons")]
-    public async Task<ActionResult<ApiResponse<ProductWithAddonsResponseDto>>> GetProductWithAddons(int productId)
+    public async Task<ActionResult<ApiResponse<ProductWithAddonsResponseDto>>> GetProductWithAddons(Guid productId)
     {
         var serviceResponse = await _productAddonGroupService.GetProductWithAddonsAsync(productId);
         return BuildResponse(serviceResponse);
@@ -48,7 +48,7 @@ public class ProductAddonGroupsController(
     /// </summary>
     [HttpPost]
     public async Task<ActionResult<ApiResponse<ProductAddonGroupResponseDto>>> AddAddonGroupToProduct(
-        int productId, 
+        Guid productId, 
         [FromBody] AddProductAddonGroupRequestDto request)
     {
         if (!ModelState.IsValid)
@@ -63,8 +63,8 @@ public class ProductAddonGroupsController(
     /// </summary>
     [HttpPut("{addonGroupId:int}")]
     public async Task<ActionResult<ApiResponse<ProductAddonGroupResponseDto>>> UpdateProductAddonGroup(
-        int productId, 
-        int addonGroupId, 
+        Guid productId,
+        Guid addonGroupId, 
         [FromBody] UpdateProductAddonGroupRequestDto request)
     {
         if (!ModelState.IsValid)
@@ -78,7 +78,7 @@ public class ProductAddonGroupsController(
     /// Remover grupo de adicionais de um produto
     /// </summary>
     [HttpDelete("{addonGroupId:int}")]
-    public async Task<ActionResult<ApiResponse>> RemoveAddonGroupFromProduct(int productId, int addonGroupId)
+    public async Task<ActionResult<ApiResponse>> RemoveAddonGroupFromProduct(Guid productId, Guid addonGroupId)
     {
         var serviceResponse = await _productAddonGroupService.RemoveAddonGroupFromProductAsync(productId, addonGroupId);
         return BuildResponse(serviceResponse);
@@ -86,25 +86,25 @@ public class ProductAddonGroupsController(
 
     /// <summary>
     /// Reordenar grupos de adicionais de um produto
-    /// </summary>
-    [HttpPut("reorder")]
-    public async Task<ActionResult<ApiResponse>> ReorderProductAddonGroups(
-        int productId, 
-        [FromBody] Dictionary<int, int> groupOrders)
-    {
-        if (!ModelState.IsValid)
-            return BadRequest(ApiResponse.ErrorResponse("Dados inválidos", ModelState));
+    /// </summary>    //[HttpPut("reorder")]
+    //public async Task<ActionResult<ApiResponse>> ReorderProductAddonGroups(
+    //    Guid productId, 
+    //    [FromBody] Dictionary<int, int> groupOrders)
+    //{
+    //    if (!ModelState.IsValid)
+    //        return BadRequest(ApiResponse.ErrorResponse("Dados inválidos", ModelState));
 
-        var serviceResponse = await _productAddonGroupService.ReorderProductAddonGroupsAsync(productId, groupOrders);
-        return BuildResponse(serviceResponse);
-    }
+    //    var serviceResponse = await _productAddonGroupService.ReorderProductAddonGroupsAsync(productId, groupOrders);
+    //    return BuildResponse(serviceResponse);
+    //}
+
 
     /// <summary>
     /// Adicionar múltiplos grupos de adicionais a um produto
     /// </summary>
     [HttpPost("bulk")]
     public async Task<ActionResult<ApiResponse<IEnumerable<ProductAddonGroupResponseDto>>>> BulkAddAddonGroupsToProduct(
-        int productId, 
+        Guid productId, 
         [FromBody] IEnumerable<AddProductAddonGroupRequestDto> requests)
     {
         if (!ModelState.IsValid)
@@ -119,8 +119,8 @@ public class ProductAddonGroupsController(
     /// </summary>
     [HttpDelete("bulk")]
     public async Task<ActionResult<ApiResponse>> BulkRemoveAddonGroupsFromProduct(
-        int productId, 
-        [FromBody] IEnumerable<int> addonGroupIds)
+        Guid productId, 
+        [FromBody] IEnumerable<Guid> addonGroupIds)
     {
         if (!ModelState.IsValid)
             return BadRequest(ApiResponse.ErrorResponse("Dados inválidos", ModelState));
@@ -133,7 +133,7 @@ public class ProductAddonGroupsController(
     /// Verificar se um grupo de adicionais está associado a um produto
     /// </summary>
     [HttpGet("{addonGroupId:int}/exists")]
-    public async Task<ActionResult<ApiResponse<bool>>> IsAddonGroupAssignedToProduct(int productId, int addonGroupId)
+    public async Task<ActionResult<ApiResponse<bool>>> IsAddonGroupAssignedToProduct(Guid productId, Guid addonGroupId)
     {
         var serviceResponse = await _productAddonGroupService.IsAddonGroupAssignedToProductAsync(productId, addonGroupId);
         return BuildResponse(serviceResponse);

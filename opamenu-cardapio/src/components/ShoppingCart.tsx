@@ -5,14 +5,14 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { CartItem } from "@/types/cart";
-import { Coupon } from "@/types/api";
+import { Coupon, EDiscountType } from "@/types/api";
 
 interface ShoppingCartProps {
   isOpen: boolean;
   onClose: () => void;
   cartItems: CartItem[];
-  onUpdateQuantity: (productId: number, quantity: number) => void;
-  onRemoveItem: (productId: number) => void;
+  onUpdateQuantity: (itemId: number | string, quantity: number) => void;
+  onRemoveItem: (itemId: number | string) => void;
   onCheckout: () => void;
   subtotal: number;
   discount: number;
@@ -123,7 +123,7 @@ const ShoppingCart = ({
                 {/* Cart Items */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                   {cartItems.map((item, index) => (
-                    <div key={`${item.product.id}-${index}`} className="flex flex-col gap-3 p-3 bg-muted/30 rounded-lg">
+                    <div key={item.cartItemId || `${item.product.id}-${index}`} className="flex flex-col gap-3 p-3 bg-muted/30 rounded-lg">
                       <div className="flex gap-3">
                         <div className="w-16 h-16 bg-muted rounded-lg overflow-hidden flex-shrink-0">
                           {item.product.imageUrl ? (
@@ -152,7 +152,7 @@ const ShoppingCart = ({
                            <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => onRemoveItem(item.product.id)}
+                            onClick={() => onRemoveItem(item.cartItemId || item.product.id)}
                             className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8 -mt-1 -mr-1"
                           >
                             <X className="h-4 w-4" />
@@ -185,7 +185,7 @@ const ShoppingCart = ({
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => onUpdateQuantity(item.product.id, item.quantity - 1)}
+                            onClick={() => onUpdateQuantity(item.cartItemId || item.product.id, item.quantity - 1)}
                             className="h-8 w-8 p-0"
                           >
                             <Minus className="h-3 w-3" />
@@ -195,7 +195,7 @@ const ShoppingCart = ({
                           </span>
                           <Button
                             size="sm"
-                            onClick={() => onUpdateQuantity(item.product.id, item.quantity + 1)}
+                            onClick={() => onUpdateQuantity(item.cartItemId || item.product.id, item.quantity + 1)}
                             className="h-8 w-8 p-0 bg-opamenu-orange hover:bg-opamenu-orange/90"
                           >
                             <Plus className="h-3 w-3" />
@@ -217,7 +217,7 @@ const ShoppingCart = ({
                           <div>
                             <p className="font-medium text-green-800 text-sm">Cupom: {coupon.code}</p>
                             <p className="text-xs text-green-600">
-                              {coupon.discountType === 1 ? `${coupon.discountValue}% OFF` : `R$ ${coupon.discountValue} OFF`} applied
+                              {coupon.eDiscountType === EDiscountType.Porcentagem ? `${coupon.discountValue}% OFF` : `R$ ${coupon.discountValue} OFF`} applied
                             </p>
                           </div>
                         </div>

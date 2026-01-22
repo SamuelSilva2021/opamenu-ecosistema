@@ -28,7 +28,7 @@ public class ProductAddonGroupService(
     private readonly ICurrentUserService _currentUserService = currentUserService;
     private readonly IMapper _mapper = mapper;
 
-    public async Task<ResponseDTO<IEnumerable<ProductAddonGroupResponseDto>>> GetProductAddonGroupsAsync(int productId)
+    public async Task<ResponseDTO<IEnumerable<ProductAddonGroupResponseDto>>> GetProductAddonGroupsAsync(Guid productId)
     {
         try
         {
@@ -42,7 +42,7 @@ public class ProductAddonGroupService(
         }
     }
 
-    public async Task<ResponseDTO<ProductWithAddonsResponseDto?>> GetProductWithAddonsAsync(int productId)
+    public async Task<ResponseDTO<ProductWithAddonsResponseDto?>> GetProductWithAddonsAsync(Guid productId)
     {
         try
         {            
@@ -96,7 +96,7 @@ public class ProductAddonGroupService(
         }
     }
 
-    public async Task<ResponseDTO<ProductAddonGroupResponseDto>> AddAddonGroupToProductAsync(int productId, AddProductAddonGroupRequestDto request)
+    public async Task<ResponseDTO<ProductAddonGroupResponseDto>> AddAddonGroupToProductAsync(Guid productId, AddProductAddonGroupRequestDto request)
     {
         try
         {
@@ -133,7 +133,7 @@ public class ProductAddonGroupService(
         }
     }
 
-    public async Task<ResponseDTO<ProductAddonGroupResponseDto>> UpdateProductAddonGroupAsync(int productId, int addonGroupId, UpdateProductAddonGroupRequestDto request)
+    public async Task<ResponseDTO<ProductAddonGroupResponseDto>> UpdateProductAddonGroupAsync(Guid productId, Guid addonGroupId, UpdateProductAddonGroupRequestDto request)
     {
         try
         {
@@ -158,7 +158,7 @@ public class ProductAddonGroupService(
         
     }
 
-    public async Task<ResponseDTO<object>> RemoveAddonGroupFromProductAsync(int productId, int addonGroupId)
+    public async Task<ResponseDTO<object>> RemoveAddonGroupFromProductAsync(Guid productId, Guid addonGroupId)
     {
         try
         {
@@ -176,31 +176,31 @@ public class ProductAddonGroupService(
 
     }
 
-    public async Task<ResponseDTO<object>> ReorderProductAddonGroupsAsync(int productId, Dictionary<int, int> groupOrders)
-    {
-        try
-        {
-            var productAddonGroups = await _productAddonGroupRepository.GetByProductIdAsync(productId);
+    //public async Task<ResponseDTO<object>> ReorderProductAddonGroupsAsync(Guid productId, Dictionary<int, int> groupOrders)
+    //{
+    //    try
+    //    {
+    //        var productAddonGroups = await _productAddonGroupRepository.GetByProductIdAsync(productId);
 
-            foreach (var pag in productAddonGroups)
-            {
-                if (groupOrders.TryGetValue(pag.AddonGroupId, out int newOrder))
-                {
-                    pag.DisplayOrder = newOrder;
-                }
-            }
+    //        foreach (var pag in productAddonGroups)
+    //        {
+    //            if (groupOrders.TryGetValue(pag.AddonGroupId, out int newOrder))
+    //            {
+    //                pag.DisplayOrder = newOrder;
+    //            }
+    //        }
 
-            await _productAddonGroupRepository.SaveChangesAsync();
-            return StaticResponseBuilder<object>.BuildOk(new { });
-        }
-        catch (Exception ex)
-        {
-            return StaticResponseBuilder<object>.BuildErrorResponse(ex);
-        }
+    //        await _productAddonGroupRepository.SaveChangesAsync();
+    //        return StaticResponseBuilder<object>.BuildOk(new { });
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        return StaticResponseBuilder<object>.BuildErrorResponse(ex);
+    //    }
         
-    }
+    //}
 
-    public async Task<ResponseDTO<IEnumerable<ProductAddonGroupResponseDto>>> BulkAddAddonGroupsToProductAsync(int productId, IEnumerable<AddProductAddonGroupRequestDto> requests)
+    public async Task<ResponseDTO<IEnumerable<ProductAddonGroupResponseDto>>> BulkAddAddonGroupsToProductAsync(Guid productId, IEnumerable<AddProductAddonGroupRequestDto> requests)
     {
         try
         {
@@ -211,7 +211,7 @@ public class ProductAddonGroupService(
             var addonGroupIds = requests.Select(r => r.AddonGroupId).ToList();
 
             // Verificar se todos os grupos existem
-            var existingGroups = new List<int>();
+            var existingGroups = new List<Guid>();
             foreach (var id in addonGroupIds)
             {
                 var group = await _addonGroupRepository.GetByIdAsync(id, _currentUserService.GetTenantGuid()!.Value);
@@ -223,8 +223,7 @@ public class ProductAddonGroupService(
             if (missingGroups.Any())
                 throw new ArgumentException($"Grupos de adicionais nÃ£o encontrados: {string.Join(", ", missingGroups)}");
 
-            // Verificar se jÃ¡ nÃ£o estÃ£o associados
-            var existingAssociations = new List<int>();
+            var existingAssociations = new List<Guid>();
             foreach (var id in addonGroupIds)
             {
                 if (await _productAddonGroupRepository.ExistsAsync(productId, id))
@@ -255,7 +254,7 @@ public class ProductAddonGroupService(
         
     }
 
-    public async Task<ResponseDTO<bool>> BulkRemoveAddonGroupsFromProductAsync(int productId, IEnumerable<int> addonGroupIds)
+    public async Task<ResponseDTO<bool>> BulkRemoveAddonGroupsFromProductAsync(Guid productId, IEnumerable<Guid> addonGroupIds)
     {
         try
         {
@@ -277,7 +276,7 @@ public class ProductAddonGroupService(
 
     }
 
-    public async Task<ResponseDTO<bool>> IsAddonGroupAssignedToProductAsync(int productId, int addonGroupId)
+    public async Task<ResponseDTO<bool>> IsAddonGroupAssignedToProductAsync(Guid productId, Guid addonGroupId)
     {
         try
         {
@@ -290,7 +289,7 @@ public class ProductAddonGroupService(
         }
     }
 
-    public async Task<ResponseDTO<bool>> CanRemoveAddonGroupFromProductAsync(int productId, int addonGroupId)
+    public async Task<ResponseDTO<bool>> CanRemoveAddonGroupFromProductAsync(Guid productId, Guid addonGroupId)
     {
         // Verificar se há¡ pedidos pendentes que usam este produto com adicionais
         var ordersUsingProductWithAddons = false; // simulação de verificação
@@ -298,7 +297,7 @@ public class ProductAddonGroupService(
         return StaticResponseBuilder<bool>.BuildOk(true);
     }
 
-    public async Task<ResponseDTO<IEnumerable<ProductDto>>> GetProductsWithAddonGroupAsync(int addonGroupId)
+    public async Task<ResponseDTO<IEnumerable<ProductDto>>> GetProductsWithAddonGroupAsync(Guid addonGroupId)
     {
         try
         {

@@ -51,7 +51,7 @@ public class CategoriesController : FoodBaseController
     /// Obter categoria por ID
     /// </summary>
     [HttpGet("{id}")]
-    public async Task<ActionResult<ResponseDTO<CategoryResponseDto>>> GetCategory(int id)
+    public async Task<ActionResult<ResponseDTO<CategoryResponseDto>>> GetCategory(Guid id)
     {
         var response = await _categoryService.GetCategoryByIdAsync(id);
         return BuildResponse(response);
@@ -80,7 +80,7 @@ public class CategoriesController : FoodBaseController
     /// Atualizar categoria existente
     /// </summary>
     [HttpPatch("{id}")]
-    public async Task<ActionResult<ResponseDTO<CategoryResponseDto>>> UpdateCategory(int id, [FromBody] UpdateCategoryRequestDto updateDto)
+    public async Task<ActionResult<ResponseDTO<CategoryResponseDto>>> UpdateCategory(Guid id, [FromBody] UpdateCategoryRequestDto updateDto)
     {
         if (!ModelState.IsValid)
         {
@@ -99,7 +99,7 @@ public class CategoriesController : FoodBaseController
     /// Excluir categoria por ID
     /// </summary>
     [HttpDelete("{id}")]
-    public async Task<ActionResult<ResponseDTO<bool>>> DeleteCategory(int id)
+    public async Task<ActionResult<ResponseDTO<bool>>> DeleteCategory(Guid id)
     {
         var response = await _categoryService.DeleteCategoryAsync(id);
         return BuildResponse(response);
@@ -109,7 +109,7 @@ public class CategoriesController : FoodBaseController
     /// Alternar status ativo/inativo de uma categoria
     /// </summary>
     [HttpPut("{id}/toggle-active")]
-    public async Task<ActionResult<ResponseDTO<CategoryResponseDto>>> ToggleCategoryActive(int id)
+    public async Task<ActionResult<ResponseDTO<CategoryResponseDto>>> ToggleCategoryActive(Guid id)
     {
         var response = await _categoryService.ToggleCategoryActiveAsync(id);
         return BuildResponse(response);
@@ -119,7 +119,7 @@ public class CategoriesController : FoodBaseController
     /// Verificar se categoria pode ser excluída
     /// </summary>
     [HttpGet("{id}/can-delete")]
-    public async Task<ActionResult<ResponseDTO<object>>> CanDeleteCategory(int id)
+    public async Task<ActionResult<ResponseDTO<object>>> CanDeleteCategory(Guid id)
     {
         var canDelete = await _categoryService.CanDeleteCategoryAsync(id);
         return Ok(StaticResponseBuilder<object>.BuildOk(new { canDelete }));

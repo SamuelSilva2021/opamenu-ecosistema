@@ -7,7 +7,7 @@ using OpaMenu.Infrastructure.Shared.Data.Context;
 namespace OpaMenu.Infrastructure.Repositories;
 
 /// <summary>
-/// ImplementaÃ§Ã£o base genÃ©rica para RepositÃ³rios que pode ser utilizada com qualquer DbContext
+/// Implementação base do repositório genérico
 /// </summary>
 /// <typeparam name="T">Entidade que herda de BaseEntity</typeparam>
 public abstract class BaseRepository<T>(DbContext context) : IRepository<T> where T : BaseEntity
@@ -15,11 +15,10 @@ public abstract class BaseRepository<T>(DbContext context) : IRepository<T> wher
     protected readonly DbContext _context = context;
     protected readonly DbSet<T> _dbSet = context.Set<T>();
 
-    // MÃ©todos bÃ¡sicos existentes
     public virtual async Task<IEnumerable<T>> GetAllAsync(Guid tenantId) => 
         await _dbSet.Where(x => x.TenantId == tenantId).ToListAsync();
 
-    public virtual async Task<T?> GetByIdAsync(int id, Guid tenantId) => 
+    public virtual async Task<T?> GetByIdAsync(Guid id, Guid tenantId) => 
         await _dbSet.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
 
     public virtual async Task<T> AddAsync(T entity)
@@ -41,7 +40,7 @@ public abstract class BaseRepository<T>(DbContext context) : IRepository<T> wher
         await _context.SaveChangesAsync();
     }
 
-    public virtual async Task DeleteVirtualAsync(int id, Guid tenantId)
+    public virtual async Task DeleteVirtualAsync(Guid id, Guid tenantId)
     {
         var entity = await GetByIdAsync(id, tenantId);
         if (entity != null)
@@ -51,7 +50,7 @@ public abstract class BaseRepository<T>(DbContext context) : IRepository<T> wher
         }
     }
 
-    public virtual async Task<bool> ExistsAsync(int id)
+    public virtual async Task<bool> ExistsAsync(Guid id)
     {
         return await _dbSet.AnyAsync(x => x.Id == id);
     }
@@ -62,7 +61,6 @@ public abstract class BaseRepository<T>(DbContext context) : IRepository<T> wher
         await _context.SaveChangesAsync();
     }
 
-    // MÃ©todos com predicates e consultas complexas
     public virtual async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
     {
         return await _dbSet.Where(predicate).ToListAsync();
@@ -85,7 +83,6 @@ public abstract class BaseRepository<T>(DbContext context) : IRepository<T> wher
             : await _dbSet.CountAsync(predicate);
     }
 
-    // MÃ©todos com paginaÃ§Ã£o
     public virtual async Task<IEnumerable<T>> GetPagedAsync(int pageNumber, int pageSize)
     {
         return await _dbSet
@@ -103,7 +100,6 @@ public abstract class BaseRepository<T>(DbContext context) : IRepository<T> wher
             .ToListAsync();
     }
 
-    // MÃ©todos com ordenaÃ§Ã£o
     public virtual async Task<IEnumerable<T>> GetAllOrderedAsync<TKey>(Expression<Func<T, TKey>> orderBy, bool ascending = true)
     {
         return ascending 
@@ -119,14 +115,13 @@ public abstract class BaseRepository<T>(DbContext context) : IRepository<T> wher
             : await query.OrderByDescending(orderBy).ToListAsync();
     }
 
-    // MÃ©todos com includes para relacionamentos
     public virtual async Task<IEnumerable<T>> GetAllWithIncludesAsync(params Expression<Func<T, object>>[] includes)
     {
         var query = includes.Aggregate(_dbSet.AsQueryable(), (current, include) => current.Include(include));
         return await query.ToListAsync();
     }
 
-    public virtual async Task<T?> GetByIdWithIncludesAsync(int id, params Expression<Func<T, object>>[] includes)
+    public virtual async Task<T?> GetByIdWithIncludesAsync(Guid id, params Expression<Func<T, object>>[] includes)
     {
         var query = includes.Aggregate(_dbSet.AsQueryable(), (current, include) => current.Include(include));
         return await query.FirstOrDefaultAsync(x => x.Id == id);
@@ -156,7 +151,6 @@ public abstract class BaseRepository<T>(DbContext context) : IRepository<T> wher
     public virtual async Task<int> CountByTenantIdAsync(Guid tenantId) => 
         await _dbSet.CountAsync(x => x.TenantId == tenantId);
 
-    // OperaÃ§Ãµes em lote
     public virtual async Task AddRangeAsync(IEnumerable<T> entities)
     {
         var entitiesList = entities.ToList();
@@ -192,7 +186,6 @@ public abstract class BaseRepository<T>(DbContext context) : IRepository<T> wher
         await _context.SaveChangesAsync();
     }
 
-    // MÃ©todos de agregaÃ§Ã£o
     public virtual async Task<TResult> MaxAsync<TResult>(Expression<Func<T, TResult>> selector)
     {
         return await _dbSet.MaxAsync(selector);
@@ -215,7 +208,7 @@ public abstract class BaseRepository<T>(DbContext context) : IRepository<T> wher
 }
 
 /// <summary>
-/// RepositÃ³rio padrÃ£o para OpamenuDbContext
+/// Repositório específico para OpamenuDbContext
 /// </summary>
 public class OpamenuRepository<T> : BaseRepository<T> where T : BaseEntity
 {
@@ -225,7 +218,7 @@ public class OpamenuRepository<T> : BaseRepository<T> where T : BaseEntity
 }
 
 /// <summary>
-/// RepositÃ³rio especÃ­fico para MultiTenantDbContext
+/// Repositório específico para MultiTenantDbContext
 /// </summary>
 public class MultiTenantRepository<T> where T : class
 {
@@ -240,7 +233,7 @@ public class MultiTenantRepository<T> where T : class
 }
 
 /// <summary>
-/// RepositÃ³rio especÃ­fico para AccessControlDbContext
+/// Repositório específico para AccessControlDbContext
 /// </summary>
 public class AccessControlRepository<T> : BaseRepository<T> where T : BaseEntity
 {

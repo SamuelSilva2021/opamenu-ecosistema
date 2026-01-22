@@ -11,20 +11,20 @@ public interface IAddonGroupService
 {
     // CRUD Operations
     Task<ResponseDTO<IEnumerable<AddonGroupResponseDto>>> GetAllAddonGroupsAsync();
-    Task<ResponseDTO<AddonGroupResponseDto?>> GetAddonGroupByIdAsync(int id);
-    Task<ResponseDTO<AddonGroupResponseDto?>> GetAddonGroupWithAddonsAsync(int id);
-    Task<IEnumerable<AddonGroupEntity>> GetByProductIdAsync(int productId);
+    Task<ResponseDTO<AddonGroupResponseDto?>> GetAddonGroupByIdAsync(Guid id);
+    Task<ResponseDTO<AddonGroupResponseDto?>> GetAddonGroupWithAddonsAsync(Guid id);
+    Task<IEnumerable<AddonGroupEntity>> GetByProductIdAsync(Guid productId);
     Task<ResponseDTO<AddonGroupResponseDto>> CreateAddonGroupAsync(CreateAddonGroupRequestDto request);
-    Task<ResponseDTO<AddonGroupResponseDto>> UpdateAddonGroupAsync(int id, UpdateAddonGroupRequestDto request);
-    Task<ResponseDTO<bool>> DeleteAddonGroupAsync(int id);
+    Task<ResponseDTO<AddonGroupResponseDto>> UpdateAddonGroupAsync(Guid id, UpdateAddonGroupRequestDto request);
+    Task<ResponseDTO<bool>> DeleteAddonGroupAsync(Guid id);
     
     // Business Operations
-    Task<ResponseDTO<AddonGroupResponseDto>> ToggleAddonGroupStatusAsync(int id);
+    Task<ResponseDTO<AddonGroupResponseDto>> ToggleAddonGroupStatusAsync(Guid id);
     Task ReorderAddonGroupsAsync(Dictionary<int, int> groupOrders);
-    Task<ProductAddonGroupEntity> AssignToProductAsync(int productId, int addonGroupId, AssignAddonGroupToProductRequestDto request);
-    Task RemoveFromProductAsync(int productId, int addonGroupId);
+    Task<ProductAddonGroupEntity> AssignToProductAsync(Guid productId, Guid addonGroupId, AssignAddonGroupToProductRequestDto request);
+    Task RemoveFromProductAsync(Guid productId, Guid addonGroupId);
     
     // Validation
-    Task<bool> IsNameUniqueAsync(string name, int? excludeId = null);
-    Task<bool> CanDeleteAddonGroupAsync(int id);
+    Task<bool> IsNameUniqueAsync(string name, Guid? excludeId = null);
+    Task<bool> CanDeleteAddonGroupAsync(Guid id);
 }

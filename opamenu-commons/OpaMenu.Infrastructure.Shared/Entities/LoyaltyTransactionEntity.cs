@@ -1,25 +1,18 @@
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OpaMenu.Infrastructure.Shared.Entities;
-
-public enum LoyaltyTransactionType
-{
-    Earn = 1,
-    Redeem = 2,
-    Adjustment = 3,
-    Expired = 4
-}
 
 [Table("loyalty_transactions")]
 public class LoyaltyTransactionEntity : BaseEntity
 {
     [Required]
     [Column("customer_loyalty_balance_id")]
-    public int CustomerLoyaltyBalanceId { get; set; }
+    public Guid CustomerLoyaltyBalanceId { get; set; }
 
     [Column("order_id")]
-    public int? OrderId { get; set; }
+    public Guid OrderId { get; set; }
 
     [Required]
     [Column("points")]
@@ -27,7 +20,7 @@ public class LoyaltyTransactionEntity : BaseEntity
 
     [Required]
     [Column("type")]
-    public LoyaltyTransactionType Type { get; set; }
+    public ELoyaltyTransactionType Type { get; set; }
 
     [MaxLength(200)]
     [Column("description")]

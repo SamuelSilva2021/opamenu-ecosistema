@@ -4,11 +4,12 @@ using OpaMenu.Domain.DTOs;
 using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Domain.Interfaces;
 using System.Text.RegularExpressions;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Application.Services;
 
 /// <summary>
-/// ServiÃ§o para validaÃ§Ãµes de negÃ³cio relacionadas a pedidos
+/// Serviço de validação de pedidos
 /// </summary>
 public class OrderValidationService(
     IOrderRepository orderRepository,
@@ -23,7 +24,7 @@ public class OrderValidationService(
     private readonly ICurrentUserService _currentUserService = currentUserService;
 
     /// <summary>
-    /// Valida a criaÃ§Ã£o de um novo pedido
+    /// Valida a criação de um novo pedido
     /// </summary>
     public async Task<ApiResponse<bool>> ValidateCreateOrderAsync(CreateOrderRequestDto request)
     {
@@ -55,9 +56,9 @@ public class OrderValidationService(
     }
 
     /// <summary>
-    /// Valida a atualizaÃ§Ã£o de um pedido
+    /// Valida a atualização de um pedido
     /// </summary>
-    public async Task<ApiResponse<bool>> ValidateUpdateOrderAsync(int orderId, UpdateOrderRequestDto request)
+    public async Task<ApiResponse<bool>> ValidateUpdateOrderAsync(Guid orderId, UpdateOrderRequestDto request)
     {
         try
         {
@@ -68,7 +69,7 @@ public class OrderValidationService(
             }
 
             // Verificar se o pedido pode ser atualizado
-            if (order.Status == OrderStatus.Delivered || order.Status == OrderStatus.Cancelled)
+            if (order.Status == EOrderStatus.Delivered || order.Status == EOrderStatus.Cancelled)
             {
                 return ApiResponse<bool>.ErrorResponse("NÃ£o Ã© possÃ­vel atualizar pedidos finalizados ou cancelados.");
             }
@@ -95,7 +96,7 @@ public class OrderValidationService(
     /// <summary>
     /// Valida a mudanÃ§a de status de um pedido
     /// </summary>
-    public async Task<ApiResponse<bool>> ValidateStatusChangeAsync(int orderId, OrderStatus newStatus)
+    public async Task<ApiResponse<bool>> ValidateStatusChangeAsync(Guid orderId, EOrderStatus newStatus)
     {
         try
         {
@@ -122,7 +123,7 @@ public class OrderValidationService(
     /// <summary>
     /// Valida se um pedido pode ser aceito
     /// </summary>
-    public async Task<ApiResponse<bool>> ValidateAcceptOrderAsync(int orderId, AcceptOrderRequestDto request)
+    public async Task<ApiResponse<bool>> ValidateAcceptOrderAsync(Guid orderId, AcceptOrderRequestDto request)
     {
         try
         {
@@ -132,7 +133,7 @@ public class OrderValidationService(
                 return ApiResponse<bool>.ErrorResponse("Pedido nÃ£o encontrado.");
             }
 
-            if (order.Status != OrderStatus.Pending)
+            if (order.Status != EOrderStatus.Pending)
             {
                 return ApiResponse<bool>.BadRequest("Apenas pedidos pendentes podem ser aceitos.");
             }
@@ -149,7 +150,7 @@ public class OrderValidationService(
     /// <summary>
     /// Valida se um pedido pode ser rejeitado
     /// </summary>
-    public async Task<ApiResponse<bool>> ValidateRejectOrderAsync(int orderId, RejectOrderRequestDto request)
+    public async Task<ApiResponse<bool>> ValidateRejectOrderAsync(Guid orderId, RejectOrderRequestDto request)
     {
         try
         {
@@ -164,7 +165,7 @@ public class OrderValidationService(
                 return ApiResponse<bool>.BadRequest("Motivo da rejeiÃ§Ã£o Ã© obrigatÃ³rio.");
             }
 
-            if (order.Status != OrderStatus.Pending && order.Status != OrderStatus.Confirmed)
+            if (order.Status != EOrderStatus.Pending && order.Status != EOrderStatus.Confirmed)
             {
                 return ApiResponse<bool>.BadRequest("Apenas pedidos pendentes ou confirmados podem ser rejeitados.");
             }
@@ -181,7 +182,7 @@ public class OrderValidationService(
     /// <summary>
     /// Valida se um pedido pode ser cancelado
     /// </summary>
-    public async Task<ApiResponse<bool>> ValidateCancelOrderAsync(int orderId)
+    public async Task<ApiResponse<bool>> ValidateCancelOrderAsync(Guid orderId)
     {
         try
         {
@@ -191,7 +192,7 @@ public class OrderValidationService(
                 return ApiResponse<bool>.ErrorResponse("Pedido nÃ£o encontrado.");
             }
 
-            if (order.Status == OrderStatus.Delivered || order.Status == OrderStatus.Cancelled || order.Status == OrderStatus.Rejected)
+            if (order.Status == EOrderStatus.Delivered || order.Status == EOrderStatus.Cancelled || order.Status == EOrderStatus.Rejected)
             {
                 return ApiResponse<bool>.BadRequest($"NÃ£o Ã© possÃ­vel cancelar um pedido com status '{order.Status}'.");
             }
@@ -208,7 +209,7 @@ public class OrderValidationService(
     /// <summary>
     /// Valida se um pedido pode ser excluÃ­do
     /// </summary>
-    public async Task<ApiResponse<bool>> ValidateDeleteOrderAsync(int orderId)
+    public async Task<ApiResponse<bool>> ValidateDeleteOrderAsync(Guid orderId)
     {
         try
         {
@@ -219,7 +220,7 @@ public class OrderValidationService(
             }
 
             // Apenas pedidos pendentes ou cancelados podem ser excluÃ­dos
-            if (order.Status != OrderStatus.Pending && order.Status != OrderStatus.Cancelled)
+            if (order.Status != EOrderStatus.Pending && order.Status != EOrderStatus.Cancelled)
             {
                 return ApiResponse<bool>.ErrorResponse("Apenas pedidos pendentes ou cancelados podem ser excluÃ­dos.");
             }
@@ -301,18 +302,18 @@ public class OrderValidationService(
     /// <summary>
     /// Valida se uma transiÃ§Ã£o de status Ã© vÃ¡lida
     /// </summary>
-    public bool IsValidStatusTransition(OrderStatus currentStatus, OrderStatus newStatus)
+    public bool IsValidStatusTransition(EOrderStatus currentStatus, EOrderStatus newStatus)
     {
         return currentStatus switch
         {
-            OrderStatus.Pending => newStatus is OrderStatus.Confirmed or OrderStatus.Rejected or OrderStatus.Cancelled,
-            OrderStatus.Confirmed => newStatus is OrderStatus.Preparing or OrderStatus.Rejected or OrderStatus.Cancelled,
-            OrderStatus.Preparing => newStatus is OrderStatus.Ready or OrderStatus.Cancelled,
-            OrderStatus.Ready => newStatus is OrderStatus.OutForDelivery or OrderStatus.Delivered or OrderStatus.Cancelled,
-            OrderStatus.OutForDelivery => newStatus is OrderStatus.Delivered or OrderStatus.Cancelled,
-            OrderStatus.Delivered => false, // Status final
-            OrderStatus.Rejected => false, // Status final
-            OrderStatus.Cancelled => false, // Status final
+            EOrderStatus.Pending => newStatus is EOrderStatus.Confirmed or EOrderStatus.Rejected or EOrderStatus.Cancelled,
+            EOrderStatus.Confirmed => newStatus is EOrderStatus.Preparing or EOrderStatus.Rejected or EOrderStatus.Cancelled,
+            EOrderStatus.Preparing => newStatus is EOrderStatus.Ready or EOrderStatus.Cancelled,
+            EOrderStatus.Ready => newStatus is EOrderStatus.OutForDelivery or EOrderStatus.Delivered or EOrderStatus.Cancelled,
+            EOrderStatus.OutForDelivery => newStatus is EOrderStatus.Delivered or EOrderStatus.Cancelled,
+            EOrderStatus.Delivered => false, // Status final
+            EOrderStatus.Rejected => false, // Status final
+            EOrderStatus.Cancelled => false, // Status final
             _ => false
         };
     }

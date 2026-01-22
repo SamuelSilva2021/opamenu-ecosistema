@@ -33,7 +33,7 @@ public class CategoryRepository(OpamenuDbContext context) : OpamenuRepository<Ca
             .ToListAsync();
     }
 
-    public async Task<bool> HasProductsAsync(int categoryId)
+    public async Task<bool> HasProductsAsync(Guid categoryId)
     {
         var context = (OpamenuDbContext)_context;
         return await context.Products
@@ -63,7 +63,7 @@ public class CategoryRepository(OpamenuDbContext context) : OpamenuRepository<Ca
         await _context.SaveChangesAsync();
     }
 
-    public async Task<bool> IsNameUniqueAsync(Guid tenantId, string name, int? excludeId = null)
+    public async Task<bool> IsNameUniqueAsync(Guid tenantId, string name, Guid? excludeId = null)
     {
         var query = _dbSet.Where(x => x.Name.ToLower() == name.ToLower() && x.TenantId == tenantId);
         

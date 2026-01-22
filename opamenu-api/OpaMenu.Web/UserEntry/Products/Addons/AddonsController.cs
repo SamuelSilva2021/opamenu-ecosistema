@@ -32,7 +32,7 @@ public class AddonsController(
     /// Obter adicional por ID
     /// </summary>
     [HttpGet("{id}")]
-    public async Task<ActionResult<ApiResponse<AddonResponseDto>>> GetAddon(int id)
+    public async Task<ActionResult<ApiResponse<AddonResponseDto>>> GetAddon(Guid id)
     {
         var serviceResponse = await _addonService.GetAddonByIdAsync(id);
         return BuildResponse(serviceResponse);
@@ -61,7 +61,7 @@ public class AddonsController(
     /// Atualizar adicional existente
     /// </summary>
     [HttpPut("{id}")]
-    public async Task<ActionResult<ApiResponse<AddonResponseDto>>> UpdateAddon(int id, [FromBody] UpdateAddonRequestDto request)
+    public async Task<ActionResult<ApiResponse<AddonResponseDto>>> UpdateAddon(Guid id, [FromBody] UpdateAddonRequestDto request)
     {
         if (!ModelState.IsValid)
         {
@@ -80,7 +80,7 @@ public class AddonsController(
     /// Excluir adicional
     /// </summary>
     [HttpDelete("{id}")]
-    public async Task<ActionResult<ApiResponse<object>>> DeleteAddon(int id)
+    public async Task<ActionResult<ApiResponse<object>>> DeleteAddon(Guid id)
     {
         var serviceResponse = await _addonService.DeleteAddonAsync(id);
         return BuildResponse(serviceResponse);
@@ -90,7 +90,7 @@ public class AddonsController(
     /// Alternar status do adicional
     /// </summary>
     [HttpPatch("{id}/toggle-status")]
-    public async Task<ActionResult<ApiResponse<AddonResponseDto>>> ToggleAddonStatus(int id)
+    public async Task<ActionResult<ApiResponse<AddonResponseDto>>> ToggleAddonStatus(Guid id)
     {
         var serviceResponse = await _addonService.ToggleAddonStatusAsync(id);
         return BuildResponse(serviceResponse);

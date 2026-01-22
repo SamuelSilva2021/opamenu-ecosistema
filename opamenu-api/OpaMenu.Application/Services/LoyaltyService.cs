@@ -7,6 +7,7 @@ using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Domain.DTOs.Loyalty;
 using OpaMenu.Domain.Interfaces;
 using OpaMenu.Infrastructure.Shared.Entities;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Application.Services;
 
@@ -140,7 +141,7 @@ public class LoyaltyService(
         }
     }
 
-    public async Task ProcessOrderPointsAsync(int orderId, Guid tenantId)
+    public async Task ProcessOrderPointsAsync(Guid orderId, Guid tenantId)
     {
         try
         {
@@ -179,7 +180,7 @@ public class LoyaltyService(
                 CustomerLoyaltyBalance = balance, // Vínculo direto
                 OrderId = order.Id,
                 Points = pointsToEarn,
-                Type = LoyaltyTransactionType.Earn,
+                Type = ELoyaltyTransactionType.Earn,
                 Description = $"Pontos do pedido #{order.Id}",
                 ExpiresAt = program.PointsValidityDays.HasValue 
                     ? DateTime.UtcNow.AddDays(program.PointsValidityDays.Value) 
@@ -202,7 +203,7 @@ public class LoyaltyService(
         }
     }
 
-    public async Task<ResponseDTO<LoyaltyProgramDto>> ToggleStatus(Guid tenantId, int id, bool status)
+    public async Task<ResponseDTO<LoyaltyProgramDto>> ToggleStatus(Guid tenantId, Guid id, bool status)
     {
         try
         {

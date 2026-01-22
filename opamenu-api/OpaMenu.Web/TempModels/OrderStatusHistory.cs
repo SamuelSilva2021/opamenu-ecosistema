@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace OpaMenu.Web.TempModels;
 
-public partial class OrderStatusHistory
+public partial class EOrderStatusHistory
 {
     public int Id { get; set; }
 

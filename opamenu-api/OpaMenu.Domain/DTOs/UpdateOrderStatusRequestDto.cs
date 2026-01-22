@@ -1,4 +1,5 @@
 ﻿using OpaMenu.Infrastructure.Shared.Entities;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 using System.ComponentModel.DataAnnotations;
 
 namespace OpaMenu.Domain.DTOs
@@ -6,15 +7,15 @@ namespace OpaMenu.Domain.DTOs
     /// <summary>
     /// DTO para atualizar o status de um pedido
     /// </summary>
-    public class UpdateOrderStatusRequestDto
+    public class UpdatEOrderStatusRequestDto
     {
         [Required]
-        public OrderStatus Status { get; set; }
+        public EOrderStatus Status { get; set; }
 
         [StringLength(500)]
         public string? Notes { get; set; }
 
         [StringLength(50)]
-        public string? UserId { get; set; }
+        public Guid? UserId { get; set; }
     }
 }

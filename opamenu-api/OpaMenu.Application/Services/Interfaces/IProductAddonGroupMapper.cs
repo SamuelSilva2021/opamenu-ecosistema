@@ -31,7 +31,7 @@ public interface IProductAddonGroupMapper
     /// <param name="request">Request de criaÃ§Ã£o</param>
     /// <param name="productId">ID do produto</param>
     /// <returns>Entidade ProductAddonGroup</returns>
-    ProductAddonGroupEntity MapToEntity(AddProductAddonGroupRequestDto request, int productId);
+    ProductAddonGroupEntity MapToEntity(AddProductAddonGroupRequestDto request, Guid productId);
     
     /// <summary>
     /// Atualiza uma entidade ProductAddonGroup com dados do UpdateProductAddonGroupRequestDto

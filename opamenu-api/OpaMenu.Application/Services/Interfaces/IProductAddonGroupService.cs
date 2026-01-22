@@ -9,33 +9,33 @@ namespace OpaMenu.Application.Services.Interfaces
     public interface IProductAddonGroupService
     {
         // Obter grupos de adicionais de um produto
-        Task<ResponseDTO<IEnumerable<ProductAddonGroupResponseDto>>> GetProductAddonGroupsAsync(int productId);
+        Task<ResponseDTO<IEnumerable<ProductAddonGroupResponseDto>>> GetProductAddonGroupsAsync(Guid productId);
         
         // Obter produto com todos os grupos de adicionais
-        Task<ResponseDTO<ProductWithAddonsResponseDto?>> GetProductWithAddonsAsync(int productId);
+        Task<ResponseDTO<ProductWithAddonsResponseDto?>> GetProductWithAddonsAsync(Guid productId);
         
         // Adicionar grupo de adicionais a um produto
-        Task<ResponseDTO<ProductAddonGroupResponseDto>> AddAddonGroupToProductAsync(int productId, AddProductAddonGroupRequestDto request);
+        Task<ResponseDTO<ProductAddonGroupResponseDto>> AddAddonGroupToProductAsync(Guid productId, AddProductAddonGroupRequestDto request);
         
         // Atualizar configuraÃ§Ã£o de grupo de adicionais em um produto
-        Task<ResponseDTO<ProductAddonGroupResponseDto>> UpdateProductAddonGroupAsync(int productId, int addonGroupId, UpdateProductAddonGroupRequestDto request);
+        Task<ResponseDTO<ProductAddonGroupResponseDto>> UpdateProductAddonGroupAsync(Guid productId, Guid addonGroupId, UpdateProductAddonGroupRequestDto request);
         
         // Remover grupo de adicionais de um produto
-        Task<ResponseDTO<object>> RemoveAddonGroupFromProductAsync(int productId, int addonGroupId);
+        Task<ResponseDTO<object>> RemoveAddonGroupFromProductAsync(Guid productId, Guid addonGroupId);
         
         // Reordenar grupos de adicionais de um produto
-        Task<ResponseDTO<object>> ReorderProductAddonGroupsAsync(int productId, Dictionary<int, int> groupOrders);
+        //Task<ResponseDTO<object>> ReorderProductAddonGroupsAsync(Guid productId, Dictionary<int, int> groupOrders);
 
         // OperaÃ§Ãµes em lote
-        Task<ResponseDTO<IEnumerable<ProductAddonGroupResponseDto>>> BulkAddAddonGroupsToProductAsync(int productId, IEnumerable<AddProductAddonGroupRequestDto> requests);
-        Task<ResponseDTO<bool>> BulkRemoveAddonGroupsFromProductAsync(int productId, IEnumerable<int> addonGroupIds);
+        Task<ResponseDTO<IEnumerable<ProductAddonGroupResponseDto>>> BulkAddAddonGroupsToProductAsync(Guid productId, IEnumerable<AddProductAddonGroupRequestDto> requests);
+        Task<ResponseDTO<bool>> BulkRemoveAddonGroupsFromProductAsync(Guid productId, IEnumerable<Guid> addonGroupIds);
         
         // ValidaÃ§Ãµes
-        Task<ResponseDTO<bool>> IsAddonGroupAssignedToProductAsync(int productId, int addonGroupId);
-        Task<ResponseDTO<bool>> CanRemoveAddonGroupFromProductAsync(int productId, int addonGroupId);
+        Task<ResponseDTO<bool>> IsAddonGroupAssignedToProductAsync(Guid productId, Guid addonGroupId);
+        Task<ResponseDTO<bool>> CanRemoveAddonGroupFromProductAsync(Guid productId, Guid addonGroupId);
         
         // Busca e filtros
-        Task<ResponseDTO<IEnumerable<ProductDto>>> GetProductsWithAddonGroupAsync(int addonGroupId);
+        Task<ResponseDTO<IEnumerable<ProductDto>>> GetProductsWithAddonGroupAsync(Guid addonGroupId);
         Task<ResponseDTO<IEnumerable<ProductWithAddonsResponseDto>>> GetAllProductsWithAddonsAsync();
     }
 }

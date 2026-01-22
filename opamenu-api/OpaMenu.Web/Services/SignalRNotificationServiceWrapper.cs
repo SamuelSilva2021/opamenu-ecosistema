@@ -3,6 +3,7 @@ using OpaMenu.Application.Services.Interfaces;
 using OpaMenu.Domain.DTOs;
 using OpaMenu.Domain.DTOs.Product;
 using OpaMenu.Infrastructure.Shared.Entities;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 using OpaMenu.Web.Hubs;
 
 namespace OpaMenu.Web.Services;
@@ -57,13 +58,13 @@ public class SignalRNotificationServiceWrapper : INotificationService
         }
     }
 
-    public async Task NotifyOrderStatusChangedAsync(int orderId, OrderStatus oldStatus, OrderStatus newStatus, string? notes = null)
+    public async Task NotifyEOrderStatusChangedAsync(Guid orderId, EOrderStatus oldStatus, EOrderStatus newStatus, string? notes = null)
     {
         try
         {
             var notification = new
             {
-                Type = "OrderStatusChanged",
+                Type = "EOrderStatusChanged",
                 OrderId = orderId,
                 OldStatus = oldStatus.ToString(),
                 NewStatus = newStatus.ToString(),
@@ -73,10 +74,10 @@ public class SignalRNotificationServiceWrapper : INotificationService
             };
 
             await _hubContext.Clients.Group($"Order_{orderId}")
-                .SendAsync("OrderStatusUpdated", notification);
+                .SendAsync("EOrderStatusUpdated", notification);
 
             await _hubContext.Clients.Group("Administrators")
-                .SendAsync("OrderStatusChanged", notification);
+                .SendAsync("EOrderStatusChanged", notification);
 
             _logger.LogInformation("NotificaÃ§Ã£o de mudanÃ§a de status enviada: Pedido #{OrderId} - {OldStatus} â†’ {NewStatus}", 
                 orderId, oldStatus, newStatus);
@@ -138,7 +139,7 @@ public class SignalRNotificationServiceWrapper : INotificationService
         }
     }
 
-    public async Task NotifyOrderReadyAsync(int orderId)
+    public async Task NotifyOrderReadyAsync(Guid orderId)
     {
         try
         {
@@ -161,7 +162,7 @@ public class SignalRNotificationServiceWrapper : INotificationService
         }
     }
 
-    public async Task NotifyOrderCompletedAsync(int orderId)
+    public async Task NotifyOrderCompletedAsync(Guid orderId)
     {
         try
         {
@@ -218,7 +219,7 @@ public class SignalRNotificationServiceWrapper : INotificationService
         });
     }
 
-    public async Task NotifyProductRemovedAsync(int productId, string productName)
+    public async Task NotifyProductRemovedAsync(Guid productId, string productName)
     {
         await NotifyMenuUpdatedAsync("ProductRemoved", new { 
             ProductId = productId, 
@@ -226,7 +227,7 @@ public class SignalRNotificationServiceWrapper : INotificationService
         });
     }
 
-    public async Task NotifyProductPriceChangedAsync(int productId, string productName, decimal oldPrice, decimal newPrice)
+    public async Task NotifyProductPriceChangedAsync(Guid productId, string productName, decimal oldPrice, decimal newPrice)
     {
         await NotifyMenuUpdatedAsync("ProductPriceChanged", new { 
             ProductId = productId, 
@@ -236,7 +237,7 @@ public class SignalRNotificationServiceWrapper : INotificationService
         });
     }
 
-    public async Task NotifyProductUnavailableAsync(int productId, string productName)
+    public async Task NotifyProductUnavailableAsync(Guid productId, string productName)
     {
         await NotifyMenuUpdatedAsync("ProductUnavailable", new { 
             ProductId = productId, 
@@ -298,16 +299,16 @@ public class SignalRNotificationServiceWrapper : INotificationService
         }
     }
 
-    private static string GetStatusMessage(OrderStatus status) => status switch
+    private static string GetStatusMessage(EOrderStatus status) => status switch
     {
-        OrderStatus.Pending => "Aguardando confirmaÃ§Ã£o",
-        OrderStatus.Confirmed => "Pedido confirmado",
-        OrderStatus.Preparing => "Em preparaÃ§Ã£o",
-        OrderStatus.Ready => "Pronto para retirada",
-        OrderStatus.OutForDelivery => "Saiu para entrega",
-        OrderStatus.Delivered => "Entregue",
-        OrderStatus.Cancelled => "Cancelado",
-        OrderStatus.Rejected => "Rejeitado",
+        EOrderStatus.Pending => "Aguardando confirmaÃ§Ã£o",
+        EOrderStatus.Confirmed => "Pedido confirmado",
+        EOrderStatus.Preparing => "Em preparaÃ§Ã£o",
+        EOrderStatus.Ready => "Pronto para retirada",
+        EOrderStatus.OutForDelivery => "Saiu para entrega",
+        EOrderStatus.Delivered => "Entregue",
+        EOrderStatus.Cancelled => "Cancelado",
+        EOrderStatus.Rejected => "Rejeitado",
         _ => "Status desconhecido"
     };
 }

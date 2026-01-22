@@ -25,7 +25,7 @@ public class ProductValidationService(
     /// <summary>
     /// Valida se uma categoria existe e está ativa
     /// </summary>
-    public async Task<bool> IsCategoryValidAsync(int categoryId)
+    public async Task<bool> IsCategoryValidAsync(Guid categoryId)
     {
         var category = await _categoryRepository.GetByIdAsync(categoryId, _currentUserService.GetTenantGuid()!.Value);
         return category != null && category.IsActive;
@@ -34,7 +34,7 @@ public class ProductValidationService(
     /// <summary>
     /// Valida se o nome do produto é único
     /// </summary>
-    public async Task<bool> IsProductNameUniqueAsync(string name, int? excludeProductId = null)
+    public async Task<bool> IsProductNameUniqueAsync(string name, Guid? excludeProductId = null)
     {
         if (string.IsNullOrWhiteSpace(name))
             return false;
@@ -49,7 +49,7 @@ public class ProductValidationService(
     /// <summary>
     /// Valida se um produto pode ser excluído
     /// </summary>
-    public async Task<bool> CanDeleteProductAsync(int productId)
+    public async Task<bool> CanDeleteProductAsync(Guid productId)
     {
         // Verifica se o produto existe em pedidos ativos
         var activeOrders = await _orderRepository.GetActiveOrdersWithProductAsync(productId);
@@ -80,7 +80,7 @@ public class ProductValidationService(
     /// <summary>
     /// Valida dados de atualização de produto
     /// </summary>
-    public async Task<IEnumerable<string>> ValidateUpdateProductAsync(int productId, UpdateProductRequest request)
+    public async Task<IEnumerable<string>> ValidateUpdateProductAsync(Guid productId, UpdateProductRequest request)
     {
         var errors = new List<string>();
 
@@ -134,7 +134,7 @@ public class ProductValidationService(
     /// <summary>
     /// Valida dados de atualização de produto com resultado estruturado
     /// </summary>
-    public async Task<ValidationResult> ValidateUpdateProductRequestAsync(int productId, UpdateProductRequest request)
+    public async Task<ValidationResult> ValidateUpdateProductRequestAsync(Guid productId, UpdateProductRequest request)
     {
         var errors = await ValidateUpdateProductAsync(productId, request);
         var errorList = errors.ToList();

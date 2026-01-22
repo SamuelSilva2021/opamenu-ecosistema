@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using OpaMenu.Infrastructure.Shared.Entities;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Domain.DTOs
 {
@@ -13,7 +14,7 @@ namespace OpaMenu.Domain.DTOs
     public class UpdateOrderPaymentRequestDto
     {
         [Required]
-        public OpaMenu.Infrastructure.Shared.Entities.PaymentMethod PaymentMethod { get; set; }
+        public EPaymentMethod PaymentMethod { get; set; }
     }
 
     public class UpdateOrderDeliveryTypeRequestDto

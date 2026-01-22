@@ -12,18 +12,18 @@ namespace OpaMenu.Infrastructure.Shared.Entities
     /// Representa um item adicional de um pedido.
     /// </summary>
     [Table("order_item_addons")]
-    public class OrderItemAddon : BaseEntity
+    public class OrderItemAddonEntity : BaseEntity
     {
         /// <summary>
-        /// Identificador do item do pedido ao qual este item adicional estÃ¡ associado.
+        /// Identificador do item do pedido ao qual este item adicional está associado.
         /// </summary>
         [Column("order_item_id")]
-        public int OrderItemId { get; set; }
+        public Guid OrderItemId { get; set; }
         /// <summary>
         /// Identificador do addon associado a este item adicional do pedido.
         /// </summary>
         [Column("addon_id")]
-        public int AddonId { get; set; }
+        public Guid AddonId { get; set; }
         /// <summary>
         /// Nome do adcional associado a este item adicional do pedido.
         /// </summary>

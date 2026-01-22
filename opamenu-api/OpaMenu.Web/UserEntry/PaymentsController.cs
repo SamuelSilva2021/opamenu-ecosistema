@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using OpaMenu.Application.Services.Interfaces;
 using OpaMenu.Domain.DTOs;
+using OpaMenu.Domain.DTOs.Payments;
 
 namespace OpaMenu.Web.UserEntry;
 
@@ -41,7 +42,7 @@ public class PaymentsController(IPaymentService paymentService, ILogger<Payments
     /// <param name="request">Dados do pagamento</param>
     /// <returns>Resultado do processamento</returns>
     [HttpPost("process")]
-    public async Task<ActionResult<ApiResponse<PaymentResponseDto>>> ProcessPayment([FromBody] PaymentRequest request)
+    public async Task<ActionResult<ApiResponse<PaymentResponseDto>>> ProcessPayment([FromBody] PaymentRequestDto request)
     {
         try
         {
@@ -71,7 +72,7 @@ public class PaymentsController(IPaymentService paymentService, ILogger<Payments
     /// <param name="request">Dados para geração do PIX</param>
     /// <returns>Dados do PIX gerado</returns>
     [HttpPost("pix/generate")]
-    public async Task<ActionResult<ApiResponse<PixResponseDto>>> GeneratePixPayment([FromBody] PixRequest request)
+    public async Task<ActionResult<ApiResponse<PixResponseDto>>> GeneratePixPayment([FromBody] PixRequestDto request)
     {
         try
         {
@@ -101,7 +102,7 @@ public class PaymentsController(IPaymentService paymentService, ILogger<Payments
     /// <param name="paymentId">ID do pagamento</param>
     /// <returns>Status do pagamento</returns>
     [HttpGet("{paymentId}/status")]
-    public async Task<ActionResult<ApiResponse<PaymentStatusDto>>> GetPaymentStatus(int paymentId)
+    public async Task<ActionResult<ApiResponse<PaymentStatusDto>>> GetPaymentStatus(Guid paymentId)
     {
         try
         {
@@ -127,7 +128,7 @@ public class PaymentsController(IPaymentService paymentService, ILogger<Payments
     /// <param name="request">Dados do estorno</param>
     /// <returns>Resultado do estorno</returns>
     [HttpPost("{paymentId}/refund")]
-    public async Task<ActionResult<ApiResponse<RefundResponseDto>>> RefundPayment(int paymentId, [FromBody] RefundRequest request)
+    public async Task<ActionResult<ApiResponse<RefundResponseDto>>> RefundPayment(Guid paymentId, [FromBody] RefundRequestDto request)
     {
         try
         {

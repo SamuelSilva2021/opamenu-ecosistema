@@ -37,7 +37,7 @@ public class AddonGroupsController(
     /// Obter grupo de adicionais por ID
     /// </summary>
     [HttpGet("{id}")]
-    public async Task<ActionResult<ResponseDTO<AddonGroupResponseDto>>> GetAddonGroup(int id)
+    public async Task<ActionResult<ResponseDTO<AddonGroupResponseDto>>> GetAddonGroup(Guid id)
     {
         var serviceResponse = await _addonGroupService.GetAddonGroupWithAddonsAsync(id);
         return BuildResponse(serviceResponse);
@@ -66,7 +66,7 @@ public class AddonGroupsController(
     /// Atualizar grupo de adicionais existente
     /// </summary>
     [HttpPut("{id}")]
-    public async Task<ActionResult<ResponseDTO<AddonGroupResponseDto>>> UpdateAddonGroup(int id, [FromBody] UpdateAddonGroupRequestDto request)
+    public async Task<ActionResult<ResponseDTO<AddonGroupResponseDto>>> UpdateAddonGroup(Guid id, [FromBody] UpdateAddonGroupRequestDto request)
     {
         if (!ModelState.IsValid)
         {
@@ -85,7 +85,7 @@ public class AddonGroupsController(
     /// Alternar status ativo/inativo do grupo de adicionais
     /// </summary>
     [HttpPatch("{id}/toggle-status")]
-    public async Task<ActionResult<ResponseDTO<AddonGroupResponseDto>>> ToggleAddonGroupStatus(int id)
+    public async Task<ActionResult<ResponseDTO<AddonGroupResponseDto>>> ToggleAddonGroupStatus(Guid id)
     {
         var serviceResponse = await _addonGroupService.ToggleAddonGroupStatusAsync(id);
         return BuildResponse(serviceResponse);
@@ -95,7 +95,7 @@ public class AddonGroupsController(
     /// Excluir grupo de adicionais
     /// </summary>
     [HttpDelete("{id}")]
-    public async Task<ActionResult<ResponseDTO<bool>>> DeleteAddonGroup(int id)
+    public async Task<ActionResult<ResponseDTO<bool>>> DeleteAddonGroup(Guid id)
     {
         var serviceResponse = await _addonGroupService.DeleteAddonGroupAsync(id);
         return BuildResponse(serviceResponse);

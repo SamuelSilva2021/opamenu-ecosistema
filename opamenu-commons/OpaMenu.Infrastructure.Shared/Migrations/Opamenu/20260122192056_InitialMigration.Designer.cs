@@ -12,30 +12,28 @@ using OpaMenu.Infrastructure.Shared.Data.Context;
 namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
 {
     [DbContext(typeof(OpamenuDbContext))]
-    [Migration("20260109152532_InitialOpamenu")]
-    partial class InitialOpamenu
+    [Migration("20260122192056_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.9")
+                .HasAnnotation("ProductVersion", "9.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.AddonEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.AddonEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AddonGroupId")
-                        .HasColumnType("integer")
+                    b.Property<Guid>("AddonGroupId")
+                        .HasColumnType("uuid")
                         .HasColumnName("addon_group_id");
 
                     b.Property<DateTime>("CreatedAt")
@@ -83,16 +81,52 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.HasIndex("AddonGroupId");
 
                     b.ToTable("addons");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000020"),
+                            AddonGroupId = new Guid("00000000-0000-0000-0000-000000000004"),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Tiras crocantes de bacon",
+                            DisplayOrder = 1,
+                            IsActive = true,
+                            Name = "Bacon",
+                            Price = 4.00m,
+                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000021"),
+                            AddonGroupId = new Guid("00000000-0000-0000-0000-000000000004"),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Cebolas caramelizadas na manteiga",
+                            DisplayOrder = 2,
+                            IsActive = true,
+                            Name = "Cebola Caramelizada",
+                            Price = 3.00m,
+                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000022"),
+                            AddonGroupId = new Guid("00000000-0000-0000-0000-000000000004"),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Adicione uma fatia extra de queijo",
+                            DisplayOrder = 3,
+                            IsActive = true,
+                            Name = "Queijo Extra",
+                            Price = 2.50m,
+                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        });
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.AddonGroupEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.AddonGroupEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("uuid")
                         .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -144,16 +178,30 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.HasKey("Id");
 
                     b.ToTable("addon_groups");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000004"),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Escolha seus complementos favoritos",
+                            DisplayOrder = 1,
+                            IsActive = true,
+                            IsRequired = false,
+                            MaxSelections = 3,
+                            MinSelections = 0,
+                            Name = "Complementos do Hamburguer",
+                            Type = 2,
+                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        });
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.CategoryEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.CategoryEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("uuid")
                         .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -197,54 +245,22 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.HasData(
                         new
                         {
-                            Id = 1,
+                            Id = new Guid("00000000-0000-0000-0000-000000000002"),
                             CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Pratos principais do cardápio",
+                            Description = "Lanches diversos",
                             DisplayOrder = 1,
                             IsActive = true,
-                            Name = "Pratos Principais",
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Bebidas e refrescos",
-                            DisplayOrder = 2,
-                            IsActive = true,
-                            Name = "Bebidas",
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Doces e sobremesas",
-                            DisplayOrder = 3,
-                            IsActive = true,
-                            Name = "Sobremesas",
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Aperitivos e entradas",
-                            DisplayOrder = 4,
-                            IsActive = true,
-                            Name = "Entradas",
+                            Name = "Lanches",
                             UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         });
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.CouponEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.CouponEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("uuid")
                         .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Code")
                         .IsRequired()
@@ -261,8 +277,9 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .HasColumnType("character varying(200)")
                         .HasColumnName("description");
 
-                    b.Property<int>("DiscountType")
-                        .HasColumnType("integer")
+                    b.Property<string>("DiscountType")
+                        .IsRequired()
+                        .HasColumnType("text")
                         .HasColumnName("discount_type");
 
                     b.Property<decimal>("DiscountValue")
@@ -320,7 +337,7 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.ToTable("coupons");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.CustomerEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.CustomerEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -387,16 +404,213 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.HasIndex("Phone");
 
                     b.ToTable("customers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000005"),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "exemplo@exemplo.com",
+                            Name = "Cliente Exemplo",
+                            Phone = "11999999999",
+                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        });
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.OrderEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.CustomerLoyaltyBalanceEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<int>("Balance")
+                        .HasColumnType("integer")
+                        .HasColumnName("balance");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("customer_id");
+
+                    b.Property<DateTime>("LastActivityAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_activity_at");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<int>("TotalEarned")
+                        .HasColumnType("integer")
+                        .HasColumnName("total_earned");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("TenantId", "CustomerId")
+                        .IsUnique();
+
+                    b.ToTable("customer_loyalty_balances");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000070"),
+                            Balance = 0,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CustomerId = new Guid("00000000-0000-0000-0000-000000000005"),
+                            LastActivityAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            TenantId = new Guid("00000000-0000-0000-0000-000000000001"),
+                            TotalEarned = 0,
+                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        });
+                });
+
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.LoyaltyProgramEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<decimal>("CurrencyValue")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)")
+                        .HasColumnName("currency_value");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("description");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<decimal>("MinOrderValue")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)")
+                        .HasColumnName("min_order_value");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<decimal>("PointsPerCurrency")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)")
+                        .HasColumnName("points_per_currency");
+
+                    b.Property<int?>("PointsValidityDays")
+                        .HasColumnType("integer")
+                        .HasColumnName("points_validity_days");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .IsUnique();
+
+                    b.ToTable("loyalty_programs");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000060"),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CurrencyValue = 0.10m,
+                            Description = "Ganhe pontos a cada compra e troque por descontos!",
+                            IsActive = true,
+                            MinOrderValue = 20.00m,
+                            Name = "Programa de Fidelidade Padrão",
+                            PointsPerCurrency = 1.0m,
+                            TenantId = new Guid("00000000-0000-0000-0000-000000000001"),
+                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        });
+                });
+
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.LoyaltyTransactionEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("CustomerLoyaltyBalanceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("customer_loyalty_balance_id");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("description");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<int>("Points")
+                        .HasColumnType("integer")
+                        .HasColumnName("points");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("type");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerLoyaltyBalanceId");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("loyalty_transactions");
+                });
+
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.OrderEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<string>("CouponCode")
                         .HasMaxLength(50)
@@ -440,7 +654,10 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .HasColumnName("delivery_fee");
 
                     b.Property<decimal>("DiscountAmount")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(10, 2)
                         .HasColumnType("decimal(10,2)")
+                        .HasDefaultValue(0m)
                         .HasColumnName("discount_amount");
 
                     b.Property<DateTime?>("EstimatedDeliveryTime")
@@ -460,16 +677,20 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("notes");
 
-                    b.Property<int>("OrderType")
-                        .HasColumnType("integer")
+                    b.Property<string>("OrderType")
+                        .IsRequired()
+                        .HasColumnType("text")
                         .HasColumnName("order_type");
 
                     b.Property<int>("QueuePosition")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
+                        .HasDefaultValue(0)
                         .HasColumnName("queue_position");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer")
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
                         .HasColumnName("status");
 
                     b.Property<decimal>("Subtotal")
@@ -477,8 +698,8 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .HasColumnType("decimal(10,2)")
                         .HasColumnName("subtotal");
 
-                    b.Property<int?>("TableId")
-                        .HasColumnType("integer")
+                    b.Property<Guid?>("TableId")
+                        .HasColumnType("uuid")
                         .HasColumnName("table_id");
 
                     b.Property<Guid?>("TenantId")
@@ -508,20 +729,39 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
 
                     b.HasIndex("TableId");
 
-                    b.ToTable("orders");
+                    b.ToTable("orders", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000006"),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CustomerId = new Guid("00000000-0000-0000-0000-000000000005"),
+                            CustomerName = "Cliente Exemplo",
+                            CustomerPhone = "11999999999",
+                            DeliveryAddress = "Rua Exemplo, 123, Bairro, Cidade, Estado",
+                            DeliveryFee = 5.00m,
+                            DiscountAmount = 0m,
+                            IsDelivery = true,
+                            OrderType = "Delivery",
+                            QueuePosition = 0,
+                            Status = "Pending",
+                            Subtotal = 25.90m,
+                            TenantId = new Guid("00000000-0000-0000-0000-000000000001"),
+                            Total = 30.90m,
+                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        });
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.OrderItemAddon", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.OrderItemAddonEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AddonId")
-                        .HasColumnType("integer")
+                    b.Property<Guid>("AddonId")
+                        .HasColumnType("uuid")
                         .HasColumnName("addon_id");
 
                     b.Property<string>("AddonName")
@@ -534,8 +774,8 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
-                    b.Property<int>("OrderItemId")
-                        .HasColumnType("integer")
+                    b.Property<Guid>("OrderItemId")
+                        .HasColumnType("uuid")
                         .HasColumnName("order_item_id");
 
                     b.Property<int>("Quantity")
@@ -567,26 +807,28 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.ToTable("order_item_addons");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.OrderItemEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.OrderItemEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
                         .HasColumnName("notes");
 
-                    b.Property<int>("OrderId")
-                        .HasColumnType("integer")
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid")
                         .HasColumnName("order_id");
 
-                    b.Property<int>("ProductId")
-                        .HasColumnType("integer")
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
                         .HasColumnName("product_id");
 
                     b.Property<string>("ProductName")
@@ -604,10 +846,18 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .HasColumnType("decimal(10,2)")
                         .HasColumnName("subtotal");
 
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
                     b.Property<decimal>("UnitPrice")
                         .HasPrecision(10, 2)
                         .HasColumnType("decimal(10,2)")
                         .HasColumnName("unit_price");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.HasKey("Id");
 
@@ -616,16 +866,28 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.HasIndex("ProductId");
 
                     b.ToTable("order_items");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000080"),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            OrderId = new Guid("00000000-0000-0000-0000-000000000006"),
+                            ProductId = new Guid("00000000-0000-0000-0000-000000000003"),
+                            ProductName = "Hamburguer Clássico",
+                            Quantity = 1,
+                            Subtotal = 25.90m,
+                            UnitPrice = 25.90m,
+                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        });
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.OrderRejectionEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.OrderRejectionEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("uuid")
                         .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -636,8 +898,8 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .HasColumnType("character varying(500)")
                         .HasColumnName("notes");
 
-                    b.Property<int>("OrderId")
-                        .HasColumnType("integer")
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid")
                         .HasColumnName("order_id");
 
                     b.Property<string>("Reason")
@@ -674,14 +936,12 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.ToTable("order_rejections");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.OrderStatusHistoryEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.OrderStatusHistoryEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("uuid")
                         .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -692,8 +952,8 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .HasColumnType("character varying(500)")
                         .HasColumnName("notes");
 
-                    b.Property<int>("OrderId")
-                        .HasColumnType("integer")
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid")
                         .HasColumnName("order_id");
 
                     b.Property<int>("Status")
@@ -712,10 +972,9 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
+                    b.Property<Guid>("UserId")
                         .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
+                        .HasColumnType("uuid")
                         .HasColumnName("user_id");
 
                     b.HasKey("Id");
@@ -729,14 +988,12 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.ToTable("order_status_histories");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.PaymentEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.PaymentEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("uuid")
                         .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(10,2)")
@@ -756,8 +1013,9 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .HasColumnType("character varying(200)")
                         .HasColumnName("gateway_transaction_id");
 
-                    b.Property<int>("Method")
-                        .HasColumnType("integer")
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasColumnType("text")
                         .HasColumnName("method");
 
                     b.Property<string>("Notes")
@@ -765,16 +1023,17 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .HasColumnType("character varying(500)")
                         .HasColumnName("notes");
 
-                    b.Property<int>("OrderId")
-                        .HasColumnType("integer")
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid")
                         .HasColumnName("order_id");
 
                     b.Property<DateTime?>("ProcessedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("processed_at");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer")
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
                         .HasColumnName("status");
 
                     b.Property<Guid?>("TenantId")
@@ -798,14 +1057,12 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.ToTable("payments");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.PaymentMethodEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.PaymentMethodEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("uuid")
                         .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -845,10 +1102,6 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .HasColumnType("character varying(100)")
                         .HasColumnName("slug");
 
-                    b.Property<Guid?>("TenantId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("tenant_id");
-
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -869,7 +1122,7 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.HasData(
                         new
                         {
-                            Id = 1,
+                            Id = new Guid("00000000-0000-0000-0000-000000000010"),
                             CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Pagamento via cartão de crédito",
                             DisplayOrder = 1,
@@ -881,7 +1134,7 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         },
                         new
                         {
-                            Id = 2,
+                            Id = new Guid("00000000-0000-0000-0000-000000000011"),
                             CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Pagamento via cartão de débito",
                             DisplayOrder = 2,
@@ -893,9 +1146,9 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         },
                         new
                         {
-                            Id = 3,
+                            Id = new Guid("00000000-0000-0000-0000-000000000012"),
                             CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Pagamento instantâneo via PIX",
+                            Description = "Pagamento via PIX",
                             DisplayOrder = 3,
                             IsActive = true,
                             IsOnline = true,
@@ -905,9 +1158,9 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         },
                         new
                         {
-                            Id = 4,
+                            Id = new Guid("00000000-0000-0000-0000-000000000013"),
                             CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Pagamento em espécie",
+                            Description = "Pagamento em dinheiro",
                             DisplayOrder = 4,
                             IsActive = true,
                             IsOnline = false,
@@ -917,14 +1170,12 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         });
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.PaymentRefundEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.PaymentRefundEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("uuid")
                         .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(10,2)")
@@ -944,8 +1195,8 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("gateway_response");
 
-                    b.Property<int>("PaymentId")
-                        .HasColumnType("integer")
+                    b.Property<Guid>("PaymentId")
+                        .HasColumnType("uuid")
                         .HasColumnName("payment_id");
 
                     b.Property<string>("Reason")
@@ -981,17 +1232,15 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.ToTable("payment_refunds");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.ProductAddonGroupEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.ProductAddonGroupEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AddonGroupId")
-                        .HasColumnType("integer")
+                    b.Property<Guid>("AddonGroupId")
+                        .HasColumnType("uuid")
                         .HasColumnName("addon_group_id");
 
                     b.Property<DateTime>("CreatedAt")
@@ -1014,8 +1263,8 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .HasColumnType("integer")
                         .HasColumnName("min_selections_override");
 
-                    b.Property<int>("ProductId")
-                        .HasColumnType("integer")
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
                         .HasColumnName("product_id");
 
                     b.Property<Guid?>("TenantId")
@@ -1034,19 +1283,29 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .IsUnique();
 
                     b.ToTable("product_addon_groups");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000030"),
+                            AddonGroupId = new Guid("00000000-0000-0000-0000-000000000004"),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DisplayOrder = 0,
+                            IsRequired = false,
+                            ProductId = new Guid("00000000-0000-0000-0000-000000000003"),
+                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        });
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.ProductEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.ProductEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("integer")
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uuid")
                         .HasColumnName("category_id");
 
                     b.Property<DateTime>("CreatedAt")
@@ -1103,86 +1362,24 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.HasData(
                         new
                         {
-                            Id = 1,
-                            CategoryId = 1,
+                            Id = new Guid("00000000-0000-0000-0000-000000000003"),
+                            CategoryId = new Guid("00000000-0000-0000-0000-000000000002"),
                             CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Hambúrguer artesanal com carne bovina, queijo, alface, tomate e molho especial",
+                            Description = "Hamburguer artesanal com carne bovina, queijo, alface, tomate e molho especial",
                             DisplayOrder = 1,
                             IsActive = true,
-                            Name = "Hambúrguer Clássico",
+                            Name = "Hamburguer Clássico",
                             Price = 25.90m,
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CategoryId = 1,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Pizza tradicional com molho de tomate, mussarela e manjericão fresco",
-                            DisplayOrder = 2,
-                            IsActive = true,
-                            Name = "Pizza Margherita",
-                            Price = 32.50m,
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CategoryId = 2,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Refrigerante gelado em lata de 350ml - diversos sabores",
-                            DisplayOrder = 1,
-                            IsActive = true,
-                            Name = "Refrigerante Lata",
-                            Price = 5.50m,
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CategoryId = 2,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Suco natural de frutas frescas - 400ml",
-                            DisplayOrder = 2,
-                            IsActive = true,
-                            Name = "Suco Natural",
-                            Price = 8.90m,
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = 5,
-                            CategoryId = 3,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Pudim caseiro de leite condensado com calda de açúcar",
-                            DisplayOrder = 1,
-                            IsActive = true,
-                            Name = "Pudim de Leite",
-                            Price = 12.90m,
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = 6,
-                            CategoryId = 4,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Batatas crocantes cortadas na casa, tempero especial - serve até 3 pessoas",
-                            DisplayOrder = 1,
-                            IsActive = true,
-                            Name = "Porção de Batata Frita",
-                            Price = 18.50m,
                             UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         });
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.ProductImageEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.ProductImageEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("uuid")
                         .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("AspectRatio")
                         .HasMaxLength(50)
@@ -1243,8 +1440,8 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .HasColumnType("character varying(255)")
                         .HasColumnName("original_name");
 
-                    b.Property<int>("ProductId")
-                        .HasColumnType("integer")
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
                         .HasColumnName("product_id");
 
                     b.Property<Guid?>("TenantId")
@@ -1279,14 +1476,12 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.ToTable("product_images");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.TableEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.TableEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("uuid")
                         .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Capacity")
                         .HasColumnType("integer")
@@ -1325,9 +1520,20 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .IsUnique();
 
                     b.ToTable("tables");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000040"),
+                            Capacity = 4,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Name = "Mesa 1",
+                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        });
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.TenantCustomerEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.TenantCustomerEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1378,16 +1584,25 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .IsUnique();
 
                     b.ToTable("tenant_customers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000050"),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CustomerId = new Guid("00000000-0000-0000-0000-000000000005"),
+                            TenantId = new Guid("00000000-0000-0000-0000-000000000001"),
+                            TotalOrders = 0m,
+                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        });
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.TenantPaymentMethodEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.TenantPaymentMethodEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("uuid")
                         .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Alias")
                         .IsRequired()
@@ -1412,8 +1627,8 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
 
-                    b.Property<int>("PaymentMethodId")
-                        .HasColumnType("integer")
+                    b.Property<Guid>("PaymentMethodId")
+                        .HasColumnType("uuid")
                         .HasColumnName("payment_method_id");
 
                     b.Property<Guid>("TenantId")
@@ -1434,9 +1649,9 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.ToTable("tenant_payment_methods");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.AddonEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.AddonEntity", b =>
                 {
-                    b.HasOne("OpaMenu.Domain.Entities.AddonGroupEntity", "AddonGroup")
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.AddonGroupEntity", "AddonGroup")
                         .WithMany("Addons")
                         .HasForeignKey("AddonGroupId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1445,15 +1660,45 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.Navigation("AddonGroup");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.OrderEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.CustomerLoyaltyBalanceEntity", b =>
                 {
-                    b.HasOne("OpaMenu.Domain.Entities.CustomerEntity", "Customer")
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.CustomerEntity", "Customer")
                         .WithMany()
                         .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.LoyaltyTransactionEntity", b =>
+                {
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.CustomerLoyaltyBalanceEntity", "CustomerLoyaltyBalance")
+                        .WithMany("Transactions")
+                        .HasForeignKey("CustomerLoyaltyBalanceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpaMenu.Domain.Entities.TableEntity", "Table")
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.OrderEntity", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
+
+                    b.Navigation("CustomerLoyaltyBalance");
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.OrderEntity", b =>
+                {
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.CustomerEntity", "Customer")
+                        .WithMany("Orders")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.TableEntity", "Table")
                         .WithMany("Orders")
                         .HasForeignKey("TableId")
                         .OnDelete(DeleteBehavior.SetNull);
@@ -1463,15 +1708,15 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.Navigation("Table");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.OrderItemAddon", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.OrderItemAddonEntity", b =>
                 {
-                    b.HasOne("OpaMenu.Domain.Entities.AddonEntity", "Addon")
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.AddonEntity", "Addon")
                         .WithMany("OrderItemAddons")
                         .HasForeignKey("AddonId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("OpaMenu.Domain.Entities.OrderItemEntity", "OrderItem")
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.OrderItemEntity", "OrderItem")
                         .WithMany("Addons")
                         .HasForeignKey("OrderItemId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1482,15 +1727,15 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.Navigation("OrderItem");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.OrderItemEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.OrderItemEntity", b =>
                 {
-                    b.HasOne("OpaMenu.Domain.Entities.OrderEntity", "Order")
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.OrderEntity", "Order")
                         .WithMany("Items")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpaMenu.Domain.Entities.ProductEntity", "Product")
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.ProductEntity", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1501,20 +1746,20 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.OrderRejectionEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.OrderRejectionEntity", b =>
                 {
-                    b.HasOne("OpaMenu.Domain.Entities.OrderEntity", "Order")
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.OrderEntity", "Order")
                         .WithOne("Rejection")
-                        .HasForeignKey("OpaMenu.Domain.Entities.OrderRejectionEntity", "OrderId")
+                        .HasForeignKey("OpaMenu.Infrastructure.Shared.Entities.OrderRejectionEntity", "OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Order");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.OrderStatusHistoryEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.OrderStatusHistoryEntity", b =>
                 {
-                    b.HasOne("OpaMenu.Domain.Entities.OrderEntity", "Order")
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.OrderEntity", "Order")
                         .WithMany("StatusHistory")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1523,9 +1768,9 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.Navigation("Order");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.PaymentEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.PaymentEntity", b =>
                 {
-                    b.HasOne("OpaMenu.Domain.Entities.OrderEntity", "Order")
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.OrderEntity", "Order")
                         .WithMany("Payments")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1534,9 +1779,9 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.Navigation("Order");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.PaymentRefundEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.PaymentRefundEntity", b =>
                 {
-                    b.HasOne("OpaMenu.Domain.Entities.PaymentEntity", "Payment")
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.PaymentEntity", "Payment")
                         .WithMany("Refunds")
                         .HasForeignKey("PaymentId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1545,15 +1790,15 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.Navigation("Payment");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.ProductAddonGroupEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.ProductAddonGroupEntity", b =>
                 {
-                    b.HasOne("OpaMenu.Domain.Entities.AddonGroupEntity", "AddonGroup")
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.AddonGroupEntity", "AddonGroup")
                         .WithMany("ProductAddonGroups")
                         .HasForeignKey("AddonGroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpaMenu.Domain.Entities.ProductEntity", "Product")
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.ProductEntity", "Product")
                         .WithMany("AddonGroups")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1564,9 +1809,9 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.ProductEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.ProductEntity", b =>
                 {
-                    b.HasOne("OpaMenu.Domain.Entities.CategoryEntity", "Category")
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.CategoryEntity", "Category")
                         .WithMany("Products")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1575,9 +1820,9 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.ProductImageEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.ProductImageEntity", b =>
                 {
-                    b.HasOne("OpaMenu.Domain.Entities.ProductEntity", "Product")
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.ProductEntity", "Product")
                         .WithMany("Images")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1586,9 +1831,9 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.TenantCustomerEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.TenantCustomerEntity", b =>
                 {
-                    b.HasOne("OpaMenu.Domain.Entities.CustomerEntity", "Customer")
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.CustomerEntity", "Customer")
                         .WithMany("TenantCustomers")
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1597,9 +1842,9 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.Navigation("Customer");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.TenantPaymentMethodEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.TenantPaymentMethodEntity", b =>
                 {
-                    b.HasOne("OpaMenu.Domain.Entities.PaymentMethodEntity", "PaymentMethod")
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.PaymentMethodEntity", "PaymentMethod")
                         .WithMany("TenantConfiguredMethods")
                         .HasForeignKey("PaymentMethodId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1608,29 +1853,36 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.Navigation("PaymentMethod");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.AddonEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.AddonEntity", b =>
                 {
                     b.Navigation("OrderItemAddons");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.AddonGroupEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.AddonGroupEntity", b =>
                 {
                     b.Navigation("Addons");
 
                     b.Navigation("ProductAddonGroups");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.CategoryEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.CategoryEntity", b =>
                 {
                     b.Navigation("Products");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.CustomerEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.CustomerEntity", b =>
                 {
+                    b.Navigation("Orders");
+
                     b.Navigation("TenantCustomers");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.OrderEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.CustomerLoyaltyBalanceEntity", b =>
+                {
+                    b.Navigation("Transactions");
+                });
+
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.OrderEntity", b =>
                 {
                     b.Navigation("Items");
 
@@ -1641,29 +1893,29 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.Navigation("StatusHistory");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.OrderItemEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.OrderItemEntity", b =>
                 {
                     b.Navigation("Addons");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.PaymentEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.PaymentEntity", b =>
                 {
                     b.Navigation("Refunds");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.PaymentMethodEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.PaymentMethodEntity", b =>
                 {
                     b.Navigation("TenantConfiguredMethods");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.ProductEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.ProductEntity", b =>
                 {
                     b.Navigation("AddonGroups");
 
                     b.Navigation("Images");
                 });
 
-            modelBuilder.Entity("OpaMenu.Domain.Entities.TableEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.TableEntity", b =>
                 {
                     b.Navigation("Orders");
                 });
@@ -1671,4 +1923,3 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
         }
     }
 }
-
