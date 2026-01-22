@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace OpaMenu.Infrastructure.Shared.Migrations.MultiTenant
 {
     /// <inheritdoc />
-    public partial class InitialMultiTenant : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -20,13 +22,14 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.MultiTenant
                     slug = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     description = table.Column<string>(type: "text", nullable: true),
                     price = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: false),
-                    billing_cycle = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    billing_cycle = table.Column<string>(type: "text", maxLength: 20, nullable: false),
                     max_users = table.Column<int>(type: "integer", nullable: false),
                     max_storage_gb = table.Column<int>(type: "integer", nullable: false),
                     features = table.Column<string>(type: "jsonb", nullable: true),
-                    status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    status = table.Column<string>(type: "varchar(20)", nullable: false),
+                    is_trial = table.Column<bool>(type: "boolean", nullable: false),
+                    trial_period_days = table.Column<int>(type: "integer", nullable: false),
                     sort_order = table.Column<int>(type: "integer", nullable: false),
-                    is_active = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
@@ -43,9 +46,9 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.MultiTenant
                     name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     slug = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     description = table.Column<string>(type: "text", nullable: true),
-                    category = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    category = table.Column<string>(type: "text", nullable: false),
                     version = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    status = table.Column<string>(type: "varchar(20)", nullable: false),
                     configuration_schema = table.Column<string>(type: "jsonb", nullable: true),
                     pricing_model = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     base_price = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: false),
@@ -66,7 +69,7 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.MultiTenant
                     tenant_id = table.Column<Guid>(type: "uuid", nullable: false),
                     product_id = table.Column<Guid>(type: "uuid", nullable: false),
                     plan_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    status = table.Column<string>(type: "varchar(20)", nullable: false),
                     trial_ends_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     current_period_start = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     current_period_end = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -102,7 +105,7 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.MultiTenant
                     name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     slug = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     domain = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-                    status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    status = table.Column<string>(type: "varchar(20)", nullable: false),
                     settings = table.Column<string>(type: "jsonb", nullable: false),
                     document = table.Column<string>(type: "character varying(18)", maxLength: 18, nullable: true),
                     razao_social = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
@@ -172,6 +175,15 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.MultiTenant
                         principalTable: "tenants",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "plans",
+                columns: new[] { "id", "billing_cycle", "created_at", "description", "features", "is_trial", "max_storage_gb", "max_users", "name", "price", "slug", "sort_order", "status", "trial_period_days", "updated_at" },
+                values: new object[,]
+                {
+                    { Guid.NewGuid(), "Mensal", DateTime.UtcNow, "Plano gratuito para pequenos negócios", null, false, 1, 1, "Free", 0m, "free", 0, "Ativo", 7, null },
+                    { Guid.NewGuid(), "Mensal", DateTime.UtcNow, "Plano profissional para negócios em crescimento", null, false, 1, 10, "Pro", 99.90m, "pro", 0, "Ativo", 0, null }
                 });
 
             migrationBuilder.CreateIndex(
@@ -272,4 +284,3 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.MultiTenant
         }
     }
 }
-

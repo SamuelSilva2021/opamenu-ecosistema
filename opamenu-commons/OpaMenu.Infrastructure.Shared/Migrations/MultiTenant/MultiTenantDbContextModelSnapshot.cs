@@ -17,7 +17,7 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.MultiTenant
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.8")
+                .HasAnnotation("ProductVersion", "9.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -495,8 +495,7 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.MultiTenant
 
                     b.Property<string>("Category")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
+                        .HasColumnType("text")
                         .HasColumnName("category");
 
                     b.Property<string>("ConfigurationSchema")
