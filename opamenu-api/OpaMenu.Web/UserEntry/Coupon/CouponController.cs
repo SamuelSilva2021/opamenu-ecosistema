@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OpaMenu.Application.Services.Interfaces;
 using OpaMenu.Domain.DTOs.Coupon;
 using OpaMenu.Application.DTOs;
 using OpaMenu.Web.UserEntry;
 using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Infrastructure.Anotations;
 using OpaMenu.Infrastructure.Filters;
+using OpaMenu.Application.Services.Interfaces.Opamenu;
 
 namespace OpaMenu.Web.UserEntry.Coupon;
 

@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Entities\Opamenu\" />
     <Folder Include="Migrations\AccessControl\" />
     <Folder Include="Migrations\MultiTenant\" />
     <Folder Include="Migrations\Opamenu\" />

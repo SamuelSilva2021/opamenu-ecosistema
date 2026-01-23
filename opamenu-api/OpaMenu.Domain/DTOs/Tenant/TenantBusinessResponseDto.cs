@@ -26,6 +26,7 @@ namespace OpaMenu.Domain.DTOs.Tenant
         object? PaymentMethods,
         double? Latitude,
         double? Longitude,
-        LoyaltyProgramDto? LoyaltyProgram
+        LoyaltyProgramDto? LoyaltyProgram,
+        string? PixKey
     );
 }

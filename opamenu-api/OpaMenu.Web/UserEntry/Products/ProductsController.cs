@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OpaMenu.Application.Services;
-using OpaMenu.Application.Services.Interfaces;
 using OpaMenu.Domain.DTOs;
 using OpaMenu.Domain.DTOs.Product;
 using OpaMenu.Domain.Interfaces;
@@ -9,6 +8,7 @@ using OpaMenu.Web.Models.DTOs;
 using OpaMenu.Web.UserEntry;
 using OpaMenu.Infrastructure.Anotations;
 using OpaMenu.Infrastructure.Filters;
+using OpaMenu.Application.Services.Interfaces.Opamenu;
 
 namespace OpaMenu.Web.UserEntry.Products;
 

@@ -1,5 +1,5 @@
 export interface RecentOrder {
-  id: number;
+  id: string;
   customerName: string;
   amount: number;
   createdAt: string;

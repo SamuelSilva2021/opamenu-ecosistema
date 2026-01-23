@@ -22,6 +22,7 @@ namespace OpaMenu.Domain.DTOs.Tenant
         object? OpeningHours,
         object? PaymentMethods,
         double? Latitude,
-        double? Longitude
+        double? Longitude,
+        string? PixKey
     );
 }

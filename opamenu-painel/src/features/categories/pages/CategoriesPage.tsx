@@ -70,7 +70,7 @@ export default function CategoriesPage() {
   const { can } = usePermission();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   
   // Table states
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -101,7 +101,7 @@ export default function CategoriesPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateCategoryRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: UpdateCategoryRequest }) =>
       categoriesService.updateCategory(id, data),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });

@@ -10,6 +10,8 @@ interface PixPaymentProps {
   orderId: string;
   amount: number;
   pixKey?: string;
+  merchantName?: string;
+  merchantCity?: string;
   onPaymentConfirmed?: () => void;
   onCancel?: () => void;
 }
@@ -17,7 +19,9 @@ interface PixPaymentProps {
 const PixPayment: React.FC<PixPaymentProps> = ({
   orderId,
   amount,
-  pixKey = "opamenupizza@gmail.com", // Chave PIX padrão
+  pixKey,
+  merchantName = "OPAMENU",
+  merchantCity = "BRASILIA",
   onPaymentConfirmed,
   onCancel
 }) => {
@@ -29,8 +33,6 @@ const PixPayment: React.FC<PixPaymentProps> = ({
 
   // Função para gerar o código PIX (simplificado para demonstração)
   const generatePixCode = () => {
-    const merchantName = "OPAMENU PIZZA";
-    const merchantCity = "BRASILIA";
     const txId = `OPAMENU${orderId}`;
     
     // Código PIX simplificado (em produção, usar biblioteca oficial ou API do banco)
@@ -42,6 +44,11 @@ const PixPayment: React.FC<PixPaymentProps> = ({
   // Gerar QR Code
   useEffect(() => {
     const generateQRCode = async () => {
+      if (!pixKey) {
+        toast.error('Chave PIX não configurada para este estabelecimento');
+        return;
+      }
+
       try {
         const code = generatePixCode();
         setPixCode(code);

@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Store, MapPin, Clock, CreditCard, Share2, Upload, Copy, Check, Facebook, MessageCircle, Gift } from "lucide-react";
+import { Loader2, Store, MapPin, Clock, CreditCard, Share2, Upload, Copy, Check, Facebook, MessageCircle, Gift, Landmark } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,7 @@ import { settingsService } from "../settings.service";
 import { filesService } from "@/services/files.service";
 import type { OpeningHours, UpdateTenantBusinessRequestDto } from "../types";
 import LoyaltyPage from "@/features/loyalty/pages/LoyaltyPage";
+import { BankDetailsTab } from "../components/BankDetailsTab";
 
 // Schema definition
 const formSchema = z.object({
@@ -110,11 +111,17 @@ export default function SettingsPage() {
       
       if (settings.openingHours) setOpeningHours(settings.openingHours);
       if (settings.paymentMethods) {
-          let methods = settings.paymentMethods;
-          if (typeof methods === 'string') {
-             try { methods = JSON.parse(methods); } catch {}
+          let methodsData = settings.paymentMethods;
+          if (typeof methodsData === 'string') {
+             try { methodsData = JSON.parse(methodsData); } catch {}
           }
-          if (Array.isArray(methods)) setPaymentMethods(methods);
+          
+          if (Array.isArray(methodsData)) {
+              setPaymentMethods(methodsData);
+          } else if (typeof methodsData === 'object' && methodsData !== null) {
+              // @ts-ignore
+              if (Array.isArray(methodsData.methods)) setPaymentMethods(methodsData.methods);
+          }
       }
     }
   }, [settings, form]);
@@ -173,10 +180,14 @@ export default function SettingsPage() {
   };
 
   const onSubmit = (data: FormValues) => {
+    const paymentInfo = {
+      methods: paymentMethods
+    };
+
     const payload: UpdateTenantBusinessRequestDto = {
       ...data,
       openingHours: openingHours,
-      paymentMethods: paymentMethods,
+      paymentMethods: paymentInfo as any,
     };
     mutation.mutate(payload);
   };
@@ -221,10 +232,11 @@ export default function SettingsPage() {
   };
 
   const tabs = [
-    { id: "general", label: "Loja", icon: Store },
+    { id: "general", label: "Geral", icon: Store },
     { id: "address", label: "Endereço", icon: MapPin },
     { id: "hours", label: "Horários", icon: Clock },
-    { id: "payments", label: "Pagamento", icon: CreditCard },
+    { id: "payments", label: "Pagamentos", icon: CreditCard },
+    { id: "bank-details", label: "Dados Bancários", icon: Landmark },
     { id: "social", label: "Redes Sociais", icon: Share2 },
     { id: "loyalty", label: "Fidelidade", icon: Gift },
   ];
@@ -261,6 +273,8 @@ export default function SettingsPage() {
         <div className="flex-1 lg:max-w-2xl">
           {activeTab === "loyalty" ? (
             <LoyaltyPage />
+          ) : activeTab === "bank-details" ? (
+            <BankDetailsTab />
           ) : (
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <fieldset disabled={!canUpdate} className="space-y-6 group-disabled:opacity-50">
@@ -462,19 +476,28 @@ export default function SettingsPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {["Crédito", "Débito", "PIX", "Dinheiro"].map((method) => (
-                        <div key={method} className="flex items-center space-x-2">
-                            <Switch 
-                                id={`pay-${method}`}
-                                checked={paymentMethods.includes(method)}
-                                onCheckedChange={(checked) => {
-                                    if (checked) {
-                                        setPaymentMethods([...paymentMethods, method]);
-                                    } else {
-                                        setPaymentMethods(paymentMethods.filter(m => m !== method));
-                                    }
-                                }}
-                            />
-                            <Label htmlFor={`pay-${method}`}>{method}</Label>
+                        <div key={method} className="space-y-2">
+                            <div className="flex items-center space-x-2">
+                                <Switch 
+                                    id={`pay-${method}`}
+                                    checked={paymentMethods.includes(method)}
+                                    onCheckedChange={(checked) => {
+                                        if (checked) {
+                                            setPaymentMethods([...paymentMethods, method]);
+                                        } else {
+                                            setPaymentMethods(paymentMethods.filter(m => m !== method));
+                                        }
+                                    }}
+                                />
+                                <Label htmlFor={`pay-${method}`}>{method}</Label>
+                            </div>
+                            {method === "PIX" && paymentMethods.includes("PIX") && (
+                                <div className="ml-8 animate-in slide-in-from-top-2 duration-300">
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                        Para utilizar o PIX, configure sua chave na aba <Button variant="link" className="p-0 h-auto font-bold" onClick={() => setActiveTab("bank-details")}>Dados Bancários</Button>.
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     ))}
                 </CardContent>

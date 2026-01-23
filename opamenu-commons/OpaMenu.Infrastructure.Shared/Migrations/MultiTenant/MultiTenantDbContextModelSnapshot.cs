@@ -17,7 +17,7 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.MultiTenant
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.9")
+                .HasAnnotation("ProductVersion", "9.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -247,6 +247,63 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.MultiTenant
                         .IsUnique();
 
                     b.ToTable("subscriptions", (string)null);
+                });
+
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant.BankDetailsEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AccountNumber")
+                        .HasColumnType("text")
+                        .HasColumnName("account_number");
+
+                    b.Property<int?>("AccountType")
+                        .HasColumnType("integer")
+                        .HasColumnName("account_type");
+
+                    b.Property<string>("Agency")
+                        .HasColumnType("text")
+                        .HasColumnName("agency");
+
+                    b.Property<int?>("BankId")
+                        .HasColumnType("integer")
+                        .HasColumnName("bank_id");
+
+                    b.Property<string>("BankName")
+                        .HasColumnType("text")
+                        .HasColumnName("bank_name");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsPixKeySelected")
+                        .HasColumnType("boolean")
+                        .HasColumnName("pix_key_selected");
+
+                    b.Property<string>("PixKey")
+                        .HasColumnType("text")
+                        .HasColumnName("pix_key");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("bank_details");
                 });
 
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant.TenantBusinessEntity", b =>
@@ -672,6 +729,17 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.MultiTenant
                     b.Navigation("Tenant");
                 });
 
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant.BankDetailsEntity", b =>
+                {
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant.TenantEntity", "Tenant")
+                        .WithMany("BankDetails")
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
+                });
+
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant.TenantBusinessEntity", b =>
                 {
                     b.HasOne("OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant.TenantEntity", "Tenant")
@@ -711,6 +779,8 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.MultiTenant
 
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant.TenantEntity", b =>
                 {
+                    b.Navigation("BankDetails");
+
                     b.Navigation("BusinessInfo");
 
                     b.Navigation("Subscriptions");

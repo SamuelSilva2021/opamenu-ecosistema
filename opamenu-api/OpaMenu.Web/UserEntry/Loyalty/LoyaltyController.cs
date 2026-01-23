@@ -2,12 +2,12 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OpaMenu.Application.Services.Interfaces;
 using OpaMenu.Domain.DTOs.Loyalty;
 using OpaMenu.Infrastructure.Authentication;
 using OpaMenu.Domain.Interfaces;
 using OpaMenu.Infrastructure.Anotations;
 using OpaMenu.Infrastructure.Filters;
+using OpaMenu.Application.Services.Interfaces.Opamenu;
 
 namespace OpaMenu.Web.UserEntry.Loyalty;
 

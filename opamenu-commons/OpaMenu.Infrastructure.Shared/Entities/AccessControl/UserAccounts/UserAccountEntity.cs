@@ -86,7 +86,7 @@ namespace OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts
         /// </summary>
         // public TenantEntity? Tenant { get; set; }
         // Navigation properties
-        public virtual ICollection<AccountAccessGroupEntity> AccountAccessGroups { get; set; } = new List<AccountAccessGroupEntity>();
+        public virtual ICollection<AccountAccessGroupEntity> AccountAccessGroups { get; set; } = [];
     }
 }
 

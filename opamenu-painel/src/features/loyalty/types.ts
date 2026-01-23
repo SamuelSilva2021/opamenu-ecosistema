@@ -1,5 +1,5 @@
 export interface LoyaltyProgram {
-  id: number;
+  id: string;
   name: string;
   description?: string;
   pointsPerCurrency: number;
@@ -20,5 +20,5 @@ export interface CreateLoyaltyProgramRequest {
 }
 
 export interface UpdateLoyaltyProgramRequest extends CreateLoyaltyProgramRequest {
-  id: number;
+  id: string;
 }

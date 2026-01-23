@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using OpaMenu.Application.Services.Interfaces;
 using OpaMenu.Domain.DTOs;
 using OpaMenu.Domain.DTOs.Customer;
 using OpaMenu.Web.UserEntry;
 using OpaMenu.Infrastructure.Anotations;
 using OpaMenu.Infrastructure.Filters;
+using OpaMenu.Application.Services.Interfaces.Opamenu;
 
 namespace OpaMenu.Web.UserEntry.Customer
 {

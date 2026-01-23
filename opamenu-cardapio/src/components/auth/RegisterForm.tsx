@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Loader2, ArrowLeft, Search } from "lucide-react";
 
 const formSchema = z.object({
-  name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
+  name: z.string().min(3, "Nome é obrigatório"),
   phone: z.string().min(10, "Telefone inválido"),
   email: z.string().email("E-mail inválido").optional().or(z.literal("")),
   postalCode: z.string().optional(),

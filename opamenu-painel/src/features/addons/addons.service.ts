@@ -16,7 +16,7 @@ export const addonsService = {
     return response.data;
   },
 
-  getGroupById: async (id: number): Promise<AddonGroup> => {
+  getGroupById: async (id: string): Promise<AddonGroup> => {
     const response = await api.get<AddonGroup>(`/addongroups/${id}`);
     return response.data;
   },
@@ -26,17 +26,17 @@ export const addonsService = {
     return response.data;
   },
 
-  updateGroup: async (id: number, data: UpdateAddonGroupRequest): Promise<ApiResponse<AddonGroup>> => {
+  updateGroup: async (id: string, data: UpdateAddonGroupRequest): Promise<ApiResponse<AddonGroup>> => {
     const response = await api.put<ApiResponse<AddonGroup>>(`/addongroups/${id}`, data);
     return response.data;
   },
 
-  deleteGroup: async (id: number): Promise<ApiResponse<boolean>> => {
+  deleteGroup: async (id: string): Promise<ApiResponse<boolean>> => {
     const response = await api.delete<ApiResponse<boolean>>(`/addongroups/${id}`);
     return response.data;
   },
   
-  toggleGroupStatus: async (id: number): Promise<ApiResponse<AddonGroup>> => {
+  toggleGroupStatus: async (id: string): Promise<ApiResponse<AddonGroup>> => {
       const response = await api.patch<ApiResponse<AddonGroup>>(`/addongroups/${id}/toggle-status`);
       return response.data;
   },
@@ -52,17 +52,17 @@ export const addonsService = {
     return response.data;
   },
 
-  updateAddon: async (id: number, data: UpdateAddonRequest): Promise<ApiResponse<Addon>> => {
+  updateAddon: async (id: string, data: UpdateAddonRequest): Promise<ApiResponse<Addon>> => {
     const response = await api.put<ApiResponse<Addon>>(`/addons/${id}`, data);
     return response.data;
   },
 
-  deleteAddon: async (id: number): Promise<ApiResponse<boolean>> => {
+  deleteAddon: async (id: string): Promise<ApiResponse<boolean>> => {
     const response = await api.delete<ApiResponse<boolean>>(`/addons/${id}`);
     return response.data;
   },
 
-  toggleAddonStatus: async (id: number): Promise<ApiResponse<Addon>> => {
+  toggleAddonStatus: async (id: string): Promise<ApiResponse<Addon>> => {
     const response = await api.patch<ApiResponse<Addon>>(`/addons/${id}/toggle-status`);
     return response.data;
   },

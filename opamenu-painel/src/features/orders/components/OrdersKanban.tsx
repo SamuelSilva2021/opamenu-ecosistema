@@ -16,7 +16,7 @@ import { createPortal } from "react-dom";
 
 interface OrdersKanbanProps {
   orders: Order[];
-  onOrderMove: (orderId: number, newStatus: OrderStatus) => void;
+  onOrderMove: (orderId: string, newStatus: OrderStatus) => void;
   readOnly?: boolean;
 }
 

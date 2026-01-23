@@ -14,12 +14,12 @@ namespace OpaMenu.Infrastructure.Mapper
                     src.Id,
                     src.Name,
                     src.Slug,
-                    src.BusinessInfo != null ? src.BusinessInfo.Description : null,
-                    src.BusinessInfo != null ? src.BusinessInfo.LogoUrl : null,
-                    src.BusinessInfo != null ? src.BusinessInfo.BannerUrl : null,
-                    src.BusinessInfo != null ? src.BusinessInfo.InstagramUrl : null,
-                    src.BusinessInfo != null ? src.BusinessInfo.FacebookUrl : null,
-                    src.BusinessInfo != null ? src.BusinessInfo.WhatsappNumber : null,
+                    src.BusinessInfo?.Description,
+                    src.BusinessInfo?.LogoUrl,
+                    src.BusinessInfo?.BannerUrl,
+                    src.BusinessInfo?.InstagramUrl,
+                    src.BusinessInfo?.FacebookUrl,
+                    src.BusinessInfo?.WhatsappNumber,
                     src.Phone,
                     src.Email,
                     src.AddressStreet,
@@ -29,11 +29,12 @@ namespace OpaMenu.Infrastructure.Mapper
                     src.AddressCity,
                     src.AddressState,
                     src.AddressZipcode,
-                    Deserialize(src.BusinessInfo != null ? src.BusinessInfo.OpeningHours : null),
-                    Deserialize(src.BusinessInfo != null ? src.BusinessInfo.PaymentMethods : null),
-                    src.BusinessInfo != null ? src.BusinessInfo.Latitude : null,
-                    src.BusinessInfo != null ? src.BusinessInfo.Longitude : null,
-                    null
+                    Deserialize(src.BusinessInfo?.OpeningHours),
+                    Deserialize(src.BusinessInfo?.PaymentMethods),
+                    src.BusinessInfo?.Latitude,
+                    src.BusinessInfo?.Longitude,
+                    null,
+                    src.BankDetails?.FirstOrDefault(b => b.IsPixKeySelected)?.PixKey
                 ));
 
             CreateMap<TenantBusinessEntity, TenantBusinessResponseDto>()
@@ -60,7 +61,8 @@ namespace OpaMenu.Infrastructure.Mapper
                     Deserialize(src.PaymentMethods),
                     src.Latitude,
                     src.Longitude,
-                    null
+                    null,
+                    src.Tenant != null && src.Tenant.BankDetails != null ? src.Tenant.BankDetails.FirstOrDefault(b => b.IsPixKeySelected)?.PixKey : null
                 ));
 
             CreateMap<UpdateTenantBusinessRequestDto, TenantBusinessEntity>()
@@ -79,11 +81,24 @@ namespace OpaMenu.Infrastructure.Mapper
             if (string.IsNullOrEmpty(json)) return null;
             try
             {
-                return JsonSerializer.Deserialize<object>(json);
+                var dict = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+                if (dict != null && dict.ContainsKey("pixKey"))
+                {
+                    dict.Remove("pixKey");
+                    return dict;
+                }
+                return dict ?? JsonSerializer.Deserialize<object>(json);
             }
             catch
             {
-                return null;
+                try
+                {
+                    return JsonSerializer.Deserialize<object>(json);
+                }
+                catch
+                {
+                    return null;
+                }
             }
         }
     }

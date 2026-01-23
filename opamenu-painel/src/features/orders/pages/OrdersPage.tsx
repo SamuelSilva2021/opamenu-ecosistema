@@ -21,7 +21,7 @@ export default function OrdersPage() {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: number; status: OrderStatus }) =>
+    mutationFn: ({ id, status }: { id: string; status: OrderStatus }) =>
       ordersService.updateOrderStatus(id, status),
     onMutate: async ({ id, status }) => {
       // Optimistic update
@@ -51,7 +51,7 @@ export default function OrdersPage() {
     },
   });
 
-  const handleOrderMove = (orderId: number, newStatus: OrderStatus) => {
+  const handleOrderMove = (orderId: string, newStatus: OrderStatus) => {
     updateStatusMutation.mutate({ id: orderId, status: newStatus });
   };
 

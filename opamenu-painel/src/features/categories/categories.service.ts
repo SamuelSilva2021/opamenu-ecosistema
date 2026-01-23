@@ -17,7 +17,7 @@ export const categoriesService = {
     return response.data;
   },
 
-  getCategoryById: async (id: number): Promise<Category> => {
+  getCategoryById: async (id: string): Promise<Category> => {
     const response = await api.get<Category>(`/categories/${id}`);
     return response.data;
   },
@@ -27,22 +27,22 @@ export const categoriesService = {
     return response.data;
   },
 
-  updateCategory: async (id: number, data: UpdateCategoryRequest): Promise<ApiResponse<Category>> => {
+  updateCategory: async (id: string, data: UpdateCategoryRequest): Promise<ApiResponse<Category>> => {
     const response = await api.patch<ApiResponse<Category>>(`/categories/${id}`, data);
     return response.data;
   },
 
-  deleteCategory: async (id: number): Promise<ApiResponse<boolean>> => {
+  deleteCategory: async (id: string): Promise<ApiResponse<boolean>> => {
     const response = await api.delete<ApiResponse<boolean>>(`/categories/${id}`);
     return response.data;
   },
 
-  toggleCategoryStatus: async (id: number): Promise<ApiResponse<Category>> => {
+  toggleCategoryStatus: async (id: string): Promise<ApiResponse<Category>> => {
     const response = await api.put<ApiResponse<Category>>(`/categories/${id}/toggle-active`);
     return response.data;
   },
 
-  canDeleteCategory: async (id: number): Promise<{ canDelete: boolean }> => {
+  canDeleteCategory: async (id: string): Promise<{ canDelete: boolean }> => {
     const response = await api.get<{ canDelete: boolean }>(`/categories/${id}/can-delete`);
     return response.data;
   }

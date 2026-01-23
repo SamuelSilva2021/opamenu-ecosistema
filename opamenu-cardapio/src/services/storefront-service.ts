@@ -25,6 +25,19 @@ const safeJsonParse = <T>(value: any, fallback: T): T => {
 };
 
 const mapTenantBusiness = (dto: TenantBusinessResponseDto): TenantBusinessInfo => {
+  const paymentMethodsData = safeJsonParse(dto.paymentMethods, []);
+  let paymentMethods: string[] = [];
+  let pixKey: string | undefined = undefined;
+
+  if (Array.isArray(paymentMethodsData)) {
+    paymentMethods = paymentMethodsData;
+  } else if (typeof paymentMethodsData === 'object' && paymentMethodsData !== null) {
+    // @ts-ignore
+    paymentMethods = Array.isArray(paymentMethodsData.methods) ? paymentMethodsData.methods : [];
+    // @ts-ignore
+    pixKey = paymentMethodsData.pixKey;
+  }
+
   return {
     id: dto.id,
     name: dto.name,
@@ -44,7 +57,8 @@ const mapTenantBusiness = (dto: TenantBusinessResponseDto): TenantBusinessInfo =
     addressState: dto.addressState || '',
     addressZipcode: dto.addressZipcode,
     openingHours: safeJsonParse(dto.openingHours, null),
-    paymentMethods: safeJsonParse(dto.paymentMethods, []),
+    paymentMethods: paymentMethods,
+    pixKey: pixKey,
     isOpen: false, // Calculated on frontend or needs another field?
     latitude: dto.latitude,
     longitude: dto.longitude,

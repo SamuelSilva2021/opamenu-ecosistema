@@ -24,7 +24,7 @@ export const loyaltyService = {
     return response.data;
   },
 
-  toggleStatus: async (id: number, status: boolean): Promise<void> => {
+  toggleStatus: async (id: string, status: boolean): Promise<void> => {
     await api.patch(`/loyalty/program/${id}/toggle-status?status=${status}`);
   }
 };

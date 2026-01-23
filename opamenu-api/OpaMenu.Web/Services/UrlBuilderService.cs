@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Http;
-using OpaMenu.Application.Services.Interfaces;
+using OpaMenu.Application.Services.Interfaces.Opamenu;
 
 /// <summary>
 /// Implementação do serviço de construção de URLs usando recursos modernos do C# 13

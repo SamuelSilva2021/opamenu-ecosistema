@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 namespace OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant
 {
     /// <summary>
-    /// Representa as informaÃ§Ãµes comerciais e de exibiÃ§Ã£o de um tenant (loja)
+    /// Representa as informações comerciais de um tenant
     /// </summary>
     public class TenantBusinessEntity
     {
@@ -33,7 +33,7 @@ namespace OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant
         public string? BannerUrl { get; set; }
 
         /// <summary>
-        /// DescriÃ§Ã£o "Sobre" da loja
+        /// Descrição "Sobre" da loja
         /// </summary>
         public string? Description { get; set; }
 
@@ -44,26 +44,26 @@ namespace OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant
         public string? InstagramUrl { get; set; }
 
         /// <summary>
-        /// URL da pÃ¡gina do Facebook
+        /// URL da página do Facebook
         /// </summary>
         [MaxLength(255)]
         public string? FacebookUrl { get; set; }
 
         /// <summary>
-        /// NÃºmero do WhatsApp para contato/pedidos (apenas nÃºmeros)
+        /// Número do WhatsApp para contato/pedidos
         /// </summary>
         [MaxLength(20)]
         public string? WhatsappNumber { get; set; }
 
         /// <summary>
-        /// HorÃ¡rio de funcionamento em formato JSON
+        /// Horário de funcionamento em formato JSON
         /// Ex: [{"day": 1, "open": "18:00", "close": "23:00"}, ...]
         /// </summary>
         public string? OpeningHours { get; set; }
 
         /// <summary>
-        /// MÃ©todos de pagamento aceitos para exibiÃ§Ã£o em formato JSON
-        /// Ex: ["Dinheiro", "PIX", "CartÃ£o de CrÃ©dito"]
+        /// Métodos de pagamento
+        /// Ex: ["Dinheiro", "PIX", "Cartão de crédito"]
         /// </summary>
         public string? PaymentMethods { get; set; }
 

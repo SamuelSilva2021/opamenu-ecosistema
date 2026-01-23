@@ -27,6 +27,7 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context.MultTenant
     {
         public DbSet<TenantEntity> Tenants { get; set; }
         public DbSet<TenantBusinessEntity> TenantBusinessInfos { get; set; }
+        public DbSet<BankDetailsEntity> BankDetails { get; set; }
         public DbSet<TenantProductEntity> Products { get; set; }
         public DbSet<PlanEntity> Plans { get; set; }
         public DbSet<SubscriptionEntity> Subscriptions { get; set; }
@@ -110,6 +111,11 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context.MultTenant
                 entity.HasMany(t => t.Subscriptions)
                     .WithOne(s => s.Tenant)
                     .HasForeignKey(s => s.TenantId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(t => t.BankDetails)
+                    .WithOne(b => b.Tenant)
+                    .HasForeignKey(b => b.TenantId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
@@ -271,6 +277,11 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context.MultTenant
                     .WithMany()
                     .HasForeignKey(d => d.PlanId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<BankDetailsEntity>(entity =>
+            {
+                entity.HasKey(x => x.Id);
             });
 
             base.OnModelCreating(modelBuilder);

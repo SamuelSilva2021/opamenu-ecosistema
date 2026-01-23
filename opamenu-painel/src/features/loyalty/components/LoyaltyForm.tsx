@@ -23,7 +23,7 @@ import { loyaltyService } from "../loyalty.service";
 import type { LoyaltyProgram } from "../types";
 
 const formSchema = z.object({
-  name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
+  name: z.string().min(3, "Nome é obrigatório"),
   description: z.string().optional(),
   pointsPerCurrency: z.coerce.number().min(0.1, "Deve ser maior que 0"),
   currencyValue: z.coerce.number().min(0.1, "Deve ser maior que 0"),

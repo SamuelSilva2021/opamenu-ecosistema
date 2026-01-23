@@ -47,6 +47,7 @@ export const useTenantInfo = (slug?: string) => {
             sunday: { open: "18:00", close: "23:00", isOpen: true }
         },
         paymentMethods: ["Cartão de Crédito", "Cartão de Débito", "PIX", "Dinheiro"],
+        pixKey: "12345678900",
         isOpen: true
       });
       setError(null); // Clear error to show mock data

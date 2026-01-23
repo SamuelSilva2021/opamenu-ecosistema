@@ -2,12 +2,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OpaMenu.Application.DTOs;
-using OpaMenu.Application.Services.Interfaces;
 using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Domain.DTOs.Subscription;
 using OpaMenu.Web.UserEntry;
 using OpaMenu.Infrastructure.Anotations;
 using OpaMenu.Infrastructure.Filters;
+using OpaMenu.Application.Services.Interfaces.Opamenu;
 
 namespace OpaMenu.Web.UserEntry.Subscription
 {

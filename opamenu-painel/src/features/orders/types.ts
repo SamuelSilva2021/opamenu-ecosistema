@@ -12,8 +12,8 @@ export const OrderStatus = {
 export type OrderStatus = typeof OrderStatus[keyof typeof OrderStatus];
 
 export interface OrderItemAddon {
-  id: number;
-  addonId: number;
+  id: string;
+  addonId: string;
   addonName: string;
   unitPrice: number;
   quantity: number;
@@ -21,8 +21,8 @@ export interface OrderItemAddon {
 }
 
 export interface OrderItem {
-  id: number;
-  productId: number;
+  id: string;
+  productId: string;
   productName: string;
   unitPrice: number;
   quantity: number;
@@ -32,7 +32,7 @@ export interface OrderItem {
 }
 
 export interface Order {
-  id: number;
+  id: string;
   customerName: string;
   customerPhone: string;
   customerEmail?: string;

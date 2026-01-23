@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using OpaMenu.Application.Mappings;
-using OpaMenu.Application.Services.Interfaces;
 using OpaMenu.Domain.Interfaces;
 using OpaMenu.Infrastructure.Authentication;
 using OpaMenu.Infrastructure.Data.Interceptors;
@@ -15,6 +14,7 @@ using OpaMenu.Infrastructure.Shared.Data.Context;
 using OpaMenu.Infrastructure.Shared.Data.Context.Opamenu;
 using OpaMenu.Infrastructure.Shared.Data.Context.AccessControl;
 using OpaMenu.Infrastructure.Shared.Data.Context.MultTenant;
+using OpaMenu.Application.Services.Interfaces.Opamenu;
 
 
 namespace OpaMenu.Web.Extensions;

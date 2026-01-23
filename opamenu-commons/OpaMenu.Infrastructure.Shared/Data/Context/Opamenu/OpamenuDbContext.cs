@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using OpaMenu.Infrastructure.Shared.Entities;
+using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
 using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Infrastructure.Shared.Data.Context.Opamenu;
@@ -29,7 +30,6 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
     public DbSet<LoyaltyProgramEntity> LoyaltyPrograms { get; set; }
     public DbSet<LoyaltyTransactionEntity> LoyaltyTransactions { get; set; }
     public DbSet<CustomerLoyaltyBalanceEntity> CustomerLoyaltyBalances { get; set; }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

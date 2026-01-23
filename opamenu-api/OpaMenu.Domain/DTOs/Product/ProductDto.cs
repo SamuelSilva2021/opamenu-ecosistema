@@ -4,7 +4,7 @@ namespace OpaMenu.Domain.DTOs.Product
 {
     public class ProductDto
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         
         [Required]
         [StringLength(100, MinimumLength = 2)]
@@ -18,7 +18,7 @@ namespace OpaMenu.Domain.DTOs.Product
         public decimal Price { get; set; }
         
         [Required]
-        public int CategoryId { get; set; }
+        public Guid CategoryId { get; set; }
         
         public string? ImageUrl { get; set; }
         

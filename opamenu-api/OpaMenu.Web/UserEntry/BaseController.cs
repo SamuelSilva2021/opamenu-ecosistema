@@ -194,6 +194,7 @@ namespace OpaMenu.Web.UserEntry
         public const string ORDER = "ORDER";
         public const string MODULE_TABLE = "TABLE";
         public const string MODULE_COUPON = "COUPON";
+        public const string MODULE_BANK = "BANK";
         public const string MODULE_CUSTOMER = "CUSTOMER";
         public const string MODULE_LOYALTY = "LOYALTY";
         public const string MODULE_SUBSCRIPTION = "SUBSCRIPTION";

@@ -43,8 +43,8 @@ public static class AccessControlDbContextSeed
         var modules = new List<ModuleEntity>
         {
             CreateModule("DASHBOARD", "Dashboard", "Visão geral do sistema", "/dashboard"),
-            CreateModule("ADDON_GROUP", "Grupos de Adicionais", "Gerenciamento de grupos de adicionais", "/addon-groups"),
-            CreateModule("ADDON", "Adicionais", "Gerenciamento de adicionais", "/addons"),
+            CreateModule("ADITIONAL_GROUP", "Grupos de Adicionais", "Gerenciamento de grupos de adicionais", "/addon-groups"),
+            CreateModule("ADITIONAL", "Adicionais", "Gerenciamento de adicionais", "/addons"),
             CreateModule("PRODUCT", "Produtos", "Gerenciamento de produtos", "/products"),
             CreateModule("SETTINGS", "Configurações", "Configurações do sistema/estabelecimento", "/settings"),
             CreateModule("CATEGORY", "Categorias", "Gerenciamento de categorias", "/categories"),

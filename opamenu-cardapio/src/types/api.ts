@@ -25,6 +25,7 @@ export interface TenantBusinessResponseDto {
   latitude?: number;
   longitude?: number;
   loyaltyProgram?: LoyaltyProgramDto;
+  pixKey?: string;
 }
 
 export interface LoyaltyProgramDto {
@@ -356,9 +357,9 @@ export interface TenantBusinessInfo {
   email?: string;
   instagramUrl?: string;
   facebookUrl?: string;
-  // No domínio, já queremos que seja objeto/array
   openingHours: Record<string, { open: string; close: string; isOpen: boolean }> | null;
   paymentMethods: string[];
+  pixKey?: string;
   isOpen: boolean;
   latitude?: number;
   longitude?: number;

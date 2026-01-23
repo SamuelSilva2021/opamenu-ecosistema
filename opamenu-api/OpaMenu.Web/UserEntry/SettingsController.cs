@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using OpaMenu.Application.Services.Interfaces;
+using OpaMenu.Application.Services.Interfaces.Opamenu;
 using OpaMenu.Domain.DTOs.Tenant;
 using OpaMenu.Infrastructure.Anotations;
 using OpaMenu.Infrastructure.Filters;

@@ -74,8 +74,8 @@ export default function ProductsPage() {
   const { can } = usePermission();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [manageAddonGroupsProductId, setManageAddonGroupsProductId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [manageAddonGroupsProductId, setManageAddonGroupsProductId] = useState<string | null>(null);
   
   // Table states
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -113,7 +113,7 @@ export default function ProductsPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateProductRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: UpdateProductRequest }) =>
       productsService.updateProduct(id, data),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ["products"] });

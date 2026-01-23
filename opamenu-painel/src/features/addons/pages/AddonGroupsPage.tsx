@@ -72,8 +72,8 @@ export default function AddonGroupsPage() {
   const { can } = usePermission();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<AddonGroup | null>(null);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [manageAddonsGroupId, setManageAddonsGroupId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [manageAddonsGroupId, setManageAddonsGroupId] = useState<string | null>(null);
   
   // Table states
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -103,7 +103,7 @@ export default function AddonGroupsPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateAddonGroupRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: UpdateAddonGroupRequest }) =>
       addonsService.updateGroup(id, data),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ["addon-groups"] });

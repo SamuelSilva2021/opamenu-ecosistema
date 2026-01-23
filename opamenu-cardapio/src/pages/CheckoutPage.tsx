@@ -11,11 +11,14 @@ import { useCheckout } from "@/hooks/use-checkout";
 import { useCart } from "@/hooks/use-cart";
 import { useCustomer } from "@/hooks/use-customer";
 
+import { TenantBusinessInfo } from "@/types/api";
+
 interface CheckoutPageProps {
   onBackToMenu: () => void;
+  tenant?: TenantBusinessInfo;
 }
 
-const CheckoutPage = ({ onBackToMenu }: CheckoutPageProps) => {
+const CheckoutPage = ({ onBackToMenu, tenant }: CheckoutPageProps) => {
   const { slug } = useParams<{ slug: string }>();
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
   
@@ -121,6 +124,9 @@ const CheckoutPage = ({ onBackToMenu }: CheckoutPageProps) => {
         <PixPayment
           orderId={lastOrder.id?.toString() || ''}
           amount={lastOrder.total || 0}
+          pixKey={tenant?.pixKey}
+          merchantName={tenant?.name}
+          merchantCity={tenant?.addressCity}
           onPaymentConfirmed={confirmPixPayment}
           onCancel={() => {
             setCurrentStep(CheckoutSteps.PAYMENT);

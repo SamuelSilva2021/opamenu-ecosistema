@@ -63,7 +63,7 @@ export default function CouponsPage() {
   const { can } = usePermission();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   
   // Table states
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -92,7 +92,7 @@ export default function CouponsPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateCouponRequest }) => 
+    mutationFn: ({ id, data }: { id: string; data: UpdateCouponRequest }) => 
       couponsService.updateCoupon(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["coupons"] });

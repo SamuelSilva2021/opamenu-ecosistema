@@ -22,6 +22,7 @@ namespace Authenticator.API.UserEntry.AccessControl.Module
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IEnumerable<ModuleDTO>>> GetAllModulePagedAsync([FromQuery] int page = 1, [FromQuery] int limit = 10)
         {
+            //Deixei em 100 por que essa rota carrega as permissões do front. Depois vou reestruturar melhor
             var response = await _moduleService.GetAllModulePagedAsync(page, limit);
             return BuildResponse(response);
         }

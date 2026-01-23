@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useForm, useFieldArray, type Resolver } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useQuery } from "@tanstack/react-query";
@@ -42,18 +42,18 @@ import { filesService } from "@/services/files.service";
 import { useToast } from "@/hooks/use-toast";
 
 const productAddonGroupSchema = z.object({
-  addonGroupId: z.coerce.number().min(1, "Selecione um grupo"),
+  addonGroupId: z.string().min(1, "Selecione um grupo"),
   displayOrder: z.coerce.number().default(0),
   isRequired: z.boolean().default(false),
-  minSelectionsOverride: z.coerce.number().optional().nullable(),
-  maxSelectionsOverride: z.coerce.number().optional().nullable(),
+  minSelectionsOverride: z.coerce.number().optional(),
+  maxSelectionsOverride: z.coerce.number().optional(),
 });
 
 const formSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   description: z.string().optional(),
   price: z.coerce.number().min(0.01, "O preço deve ser maior que zero"),
-  categoryId: z.coerce.number().min(1, "Selecione uma categoria"),
+  categoryId: z.string().min(1, "Selecione uma categoria"),
   imageUrl: z.string().optional(),
   isActive: z.boolean().default(true),
   displayOrder: z.coerce.number().default(0),
@@ -93,12 +93,12 @@ export function ProductForm({
   });
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema) as Resolver<FormValues>,
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       name: "",
       description: "",
       price: 0,
-      categoryId: 0,
+      categoryId: "",
       imageUrl: "",
       isActive: true,
       displayOrder: 0,
@@ -135,7 +135,7 @@ export function ProductForm({
           name: "",
           description: "",
           price: 0,
-          categoryId: 0,
+          categoryId: "",
           imageUrl: "",
           isActive: true,
           displayOrder: 0,
@@ -166,8 +166,8 @@ export function ProductForm({
   };
 
   const handleSubmit = (values: FormValues) => {
-    // Filter out groups with invalid ID (0)
-    const validGroups = values.addonGroups?.filter(g => g.addonGroupId > 0);
+    // Filter out groups with invalid ID (empty string)
+    const validGroups = values.addonGroups?.filter(g => g.addonGroupId !== "");
     
     onSubmit({
       ...values,
@@ -274,8 +274,8 @@ export function ProductForm({
                     <FormItem>
                       <FormLabel>Categoria</FormLabel>
                       <Select 
-                        onValueChange={(val) => field.onChange(Number(val))} 
-                        value={field.value?.toString()}
+                        onValueChange={field.onChange} 
+                        value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>

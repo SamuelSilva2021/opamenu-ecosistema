@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using OpaMenu.Domain.Interfaces;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
 using OpaMenu.Infrastructure.Shared.Data.Context;
@@ -12,6 +12,7 @@ public class TenantBusinessRepository(MultiTenantDbContext context) : MultiTenan
     {
         return await _dbSet
             .Include (t => t.Tenant)
+            .ThenInclude(t => t.BankDetails)
             .FirstOrDefaultAsync(x => x.TenantId == tenantId);
     }
 

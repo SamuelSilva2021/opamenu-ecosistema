@@ -37,7 +37,7 @@ const formSchema = z.object({
   price: z.coerce.number().min(0, "O preço não pode ser negativo"),
   imageUrl: z.string().optional(),
   isActive: z.boolean().default(true),
-  addonGroupId: z.coerce.number().min(1, "Selecione um grupo"),
+  addonGroupId: z.string().min(1, "Selecione um grupo"),
 });
 
 interface AddonFormProps {
@@ -45,7 +45,7 @@ interface AddonFormProps {
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: CreateAddonRequest | UpdateAddonRequest) => void;
   initialData?: Addon | null;
-  groupId?: number;
+  groupId?: string;
   groups?: AddonGroup[];
   isLoading?: boolean;
 }
@@ -67,7 +67,7 @@ export function AddonForm({
       price: 0,
       imageUrl: "",
       isActive: true,
-      addonGroupId: groupId || 0,
+      addonGroupId: groupId || "",
     },
   });
 
@@ -89,7 +89,7 @@ export function AddonForm({
           price: 0,
           imageUrl: "",
           isActive: true,
-          addonGroupId: groupId || 0,
+          addonGroupId: groupId || "",
         });
       }
     }
@@ -136,9 +136,9 @@ export function AddonForm({
                   <FormItem>
                     <FormLabel>Grupo</FormLabel>
                     <Select
-                      onValueChange={(value) => field.onChange(Number(value))}
-                      defaultValue={field.value ? String(field.value) : undefined}
-                      value={field.value && field.value !== 0 ? String(field.value) : undefined}
+                      onValueChange={(value) => field.onChange(value)}
+                      defaultValue={field.value}
+                      value={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>

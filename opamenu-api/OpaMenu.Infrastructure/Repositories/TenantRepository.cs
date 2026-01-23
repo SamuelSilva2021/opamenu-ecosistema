@@ -12,7 +12,7 @@ public class TenantRepository(MultiTenantDbContext context) : MultiTenantReposit
     public async Task<TenantEntity?> GetBySlugAsync(string slug) => await _dbSet.FirstOrDefaultAsync(x => x.Slug == slug);
 
     public async Task<TenantEntity?> GetBySlugWithBusinessInfoAsync(string slug) => 
-        await _dbSet.Include(x => x.BusinessInfo).FirstOrDefaultAsync(x => x.Slug == slug);
+        await _dbSet.Include(x => x.BusinessInfo).Include(x => x.BankDetails).FirstOrDefaultAsync(x => x.Slug == slug);
 
     public async Task<Guid> GetTenantIdBySlugAsyn(string slug) => await _dbSet
             .Where(x => x.Slug == slug)
@@ -20,7 +20,9 @@ public class TenantRepository(MultiTenantDbContext context) : MultiTenantReposit
             .FirstOrDefaultAsync();
 
     public async Task<TenantEntity?> GetByIdAsync(Guid id) => 
-        await _dbSet.Include(x => x.BusinessInfo).FirstOrDefaultAsync(x => x.Id == id);
+        await _dbSet.Include(x => x.BusinessInfo)
+        .Include(x => x.BankDetails)
+        .FirstOrDefaultAsync(x => x.Id == id);
 
     public async Task UpdateAsync(TenantEntity entity)
     {

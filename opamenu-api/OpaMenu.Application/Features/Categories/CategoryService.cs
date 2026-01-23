@@ -66,7 +66,7 @@ public class CategoryService(
         {
             var tenant = await _tenantRepository.GetBySlugAsync(slug);
             if (tenant == null)
-                return StaticResponseBuilder<IEnumerable<CategoryResponseDto>>.BuildError("Loja nÃ£o encontrada");
+                return StaticResponseBuilder<IEnumerable<CategoryResponseDto>>.BuildError("Loja não encontrada");
 
             var categories = await _categoryRepository.GetActiveCategoriesAsync(tenant.Id);
 
@@ -87,7 +87,7 @@ public class CategoryService(
             var category = await _categoryRepository.GetByIdAsync(id, _currentUserService.GetTenantGuid()!.Value);
 
             if (category == null)
-                return StaticResponseBuilder<CategoryResponseDto?>.BuildError("Categoria nÃ£o encontrada");
+                return StaticResponseBuilder<CategoryResponseDto?>.BuildError("Categoria não encontrada");
 
             var dto = _mapper.Map<CategoryResponseDto>(category);
             return StaticResponseBuilder<CategoryResponseDto?>.BuildOk(dto);
@@ -105,7 +105,7 @@ public class CategoryService(
         try
         {
             if (await _categoryRepository.IsNameUniqueAsync(_currentUserService.GetTenantGuid()!.Value, createDto.Name))
-                return StaticResponseBuilder<CategoryResponseDto>.BuildError($"JÃ¡ existe uma categoria com o nome '{createDto.Name}'");
+                return StaticResponseBuilder<CategoryResponseDto>.BuildError($"Já existe uma categoria com o nome '{createDto.Name}'");
 
             var category = _mapper.Map<CategoryEntity>(createDto);
 
@@ -141,7 +141,7 @@ public class CategoryService(
                 return StaticResponseBuilder<CategoryResponseDto>.BuildError($"Categoria com ID {id} nÃ£o encontrada");
 
             if (await _categoryRepository.IsNameUniqueAsync(_currentUserService.GetTenantGuid()!.Value, updateDto.Name, id))
-                return StaticResponseBuilder<CategoryResponseDto>.BuildError($"JÃ¡ existe uma categoria com o nome '{updateDto.Name}'");
+                return StaticResponseBuilder<CategoryResponseDto>.BuildError($"Já¡ existe uma categoria com o nome '{updateDto.Name}'");
 
             _mapper.Map(updateDto, category);
 
@@ -167,12 +167,12 @@ public class CategoryService(
         {
             if (!await CanDeleteCategoryAsync(id))
             {
-                return StaticResponseBuilder<bool>.BuildError("NÃ£o Ã© possÃ­vel excluir categoria que possui produtos associados");
+                return StaticResponseBuilder<bool>.BuildError("Não é possível excluir categoria que possui produtos associados");
             }
 
             var categoryEntity = await _categoryRepository.GetByIdAsync(id, _currentUserService.GetTenantGuid()!.Value);
             if (categoryEntity == null)
-                return StaticResponseBuilder<bool>.BuildError("Categoria nÃ£o encontrada");
+                return StaticResponseBuilder<bool>.BuildError("Categoria não encontrada");
 
             await _categoryRepository.DeleteAsync(categoryEntity);
 

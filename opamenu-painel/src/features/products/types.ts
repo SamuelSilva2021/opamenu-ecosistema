@@ -1,9 +1,9 @@
 export interface ProductAddonGroupResponse {
-  id: number;
-  productId: number;
-  addonGroupId: number;
+  id: string;
+  productId: string;
+  addonGroupId: string;
   addonGroup: {
-    id: number;
+    id: string;
     name: string;
     description?: string;
     // Add other fields as needed based on AddonGroupResponseDto
@@ -15,11 +15,11 @@ export interface ProductAddonGroupResponse {
 }
 
 export interface Product {
-  id: number;
+  id: string;
   name: string;
   description?: string;
   price: number;
-  categoryId: number;
+  categoryId: string;
   categoryName: string;
   imageUrl?: string;
   isActive: boolean;
@@ -30,7 +30,7 @@ export interface Product {
 }
 
 export interface AddProductAddonGroupRequest {
-  addonGroupId: number;
+  addonGroupId: string;
   displayOrder: number;
   isRequired: boolean;
   minSelectionsOverride?: number;
@@ -41,7 +41,7 @@ export interface CreateProductRequest {
   name: string;
   description?: string;
   price: number;
-  categoryId: number;
+  categoryId: string;
   imageUrl?: string;
   isActive: boolean;
   displayOrder: number;
@@ -52,7 +52,7 @@ export interface UpdateProductRequest {
   name: string;
   description?: string;
   price: number;
-  categoryId: number;
+  categoryId: string;
   imageUrl?: string;
   isActive: boolean;
   displayOrder: number;
@@ -68,7 +68,7 @@ export interface UpdateProductAddonGroupRequest {
 
 export interface ProductSearchRequest {
   searchTerm?: string;
-  categoryId?: number;
+  categoryId?: string;
   minPrice?: number;
   maxPrice?: number;
 }

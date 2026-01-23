@@ -69,7 +69,7 @@ export default function AddonsPage() {
   const { can } = usePermission();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingAddon, setEditingAddon] = useState<Addon | null>(null);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   // Table states
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -106,7 +106,7 @@ export default function AddonsPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateAddonRequest }) =>
+    mutationFn: ({ id, data }: { id: string ; data: UpdateAddonRequest }) =>
       addonsService.updateAddon(id, data),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ["addons"] });
@@ -169,8 +169,7 @@ export default function AddonsPage() {
     }
 
     if (groupFilter !== "all") {
-      const groupId = Number(groupFilter);
-      data = data.filter(item => item.addonGroupId === groupId);
+      data = data.filter(item => item.addonGroupId === groupFilter);
     }
 
     return data;
@@ -207,7 +206,7 @@ export default function AddonsPage() {
       accessorKey: "addonGroupId",
       header: "Grupo",
       cell: ({ row }) => {
-        const groupId = row.getValue("addonGroupId") as number;
+        const groupId = row.getValue("addonGroupId") as string;
         const group = groups.find(g => g.id === groupId);
         return <div>{group?.name || "N/A"}</div>;
       },

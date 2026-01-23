@@ -34,7 +34,7 @@ export interface TenantBusinessResponseDto {
   addressState?: string;
   addressZipcode?: string;
   openingHours?: OpeningHours;
-  paymentMethods?: string[]; // Array of payment method names/IDs
+  paymentMethods?: string[] | { methods: string[]; pixKey?: string } | any;
   latitude?: number;
   longitude?: number;
 }
@@ -57,7 +57,35 @@ export interface UpdateTenantBusinessRequestDto {
   addressState?: string;
   addressZipcode?: string;
   openingHours?: OpeningHours;
-  paymentMethods?: string[];
+  paymentMethods?: string[] | { methods: string[]; pixKey?: string } | any;
   latitude?: number;
   longitude?: number;
+}
+
+export interface BankDetailsDto {
+  id: string;
+  tenantId: string;
+  bankName?: string;
+  agency?: string;
+  accountNumber?: string;
+  accountType?: number;
+  bankId?: number;
+  pixKey?: string;
+  isPixKeySelected: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface CreateBankDetailsRequestDto {
+  bankName?: string;
+  agency?: string;
+  accountNumber?: string;
+  accountType?: number;
+  bankId?: number;
+  pixKey?: string;
+  isPixKeySelected?: boolean;
+}
+
+export interface UpdateBankDetailsRequestDto extends CreateBankDetailsRequestDto {
+  id: string;
 }

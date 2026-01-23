@@ -6,18 +6,18 @@ export const AddonGroupType = {
 export type AddonGroupType = (typeof AddonGroupType)[keyof typeof AddonGroupType];
 
 export interface Addon {
-  id: number;
+  id: string;
   name: string;
   description?: string;
   price: number;
   imageUrl?: string;
   displayOrder: number;
-  addonGroupId: number;
+  addonGroupId: string;
   isActive: boolean;
 }
 
 export interface AddonGroup {
-  id: number;
+  id: string;
   name: string;
   description?: string;
   type: AddonGroupType;
@@ -55,7 +55,7 @@ export interface CreateAddonRequest {
   name: string;
   description?: string;
   price: number;
-  addonGroupId: number;
+  addonGroupId: string;
   displayOrder: number;
   isActive: boolean;
   imageUrl?: string;
@@ -65,7 +65,7 @@ export interface UpdateAddonRequest {
   name: string;
   description?: string;
   price: number;
-  addonGroupId: number;
+  addonGroupId: string;
   displayOrder: number;
   isActive: boolean;
   imageUrl?: string;

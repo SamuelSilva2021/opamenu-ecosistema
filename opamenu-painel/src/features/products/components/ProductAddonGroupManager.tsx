@@ -48,7 +48,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getErrorMessage } from "@/lib/utils";
 
 interface ProductAddonGroupManagerProps {
-  productId: number | null;
+  productId: string | null;
   productName?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -62,7 +62,7 @@ export function ProductAddonGroupManager({
 }: ProductAddonGroupManagerProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<ProductAddonGroupResponse | null>(null);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   // Form State
   const [selectedGroupId, setSelectedGroupId] = useState<string>("");
@@ -106,7 +106,7 @@ export function ProductAddonGroupManager({
       addonGroupId,
       data,
     }: {
-      addonGroupId: number;
+      addonGroupId: string;
       data: UpdateProductAddonGroupRequest;
     }) => productsService.updateProductAddonGroup(productId!, addonGroupId, data),
     onSuccess: () => {
@@ -120,7 +120,7 @@ export function ProductAddonGroupManager({
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (addonGroupId: number) =>
+    mutationFn: (addonGroupId: string) =>
       productsService.deleteProductAddonGroup(productId!, addonGroupId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["product-addon-groups", productId] });
@@ -183,7 +183,7 @@ export function ProductAddonGroupManager({
         return;
       }
       createMutation.mutate({
-        addonGroupId: Number(selectedGroupId),
+        addonGroupId: selectedGroupId,
         ...commonData,
       });
     }

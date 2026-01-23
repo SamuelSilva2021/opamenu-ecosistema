@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using OpaMenu.Application.Services.Interfaces;
 using OpaMenu.Domain.DTOs;
 using OpaMenu.Web.UserEntry.Http;
 using OpaMenu.Web.UserEntry;
 using OpaMenu.Domain.DTOs.Product;
 using OpaMenu.Infrastructure.Anotations;
 using OpaMenu.Infrastructure.Filters;
+using OpaMenu.Application.Services.Interfaces.Opamenu;
 
 namespace OpaMenu.Web.UserEntry.Products;
 
@@ -14,7 +14,7 @@ namespace OpaMenu.Web.UserEntry.Products;
 /// Controller para gerenciamento de grupos de adicionais de produtos seguindo princípios SOLID e Clean Architecture
 /// </summary>
 [ApiController]
-[Route("api/products/{productId:int}/addon-groups")]
+[Route("api/products/{productId:Guid}/addon-groups")]
 [Authorize]
 [ServiceFilter(typeof(PermissionAuthorizationFilter))]
 public class ProductAddonGroupsController(
@@ -40,7 +40,7 @@ public class ProductAddonGroupsController(
     /// <summary>
     /// Obter produto com todos os grupos de adicionais
     /// </summary>
-    [HttpGet("~/api/products/{productId:int}/with-addons")]
+    [HttpGet("with-addons")]
     [MapPermission(MODULE_PRODUCT, OPERATION_SELECT)]
     public async Task<ActionResult<ApiResponse<ProductWithAddonsResponseDto>>> GetProductWithAddons(Guid productId)
     {
@@ -67,7 +67,7 @@ public class ProductAddonGroupsController(
     /// <summary>
     /// Atualizar configuração de grupo de adicionais em um produto
     /// </summary>
-    [HttpPut("{addonGroupId:int}")]
+    [HttpPut("{addonGroupId:Guid}")]
     [MapPermission(MODULE_PRODUCT, OPERATION_UPDATE)]
     public async Task<ActionResult<ApiResponse<ProductAddonGroupResponseDto>>> UpdateProductAddonGroup(
         Guid productId,
@@ -84,7 +84,7 @@ public class ProductAddonGroupsController(
     /// <summary>
     /// Remover grupo de adicionais de um produto
     /// </summary>
-    [HttpDelete("{addonGroupId:int}")]
+    [HttpDelete("{addonGroupId:Guid}")]
     [MapPermission(MODULE_PRODUCT, OPERATION_UPDATE)]
     public async Task<ActionResult<ApiResponse>> RemoveAddonGroupFromProduct(Guid productId, Guid addonGroupId)
     {
@@ -142,7 +142,7 @@ public class ProductAddonGroupsController(
     /// <summary>
     /// Verificar se um grupo de adicionais está associado a um produto
     /// </summary>
-    [HttpGet("{addonGroupId:int}/exists")]
+    [HttpGet("{addonGroupId:Guid}/exists")]
     [MapPermission(MODULE_PRODUCT, OPERATION_SELECT)]
     public async Task<ActionResult<ApiResponse<bool>>> IsAddonGroupAssignedToProduct(Guid productId, Guid addonGroupId)
     {

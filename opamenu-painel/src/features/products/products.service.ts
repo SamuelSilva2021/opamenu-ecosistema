@@ -22,7 +22,7 @@ export const productsService = {
     return response.data;
   },
 
-  getProductById: async (id: number): Promise<Product> => {
+  getProductById: async (id: string): Promise<Product> => {
     const response = await api.get<Product>(`/products/${id}`);
     return response.data;
   },
@@ -32,38 +32,38 @@ export const productsService = {
     return response.data;
   },
 
-  updateProduct: async (id: number, data: UpdateProductRequest): Promise<ApiResponse<Product>> => {
+  updateProduct: async (id: string, data: UpdateProductRequest): Promise<ApiResponse<Product>> => {
     const response = await api.put<ApiResponse<Product>>(`/products/${id}`, data);
     return response.data;
   },
 
-  deleteProduct: async (id: number): Promise<ApiResponse<boolean>> => {
+  deleteProduct: async (id: string): Promise<ApiResponse<boolean>> => {
     const response = await api.delete<ApiResponse<boolean>>(`/products/${id}`);
     return response.data;
   },
 
-  toggleProductStatus: async (id: number): Promise<ApiResponse<Product>> => {
+  toggleProductStatus: async (id: string): Promise<ApiResponse<Product>> => {
     const response = await api.patch<ApiResponse<Product>>(`/products/${id}/toggle-status`);
     return response.data;
   },
 
   // Product Addon Groups
-  getProductAddonGroups: async (productId: number): Promise<ProductAddonGroupResponse[]> => {
+  getProductAddonGroups: async (productId: string): Promise<ProductAddonGroupResponse[]> => {
     const response = await api.get<ProductAddonGroupResponse[]>(`/products/${productId}/addon-groups`);
     return response.data;
   },
 
-  addProductAddonGroup: async (productId: number, data: AddProductAddonGroupRequest): Promise<ApiResponse<ProductAddonGroupResponse>> => {
+  addProductAddonGroup: async (productId: string, data: AddProductAddonGroupRequest): Promise<ApiResponse<ProductAddonGroupResponse>> => {
     const response = await api.post<ApiResponse<ProductAddonGroupResponse>>(`/products/${productId}/addon-groups`, data);
     return response.data;
   },
 
-  updateProductAddonGroup: async (productId: number, addonGroupId: number, data: UpdateProductAddonGroupRequest): Promise<ApiResponse<ProductAddonGroupResponse>> => {
+  updateProductAddonGroup: async (productId: string, addonGroupId: string, data: UpdateProductAddonGroupRequest): Promise<ApiResponse<ProductAddonGroupResponse>> => {
     const response = await api.put<ApiResponse<ProductAddonGroupResponse>>(`/products/${productId}/addon-groups/${addonGroupId}`, data);
     return response.data;
   },
 
-  deleteProductAddonGroup: async (productId: number, addonGroupId: number): Promise<ApiResponse<boolean>> => {
+  deleteProductAddonGroup: async (productId: string, addonGroupId: string): Promise<ApiResponse<boolean>> => {
     const response = await api.delete<ApiResponse<boolean>>(`/products/${productId}/addon-groups/${addonGroupId}`);
     return response.data;
   },

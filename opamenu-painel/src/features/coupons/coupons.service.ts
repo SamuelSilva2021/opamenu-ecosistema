@@ -7,7 +7,7 @@ export const couponsService = {
     return response.data || [];
   },
 
-  getCouponById: async (id: number): Promise<Coupon> => {
+  getCouponById: async (id: string): Promise<Coupon> => {
     const response = await api.get<Coupon>(`/coupon/${id}`);
     return response.data || {};
   },
@@ -17,12 +17,12 @@ export const couponsService = {
     return response.data || {};
   },
 
-  updateCoupon: async (id: number, data: UpdateCouponRequest): Promise<Coupon> => {
+  updateCoupon: async (id: string, data: UpdateCouponRequest): Promise<Coupon> => {
     const response = await api.put<Coupon>(`/coupon/${id}`, data);
     return response.data || {};
   },
 
-  deleteCoupon: async (id: number): Promise<boolean> => { 
+  deleteCoupon: async (id: string): Promise<boolean> => { 
     const response = await api.delete<boolean>(`/coupon/${id}`);
     return response.data || false;
   }

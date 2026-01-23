@@ -6,7 +6,7 @@ export const DiscountType = {
 export type DiscountType = typeof DiscountType[keyof typeof DiscountType];
 
 export interface Coupon {
-  id: number;
+  id: string;
   code: string;
   description?: string;
   discountType: DiscountType;

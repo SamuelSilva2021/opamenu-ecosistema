@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using OpaMenu.Application.Services.Interfaces;
+using OpaMenu.Application.Services.Interfaces.Opamenu;
 
 namespace OpaMenu.Infrastructure.Services;
 

@@ -239,6 +239,8 @@ namespace OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant
         public virtual SubscriptionEntity? ActiveSubscription { get; set; }
         public virtual ICollection<SubscriptionEntity> Subscriptions { get; set; } = [];
         public virtual TenantBusinessEntity? BusinessInfo { get; set; }
+        public virtual ICollection<BankDetailsEntity>? BankDetails { get; set; } = [];
+
     }
 }
 

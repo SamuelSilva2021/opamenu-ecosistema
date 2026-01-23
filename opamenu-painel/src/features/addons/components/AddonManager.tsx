@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 interface AddonManagerProps {
-  groupId: number | null;
+  groupId: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -43,7 +43,7 @@ interface AddonManagerProps {
 export function AddonManager({ groupId, open, onOpenChange }: AddonManagerProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingAddon, setEditingAddon] = useState<Addon | null>(null);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -70,7 +70,7 @@ export function AddonManager({ groupId, open, onOpenChange }: AddonManagerProps)
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateAddonRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: UpdateAddonRequest }) =>
       addonsService.updateAddon(id, data),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ["addon-group", groupId] });

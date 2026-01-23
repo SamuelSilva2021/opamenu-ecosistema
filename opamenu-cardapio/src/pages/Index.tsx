@@ -172,6 +172,7 @@ const StorefrontContent = () => {
     return (
       <CheckoutPage 
         onBackToMenu={() => setIsCheckoutMode(false)}
+        tenant={tenantBusiness || undefined}
       />
     );
   }

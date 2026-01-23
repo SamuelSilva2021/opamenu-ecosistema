@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using OpaMenu.Domain.Interfaces;
-using OpaMenu.Application.Services.Interfaces;
+using OpaMenu.Application.Services.Interfaces.Opamenu;
 
 namespace OpaMenu.Infrastructure.Configurations
 {

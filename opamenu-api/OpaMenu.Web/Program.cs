@@ -27,7 +27,7 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "Opa Menu API",
         Version = "v1",
-        Description = "API do sistema Opa Menu integrada com autenticaÃ§Ã£o JWT"
+        Description = "API do sistema Opa Menu integrada com autenticação JWT"
     });
 
     // ConfiguraÃ§Ã£o para autenticaÃ§Ã£o JWT no Swagger
@@ -38,10 +38,10 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Description = @"AutenticaÃ§Ã£o JWT usando o esquema Bearer.
+        Description = @"Autenticação JWT usando o esquema Bearer.
         
             **Como usar:**
-            1. FaÃ§a login no saas-authentication-api
+            1.Faça login no saas-authentication-api
             2. Copie o `accessToken` da resposta
             3. Cole o token no campo abaixo (apenas o token, sem 'Bearer ')
             4. Clique em 'Authorize' e teste os endpoints protegidos"
@@ -128,7 +128,7 @@ if (app.Environment.IsDevelopment())
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Erro ao aplicar migraÃ§Ãµes: {ex.Message}");
+            Console.WriteLine($"Erro ao aplicar migrações: {ex.Message}");
             try
             {
                 context.Database.EnsureCreated();
