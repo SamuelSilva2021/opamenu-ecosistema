@@ -5,17 +5,21 @@ using OpaMenu.Domain.DTOs.Coupon;
 using OpaMenu.Application.DTOs;
 using OpaMenu.Web.UserEntry;
 using OpaMenu.Commons.Api.DTOs;
+using OpaMenu.Infrastructure.Anotations;
+using OpaMenu.Infrastructure.Filters;
 
 namespace OpaMenu.Web.UserEntry.Coupon;
 
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[ServiceFilter(typeof(PermissionAuthorizationFilter))]
 public class CouponController(ICouponService couponService) : BaseController
 {
     private readonly ICouponService _couponService = couponService;
 
     [HttpGet]
+    [MapPermission(MODULE_COUPON, OPERATION_SELECT)]
     public async Task<ActionResult<ResponseDTO<IEnumerable<CouponDto>>>> GetAll()
     {
         var result = await _couponService.GetAllAsync();
@@ -23,6 +27,7 @@ public class CouponController(ICouponService couponService) : BaseController
     }
 
     [HttpGet("{id}")]
+    [MapPermission(MODULE_COUPON, OPERATION_SELECT)]
     public async Task<ActionResult<ResponseDTO<CouponDto?>>> GetById(Guid id)
     {
         var result = await _couponService.GetByIdAsync(id);
@@ -30,6 +35,7 @@ public class CouponController(ICouponService couponService) : BaseController
     }
 
     [HttpPost]
+    [MapPermission(MODULE_COUPON, OPERATION_INSERT)]
     public async Task<ActionResult<ResponseDTO<CouponDto>>> Create(CreateCouponRequestDto dto)
     {
         var result = await _couponService.CreateAsync(dto);
@@ -37,6 +43,7 @@ public class CouponController(ICouponService couponService) : BaseController
     }
 
     [HttpPut("{id}")]
+    [MapPermission(MODULE_COUPON, OPERATION_UPDATE)]
     public async Task<ActionResult<ResponseDTO<CouponDto>>> Update(Guid id, UpdateCouponRequestDto dto)
     {
         var result = await _couponService.UpdateAsync(id, dto);
@@ -44,6 +51,7 @@ public class CouponController(ICouponService couponService) : BaseController
     }
 
     [HttpDelete("{id}")]
+    [MapPermission(MODULE_COUPON, OPERATION_DELETE)]
     public async Task<ActionResult<ResponseDTO<bool>>> Delete(Guid id)
     {
         var result = await _couponService.DeleteAsync(id);

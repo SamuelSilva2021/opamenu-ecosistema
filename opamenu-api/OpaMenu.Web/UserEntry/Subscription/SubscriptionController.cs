@@ -6,15 +6,19 @@ using OpaMenu.Application.Services.Interfaces;
 using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Domain.DTOs.Subscription;
 using OpaMenu.Web.UserEntry;
+using OpaMenu.Infrastructure.Anotations;
+using OpaMenu.Infrastructure.Filters;
 
 namespace OpaMenu.Web.UserEntry.Subscription
 {
     [ApiController]
     [Route("api/subscription")]
     [Authorize]
+    [ServiceFilter(typeof(PermissionAuthorizationFilter))]
     public class SubscriptionController(ISubscriptionService subscriptionService) : BaseController
     {
         [HttpGet("status")]
+        [MapPermission(MODULE_SUBSCRIPTION, OPERATION_SELECT)]
         public async Task<ActionResult<ResponseDTO<SubscriptionStatusResponseDto>>> GetStatus()
         {
             var resultService = await subscriptionService.GetCurrentSubscriptionStatusAsync();
@@ -22,6 +26,7 @@ namespace OpaMenu.Web.UserEntry.Subscription
         }
 
         [HttpPost("cancel")]
+        [MapPermission(MODULE_SUBSCRIPTION, OPERATION_CANCELLATION)]
         public async Task<ActionResult<ResponseDTO<bool>>> CancelSubscription([FromBody] CancelSubscriptionRequestDto request)
         {
             var resultService = await subscriptionService.CancelSubscriptionAsync(request);
@@ -29,6 +34,7 @@ namespace OpaMenu.Web.UserEntry.Subscription
         }
 
         [HttpPost("change-plan")]
+        [MapPermission(MODULE_SUBSCRIPTION, OPERATION_UPDATE)]
         public async Task<ActionResult<ResponseDTO<bool>>> ChangePlan([FromBody] ChangePlanRequestDto request)
         {
             var resultService = await subscriptionService.ChangePlanAsync(request);
@@ -36,6 +42,7 @@ namespace OpaMenu.Web.UserEntry.Subscription
         }
 
         [HttpGet("billing-portal")]
+        [MapPermission(MODULE_SUBSCRIPTION, OPERATION_SELECT)]
         public async Task<ActionResult<ResponseDTO<string>>> GetBillingPortalUrl()
         {
             var resultService = await subscriptionService.GetBillingPortalUrlAsync();

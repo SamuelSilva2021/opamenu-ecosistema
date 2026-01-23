@@ -5,12 +5,15 @@ using OpaMenu.Application.Common.Models;
 using OpaMenu.Application.DTOs;
 using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Domain.DTOs;
+using OpaMenu.Infrastructure.Anotations;
+using OpaMenu.Infrastructure.Filters;
 
 namespace OpaMenu.Web.UserEntry;
 
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[ServiceFilter(typeof(PermissionAuthorizationFilter))]
 public class FilesController : BaseController
 {
     private readonly IFileStorageService _fileStorageService;
@@ -25,6 +28,7 @@ public class FilesController : BaseController
     }
 
     [HttpPost("upload")]
+    [MapPermission(MODULE_FILES, OPERATION_INSERT)]
     public async Task<ActionResult<FileUploadResult>> UploadFile(
         IFormFile file,
         [FromForm] string folder = "products")
@@ -34,6 +38,7 @@ public class FilesController : BaseController
     }
 
     [HttpPost("upload-multiple")]
+    [MapPermission(MODULE_FILES, OPERATION_INSERT)]
     public async Task<ActionResult<List<FileUploadResult>>> UploadMultipleFiles(
         List<IFormFile> files,
         [FromForm] string folder = "products")
@@ -85,6 +90,7 @@ public class FilesController : BaseController
     }
 
     [HttpDelete("delete")]
+    [MapPermission(MODULE_FILES, OPERATION_DELETE)]
     public async Task<ActionResult<ApiResponse<object>>> DeleteFile([FromQuery] string filePath)
     {
         var serviceResponse = await _fileStorageService.DeleteFileAsync(filePath);

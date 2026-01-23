@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using OpaMenu.Application.Services.Interfaces;
 using OpaMenu.Domain.DTOs;
 using OpaMenu.Domain.DTOs.Payments;
+using OpaMenu.Infrastructure.Anotations;
+using OpaMenu.Infrastructure.Filters;
 
 namespace OpaMenu.Web.UserEntry;
 
@@ -12,7 +14,8 @@ namespace OpaMenu.Web.UserEntry;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class PaymentsController(IPaymentService paymentService, ILogger<PaymentsController> logger) : ControllerBase
+[ServiceFilter(typeof(PermissionAuthorizationFilter))]
+public class PaymentsController(IPaymentService paymentService, ILogger<PaymentsController> logger) : BaseController
 {
     private readonly IPaymentService _paymentService = paymentService;
     private readonly ILogger<PaymentsController> _logger = logger;
@@ -22,6 +25,7 @@ public class PaymentsController(IPaymentService paymentService, ILogger<Payments
     /// </summary>
     /// <returns>Lista de pagamentos</returns>
     [HttpGet]
+    [MapPermission(MODULE_PAYMENT, OPERATION_SELECT)]
     public async Task<ActionResult<ApiResponse<IEnumerable<PaymentResponseDto>>>> GetPayments()
     {
         try
@@ -42,6 +46,7 @@ public class PaymentsController(IPaymentService paymentService, ILogger<Payments
     /// <param name="request">Dados do pagamento</param>
     /// <returns>Resultado do processamento</returns>
     [HttpPost("process")]
+    [MapPermission(MODULE_PAYMENT, OPERATION_INSERT)]
     public async Task<ActionResult<ApiResponse<PaymentResponseDto>>> ProcessPayment([FromBody] PaymentRequestDto request)
     {
         try
@@ -72,6 +77,7 @@ public class PaymentsController(IPaymentService paymentService, ILogger<Payments
     /// <param name="request">Dados para geração do PIX</param>
     /// <returns>Dados do PIX gerado</returns>
     [HttpPost("pix/generate")]
+    [MapPermission(MODULE_PAYMENT, OPERATION_INSERT)]
     public async Task<ActionResult<ApiResponse<PixResponseDto>>> GeneratePixPayment([FromBody] PixRequestDto request)
     {
         try
@@ -102,6 +108,7 @@ public class PaymentsController(IPaymentService paymentService, ILogger<Payments
     /// <param name="paymentId">ID do pagamento</param>
     /// <returns>Status do pagamento</returns>
     [HttpGet("{paymentId}/status")]
+    [MapPermission(MODULE_PAYMENT, OPERATION_SELECT)]
     public async Task<ActionResult<ApiResponse<PaymentStatusDto>>> GetPaymentStatus(Guid paymentId)
     {
         try
@@ -128,6 +135,7 @@ public class PaymentsController(IPaymentService paymentService, ILogger<Payments
     /// <param name="request">Dados do estorno</param>
     /// <returns>Resultado do estorno</returns>
     [HttpPost("{paymentId}/refund")]
+    [MapPermission(MODULE_PAYMENT, OPERATION_REVERSAL)]
     public async Task<ActionResult<ApiResponse<RefundResponseDto>>> RefundPayment(Guid paymentId, [FromBody] RefundRequestDto request)
     {
         try
@@ -157,6 +165,7 @@ public class PaymentsController(IPaymentService paymentService, ILogger<Payments
 
     // TODO: Implement webhook handlers
     [HttpPost("webhook/stripe")]
+    [AllowAnonymous]
     public async Task<IActionResult> StripeWebhook([FromBody] string payload)
     {
         // TODO: Implement Stripe webhook handler
@@ -164,6 +173,7 @@ public class PaymentsController(IPaymentService paymentService, ILogger<Payments
     }
 
     [HttpPost("webhook/pagseguro")]
+    [AllowAnonymous]
     public async Task<IActionResult> PagSeguroWebhook([FromBody] object notification)
     {
         // TODO: Implement PagSeguro webhook handler

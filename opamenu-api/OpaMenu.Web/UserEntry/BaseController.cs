@@ -192,6 +192,14 @@ namespace OpaMenu.Web.UserEntry
         public const string ADITIONAL_GROUP = "ADITIONAL_GROUP";
         public const string ADITIONAL = "ADITIONAL";
         public const string ORDER = "ORDER";
+        public const string MODULE_TABLE = "TABLE";
+        public const string MODULE_COUPON = "COUPON";
+        public const string MODULE_CUSTOMER = "CUSTOMER";
+        public const string MODULE_LOYALTY = "LOYALTY";
+        public const string MODULE_SUBSCRIPTION = "SUBSCRIPTION";
+        public const string MODULE_SETTINGS = "SETTINGS";
+        public const string MODULE_FILES = "FILES";
+        public const string MODULE_PAYMENT = "PAYMENT";
         #endregion
     }
 }

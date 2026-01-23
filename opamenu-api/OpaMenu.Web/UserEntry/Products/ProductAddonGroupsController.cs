@@ -5,6 +5,8 @@ using OpaMenu.Domain.DTOs;
 using OpaMenu.Web.UserEntry.Http;
 using OpaMenu.Web.UserEntry;
 using OpaMenu.Domain.DTOs.Product;
+using OpaMenu.Infrastructure.Anotations;
+using OpaMenu.Infrastructure.Filters;
 
 namespace OpaMenu.Web.UserEntry.Products;
 
@@ -14,6 +16,7 @@ namespace OpaMenu.Web.UserEntry.Products;
 [ApiController]
 [Route("api/products/{productId:int}/addon-groups")]
 [Authorize]
+[ServiceFilter(typeof(PermissionAuthorizationFilter))]
 public class ProductAddonGroupsController(
     IProductAddonGroupService productAddonGroupService,
     IProductAddonGroupMapper productAddonGroupMapper,
@@ -27,6 +30,7 @@ public class ProductAddonGroupsController(
     /// Obter grupos de adicionais de um produto
     /// </summary>
     [HttpGet]
+    [MapPermission(MODULE_PRODUCT, OPERATION_SELECT)]
     public async Task<ActionResult<ApiResponse<IEnumerable<ProductAddonGroupResponseDto>>>> GetProductAddonGroups(Guid productId)
     {
         var serviceResponse = await _productAddonGroupService.GetProductAddonGroupsAsync(productId);
@@ -37,6 +41,7 @@ public class ProductAddonGroupsController(
     /// Obter produto com todos os grupos de adicionais
     /// </summary>
     [HttpGet("~/api/products/{productId:int}/with-addons")]
+    [MapPermission(MODULE_PRODUCT, OPERATION_SELECT)]
     public async Task<ActionResult<ApiResponse<ProductWithAddonsResponseDto>>> GetProductWithAddons(Guid productId)
     {
         var serviceResponse = await _productAddonGroupService.GetProductWithAddonsAsync(productId);
@@ -47,6 +52,7 @@ public class ProductAddonGroupsController(
     /// Adicionar grupo de adicionais a um produto
     /// </summary>
     [HttpPost]
+    [MapPermission(MODULE_PRODUCT, OPERATION_UPDATE)]
     public async Task<ActionResult<ApiResponse<ProductAddonGroupResponseDto>>> AddAddonGroupToProduct(
         Guid productId, 
         [FromBody] AddProductAddonGroupRequestDto request)
@@ -62,6 +68,7 @@ public class ProductAddonGroupsController(
     /// Atualizar configuração de grupo de adicionais em um produto
     /// </summary>
     [HttpPut("{addonGroupId:int}")]
+    [MapPermission(MODULE_PRODUCT, OPERATION_UPDATE)]
     public async Task<ActionResult<ApiResponse<ProductAddonGroupResponseDto>>> UpdateProductAddonGroup(
         Guid productId,
         Guid addonGroupId, 
@@ -78,6 +85,7 @@ public class ProductAddonGroupsController(
     /// Remover grupo de adicionais de um produto
     /// </summary>
     [HttpDelete("{addonGroupId:int}")]
+    [MapPermission(MODULE_PRODUCT, OPERATION_UPDATE)]
     public async Task<ActionResult<ApiResponse>> RemoveAddonGroupFromProduct(Guid productId, Guid addonGroupId)
     {
         var serviceResponse = await _productAddonGroupService.RemoveAddonGroupFromProductAsync(productId, addonGroupId);
@@ -103,6 +111,7 @@ public class ProductAddonGroupsController(
     /// Adicionar múltiplos grupos de adicionais a um produto
     /// </summary>
     [HttpPost("bulk")]
+    [MapPermission(MODULE_PRODUCT, OPERATION_UPDATE)]
     public async Task<ActionResult<ApiResponse<IEnumerable<ProductAddonGroupResponseDto>>>> BulkAddAddonGroupsToProduct(
         Guid productId, 
         [FromBody] IEnumerable<AddProductAddonGroupRequestDto> requests)
@@ -118,6 +127,7 @@ public class ProductAddonGroupsController(
     /// Remover múltiplos grupos de adicionais de um produto
     /// </summary>
     [HttpDelete("bulk")]
+    [MapPermission(MODULE_PRODUCT, OPERATION_UPDATE)]
     public async Task<ActionResult<ApiResponse>> BulkRemoveAddonGroupsFromProduct(
         Guid productId, 
         [FromBody] IEnumerable<Guid> addonGroupIds)
@@ -133,6 +143,7 @@ public class ProductAddonGroupsController(
     /// Verificar se um grupo de adicionais está associado a um produto
     /// </summary>
     [HttpGet("{addonGroupId:int}/exists")]
+    [MapPermission(MODULE_PRODUCT, OPERATION_SELECT)]
     public async Task<ActionResult<ApiResponse<bool>>> IsAddonGroupAssignedToProduct(Guid productId, Guid addonGroupId)
     {
         var serviceResponse = await _productAddonGroupService.IsAddonGroupAssignedToProductAsync(productId, addonGroupId);

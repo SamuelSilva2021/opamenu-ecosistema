@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using OpaMenu.Application.Services.Interfaces;
 using OpaMenu.Domain.DTOs;
@@ -6,12 +6,15 @@ using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Web.Utils;
 using OpaMenu.Web.UserEntry;
 using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
+using OpaMenu.Infrastructure.Anotations;
+using OpaMenu.Infrastructure.Filters;
 
 namespace OpaMenu.Web.UserEntry.Order;
 
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[ServiceFilter(typeof(PermissionAuthorizationFilter))]
 public class OrderQueueController : BaseController
 {
     private readonly IOrderService _orderService;
@@ -27,6 +30,7 @@ public class OrderQueueController : BaseController
     /// Get orders in queue with optional filtering
     /// </summary>
     [HttpGet]
+    [MapPermission(ORDER, OPERATION_SELECT)]
     public async Task<ActionResult<ApiResponse<IEnumerable<OrderResponseDto>>>> GetOrderQueue(
         [FromQuery] EOrderStatus? status = null,
         [FromQuery] DateTime? fromDate = null,
@@ -43,6 +47,7 @@ public class OrderQueueController : BaseController
     /// Accept an order and add it to the preparation queue
     /// </summary>
     [HttpPost("{id}/accept")]
+    [MapPermission(ORDER, OPERATION_UPDATE)]
     public async Task<ActionResult<ApiResponse<OrderResponseDto>>> AcceptOrder(Guid id, [FromBody] AcceptOrderRequestDto request)
     {
         var result = await _orderService.AcceptOrderAsync(id, request.EstimatedPreparationMinutes, request.Notes);
@@ -53,6 +58,7 @@ public class OrderQueueController : BaseController
     /// Reject an order with a reason
     /// </summary>
     [HttpPost("{id}/reject")]
+    [MapPermission(ORDER, OPERATION_UPDATE)]
     public async Task<ActionResult<ApiResponse<OrderResponseDto>>> RejectOrder(Guid id, [FromBody] RejectOrderRequestDto request)
     {
         var result = await _orderService.RejectOrderAsync(id, request.Reason, request.Notes, request.RejectedBy);
@@ -63,6 +69,7 @@ public class OrderQueueController : BaseController
     /// Update order status in the preparation workflow
     /// </summary>
     [HttpPut("{id}/status")]
+    [MapPermission(ORDER, OPERATION_UPDATE)]
     public async Task<ActionResult<ApiResponse<OrderResponseDto>>> UpdatEOrderStatus(Guid id, [FromBody] UpdatEOrderStatusRequestDto request)
     {
         var result = await _orderService.UpdatEOrderStatusAsync(id, request);

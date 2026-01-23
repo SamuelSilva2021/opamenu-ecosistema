@@ -50,6 +50,7 @@ export default function SettingsPage() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("general");
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isCepLoading, setIsCepLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const canUpdate = can("SETTINGS", "UPDATE");
@@ -136,6 +137,40 @@ export default function SettingsPage() {
       });
     },
   });
+
+  const handleCepBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
+    const cep = e.target.value.replace(/\D/g, "");
+    
+    if (cep.length === 8) {
+      setIsCepLoading(true);
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const data = await response.json();
+
+        if (!data.erro) {
+          form.setValue("addressStreet", data.logradouro);
+          form.setValue("addressNeighborhood", data.bairro);
+          form.setValue("addressCity", data.localidade);
+          form.setValue("addressState", data.uf);
+          form.setFocus("addressNumber");
+        } else {
+          toast({
+            title: "CEP não encontrado",
+            description: "Verifique o CEP informado.",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        toast({
+          title: "Erro na busca",
+          description: "Não foi possível buscar o endereço.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsCepLoading(false);
+      }
+    }
+  };
 
   const onSubmit = (data: FormValues) => {
     const payload: UpdateTenantBusinessRequestDto = {
@@ -341,7 +376,31 @@ export default function SettingsPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2 col-span-2">
                         <Label htmlFor="zipcode">CEP</Label>
-                        <Input id="zipcode" {...form.register("addressZipcode")} className="w-[150px]" />
+                        <div className="relative w-[150px]">
+                          <Input 
+                            id="zipcode" 
+                            {...form.register("addressZipcode", {
+                              onBlur: handleCepBlur
+                            })} 
+                            placeholder="00000-000"
+                            maxLength={9}
+                            onChange={(e) => {
+                              // Mascara simples de CEP
+                              let value = e.target.value.replace(/\D/g, "");
+                              if (value.length > 8) value = value.slice(0, 8);
+                              if (value.length > 5) {
+                                value = value.replace(/^(\d{5})(\d)/, "$1-$2");
+                              }
+                              e.target.value = value;
+                              form.setValue("addressZipcode", value, { shouldValidate: true });
+                            }}
+                          />
+                          {isCepLoading && (
+                            <div className="absolute right-2 top-2.5">
+                              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                            </div>
+                          )}
+                        </div>
                     </div>
                     <div className="space-y-2 col-span-2">
                         <Label htmlFor="street">Rua</Label>

@@ -6,11 +6,14 @@ using OpaMenu.Application.Services.Interfaces;
 using OpaMenu.Domain.DTOs.Loyalty;
 using OpaMenu.Infrastructure.Authentication;
 using OpaMenu.Domain.Interfaces;
+using OpaMenu.Infrastructure.Anotations;
+using OpaMenu.Infrastructure.Filters;
 
 namespace OpaMenu.Web.UserEntry.Loyalty;
 
 [Route("api/loyalty")]
 [ApiController]
+[ServiceFilter(typeof(PermissionAuthorizationFilter))]
 public class LoyaltyController(
     ILoyaltyService loyaltyService,
     ICurrentUserService currentUserService
@@ -24,6 +27,7 @@ public class LoyaltyController(
     /// </summary>
     [HttpGet("program")]
     [Authorize]
+    [MapPermission(MODULE_LOYALTY, OPERATION_SELECT)]
     public async Task<ActionResult> GetProgram()
     {
         var tenantId = _currentUserService.GetTenantGuid();
@@ -39,6 +43,7 @@ public class LoyaltyController(
     /// </summary>
     [HttpPost("program")]
     [Authorize]
+    [MapPermission(MODULE_LOYALTY, OPERATION_INSERT)]
     public async Task<ActionResult> InsertProgram([FromBody] CreateLoyaltyProgramDto dto)
     {
         var tenantId = _currentUserService.GetTenantGuid();
@@ -54,6 +59,7 @@ public class LoyaltyController(
     /// </summary>
     [HttpPut("program")]
     [Authorize]
+    [MapPermission(MODULE_LOYALTY, OPERATION_UPDATE)]
     public async Task<ActionResult> UpdateProgram([FromBody] CreateLoyaltyProgramDto dto)
     {
         var tenantId = _currentUserService.GetTenantGuid();
@@ -66,6 +72,7 @@ public class LoyaltyController(
 
     [HttpPatch("program/{id}/toggle-status")]
     [Authorize]
+    [MapPermission(MODULE_LOYALTY, OPERATION_UPDATE)]
     public async Task<ActionResult> ToggleProgramStatus(Guid id, [FromQuery] bool status)
     {
         var tenantId = _currentUserService.GetTenantGuid();
@@ -81,6 +88,7 @@ public class LoyaltyController(
     /// </summary>
     [HttpGet("balance/{phone}")]
     [Authorize]
+    [MapPermission(MODULE_LOYALTY, OPERATION_SELECT)]
     public async Task<ActionResult> GetCustomerBalance(string phone)
     {
         var tenantId = _currentUserService.GetTenantGuid();
