@@ -17,7 +17,7 @@ const ProductModal = ({ isOpen, onClose, product, onAddToCart }: ProductModalPro
   const [selectedAddons, setSelectedAddons] = useState<SelectedAddon[]>([]);
   const [quantity, setQuantity] = useState(1);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const groupRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
+  const groupRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   // Resetar estado quando modal abre/fecha
   const handleModalChange = (open: boolean) => {
@@ -49,12 +49,12 @@ const ProductModal = ({ isOpen, onClose, product, onAddToCart }: ProductModalPro
   };
 
   // Verificar se um addon está selecionado
-  const isAddonSelected = (addonId: number) => {
+  const isAddonSelected = (addonId: string) => {
     return selectedAddons.some(selected => selected.addonId === addonId);
   };
 
   // Obter quantidade de um addon selecionado
-  const getAddonQuantity = (addonId: number) => {
+  const getAddonQuantity = (addonId: string) => {
     const selected = selectedAddons.find(selected => selected.addonId === addonId);
     return selected?.quantity || 0;
   };

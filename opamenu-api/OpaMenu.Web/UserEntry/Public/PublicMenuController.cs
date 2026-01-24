@@ -106,11 +106,8 @@ public class PublicMenuController(
     /// <param name="slug"></param>
     /// <returns></returns>
     [HttpPost("orders")]
-    public async Task<ActionResult<ApiResponse<OrderResponseDto>>> CreateOrder([FromBody]CreatePublicOrderRequestDto request, [FromRoute] string slug)
+    public async Task<ActionResult<ResponseDTO<OrderResponseDto>>> CreateOrder([FromBody]CreatePublicOrderRequestDto request, [FromRoute] string slug)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ApiResponse<OrderResponseDto>.ErrorResponse("Dados inválidos"));
-
         var serviceResponse = await _orderService.CreatePublicOrderAsync(request, slug);
         return BuildResponse(serviceResponse);
     }
@@ -122,20 +119,15 @@ public class PublicMenuController(
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpGet("orders/{id}")]
-    public async Task<ActionResult<ApiResponse<OrderResponseDto>>> GetOrder(string slug, Guid id)
+    public async Task<ActionResult<ResponseDTO<OrderResponseDto>>> GetOrder(string slug, Guid id)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ApiResponse<OrderResponseDto>.ErrorResponse("Dados inválidos"));
-
         var serviceResponse = await _orderService.GetPublicOrderByIdAsync(slug, id);
         return BuildResponse(serviceResponse);
     }
 
     [HttpGet("orders/customer/{customerId}")]
-    public async Task<ActionResult<ApiResponse<IEnumerable<OrderResponseDto>>>> GetOrdersByCustomerId(string slug, string customerId)
+    public async Task<ActionResult<ResponseDTO<IEnumerable<OrderResponseDto>>>> GetOrdersByCustomerId(string slug, string customerId)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ApiResponse<IEnumerable<OrderResponseDto>>.ErrorResponse("Dados inválidos"));
         var serviceResponse = await _orderService.GetPublicOrdersByCustomerIdAsync(slug, Guid.Parse(customerId));
         return BuildResponse(serviceResponse);
     }
@@ -144,7 +136,7 @@ public class PublicMenuController(
     /// Cancela um pedido público (apenas se pendente)
     /// </summary>
     [HttpPut("orders/{id}/cancel")]
-    public async Task<ActionResult<ApiResponse<OrderResponseDto>>> CancelOrder(Guid id, [FromBody] CancelOrderRequestDto request)
+    public async Task<ActionResult<ResponseDTO<OrderResponseDto>>> CancelOrder(Guid id, [FromBody] CancelOrderRequestDto request)
     {
         // TODO: Validar se pedido pertence ao tenant do slug e ao customer (se auth disponível)
         var serviceResponse = await _orderService.CancelOrderAsync(id, request);
@@ -155,7 +147,7 @@ public class PublicMenuController(
     /// Atualiza o método de pagamento de um pedido público (apenas se pendente)
     /// </summary>
     [HttpPut("orders/{id}/payment")]
-    public async Task<ActionResult<ApiResponse<OrderResponseDto>>> UpdatePaymentMethod(string slug, Guid id, [FromBody] UpdateOrderPaymentRequestDto request)
+    public async Task<ActionResult<ResponseDTO<OrderResponseDto>>> UpdatePaymentMethod(string slug, Guid id, [FromBody] UpdateOrderPaymentRequestDto request)
     {
         var serviceResponse = await _orderService.UpdateOrderPaymentMethodAsync(id, request);
         return BuildResponse(serviceResponse);
@@ -165,7 +157,7 @@ public class PublicMenuController(
     /// Atualiza o tipo de entrega de um pedido público (apenas se pendente)
     /// </summary>
     [HttpPut("orders/{id}/delivery-type")]
-    public async Task<ActionResult<ApiResponse<OrderResponseDto>>> UpdateDeliveryType(string slug, Guid id, [FromBody] UpdateOrderDeliveryTypeRequestDto request)
+    public async Task<ActionResult<ResponseDTO<OrderResponseDto>>> UpdateDeliveryType(string slug, Guid id, [FromBody] UpdateOrderDeliveryTypeRequestDto request)
     {
         var serviceResponse = await _orderService.UpdateOrderDeliveryTypeAsync(id, request);
         return BuildResponse(serviceResponse);
@@ -175,40 +167,51 @@ public class PublicMenuController(
     #region LOGIN
     [HttpGet("customer/{phoneNumber}")]
     //inserir possíveis retorno
-    [ProducesResponseType(typeof(ApiResponse<CustomerResponseDto>), 200)]
-    [ProducesResponseType(typeof(ApiResponse<CustomerResponseDto>), 404)]
-    [ProducesResponseType(typeof(ApiResponse<CustomerResponseDto>), 400)]
-    [ProducesResponseType(typeof(ApiResponse<CustomerResponseDto>), 500)]
-    public async Task<ActionResult<ApiResponse<CustomerResponseDto>>> GetCustomer(string slug, string phoneNumber)
+    [ProducesResponseType(typeof(ResponseDTO<CustomerResponseDto>), 200)]
+    [ProducesResponseType(typeof(ResponseDTO<CustomerResponseDto>), 404)]
+    [ProducesResponseType(typeof(ResponseDTO<CustomerResponseDto>), 400)]
+    [ProducesResponseType(typeof(ResponseDTO<CustomerResponseDto>), 500)]
+    public async Task<ActionResult<ResponseDTO<CustomerResponseDto>>> GetCustomer(string slug, string phoneNumber)
     {
         var serviceResponse = await _customerService.GetPublicCustomer(slug, phoneNumber);
         return BuildResponse(serviceResponse);
     }
     [HttpPost("customer/create")]
-    [ProducesResponseType(typeof(ApiResponse<CustomerResponseDto>), 200)]
-    [ProducesResponseType(typeof(ApiResponse<CustomerResponseDto>), 404)]
-    [ProducesResponseType(typeof(ApiResponse<CustomerResponseDto>), 400)]
-    [ProducesResponseType(typeof(ApiResponse<CustomerResponseDto>), 500)]
-    public async Task<ActionResult<ApiResponse<CustomerResponseDto>>> CreateCustomer([FromBody] CreateCustomerRequestDto request, [FromRoute] string slug)
+    [ProducesResponseType(typeof(ResponseDTO<CustomerResponseDto>), 200)]
+    [ProducesResponseType(typeof(ResponseDTO<CustomerResponseDto>), 404)]
+    [ProducesResponseType(typeof(ResponseDTO<CustomerResponseDto>), 400)]
+    [ProducesResponseType(typeof(ResponseDTO<CustomerResponseDto>), 500)]
+    public async Task<ActionResult<ResponseDTO<CustomerResponseDto>>> CreateCustomer([FromBody] CreateCustomerRequestDto request, [FromRoute] string slug)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ApiResponse<CustomerResponseDto>.ErrorResponse("Dados inválidos"));
         var serviceResponse = await _customerService.CreatePublicCustomerAsync(request, slug);
         return BuildResponse(serviceResponse);
     }
 
     [HttpPut("customer/update")]
-    [ProducesResponseType(typeof(ApiResponse<CustomerResponseDto>), 200)]
-    [ProducesResponseType(typeof(ApiResponse<CustomerResponseDto>), 404)]
-    [ProducesResponseType(typeof(ApiResponse<CustomerResponseDto>), 400)]
-    [ProducesResponseType(typeof(ApiResponse<CustomerResponseDto>), 500)]
-    public async Task<ActionResult<ApiResponse<CustomerResponseDto>>> UpdateCustomer([FromBody] UpdateCustomerRequestDto request, [FromRoute] string slug)
+    [ProducesResponseType(typeof(ResponseDTO<CustomerResponseDto>), 200)]
+    [ProducesResponseType(typeof(ResponseDTO<CustomerResponseDto>), 404)]
+    [ProducesResponseType(typeof(ResponseDTO<CustomerResponseDto>), 400)]
+    [ProducesResponseType(typeof(ResponseDTO<CustomerResponseDto>), 500)]
+    public async Task<ActionResult<ResponseDTO<CustomerResponseDto>>> UpdateCustomer([FromBody] UpdateCustomerRequestDto request, [FromRoute] string slug)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ApiResponse<CustomerResponseDto>.ErrorResponse("Dados inválidos"));
         var serviceResponse = await _customerService.UpdatePublicCustomerAsync(request, slug);
         return BuildResponse(serviceResponse);
     }
 
     #endregion LOGIN
+    #region COUPONS
+    [HttpPost("coupons/validate")]
+    [ProducesResponseType(typeof(ResponseDTO<CouponDto>), 200)]
+    [ProducesResponseType(typeof(ResponseDTO<CouponDto>), 404)]
+    [ProducesResponseType(typeof(ResponseDTO<CouponDto>), 400)]
+    [ProducesResponseType(typeof(ResponseDTO<CouponDto>), 500)]
+    public async Task<ActionResult<ResponseDTO<CouponDto>>> ValidateCoupon([FromBody] ValidateCouponRequestDto request, [FromRoute] string slug)
+    {
+        var serviceReponse = await _couponService.ValidateCouponBySlugAsync(slug, request.Code, request.OrderValue);
+        return BuildResponse(serviceReponse);
+    }
+
+
+    #endregion
+
 }

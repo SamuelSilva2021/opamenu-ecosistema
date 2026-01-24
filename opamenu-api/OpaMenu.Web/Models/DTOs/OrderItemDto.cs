@@ -1,4 +1,4 @@
-﻿namespace OpaMenu.Web.Models.DTOs
+namespace OpaMenu.Web.Models.DTOs
 {
     /// <summary>
     /// Representa um item de pedido.
@@ -8,7 +8,7 @@
         /// <summary>
         /// Identificador único do item de pedido.
         /// </summary>
-        public int ProductId { get; set; }
+        public Guid ProductId { get; set; }
         /// <summary>
         /// Nome do produto do item de pedido.
         /// </summary>

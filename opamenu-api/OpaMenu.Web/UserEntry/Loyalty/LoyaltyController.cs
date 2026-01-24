@@ -8,6 +8,7 @@ using OpaMenu.Domain.Interfaces;
 using OpaMenu.Infrastructure.Anotations;
 using OpaMenu.Infrastructure.Filters;
 using OpaMenu.Application.Services.Interfaces.Opamenu;
+using OpaMenu.Commons.Api.DTOs;
 
 namespace OpaMenu.Web.UserEntry.Loyalty;
 
@@ -28,7 +29,7 @@ public class LoyaltyController(
     [HttpGet("program")]
     [Authorize]
     [MapPermission(MODULE_LOYALTY, OPERATION_SELECT)]
-    public async Task<ActionResult> GetProgram()
+    public async Task<ActionResult<ResponseDTO<LoyaltyProgramDto>>> GetProgram()
     {
         var tenantId = _currentUserService.GetTenantGuid();
         if (!tenantId.HasValue)

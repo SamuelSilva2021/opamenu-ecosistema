@@ -1,4 +1,4 @@
-using OpaMenu.Application.Interfaces;
+using OpaMenu.Application.Services.Interfaces.Opamenu;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Globalization;

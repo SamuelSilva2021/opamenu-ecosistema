@@ -24,12 +24,12 @@ export const API_ENDPOINTS = {
   // Produtos
   PRODUCTS: '/products',
   PRODUCTS_MENU: '/products/menu',
-  PRODUCTS_BY_CATEGORY: (categoryId: number) => `/products/by-category/${categoryId}`,
-  PRODUCT_WITH_ADDONS: (productId: number) => `/products/${productId}/with-addons`,
+  PRODUCTS_BY_CATEGORY: (categoryId: string) => `/products/by-category/${categoryId}`,
+  PRODUCT_WITH_ADDONS: (productId: string) => `/products/${productId}/with-addons`,
   
   // Pedidos
   ORDERS: '/orders',
-  ORDER_BY_ID: (id: number) => `/orders/${id}`,
+  ORDER_BY_ID: (id: string) => `/orders/${id}`,
   
   // Health check
   HEALTH: '/health',
@@ -38,10 +38,10 @@ export const API_ENDPOINTS = {
   PUBLIC: {
      MENU: (slug: string) => `/public/${slug}/menu`,
      CATEGORIES: (slug: string) => `/public/${slug}/categories`,
-     PRODUCTS_BY_CATEGORY: (slug: string, categoryId: number) => `/public/${slug}/products/by-category/${categoryId}`,
-     PRODUCT: (slug: string, id: number) => `/public/${slug}/products/${id}`,
+     PRODUCTS_BY_CATEGORY: (slug: string, categoryId: string) => `/public/${slug}/products/by-category/${categoryId}`,
+     PRODUCT: (slug: string, id: string) => `/public/${slug}/products/${id}`,
     ORDERS: (slug: string) => `/public/${slug}/orders`,
-    ORDER: (slug: string, id: number) => `/public/${slug}/orders/${id}`,
+    ORDER: (slug: string, id: string) => `/public/${slug}/orders/${id}`,
     ORDERS_BY_CUSTOMER: (slug: string, customerId: string) => `/public/${slug}/orders/customer/${customerId}`,
     CUSTOMER: (slug: string) => `/public/${slug}/customer`
   }

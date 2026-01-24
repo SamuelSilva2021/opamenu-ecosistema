@@ -12,14 +12,14 @@ export class ProductService {
   }
 
   // Buscar produto por ID
-  async getProductById(id: number): Promise<Product> {
+  async getProductById(id: string): Promise<Product> {
     return withApiErrorHandling(async () => {
       return httpClient.get<Product>(`${API_ENDPOINTS.PRODUCTS}/${id}`);
     });
   }
 
   // Buscar produto com adicionais por ID
-  async getProductWithAddons(id: number): Promise<ProductWithAddons> {
+  async getProductWithAddons(id: string): Promise<ProductWithAddons> {
     return withApiErrorHandling(async () => {
       const response = await httpClient.get<ApiResponse<ProductWithAddons>>(
         API_ENDPOINTS.PRODUCT_WITH_ADDONS(id)
@@ -29,7 +29,7 @@ export class ProductService {
   }
 
   // Buscar produtos por categoria
-  async getProductsByCategory(categoryId: number): Promise<Product[]> {
+  async getProductsByCategory(categoryId: string): Promise<Product[]> {
     return withApiErrorHandling(async () => {
       const response = await httpClient.get<ApiResponse<Product[]>>(
         API_ENDPOINTS.PRODUCTS_BY_CATEGORY(categoryId)
@@ -40,7 +40,7 @@ export class ProductService {
 
   // Buscar produtos com filtros
   async getProducts(filters?: {
-    categoryId?: number;
+    categoryId?: string;
     search?: string;
     isActive?: boolean;
     pageNumber?: number;
@@ -48,7 +48,7 @@ export class ProductService {
   }): Promise<PaginatedResponse<Product>> {
     const params: Record<string, string> = {};
     
-    if (filters?.categoryId) params.categoryId = filters.categoryId.toString();
+    if (filters?.categoryId) params.categoryId = filters.categoryId;
     if (filters?.search) params.search = filters.search;
     if (filters?.isActive !== undefined) params.isActive = filters.isActive.toString();
     if (filters?.pageNumber) params.pageNumber = filters.pageNumber.toString();
@@ -72,7 +72,7 @@ export class ProductService {
   }
 
   // Buscar produto por ID e Slug
-  async getProductByIdAndSlug(id: number, slug: string): Promise<ProductDto> {
+  async getProductByIdAndSlug(id: string, slug: string): Promise<ProductDto> {
     return withApiErrorHandling(async () => {
       const response = await httpClient.get<ProductDto>(API_ENDPOINTS.PUBLIC.PRODUCT(slug, id));
       return response;
@@ -99,7 +99,7 @@ export class CategoryService {
   }
 
   // Buscar categoria por ID
-  async getCategoryById(id: number): Promise<Category> {
+  async getCategoryById(id: string): Promise<Category> {
     return withApiErrorHandling(async () => {
       const response = await httpClient.get<ApiResponse<Category>>(`${API_ENDPOINTS.CATEGORIES}/${id}`);
       return response.data;
@@ -179,7 +179,7 @@ export const getCachedCategories = async (slug?: string): Promise<Category[]> =>
 };
 
 // Função para buscar produto com adicionais com cache
-export const getCachedProductWithAddons = async (productId: number, slug?: string): Promise<ProductWithAddons> => {
+export const getCachedProductWithAddons = async (productId: string, slug?: string): Promise<ProductWithAddons> => {
   if (!slug) throw new Error("Slug required");
 
   const cacheKey = `product-with-addons-${slug}-${productId}`;

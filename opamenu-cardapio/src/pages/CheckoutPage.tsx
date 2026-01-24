@@ -37,7 +37,7 @@ const CheckoutPage = ({ onBackToMenu, tenant }: CheckoutPageProps) => {
     confirmPixPayment
   } = useCheckout();
 
-  const { totalItems, totalPrice, subtotal, discount } = useCart(slug);
+  const { totalItems, totalPrice, subtotal, discount } = useCart();
   const { customer } = useCustomer();
   const [hasAppliedCustomerData, setHasAppliedCustomerData] = useState(false);
 

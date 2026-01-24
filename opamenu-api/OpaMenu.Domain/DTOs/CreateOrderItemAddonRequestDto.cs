@@ -8,7 +8,6 @@ namespace OpaMenu.Domain.DTOs
     public class CreateOrderItemAddonRequestDto
     {
         [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "Id do addon precisa ser maior que 0")]
         public Guid AddonId { get; set; }
 
         [Required]

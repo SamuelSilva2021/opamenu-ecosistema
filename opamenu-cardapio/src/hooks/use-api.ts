@@ -137,12 +137,12 @@ export const useCategories = (slug?: string) => {
 };
 
 // Hook para carregar produtos por categoria
-export const useProductsByCategory = (categoryId: number | null) => {
+export const useProductsByCategory = (categoryId: string | null) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadProductsByCategory = useCallback(async (catId: number) => {
+  const loadProductsByCategory = useCallback(async (catId: string) => {
     try {
       setLoading(true);
       setError(null);
@@ -181,7 +181,7 @@ export const useProductSearch = () => {
 
   const searchProducts = useCallback(async (
     query: string,
-    categoryId?: number
+    categoryId?: string
   ) => {
     if (!query.trim()) {
       setSearchResults([]);

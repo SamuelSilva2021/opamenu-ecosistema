@@ -65,7 +65,7 @@ const StorefrontContent = () => {
     clearCart,
     applyCoupon,
     removeCoupon
-  } = useCart(slug);
+  } = useCart();
   
   // Hook para gerenciar modal de produto
   const {
@@ -116,7 +116,7 @@ const StorefrontContent = () => {
     }));
   }, [categories, products]);
 
-  const handleRemoveFromCart = (productId: number) => {
+  const handleRemoveFromCart = (productId: string) => {
     const cartItem = cartItems.find(item => item.product.id === productId);
     if (cartItem && cartItem.quantity > 1) {
       updateQuantity(productId, cartItem.quantity - 1);
@@ -216,6 +216,13 @@ const StorefrontContent = () => {
         {/* LEFT COLUMN - Main Content */}
         <div className="lg:col-span-2 space-y-6">
           
+          {/* Mobile Loyalty Card */}
+          <div className="lg:hidden">
+            {tenantBusiness?.loyaltyProgram?.isActive && (
+                <LoyaltyCard program={tenantBusiness.loyaltyProgram} />
+            )}
+          </div>
+
           {/* Search and Category Row */}
           <div className="flex gap-4">
             <DropdownMenu>
@@ -248,6 +255,7 @@ const StorefrontContent = () => {
               />
             </div>
           </div>
+          
           {/* Destaques / Product Grid */}
           <div>
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Destaques</h2>

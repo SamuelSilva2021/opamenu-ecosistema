@@ -17,13 +17,12 @@ export const couponService = {
 
   validateCoupon: async (slug: string, code: string, orderValue: number): Promise<Coupon | null> => {
     try {
-      const response = await httpClient.post<ApiResponse<Coupon>>(`/public/${slug}/coupons/validate`, { code, orderValue });
-      if (response && response.data) {
-        return response.data;
+      const response = await httpClient.post<Coupon>(`/public/${slug}/coupons/validate`, { code, orderValue });
+      if (response) {
+        return response;
       }
       return null;
     } catch (error) {
-      // console.error('Error validating coupon:', error);
       throw error;
     }
   }

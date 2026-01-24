@@ -29,7 +29,7 @@ export class OrderService {
   }
 
   // Cancelar pedido
-  async cancelOrder(orderId: number, data: CancelOrderRequest, slug?: string): Promise<Order> {
+  async cancelOrder(orderId: string, data: CancelOrderRequest, slug?: string): Promise<Order> {
     return withApiErrorHandling(async () => {
       // Ajuste de endpoint: Assumindo que o endpoint é api/orders/{id}/cancel
       const endpoint = slug ? `/public/${slug}/orders/${orderId}/cancel` : `/orders/${orderId}/cancel`;
@@ -39,7 +39,7 @@ export class OrderService {
   }
 
   // Atualizar método de pagamento
-  async updatePaymentMethod(orderId: number, data: UpdateOrderPaymentRequest, slug?: string): Promise<Order> {
+  async updatePaymentMethod(orderId: string, data: UpdateOrderPaymentRequest, slug?: string): Promise<Order> {
     return withApiErrorHandling(async () => {
       const endpoint = slug ? `/public/${slug}/orders/${orderId}/payment` : `/orders/${orderId}/payment`;
       const response = await httpClient.put<Order>(endpoint, data);
@@ -48,7 +48,7 @@ export class OrderService {
   }
 
   // Atualizar tipo de entrega
-  async updateDeliveryType(orderId: number, data: UpdateOrderDeliveryTypeRequest, slug?: string): Promise<Order> {
+  async updateDeliveryType(orderId: string, data: UpdateOrderDeliveryTypeRequest, slug?: string): Promise<Order> {
     return withApiErrorHandling(async () => {
       const endpoint = slug ? `/public/${slug}/orders/${orderId}/delivery-type` : `/orders/${orderId}/delivery-type`;
       const response = await httpClient.put<Order>(endpoint, data);
@@ -57,7 +57,7 @@ export class OrderService {
   }
 
   // Buscar pedido por ID
-  async getOrderById(id: number, slug?: string): Promise<Order> {
+  async getOrderById(id: string, slug?: string): Promise<Order> {
     return withApiErrorHandling(async () => {
       const endpoint = slug ? API_ENDPOINTS.PUBLIC.ORDER(slug, id) : API_ENDPOINTS.ORDER_BY_ID(id);
       const response = await httpClient.get<Order>(endpoint);
@@ -86,7 +86,7 @@ export class OrderService {
   }
 
   // Verificar status do pedido
-  async checkOrderStatus(orderId: number, slug?: string): Promise<OrderStatus> {
+  async checkOrderStatus(orderId: string, slug?: string): Promise<OrderStatus> {
     const order = await this.getOrderById(orderId, slug);
     return order.status;
   }
@@ -163,7 +163,7 @@ export const validateOrderData = (orderData: CreateOrderRequest): string[] => {
   }
   
   orderData.items.forEach((item, index) => {
-    if (!item.productId || item.productId <= 0) {
+    if (!item.productId || item.productId.length === 0) {
       errors.push(`Item ${index + 1}: ID do produto inválido`);
     }
     
@@ -219,7 +219,7 @@ export class OrderStatusTracker {
   private intervalId: NodeJS.Timeout | null = null;
   private callbacks: ((status: OrderStatus) => void)[] = [];
 
-  startTracking(orderId: number, slug?: string, intervalMs: number = 30000): void {
+  startTracking(orderId: string, slug?: string, intervalMs: number = 30000): void {
     this.stopTracking();
     this.intervalId = setInterval(async () => {
       try {

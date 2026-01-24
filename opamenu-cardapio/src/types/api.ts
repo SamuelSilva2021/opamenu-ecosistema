@@ -29,7 +29,7 @@ export interface TenantBusinessResponseDto {
 }
 
 export interface LoyaltyProgramDto {
-  id: number;
+  id: string;
   name: string;
   description?: string;
   pointsPerCurrency: number;
@@ -56,18 +56,18 @@ export interface CustomerResponseDto {
 }
 
 export interface AddonResponseDto {
-  id: number;
+  id: string;
   name: string;
   description?: string;
   price: number;
   imageUrl?: string;
   displayOrder: number;
-  addonGroupId: number;
+  addonGroupId: string;
   isActive: boolean;
 }
 
 export interface AddonGroupResponseDto {
-  id: number;
+  id: string;
   name: string;
   description?: string;
   type: AddonGroupType;
@@ -80,9 +80,9 @@ export interface AddonGroupResponseDto {
 }
 
 export interface ProductAddonGroupResponseDto {
-  id: number;
-  productId: number;
-  addonGroupId: number;
+  id: string;
+  productId: string;
+  addonGroupId: string;
   addonGroup: AddonGroupResponseDto;
   displayOrder: number;
   isRequired: boolean;
@@ -91,11 +91,11 @@ export interface ProductAddonGroupResponseDto {
 }
 
 export interface ProductDto {
-  id: number;
+  id: string;
   name: string;
   description?: string;
   price: number;
-  categoryId: number;
+  categoryId: string;
   imageUrl?: string;
   isActive: boolean;
   displayOrder: number;
@@ -106,7 +106,7 @@ export interface ProductDto {
 }
 
 export interface CategoryResponseDto {
-  id: number;
+  id: string;
   name: string;
   description?: string;
   displayOrder: number;
@@ -123,7 +123,7 @@ export interface MenuResponseDto {
 // --- Tipos de Domínio (Frontend) ---
 
 export interface Category {
-  id: number;
+  id: string;
   name: string;
   description?: string;
   isActive: boolean;
@@ -132,11 +132,11 @@ export interface Category {
 }
 
 export interface Product {
-  id: number;
+  id: string;
   name: string;
   description?: string;
   price: number;
-  categoryId: number;
+  categoryId: string;
   imageUrl?: string;
   isActive: boolean;
   displayOrder: number;
@@ -147,8 +147,8 @@ export interface Product {
 }
 
 export interface CartItem {
-  id: number;
-  productId: number;
+  id: string;
+  productId: string;
   productName: string;
   unitPrice: number;
   quantity: number;
@@ -172,8 +172,8 @@ export interface Customer {
 }
 
 export interface OrderItem {
-  id?: number;
-  productId: number;
+  id?: string;
+  productId: string;
   productName?: string;
   quantity: number;
   unitPrice: number;
@@ -192,7 +192,7 @@ export interface AddressDto {
 }
 
 export interface CreateOrderItemAddonRequest {
-  addonId: number;
+  addonId: string;
   quantity: number;
 }
 
@@ -208,7 +208,7 @@ export interface CreateOrderRequest {
 }
 
 export interface CreateOrderItemRequest {
-  productId: number;
+  productId: string;
   quantity: number;
   notes?: string;
   addons: CreateOrderItemAddonRequest[];
@@ -236,7 +236,7 @@ export interface UpdateOrderDeliveryTypeRequest {
 }
 
 export interface Order {
-  id: number;
+  id: string;
   orderNumber?: string;
   customerName: string;
   customerPhone: string;
@@ -271,7 +271,7 @@ export enum AddonGroupType {
 }
 
 export interface Addon {
-  id: number;
+  id: string;
   name: string;
   description?: string;
   price: number;
@@ -282,7 +282,7 @@ export interface Addon {
 }
 
 export interface AddonGroup {
-  id: number;
+  id: string;
   name: string;
   description?: string;
   type: AddonGroupType;
@@ -301,7 +301,7 @@ export interface ProductWithAddons extends Omit<Product, 'addonGroups'> {
 }
 
 export interface SelectedAddon {
-  addonId: number;
+  addonId: string;
   quantity: number;
   addon: Addon;
 }
@@ -320,7 +320,7 @@ export enum EDiscountType {
 }
 
 export interface Coupon {
-  id: number;
+  id: string;
   code: string;
   description?: string;
   eDiscountType: EDiscountType;

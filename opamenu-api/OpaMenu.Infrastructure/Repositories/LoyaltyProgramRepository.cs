@@ -13,6 +13,6 @@ public class LoyaltyProgramRepository(OpamenuDbContext context) : OpamenuReposit
     public async Task<LoyaltyProgramEntity?> GetByTenantIdAsync(Guid tenantId)
     {
         return await _dbSet
-            .FirstOrDefaultAsync(p => p.TenantId == tenantId && p.IsActive);
+            .FirstOrDefaultAsync(p => p.TenantId == tenantId);
     }
 }

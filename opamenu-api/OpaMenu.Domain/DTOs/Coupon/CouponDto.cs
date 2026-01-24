@@ -4,7 +4,7 @@ namespace OpaMenu.Domain.DTOs.Coupon;
 
 public class CouponDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string Code { get; set; } = string.Empty;
     public string? Description { get; set; }
     public EDiscountType EDiscountType { get; set; }

@@ -8,7 +8,6 @@ namespace OpaMenu.Domain.DTOs
     public class CreateOrderItemRequestDto
     {
         [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "Id do produto precisa ser maior que zero")]
         public Guid ProductId { get; set; }
 
         [Required]

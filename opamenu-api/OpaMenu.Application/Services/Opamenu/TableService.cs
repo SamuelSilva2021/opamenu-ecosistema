@@ -1,12 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
 using OpaMenu.Domain.DTOs.Table;
-using OpaMenu.Application.Interfaces;
 using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Domain.Interfaces;
 using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Commons.Api.Commons;
 using OpaMenu.Application.Services.Interfaces.Opamenu;
+using OpaMenu.Application.Services.Interfaces;
 
 namespace OpaMenu.Application.Services.Opamenu;
 

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OpaMenu.Application.Interfaces
+namespace OpaMenu.Application.Services.Interfaces.Opamenu
 {
     public interface ILocalizationManager
     {

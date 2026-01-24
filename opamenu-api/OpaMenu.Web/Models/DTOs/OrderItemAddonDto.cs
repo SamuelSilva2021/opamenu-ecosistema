@@ -1,4 +1,4 @@
-﻿namespace OpaMenu.Web.Models.DTOs
+namespace OpaMenu.Web.Models.DTOs
 {
     /// <summary>
     /// Representa o item de um pedido que é um complemento (addon).
@@ -8,7 +8,7 @@
         /// <summary>
         /// Identificador único do item de pedido complemento.
         /// </summary>
-        public int AddonId { get; set; }
+        public Guid AddonId { get; set; }
         /// <summary>
         /// Nome do complemento.
         /// </summary>

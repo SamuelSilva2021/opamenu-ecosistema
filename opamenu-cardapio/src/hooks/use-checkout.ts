@@ -47,7 +47,7 @@ export const useCheckout = (): CheckoutHookReturn => {
   const [showPixPayment, setShowPixPayment] = useState(false);
 
   const { createOrder } = useOrder();
-  const { items: cartItems, clearCart, coupon } = useCart(slug);
+  const { items: cartItems, clearCart, coupon } = useCart();
 
   const updateCheckoutData = useCallback((data: Partial<CheckoutData>) => {
     setCheckoutData(prev => ({ ...prev, ...data }));

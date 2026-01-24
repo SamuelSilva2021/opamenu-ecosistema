@@ -16,7 +16,7 @@ export interface CartContextType {
   increaseQuantity: (itemId: number | string) => void;
   decreaseQuantity: (itemId: number | string) => void;
   clearCart: () => void;
-  getItemQuantity: (productId: number) => number;
+  getItemQuantity: (productId: string) => number;
   applyCoupon: (coupon: Coupon) => void;
   removeCoupon: () => void;
 }
@@ -41,8 +41,8 @@ const areAddonsEqual = (addons1: any[] = [], addons2: any[] = []) => {
   if (addons1.length !== addons2.length) return false;
   
   // Ordenar para garantir comparação consistente
-  const sorted1 = [...addons1].sort((a, b) => a.addon.id - b.addon.id);
-  const sorted2 = [...addons2].sort((a, b) => a.addon.id - b.addon.id);
+  const sorted1 = [...addons1].sort((a, b) => a.addon.id.localeCompare(b.addon.id));
+  const sorted2 = [...addons2].sort((a, b) => a.addon.id.localeCompare(b.addon.id));
   
   return sorted1.every((item, index) => {
     const item2 = sorted2[index];
@@ -94,7 +94,7 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
   }, [items, storageKey, slug, isInitialized]);
 
   // Helper para encontrar item
-  const findItemIndex = useCallback((currentItems: CartItem[], itemId: number | string) => {
+  const findItemIndex = useCallback((currentItems: CartItem[], itemId: string) => {
     if (typeof itemId === 'string') {
         return currentItems.findIndex(item => item.cartItemId === itemId);
     }
@@ -182,7 +182,7 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
   }, []);
 
   // Remover produto do carrinho
-  const removeFromCart = useCallback((itemId: number | string) => {
+  const removeFromCart = useCallback((itemId: string) => {
     setItems(currentItems => {
         if (typeof itemId === 'string') {
             return currentItems.filter(item => item.cartItemId !== itemId);
@@ -192,7 +192,7 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
   }, []);
 
   // Atualizar quantidade
-  const updateQuantity = useCallback((itemId: number | string, quantity: number) => {
+  const updateQuantity = useCallback((itemId: string, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(itemId);
       return;
@@ -216,7 +216,7 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
   }, [removeFromCart]);
 
   // Aumentar quantidade
-  const increaseQuantity = useCallback((itemId: number | string) => {
+  const increaseQuantity = useCallback((itemId: string) => {
     setItems(currentItems =>
       currentItems.map(item => {
         const isTarget = typeof itemId === 'string' 
@@ -235,7 +235,7 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
   }, []);
 
   // Diminuir quantidade
-  const decreaseQuantity = useCallback((itemId: number | string) => {
+  const decreaseQuantity = useCallback((itemId: string) => {
     setItems(currentItems =>
       currentItems.map(item => {
         const isTarget = typeof itemId === 'string' 
@@ -264,7 +264,7 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
   }, []);
 
   // Obter quantidade de um produto específico
-  const getItemQuantity = useCallback((productId: number) => {
+  const getItemQuantity = useCallback((productId: string) => {
     return items
       .filter(item => item.product.id === productId)
       .reduce((total, item) => total + item.quantity, 0);

@@ -39,11 +39,11 @@ export interface OrderRequest {
   paymentMethod: 'dinheiro' | 'cartao' | 'pix';
   couponCode?: string;
   items: {
-    productId: number;
+    productId: string;
     quantity: number;
     unitPrice: number;
     selectedAddons?: {
-      addonId: number;
+      addonId: string;
       quantity: number;
     }[];
     notes?: string;

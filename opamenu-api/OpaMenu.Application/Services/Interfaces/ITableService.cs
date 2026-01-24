@@ -1,7 +1,7 @@
 using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Domain.DTOs.Table;
 
-namespace OpaMenu.Application.Interfaces;
+namespace OpaMenu.Application.Services.Interfaces;
 
 public interface ITableService
 {

@@ -1,12 +1,10 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using OpaMenu.Domain.DTOs;
+using Microsoft.AspNetCore.Mvc;
+using OpaMenu.Application.Services.Interfaces.Opamenu;
+using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Domain.DTOs.Customer;
-using OpaMenu.Web.UserEntry;
 using OpaMenu.Infrastructure.Anotations;
 using OpaMenu.Infrastructure.Filters;
-using OpaMenu.Application.Services.Interfaces.Opamenu;
 
 namespace OpaMenu.Web.UserEntry.Customer
 {
@@ -24,7 +22,7 @@ namespace OpaMenu.Web.UserEntry.Customer
 
         [HttpGet]
         [MapPermission(MODULE_CUSTOMER, OPERATION_SELECT)]
-        public async Task<ActionResult<ApiResponse<IEnumerable<CustomerResponseDto>>>> GetAllCustomers()
+        public async Task<ActionResult<ResponseDTO<IEnumerable<CustomerResponseDto>>>> GetAllCustomers()
         {
             var serviceResponse = await _customerService.GetAll();
             return BuildResponse(serviceResponse);

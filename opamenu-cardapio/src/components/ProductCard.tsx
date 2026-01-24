@@ -8,9 +8,9 @@ import { getFullImageUrl } from "@/utils/image-url";
 interface ProductCardProps {
   product: ApiProduct | ProductWithAddons;
   cartQuantity?: number;
-  onAddToCart: (productId: number) => void;
-  onRemoveFromCart: (productId: number) => void;
-  onProductClick: (productId: number) => void;
+  onAddToCart: (productId: string) => void;
+  onRemoveFromCart: (productId: string) => void;
+  onProductClick: (productId: string) => void;
 }
 
 const ProductCard = ({ 

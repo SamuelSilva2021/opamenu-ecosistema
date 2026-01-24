@@ -229,5 +229,6 @@ public class CouponService(
         var dto = _mapper.Map<CouponDto>(coupon);
         return StaticResponseBuilder<CouponDto?>.BuildOk(dto);
     }
+    
 }
 

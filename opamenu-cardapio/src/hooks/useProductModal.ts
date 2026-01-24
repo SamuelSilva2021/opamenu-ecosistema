@@ -8,7 +8,7 @@ export const useProductModal = (slug?: string) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const openModal = useCallback(async (productId: number) => {
+  const openModal = useCallback(async (productId: string) => {
     if (!slug) return;
 
     setIsLoading(true);
