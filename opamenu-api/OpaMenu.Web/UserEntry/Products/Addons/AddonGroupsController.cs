@@ -30,7 +30,7 @@ public class AddonGroupsController(
     /// Obter todos os grupos de adicionais
     /// </summary>
     [HttpGet]
-    [MapPermission(ADITIONAL_GROUP, OPERATION_SELECT)]
+    [MapPermission(MODULE_ADDON_GROUP, OPERATION_SELECT)]
     public async Task<ActionResult<ResponseDTO<IEnumerable<AddonGroupResponseDto>>>> GetAddonGroups()
     {
         var serviceResponse = await _addonGroupService.GetAllAddonGroupsAsync();
@@ -41,7 +41,7 @@ public class AddonGroupsController(
     /// Obter grupo de adicionais por ID
     /// </summary>
     [HttpGet("{id}")]
-    [MapPermission(ADITIONAL_GROUP, OPERATION_SELECT)]
+    [MapPermission(MODULE_ADDON_GROUP, OPERATION_SELECT)]
     public async Task<ActionResult<ResponseDTO<AddonGroupResponseDto>>> GetAddonGroup(Guid id)
     {
         var serviceResponse = await _addonGroupService.GetAddonGroupWithAddonsAsync(id);
@@ -52,7 +52,7 @@ public class AddonGroupsController(
     /// Criar novo grupo de adicionais
     /// </summary>
     [HttpPost]
-    [MapPermission(ADITIONAL_GROUP, OPERATION_INSERT)]
+    [MapPermission(MODULE_ADDON_GROUP, OPERATION_INSERT)]
     public async Task<ActionResult<ResponseDTO<AddonGroupResponseDto>>> CreateAddonGroup([FromBody] CreateAddonGroupRequestDto request)
     {
         if (!ModelState.IsValid)
@@ -72,7 +72,7 @@ public class AddonGroupsController(
     /// Atualizar grupo de adicionais existente
     /// </summary>
     [HttpPut("{id}")]
-    [MapPermission(ADITIONAL_GROUP, OPERATION_UPDATE)]
+    [MapPermission(MODULE_ADDON_GROUP, OPERATION_UPDATE)]
     public async Task<ActionResult<ResponseDTO<AddonGroupResponseDto>>> UpdateAddonGroup(Guid id, [FromBody] UpdateAddonGroupRequestDto request)
     {
         if (!ModelState.IsValid)
@@ -92,7 +92,7 @@ public class AddonGroupsController(
     /// Alternar status ativo/inativo do grupo de adicionais
     /// </summary>
     [HttpPatch("{id}/toggle-status")]
-    [MapPermission(ADITIONAL_GROUP, OPERATION_UPDATE)]
+    [MapPermission(MODULE_ADDON_GROUP, OPERATION_UPDATE)]
     public async Task<ActionResult<ResponseDTO<AddonGroupResponseDto>>> ToggleAddonGroupStatus(Guid id)
     {
         var serviceResponse = await _addonGroupService.ToggleAddonGroupStatusAsync(id);
@@ -103,7 +103,7 @@ public class AddonGroupsController(
     /// Excluir grupo de adicionais
     /// </summary>
     [HttpDelete("{id}")]
-    [MapPermission(ADITIONAL_GROUP, OPERATION_DELETE)]
+    [MapPermission(MODULE_ADDON_GROUP, OPERATION_DELETE)]
     public async Task<ActionResult<ResponseDTO<bool>>> DeleteAddonGroup(Guid id)
     {
         var serviceResponse = await _addonGroupService.DeleteAddonGroupAsync(id);

@@ -25,7 +25,7 @@ public class AddonsController(
     /// Obter todos os adicionais
     /// </summary>
     [HttpGet]
-    [MapPermission(ADITIONAL, OPERATION_SELECT)]
+    [MapPermission(MODULE_ADDON, OPERATION_SELECT)]
     public async Task<ActionResult<IEnumerable<AddonResponseDto>>> GetAddons()
     {
             var serviceResponse = await _addonService.GetAllAddonsAsync();
@@ -36,7 +36,7 @@ public class AddonsController(
     /// Obter adicional por ID
     /// </summary>
     [HttpGet("{id}")]
-    [MapPermission(ADITIONAL, OPERATION_SELECT)]
+    [MapPermission(MODULE_ADDON, OPERATION_SELECT)]
     public async Task<ActionResult<ApiResponse<AddonResponseDto>>> GetAddon(Guid id)
     {
         var serviceResponse = await _addonService.GetAddonByIdAsync(id);
@@ -47,7 +47,7 @@ public class AddonsController(
     /// Criar novo adicional
     /// </summary>
     [HttpPost]
-    [MapPermission(ADITIONAL, OPERATION_INSERT)]
+    [MapPermission(MODULE_ADDON, OPERATION_INSERT)]
     public async Task<ActionResult<ApiResponse<AddonResponseDto>>> CreateAddon([FromBody] CreateAddonRequestDto request)
     {
         if (!ModelState.IsValid)
@@ -67,7 +67,7 @@ public class AddonsController(
     /// Atualizar adicional existente
     /// </summary>
     [HttpPut("{id}")]
-    [MapPermission(ADITIONAL, OPERATION_UPDATE)]
+    [MapPermission(MODULE_ADDON, OPERATION_UPDATE)]
     public async Task<ActionResult<ApiResponse<AddonResponseDto>>> UpdateAddon(Guid id, [FromBody] UpdateAddonRequestDto request)
     {
         if (!ModelState.IsValid)
@@ -87,7 +87,7 @@ public class AddonsController(
     /// Excluir adicional
     /// </summary>
     [HttpDelete("{id}")]
-    [MapPermission(ADITIONAL, OPERATION_DELETE)]
+    [MapPermission(MODULE_ADDON, OPERATION_DELETE)]
     public async Task<ActionResult<ApiResponse<object>>> DeleteAddon(Guid id)
     {
         var serviceResponse = await _addonService.DeleteAddonAsync(id);
@@ -98,7 +98,7 @@ public class AddonsController(
     /// Alternar status do adicional
     /// </summary>
     [HttpPatch("{id}/toggle-status")]
-    [MapPermission(ADITIONAL, OPERATION_UPDATE)]
+    [MapPermission(MODULE_ADDON, OPERATION_UPDATE)]
     public async Task<ActionResult<ApiResponse<AddonResponseDto>>> ToggleAddonStatus(Guid id)
     {
         var serviceResponse = await _addonService.ToggleAddonStatusAsync(id);
