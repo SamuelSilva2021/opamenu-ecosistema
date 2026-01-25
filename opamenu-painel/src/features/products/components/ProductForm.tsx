@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { CurrencyInput } from "@/components/ui/currency-input";
 
 import type { Product, CreateProductRequest, UpdateProductRequest } from "../types";
 import { productsService } from "../products.service";
@@ -282,14 +283,12 @@ export function ProductForm({
                     name="price"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Preço (R$)</FormLabel>
+                        <FormLabel>Preço</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="number" 
-                            step="0.01" 
-                            min="0"
-                            placeholder="0.00" 
-                            {...field} 
+                          <CurrencyInput
+                            placeholder="R$ 0,00"
+                            value={field.value}
+                            onChange={field.onChange}
                           />
                         </FormControl>
                         <FormMessage />
