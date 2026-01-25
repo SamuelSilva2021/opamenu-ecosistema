@@ -135,6 +135,14 @@ All colors MUST be HSL for proper theming.
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
   
   /* Modal responsivo overrides */
   @media (max-width: 640px) {

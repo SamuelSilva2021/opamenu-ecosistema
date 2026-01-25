@@ -134,8 +134,10 @@ public class PublicMenuController(
 
     /// <summary>
     /// Cancela um pedido público (apenas se pendente)
+    /// O cliente precisa estar logado para cancelar o seus pedidos
     /// </summary>
     [HttpPut("orders/{id}/cancel")]
+    [Authorize]
     public async Task<ActionResult<ResponseDTO<OrderResponseDto>>> CancelOrder(Guid id, [FromBody] CancelOrderRequestDto request)
     {
         // TODO: Validar se pedido pertence ao tenant do slug e ao customer (se auth disponível)

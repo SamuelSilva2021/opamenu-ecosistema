@@ -22,8 +22,6 @@ namespace OpaMenu.Domain.DTOs.Order
         public string? CustomerEmail { get; set; }
         public AddressDto? DeliveryAddress { get; set; }
 
-        public bool IsDelivery { get; set; }
-
         public EOrderType OrderType { get; set; } = EOrderType.Delivery;
 
         public Guid? TableId { get; set; }

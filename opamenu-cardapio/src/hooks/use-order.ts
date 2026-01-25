@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { Order, OrderStatus, CreateOrderRequest } from '@/types/api';
+import { Order, OrderStatus, CreateOrderRequest, EOrderType } from '@/types/api';
 import { OrderRequest } from '@/types/cart';
 import { orderService } from '@/services/order-service';
 import { handleApiError } from '@/services/http-client';
@@ -11,7 +11,7 @@ export interface OrderHookReturn {
   loading: boolean;
   error: string | null;
   createOrder: (orderData: OrderRequest) => Promise<Order | null>;
-  getOrderById: (orderId: number) => Promise<Order | null>;
+  getOrderById: (orderId: string) => Promise<Order | null>;
   clearError: () => void;
   clearCurrentOrder: () => void;
 }
@@ -33,10 +33,10 @@ export const useOrder = (): OrderHookReturn => {
         customerName: orderData.customerName,
         customerPhone: orderData.customerPhone,
         customerEmail: orderData.customerEmail && orderData.customerEmail.trim() ? orderData.customerEmail.trim() : undefined,
-        deliveryAddress: orderData.isDelivery && orderData.deliveryAddress ? orderData.deliveryAddress : undefined,
+        deliveryAddress: orderData.orderType === EOrderType.Delivery && orderData.deliveryAddress ? orderData.deliveryAddress : undefined,
         notes: orderData.notes || '',
         couponCode: orderData.couponCode,
-        isDelivery: orderData.isDelivery || false,
+        orderType: orderData.orderType,
         items: orderData.items.map(item => ({
           productId: item.productId,
           quantity: item.quantity,
@@ -64,12 +64,11 @@ export const useOrder = (): OrderHookReturn => {
     }
   }, [slug]);
 
-  const getOrderById = useCallback(async (orderId: number): Promise<Order | null> => {
+  const getOrderById = useCallback(async (orderId: string): Promise<Order | null> => {
     try {
       setError(null);
       const order = await orderService.getOrderById(orderId, slug);
       
-      // Atualizar ordem atual se for a mesma
       if (currentOrder?.id === orderId) {
         setCurrentOrder(order);
       }

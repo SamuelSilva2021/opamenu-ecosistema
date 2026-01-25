@@ -223,8 +223,7 @@ const StorefrontContent = () => {
             )}
           </div>
 
-          {/* Search and Category Row */}
-          <div className="flex gap-4">
+          <div className="hidden lg:flex gap-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="shrink-0 gap-2 h-12 bg-white border-gray-200">
@@ -256,9 +255,40 @@ const StorefrontContent = () => {
             </div>
           </div>
           
+          {/* Mobile Category Navigation */}
+          <div className="lg:hidden">
+            <div className="flex overflow-x-auto gap-3 pb-2 -mx-4 px-4 scrollbar-hide">
+              <button
+                onClick={() => setSelectedCategory("all")}
+                className={`
+                  whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors
+                  ${selectedCategory === "all" 
+                    ? "bg-primary text-primary-foreground" 
+                    : "bg-white text-gray-600 border border-gray-200"}
+                `}
+              >
+                Destaques
+              </button>
+              {categoryOptions.map(cat => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`
+                    whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors
+                    ${selectedCategory === cat.id 
+                      ? "bg-primary text-primary-foreground" 
+                      : "bg-white text-gray-600 border border-gray-200"}
+                  `}
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </div>
+          </div>
+          
           {/* Destaques / Product Grid */}
           <div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Destaques</h2>
+            <h2 className="hidden lg:block text-2xl font-bold text-gray-800 mb-6">Destaques</h2>
             
             {productsLoading ? (
               <div className="flex justify-center py-12">

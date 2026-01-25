@@ -18,6 +18,7 @@ namespace OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant
         /// Primary key da entidade.
         /// </summary>
         [Column(name: "id")]
+        [Key]
         public Guid Id { get; set; }
         /// <summary>
         /// Identificador do tenant ao qual a entidade pertence.

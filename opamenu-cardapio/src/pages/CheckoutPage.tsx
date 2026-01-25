@@ -72,6 +72,11 @@ const CheckoutPage = ({ onBackToMenu, tenant }: CheckoutPageProps) => {
     }
   }, [customer, hasAppliedCustomerData, updateCheckoutData, checkoutData.customerName, checkoutData.customerPhone]);
 
+  // Scroll para o topo sempre que mudar de etapa
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentStep]);
+
   // Comentando temporariamente - problema de sincronização entre hooks
   /*
   // Se não há itens no carrinho e não estamos na confirmação, voltar ao menu
@@ -203,7 +208,13 @@ const CheckoutPage = ({ onBackToMenu, tenant }: CheckoutPageProps) => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={onBackToMenu}
+                  onClick={() => {
+                    if (currentStep === CheckoutSteps.PAYMENT) {
+                      setCurrentStep(CheckoutSteps.CUSTOMER_INFO);
+                    } else {
+                      onBackToMenu();
+                    }
+                  }}
                   className="md:hidden"
                 >
                   <ArrowLeft className="h-5 w-5" />

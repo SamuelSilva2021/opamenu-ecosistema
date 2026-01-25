@@ -350,22 +350,22 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
                         },
                         new
                         {
-                            Id = new Guid("4a8880e0-1906-49be-5b11-ad80ddadf8ca"),
+                            Id = new Guid("f30c45da-30a3-45cb-f932-88af5354e1e6"),
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Gerenciamento de grupos de adicionais",
                             IsActive = true,
-                            Key = "ADDON_GROUP",
+                            Key = "ADITIONAL_GROUP",
                             Name = "Grupos de Adicionais",
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             Url = "/addon-groups"
                         },
                         new
                         {
-                            Id = new Guid("6a8409cb-b54d-a80e-afce-e0ff0454f375"),
+                            Id = new Guid("4822a024-3dd0-674d-638d-ddee1f7b1a2b"),
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Gerenciamento de adicionais",
                             IsActive = true,
-                            Key = "ADDON",
+                            Key = "ADITIONAL",
                             Name = "Adicionais",
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             Url = "/addons"
@@ -594,18 +594,18 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
                         },
                         new
                         {
-                            Id = new Guid("2e6af181-5d42-e5aa-4b4b-d5248007b2e0"),
+                            Id = new Guid("74a25ad4-d36b-704c-a7de-5b72dee4995a"),
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            ModuleId = new Guid("4a8880e0-1906-49be-5b11-ad80ddadf8ca"),
+                            ModuleId = new Guid("f30c45da-30a3-45cb-f932-88af5354e1e6"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("b1558ef2-06dd-d6aa-8859-955e696b406b"),
+                            Id = new Guid("5085d645-c38b-d136-fddc-ae069bce2891"),
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            ModuleId = new Guid("6a8409cb-b54d-a80e-afce-e0ff0454f375"),
+                            ModuleId = new Guid("4822a024-3dd0-674d-638d-ddee1f7b1a2b"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
@@ -755,74 +755,74 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
                         },
                         new
                         {
-                            Id = new Guid("d533bf9d-f97f-c3b8-a7d5-0bc4a4ef9391"),
+                            Id = new Guid("4efa00f4-01c3-32c7-d932-b1c9eb0475fc"),
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
                             OperationId = new Guid("d1183fa8-5cae-7b65-cd00-3d1db4a55fac"),
-                            PermissionId = new Guid("2e6af181-5d42-e5aa-4b4b-d5248007b2e0"),
+                            PermissionId = new Guid("74a25ad4-d36b-704c-a7de-5b72dee4995a"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("7fe097e6-a043-43e3-a63a-37767762d13a"),
+                            Id = new Guid("08bf4490-b956-8e11-534b-71285173a866"),
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
                             OperationId = new Guid("a9cc2de8-8f88-b419-87ad-9d152f92a84b"),
-                            PermissionId = new Guid("2e6af181-5d42-e5aa-4b4b-d5248007b2e0"),
+                            PermissionId = new Guid("74a25ad4-d36b-704c-a7de-5b72dee4995a"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("e39eabd0-9348-b57d-ccbe-9c2f9bd3927a"),
+                            Id = new Guid("6e046476-5376-bf5b-ce70-30ac8f575df7"),
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
                             OperationId = new Guid("0c6e99a2-af92-4ff8-80b7-332b1636479f"),
-                            PermissionId = new Guid("2e6af181-5d42-e5aa-4b4b-d5248007b2e0"),
+                            PermissionId = new Guid("74a25ad4-d36b-704c-a7de-5b72dee4995a"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("8035f3a2-608e-dd8b-28eb-bbc4a624e686"),
+                            Id = new Guid("f758bdbd-7aa7-bc4c-c4eb-f408e3d8c129"),
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
                             OperationId = new Guid("830f881f-76d6-79db-c78a-5f4952ff9a4c"),
-                            PermissionId = new Guid("2e6af181-5d42-e5aa-4b4b-d5248007b2e0"),
+                            PermissionId = new Guid("74a25ad4-d36b-704c-a7de-5b72dee4995a"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("ce3570dd-dfac-8922-3a9d-943b37710f28"),
+                            Id = new Guid("f4b7b087-8eb8-4bfe-8b3a-1f97bf787d02"),
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
                             OperationId = new Guid("d1183fa8-5cae-7b65-cd00-3d1db4a55fac"),
-                            PermissionId = new Guid("b1558ef2-06dd-d6aa-8859-955e696b406b"),
+                            PermissionId = new Guid("5085d645-c38b-d136-fddc-ae069bce2891"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("97868498-f4c2-82d0-141c-03a7efdc1394"),
+                            Id = new Guid("d3b2425b-1480-4481-e0aa-aaae749ca0b1"),
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
                             OperationId = new Guid("a9cc2de8-8f88-b419-87ad-9d152f92a84b"),
-                            PermissionId = new Guid("b1558ef2-06dd-d6aa-8859-955e696b406b"),
+                            PermissionId = new Guid("5085d645-c38b-d136-fddc-ae069bce2891"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("243ac639-ef08-0bab-da93-621eb417a814"),
+                            Id = new Guid("3f88c7df-4ee0-c86b-82db-bb5cecd6b003"),
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
                             OperationId = new Guid("0c6e99a2-af92-4ff8-80b7-332b1636479f"),
-                            PermissionId = new Guid("b1558ef2-06dd-d6aa-8859-955e696b406b"),
+                            PermissionId = new Guid("5085d645-c38b-d136-fddc-ae069bce2891"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("31585bfb-3d5f-ade5-e06f-1916f7df6683"),
+                            Id = new Guid("cccc2036-6c84-1921-1af0-9a5c0e6d483c"),
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
                             OperationId = new Guid("830f881f-76d6-79db-c78a-5f4952ff9a4c"),
-                            PermissionId = new Guid("b1558ef2-06dd-d6aa-8859-955e696b406b"),
+                            PermissionId = new Guid("5085d645-c38b-d136-fddc-ae069bce2891"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
@@ -1333,37 +1333,37 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
                         },
                         new
                         {
-                            Id = new Guid("7ebd8351-6981-6177-eb12-2335bf96bcbd"),
+                            Id = new Guid("810f21d3-fcf1-4613-0d50-5176853c333c"),
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("2e6af181-5d42-e5aa-4b4b-d5248007b2e0"),
+                            PermissionId = new Guid("74a25ad4-d36b-704c-a7de-5b72dee4995a"),
                             RoleId = new Guid("724add9f-febd-c615-19db-8e526968da25"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("be9e1f49-5f61-c0dc-4c97-a011ba164b88"),
+                            Id = new Guid("064ad572-9ba8-f0de-ea3e-e3926a8aa61e"),
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("2e6af181-5d42-e5aa-4b4b-d5248007b2e0"),
+                            PermissionId = new Guid("74a25ad4-d36b-704c-a7de-5b72dee4995a"),
                             RoleId = new Guid("4534e34a-3a31-ef0c-2a17-b57ea1d45cb6"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("e0e5875f-dd7b-a8d2-8711-a49d4a0a0a0d"),
+                            Id = new Guid("23c7a0ec-1a8b-7b49-ccc8-38bb8a37ac53"),
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("b1558ef2-06dd-d6aa-8859-955e696b406b"),
+                            PermissionId = new Guid("5085d645-c38b-d136-fddc-ae069bce2891"),
                             RoleId = new Guid("724add9f-febd-c615-19db-8e526968da25"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("61b0047e-df45-a1ff-9201-e85fbb80de8d"),
+                            Id = new Guid("cbe32b35-ed56-6f64-c987-9cfd78c7f9aa"),
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("b1558ef2-06dd-d6aa-8859-955e696b406b"),
+                            PermissionId = new Guid("5085d645-c38b-d136-fddc-ae069bce2891"),
                             RoleId = new Guid("4534e34a-3a31-ef0c-2a17-b57ea1d45cb6"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
@@ -1641,6 +1641,63 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
                         });
                 });
 
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant.BankDetailsEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AccountNumber")
+                        .HasColumnType("text")
+                        .HasColumnName("account_number");
+
+                    b.Property<int?>("AccountType")
+                        .HasColumnType("integer")
+                        .HasColumnName("account_type");
+
+                    b.Property<string>("Agency")
+                        .HasColumnType("text")
+                        .HasColumnName("agency");
+
+                    b.Property<int?>("BankId")
+                        .HasColumnType("integer")
+                        .HasColumnName("bank_id");
+
+                    b.Property<string>("BankName")
+                        .HasColumnType("text")
+                        .HasColumnName("bank_name");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsPixKeySelected")
+                        .HasColumnType("boolean")
+                        .HasColumnName("pix_key_selected");
+
+                    b.Property<string>("PixKey")
+                        .HasColumnType("text")
+                        .HasColumnName("pix_key");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("bank_details");
+                });
+
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant.TenantEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1908,6 +1965,17 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
                     b.Navigation("Role");
                 });
 
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant.BankDetailsEntity", b =>
+                {
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant.TenantEntity", "Tenant")
+                        .WithMany("BankDetails")
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
+                });
+
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.AccessControl.AccessGroupEntity", b =>
                 {
                     b.Navigation("AccountAccessGroups");
@@ -1952,6 +2020,11 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts.UserAccountEntity", b =>
                 {
                     b.Navigation("AccountAccessGroups");
+                });
+
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant.TenantEntity", b =>
+                {
+                    b.Navigation("BankDetails");
                 });
 #pragma warning restore 612, 618
         }

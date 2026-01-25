@@ -203,8 +203,14 @@ export interface CreateOrderRequest {
   deliveryAddress?: AddressDto;
   notes?: string;
   couponCode?: string;
-  isDelivery: boolean;
+  orderType: EOrderType;
   items: CreateOrderItemRequest[];
+}
+
+export enum EOrderType {
+  Delivery = 0,
+  Counter = 1,
+  Table = 2
 }
 
 export interface CreateOrderItemRequest {

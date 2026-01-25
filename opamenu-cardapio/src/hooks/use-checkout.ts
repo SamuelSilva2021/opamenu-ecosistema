@@ -1,9 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { CheckoutData, CheckoutSteps } from '@/types/checkout';
 import { useOrder } from './use-order';
 import { useCart } from './use-cart';
-import { OrderRequest } from '@/types/cart';
+import { OrderRequest, EOrderType } from '@/types/cart';
 import { Order } from '@/types/api';
 
 export interface CheckoutHookReturn {
@@ -37,10 +37,26 @@ const initialCheckoutData: CheckoutData = {
   notes: ''
 };
 
+const CHECKOUT_STORAGE_KEY = 'opamenu-checkout-data';
+
 export const useCheckout = (): CheckoutHookReturn => {
   const { slug } = useParams<{ slug: string }>();
+  const storageKey = slug ? `${CHECKOUT_STORAGE_KEY}-${slug}` : CHECKOUT_STORAGE_KEY;
+
   const [currentStep, setCurrentStep] = useState<CheckoutSteps>(CheckoutSteps.CUSTOMER_INFO);
-  const [checkoutData, setCheckoutData] = useState<CheckoutData>(initialCheckoutData);
+  
+  const [checkoutData, setCheckoutData] = useState<CheckoutData>(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        return { ...initialCheckoutData, ...JSON.parse(saved) };
+      }
+    } catch (error) {
+      console.error('Error loading checkout data from localStorage:', error);
+    }
+    return initialCheckoutData;
+  });
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastOrder, setLastOrder] = useState<Order | null>(null);
@@ -48,6 +64,15 @@ export const useCheckout = (): CheckoutHookReturn => {
 
   const { createOrder } = useOrder();
   const { items: cartItems, clearCart, coupon } = useCart();
+
+  // Persistir dados no localStorage sempre que mudarem
+  useEffect(() => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(checkoutData));
+    } catch (error) {
+      console.error('Error saving checkout data to localStorage:', error);
+    }
+  }, [checkoutData, storageKey]);
 
   const updateCheckoutData = useCallback((data: Partial<CheckoutData>) => {
     setCheckoutData(prev => ({ ...prev, ...data }));
@@ -91,7 +116,7 @@ export const useCheckout = (): CheckoutHookReturn => {
           city: checkoutData.city!,
           state: checkoutData.state!
         } : undefined,
-        isDelivery: checkoutData.isDelivery,
+        orderType: checkoutData.isDelivery ? EOrderType.Delivery : EOrderType.Counter,
         paymentMethod: paymentMethod as 'dinheiro' | 'cartao' | 'pix',
         notes: checkoutData.notes?.trim(),
         couponCode: coupon?.code,
@@ -113,6 +138,9 @@ export const useCheckout = (): CheckoutHookReturn => {
         // Armazenar o pedido no estado local do checkout
         setLastOrder(order);
         
+        // Limpar dados do localStorage após sucesso
+        localStorage.removeItem(storageKey);
+
         // Limpar o carrinho APÓS o pedido ser criado com sucesso
         clearCart();
         setCurrentStep(CheckoutSteps.CONFIRMATION);
@@ -126,7 +154,7 @@ export const useCheckout = (): CheckoutHookReturn => {
     } finally {
       setIsProcessing(false);
     }
-  }, [checkoutData, cartItems, createOrder, clearCart]);
+  }, [checkoutData, cartItems, createOrder, clearCart, storageKey]);
 
   const resetCheckout = useCallback(() => {
     setCurrentStep(CheckoutSteps.CUSTOMER_INFO);
@@ -135,8 +163,10 @@ export const useCheckout = (): CheckoutHookReturn => {
     setError(null);
     setLastOrder(null);
     setShowPixPayment(false);
-    // Carrinho já foi limpo após o pedido - não limpar novamente
-  }, []);
+    
+    // Limpar dados do localStorage
+    localStorage.removeItem(storageKey);
+  }, [storageKey]);
 
   const handlePixPayment = useCallback(() => {
     setShowPixPayment(true);

@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Upload, X } from "lucide-react";
+import imageCompression from 'browser-image-compression';
 
 import {
   Dialog,
@@ -20,7 +21,6 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -36,6 +36,7 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 import type { Product, CreateProductRequest, UpdateProductRequest } from "../types";
+import { productsService } from "../products.service";
 import { categoriesService } from "@/features/categories/categories.service";
 import { addonsService } from "@/features/addons/addons.service";
 import { filesService } from "@/services/files.service";
@@ -92,6 +93,13 @@ export function ProductForm({
     enabled: open,
   });
 
+  // Fetch product addon groups separately to ensure we have the details
+  const { data: productAddonGroupsData } = useQuery({
+    queryKey: ["product-addon-groups", initialData?.id],
+    queryFn: () => productsService.getProductAddonGroups(initialData!.id),
+    enabled: !!initialData?.id && open,
+  });
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema) as any,
     defaultValues: {
@@ -112,38 +120,38 @@ export function ProductForm({
   });
 
   useEffect(() => {
-    if (open) {
-      if (initialData) {
-        form.reset({
-          name: initialData.name,
-          description: initialData.description || "",
-          price: initialData.price,
-          categoryId: initialData.categoryId,
-          imageUrl: initialData.imageUrl || "",
-          isActive: initialData.isActive,
-          displayOrder: initialData.displayOrder,
-          addonGroups: initialData.addonGroups?.map((g) => ({
-            addonGroupId: g.addonGroupId,
-            displayOrder: g.displayOrder,
-            isRequired: g.isRequired,
-            minSelectionsOverride: g.minSelectionsOverride,
-            maxSelectionsOverride: g.maxSelectionsOverride,
-          })) || [],
-        });
-      } else {
-        form.reset({
-          name: "",
-          description: "",
-          price: 0,
-          categoryId: "",
-          imageUrl: "",
-          isActive: true,
-          displayOrder: 0,
-          addonGroups: [],
-        });
-      }
+    if (open && initialData) {
+      const groupsToUse = productAddonGroupsData || initialData.addonGroups || [];
+
+      form.reset({
+        name: initialData.name,
+        description: initialData.description || "",
+        price: initialData.price,
+        categoryId: initialData.categoryId,
+        imageUrl: initialData.imageUrl || "",
+        isActive: initialData.isActive,
+        displayOrder: initialData.displayOrder,
+        addonGroups: groupsToUse.map((g) => ({
+          addonGroupId: g.addonGroupId,
+          displayOrder: g.displayOrder,
+          isRequired: g.isRequired,
+          minSelectionsOverride: g.minSelectionsOverride,
+          maxSelectionsOverride: g.maxSelectionsOverride,
+        })),
+      });
+    } else if (open && !initialData) {
+      form.reset({
+        name: "",
+        description: "",
+        price: 0,
+        categoryId: "",
+        imageUrl: "",
+        isActive: true,
+        displayOrder: 0,
+        addonGroups: [],
+      });
     }
-  }, [initialData, form, open]);
+  }, [initialData, productAddonGroupsData, form, open]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -151,7 +159,47 @@ export function ProductForm({
 
     try {
       setIsUploading(true);
-      const result = await filesService.uploadFile(file, "products");
+
+      let fileToUpload = file;
+
+      // Otimizar imagem antes do envio
+      if (file.type.startsWith('image/')) {
+        try {
+          console.log(`Original file size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
+
+          const options = {
+            maxSizeMB: 1, // Reduzido para 1MB para garantir margem de segurança
+            maxWidthOrHeight: 1920, 
+            useWebWorker: false,
+            initialQuality: 0.7,
+          };
+          
+          const compressedBlob = await imageCompression(file, options);
+          console.log(`Compressed file size: ${(compressedBlob.size / 1024 / 1024).toFixed(2)} MB`);
+          
+          fileToUpload = new File([compressedBlob], file.name, { 
+            type: file.type,
+            lastModified: new Date().getTime()
+          });
+          
+        } catch (compressionError) {
+          console.error("Erro na compressão de imagem:", compressionError);
+        }
+      }
+
+      const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB exatos
+      if (fileToUpload.size > MAX_SIZE_BYTES) {
+        toast({ 
+          title: "Arquivo muito grande", 
+          description: `Mesmo após otimização, a imagem tem ${(fileToUpload.size / 1024 / 1024).toFixed(2)}MB. O limite é 5MB. Por favor, escolha outra imagem.`, 
+          variant: "destructive" 
+        });
+        setIsUploading(false);
+        e.target.value = "";
+        return;
+      }
+
+      const result = await filesService.uploadFile(fileToUpload, "products");
       if (result.isSuccess && result.fileUrl) {
         form.setValue("imageUrl", result.fileUrl);
         toast({ title: "Sucesso", description: "Imagem enviada com sucesso", variant: "success" });
@@ -159,14 +207,15 @@ export function ProductForm({
         toast({ title: "Erro", description: "Falha ao enviar imagem", variant: "destructive" });
       }
     } catch (error) {
+      console.error(error);
       toast({ title: "Erro", description: "Erro ao enviar imagem", variant: "destructive" });
     } finally {
       setIsUploading(false);
+      e.target.value = "";
     }
   };
 
   const handleSubmit = (values: FormValues) => {
-    // Filter out groups with invalid ID (empty string)
     const validGroups = values.addonGroups?.filter(g => g.addonGroupId !== "");
     
     onSubmit({
@@ -183,17 +232,17 @@ export function ProductForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-6xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-6xl h-[90vh] flex flex-col p-0 gap-0">
+        <DialogHeader className="px-6 py-4 border-b">
           <DialogTitle>
             {initialData ? "Editar Produto" : "Novo Produto"}
           </DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col flex-1 min-h-0">
+            <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Left Column: Basic Info */}
               <div className="space-y-4">
                 <FormField
                   control={form.control}
@@ -267,68 +316,66 @@ export function ProductForm({
                   />
                 </div>
 
-                <FormField
-                  control={form.control}
-                  name="categoryId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Categoria</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione uma categoria" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {categories.map((category) => (
-                            <SelectItem key={category.id} value={category.id.toString()}>
-                              {category.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="grid grid-cols-[1fr_auto] gap-4 items-end">
+                  <FormField
+                    control={form.control}
+                    name="categoryId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Categoria</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione uma categoria" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {categories.map((category) => (
+                              <SelectItem key={category.id} value={category.id.toString()}>
+                                {category.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="isActive"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">Ativo</FormLabel>
-                        <FormDescription>
-                          Produto visível no cardápio
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="isActive"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col gap-2 rounded-lg border p-3 h-full justify-center">
+                        <div className="flex items-center gap-2">
+                          <FormLabel className="text-base cursor-pointer" htmlFor="is-active-switch">Ativo</FormLabel>
+                          <FormControl>
+                            <Switch
+                              id="is-active-switch"
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
 
-              {/* Right Column: Image & Addons */}
               <div className="space-y-6">
-                {/* Image Upload */}
                 <div className="space-y-4">
                   <FormLabel>Imagem do Produto</FormLabel>
-                  <div className="flex flex-col items-center gap-4 p-4 border-2 border-dashed rounded-lg">
+                  <div className="flex flex-col items-center gap-4 p-4 border-2 border-dashed rounded-lg h-[340px] justify-center">
                     {form.watch("imageUrl") ? (
-                      <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-muted">
+                      <div className="relative w-full h-full rounded-lg overflow-hidden bg-muted flex items-center justify-center">
                         <img 
                           src={form.watch("imageUrl")} 
                           alt="Preview" 
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain"
                         />
                         <Button
                           type="button"
@@ -341,12 +388,12 @@ export function ProductForm({
                         </Button>
                       </div>
                     ) : (
-                      <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                      <div className="flex flex-col items-center justify-center flex-1 text-muted-foreground">
                         <Upload className="h-12 w-12 mb-2" />
                         <span className="text-sm">Clique para fazer upload</span>
                       </div>
                     )}
-                    <div className="flex items-center gap-2 w-full">
+                    <div className="flex items-center gap-2 w-full mt-auto">
                       <Input 
                         type="file" 
                         accept="image/*"
@@ -374,65 +421,63 @@ export function ProductForm({
                     </div>
                   </div>
                 </div>
-
-                <Separator />
-
-                {/* Addon Groups */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <FormLabel className="text-base">Grupos de Adicionais</FormLabel>
-                  </div>
-                  
-                  <ScrollArea className="h-[400px] pr-4">
-                    <div className="space-y-4">
-                      {fields.map((field) => {
-                         const currentGroup = addonGroups.find(g => g.id === field.addonGroupId);
-                         return (
-                        <div key={field.id} className="bg-muted/50 p-4 rounded-lg space-y-4 border">
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1">
-                              <FormLabel className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Grupo</FormLabel>
-                              <div className="text-sm font-medium mt-1">
-                                {currentGroup?.name || "Grupo não encontrado"}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="flex flex-col gap-1">
-                                <span className="text-xs font-medium text-muted-foreground">Obrigatório</span>
-                                <span className="text-sm">{field.isRequired ? "Sim" : "Não"}</span>
-                            </div>
-                             <div className="flex flex-col gap-1">
-                                <span className="text-xs font-medium text-muted-foreground">Ordem</span>
-                                <span className="text-sm">{field.displayOrder}</span>
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="flex flex-col gap-1">
-                                <span className="text-xs font-medium text-muted-foreground">Mín. Seleções</span>
-                                <span className="text-sm">{field.minSelectionsOverride ?? "Padrão"}</span>
-                            </div>
-                            <div className="flex flex-col gap-1">
-                                <span className="text-xs font-medium text-muted-foreground">Máx. Seleções</span>
-                                <span className="text-sm">{field.maxSelectionsOverride ?? "Padrão"}</span>
-                            </div>
-                          </div>
-                        </div>
-                      )})}
-                      {fields.length === 0 && (
-                        <div className="text-center py-8 text-muted-foreground text-sm border-2 border-dashed rounded-lg">
-                          Nenhum grupo vinculado
-                        </div>
-                      )}
-                    </div>
-                  </ScrollArea>
-                </div>
               </div>
             </div>
 
-            <DialogFooter>
+            <Separator className="my-6" />
+
+            {/* Addon Groups */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <FormLabel className="text-base">Grupos de Adicionais</FormLabel>
+              </div>
+              
+              <ScrollArea className="h-[300px] pr-4">
+                <div className="space-y-4">
+                  {fields.map((field) => {
+                     const currentGroup = addonGroups.find(g => g.id === field.addonGroupId);
+                     return (
+                    <div key={field.id} className="bg-muted/50 p-4 rounded-lg space-y-4 border">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <FormLabel className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Grupo</FormLabel>
+                          <div className="text-sm font-medium mt-1">
+                            {currentGroup?.name || "Grupo não encontrado"}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="flex flex-col gap-1">
+                            <span className="text-xs font-medium text-muted-foreground">Obrigatório</span>
+                            <span className="text-sm">{field.isRequired ? "Sim" : "Não"}</span>
+                        </div>
+                         <div className="flex flex-col gap-1">
+                            <span className="text-xs font-medium text-muted-foreground">Ordem</span>
+                            <span className="text-sm">{field.displayOrder}</span>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <span className="text-xs font-medium text-muted-foreground">Mín. Seleções</span>
+                            <span className="text-sm">{field.minSelectionsOverride ?? "Padrão"}</span>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <span className="text-xs font-medium text-muted-foreground">Máx. Seleções</span>
+                            <span className="text-sm">{field.maxSelectionsOverride ?? "Padrão"}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )})}
+                  {fields.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground text-sm border-2 border-dashed rounded-lg">
+                      Nenhum grupo vinculado
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+            </div>
+
+            </div>
+            <DialogFooter className="px-6 py-4 border-t mt-auto bg-background">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancelar
               </Button>

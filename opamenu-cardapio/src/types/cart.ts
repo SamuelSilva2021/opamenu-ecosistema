@@ -1,4 +1,4 @@
-import { Product, SelectedAddon } from '@/types/api';
+import { Product, SelectedAddon, EOrderType } from '@/types/api';
 
 export interface CartItem {
   cartItemId?: string; // Identificador único do item no carrinho
@@ -35,7 +35,7 @@ export interface OrderRequest {
   customerPhone: string;
   customerEmail?: string;
   deliveryAddress?: Address;
-  isDelivery?: boolean;
+  orderType: EOrderType;
   paymentMethod: 'dinheiro' | 'cartao' | 'pix';
   couponCode?: string;
   items: {
@@ -50,3 +50,7 @@ export interface OrderRequest {
   }[];
   notes?: string;
 }
+export {
+  EOrderType // Preço unitário (produto + adicionais)
+};
+

@@ -18,7 +18,6 @@ const OrderConfirmation = ({ order, onBackToMenu, onNewOrder }: OrderConfirmatio
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { getOrderById } = useOrder();
   
-  // Polling para atualizar status do pedido a cada 30 segundos
   useEffect(() => {
     if (!currentOrder?.id) return;
 
@@ -168,9 +167,9 @@ const OrderConfirmation = ({ order, onBackToMenu, onNewOrder }: OrderConfirmatio
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
+    <div className="max-w-5xl mx-auto py-4 md:p-6 space-y-6">
       {/* Header de Sucesso */}
-      <Card className="border-green-200 bg-green-50 shadow-sm">
+      <Card className="border-green-200 bg-green-50 shadow-sm mx-0 md:mx-0">
         <CardContent className="p-6 text-center">
           <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-green-800 mb-2">
@@ -183,8 +182,8 @@ const OrderConfirmation = ({ order, onBackToMenu, onNewOrder }: OrderConfirmatio
       </Card>
 
       {/* Informações do Pedido */}
-      <Card className="border-none shadow-sm">
-        <CardHeader className="pb-4">
+      <Card className="border-none shadow-sm mx-0 md:mx-0">
+        <CardHeader className="pb-4 px-4 md:px-6">
           <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <span className="flex items-center gap-2 text-xl">
               <Package className="h-6 w-6 text-opamenu-green" />  
@@ -207,7 +206,7 @@ const OrderConfirmation = ({ order, onBackToMenu, onNewOrder }: OrderConfirmatio
           </CardTitle>
         </CardHeader>
         
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 px-4 md:px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Dados do Cliente */}
             <div className="space-y-3">
@@ -339,7 +338,7 @@ const OrderConfirmation = ({ order, onBackToMenu, onNewOrder }: OrderConfirmatio
       </Card>
 
       {/* Botões de Ação */}
-      <div className="flex flex-col sm:flex-row gap-4 pt-2">
+      <div className="flex flex-col sm:flex-row gap-4 pt-2 px-4 md:px-0">
         <Button 
           variant="outline" 
           onClick={onBackToMenu}

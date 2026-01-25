@@ -221,14 +221,17 @@ public class OrderService(
             order.Subtotal = order.Items.Sum(i => i.Subtotal);
             order.DeliveryFee = requestDto.DeliveryFee ?? 0.0m;
             
-            // Processar cupom
-            if (!string.IsNullOrEmpty(requestDto.CouponCode))
+            // Iniciar transação para garantir atomicidade entre atualização do cupom e criação do pedido
+            using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeAsyncFlowOption.Enabled))
             {
-                var coupon = await _couponRepository.GetByCodeAsync(requestDto.CouponCode, tenantId);
-                if (coupon != null && coupon.IsActive)
+                // Processar cupom
+                if (!string.IsNullOrEmpty(requestDto.CouponCode))
                 {
-                    // Validar regras do cupom
-                    var now = DateTime.UtcNow;
+                    var coupon = await _couponRepository.GetByCodeAsync(requestDto.CouponCode, tenantId);
+                    if (coupon != null && coupon.IsActive)
+                    {
+                        // Validar regras do cupom
+                        var now = DateTime.UtcNow;
                         bool isValid = true;
                         
                         if (coupon.StartDate.HasValue && coupon.StartDate > now) isValid = false;
@@ -252,7 +255,7 @@ public class OrderService(
                                 discount = coupon.DiscountValue;
                             }
 
-                            // Garantir que o desconto nÃ£o seja maior que o subtotal
+                            // Garantir que o desconto não seja maior que o subtotal
                             if (discount > order.Subtotal) discount = order.Subtotal;
 
                             order.DiscountAmount = discount;
@@ -263,30 +266,43 @@ public class OrderService(
                             await _couponRepository.UpdateAsync(coupon);
                         }
                     }
+                }
+
+                order.Total = order.Subtotal + order.DeliveryFee - order.DiscountAmount;
+                if (order.Total < 0) order.Total = 0;
+
+                var createdOrder = await _orderRepository.AddAsync(order);
+                var orderDto = _mapper.Map<OrderResponseDto>(createdOrder);
+
+                _logger.LogInformation("Pedido {OrderId} criado com sucesso", createdOrder.Id);
+
+                // Commit da transação
+                scope.Complete();
+
+                // Processar pontos de fidelidade (fora da transação principal para não bloquear, mas idealmente deveria ser resiliente)
+                try
+                {
+                    await _loyaltyService.ProcessOrderPointsAsync(createdOrder.Id, tenantId);
+                }
+                catch (Exception loyaltyEx)
+                {
+                    _logger.LogWarning(loyaltyEx, "Erro ao processar pontos de fidelidade para o pedido {OrderId}", createdOrder.Id);
+                    // Não falhar o pedido se o programa de fidelidade falhar
+                }
+                
+                // Enviar notificação de novo pedido para administradores
+                try
+                {
+                    await _notificationService.NotifyNewOrderAsync(orderDto);
+                }
+                catch (Exception notificationEx)
+                {
+                    _logger.LogWarning(notificationEx, "Erro ao enviar notificação de novo pedido {OrderId}", createdOrder.Id);
+                    // Não retornar erro para o cliente se apenas a notificação falhar, pois o pedido foi criado
+                }
+
+                return StaticResponseBuilder<OrderResponseDto>.BuildOk(orderDto);
             }
-
-            order.Total = order.Subtotal + order.DeliveryFee - order.DiscountAmount;
-            if (order.Total < 0) order.Total = 0;
-
-            var createdOrder = await _orderRepository.AddAsync(order);
-            var orderDto = _mapper.Map<OrderResponseDto>(createdOrder);
-
-            _logger.LogInformation("Pedido {OrderId} criado com sucesso", createdOrder.Id);
-
-            // Processar pontos de fidelidade
-            await _loyaltyService.ProcessOrderPointsAsync(createdOrder.Id, tenantId);
-            
-            // Enviar notificação de novo pedido para administradores
-            try
-            {
-                await _notificationService.NotifyNewOrderAsync(orderDto);
-            }
-            catch (Exception notificationEx)
-            {
-                _logger.LogWarning(notificationEx, "Erro ao enviar notificaÃ§Ã£o de novo pedido {OrderId}", createdOrder.Id);
-                return StaticResponseBuilder<OrderResponseDto>.BuildError("Erro ao enviar notificaÃ§Ã£o de novo pedido");
-            }
-            return StaticResponseBuilder<OrderResponseDto>.BuildOk(orderDto);
         }
         catch (Exception ex)
         {
@@ -845,7 +861,7 @@ public class OrderService(
         {
             var userId = _currentUserService!.UserId;
 
-            var order = await _orderRepository.GetByIdWithIncludesAsync(id, o => o.StatusHistory);
+            var order = await _orderRepository.GetByIdWithIncludesAsync(id, o => o.StatusHistory, o => o.Customer);
             if (order == null)
                 return StaticResponseBuilder<OrderResponseDto>.BuildNotFound(null!);
 
@@ -862,7 +878,7 @@ public class OrderService(
                 Status = EOrderStatus.Cancelled,
                 Timestamp = DateTime.UtcNow,
                 Notes = $"Cancelado pelo cliente. Motivo: {requestDto.Reason}",
-                UserId = Guid.Parse(userId)
+                UserId = !string.IsNullOrEmpty(userId) ? Guid.Parse(userId) : order.Customer.Id,
             };
 
             order.StatusHistory.Add(statusHistory);
