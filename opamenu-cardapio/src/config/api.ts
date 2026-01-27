@@ -42,6 +42,7 @@ export const API_ENDPOINTS = {
      PRODUCT: (slug: string, id: string) => `/public/${slug}/products/${id}`,
     ORDERS: (slug: string) => `/public/${slug}/orders`,
     ORDER: (slug: string, id: string) => `/public/${slug}/orders/${id}`,
+    PIX: (slug: string, id: string) => `/public/${slug}/orders/${id}/pix`,
     ORDERS_BY_CUSTOMER: (slug: string, customerId: string) => `/public/${slug}/orders/customer/${customerId}`,
     CUSTOMER: (slug: string) => `/public/${slug}/customer`
   }

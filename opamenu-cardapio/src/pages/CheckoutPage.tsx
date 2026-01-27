@@ -27,12 +27,13 @@ const CheckoutPage = ({ onBackToMenu, tenant }: CheckoutPageProps) => {
     checkoutData,
     isProcessing,
     error,
-    lastOrder,
-    showPixPayment,
-    setCurrentStep,
-    updateCheckoutData,
-    processOrder,
-    resetCheckout,
+    lastOrder, 
+    showPixPayment, 
+    qrCodePayload,
+    setCurrentStep, 
+    updateCheckoutData, 
+    processOrder, 
+    resetCheckout, 
     handlePixPayment,
     confirmPixPayment
   } = useCheckout();
@@ -40,6 +41,7 @@ const CheckoutPage = ({ onBackToMenu, tenant }: CheckoutPageProps) => {
   const { totalItems, totalPrice, subtotal, discount } = useCart();
   const { customer } = useCustomer();
   const [hasAppliedCustomerData, setHasAppliedCustomerData] = useState(false);
+  const [isLocalProcessing, setIsLocalProcessing] = useState(false);
 
   // Resetar flag quando o customer mudar (ex: login/logout)
   useEffect(() => {
@@ -103,17 +105,23 @@ const CheckoutPage = ({ onBackToMenu, tenant }: CheckoutPageProps) => {
   };
 
   const handlePixPaymentFlow = async () => {
-    // Atualizar dados com método de pagamento PIX
-    updateCheckoutData({ 
-      paymentMethod: selectedPaymentMethod
-    });
-    
-    // Processar o pedido primeiro
-    const success = await processOrder(selectedPaymentMethod);
-    
-    if (success) {
-      // Mostrar tela PIX
-      handlePixPayment();
+    setIsLocalProcessing(true);
+    try {
+      // Atualizar dados com método de pagamento PIX
+      updateCheckoutData({ 
+        paymentMethod: selectedPaymentMethod
+      });
+      
+      // Processar o pedido primeiro, mas não avançar para confirmação ainda
+      // Aguardaremos a geração do QR Code
+      const order = await processOrder(selectedPaymentMethod, true);
+      
+      if (order) {
+        // Mostrar tela PIX (gera o QR Code e então mostra a tela)
+        await handlePixPayment(order);
+      }
+    } finally {
+      setIsLocalProcessing(false);
     }
   };
 
@@ -132,6 +140,7 @@ const CheckoutPage = ({ onBackToMenu, tenant }: CheckoutPageProps) => {
           pixKey={tenant?.pixKey}
           merchantName={tenant?.name}
           merchantCity={tenant?.addressCity}
+          qrCodePayload={qrCodePayload}
           onPaymentConfirmed={confirmPixPayment}
           onCancel={() => {
             setCurrentStep(CheckoutSteps.PAYMENT);
@@ -162,7 +171,7 @@ const CheckoutPage = ({ onBackToMenu, tenant }: CheckoutPageProps) => {
             onBack={() => setCurrentStep(CheckoutSteps.CUSTOMER_INFO)}
             onNext={handlePaymentMethodNext}
             onPixPayment={handlePixPaymentFlow}
-            isProcessing={isProcessing}
+            isProcessing={isProcessing || isLocalProcessing}
             error={error}
             subtotal={subtotal}
             discount={discount}

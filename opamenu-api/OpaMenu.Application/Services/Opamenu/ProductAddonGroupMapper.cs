@@ -4,6 +4,7 @@ using OpaMenu.Domain.DTOs.AddonGroup;
 using OpaMenu.Domain.DTOs.Addons;
 using OpaMenu.Domain.DTOs.Product;
 using OpaMenu.Infrastructure.Shared.Entities;
+using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 
 namespace OpaMenu.Application.Services.Opamenu;
 

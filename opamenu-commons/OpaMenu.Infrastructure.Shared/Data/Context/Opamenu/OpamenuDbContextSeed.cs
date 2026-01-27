@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using OpaMenu.Infrastructure.Shared.Entities;
+using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 using System.Security.Cryptography;
 using System.Text;
 

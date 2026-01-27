@@ -12,6 +12,7 @@ interface PixPaymentProps {
   pixKey?: string;
   merchantName?: string;
   merchantCity?: string;
+  qrCodePayload?: string; // New prop
   onPaymentConfirmed?: () => void;
   onCancel?: () => void;
 }
@@ -22,6 +23,7 @@ const PixPayment: React.FC<PixPaymentProps> = ({
   pixKey,
   merchantName = "OPAMENU",
   merchantCity = "BRASILIA",
+  qrCodePayload,
   onPaymentConfirmed,
   onCancel
 }) => {
@@ -33,6 +35,9 @@ const PixPayment: React.FC<PixPaymentProps> = ({
 
   // Função para gerar o código PIX (simplificado para demonstração)
   const generatePixCode = () => {
+    // Se o payload já veio do backend, usa ele
+    if (qrCodePayload) return qrCodePayload;
+
     const txId = `OPAMENU${orderId}`;
     
     // Código PIX simplificado (em produção, usar biblioteca oficial ou API do banco)
@@ -44,7 +49,8 @@ const PixPayment: React.FC<PixPaymentProps> = ({
   // Gerar QR Code
   useEffect(() => {
     const generateQRCode = async () => {
-      if (!pixKey) {
+      // Se não tem payload do backend e não tem chave PIX, erro
+      if (!qrCodePayload && !pixKey) {
         toast.error('Chave PIX não configurada para este estabelecimento');
         return;
       }
@@ -70,7 +76,7 @@ const PixPayment: React.FC<PixPaymentProps> = ({
     };
 
     generateQRCode();
-  }, [orderId, amount, pixKey]);
+  }, [orderId, amount, pixKey, qrCodePayload]);
 
   // Timer de expiração
   useEffect(() => {
@@ -201,10 +207,12 @@ const PixPayment: React.FC<PixPaymentProps> = ({
                 <p className="text-sm text-muted-foreground px-4">
                   Use o app do seu banco para escanear o código
                 </p>
-                <div className="flex flex-col items-center justify-center gap-2 text-xs text-muted-foreground">
-                  <span className="font-medium">Chave PIX:</span>
-                  <span className="text-center break-all bg-muted px-2 py-1 rounded select-all">{pixKey}</span>
-                </div>
+                {!qrCodePayload && pixKey && (
+                  <div className="flex flex-col items-center justify-center gap-2 text-xs text-muted-foreground">
+                    <span className="font-medium">Chave PIX:</span>
+                    <span className="text-center break-all bg-muted px-2 py-1 rounded select-all">{pixKey}</span>
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>

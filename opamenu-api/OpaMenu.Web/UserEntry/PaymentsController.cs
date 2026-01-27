@@ -41,37 +41,6 @@ public class PaymentsController(IPaymentService paymentService, ILogger<Payments
     }
 
     /// <summary>
-    /// Processa um pagamento
-    /// </summary>
-    /// <param name="request">Dados do pagamento</param>
-    /// <returns>Resultado do processamento</returns>
-    [HttpPost("process")]
-    [MapPermission(MODULE_PAYMENT, OPERATION_INSERT)]
-    public async Task<ActionResult<ApiResponse<PaymentResponseDto>>> ProcessPayment([FromBody] PaymentRequestDto request)
-    {
-        try
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ApiResponse<PaymentResponseDto>.ErrorResponse("Dados inválidos"));
-            }
-
-            var result = await _paymentService.ProcessPaymentAsync(request);
-            return Ok(ApiResponse<PaymentResponseDto>.SuccessResponse(result, "Pagamento processado com sucesso"));
-        }
-        catch (ArgumentException ex)
-        {
-            _logger.LogWarning(ex, "Dados inválidos para processamento de pagamento");
-            return BadRequest(ApiResponse<PaymentResponseDto>.ErrorResponse(ex.Message));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erro ao processar pagamento");
-            return StatusCode(500, ApiResponse<PaymentResponseDto>.ErrorResponse("Erro interno do servidor"));
-        }
-    }
-
-    /// <summary>
     /// Gera um pagamento PIX
     /// </summary>
     /// <param name="request">Dados para geração do PIX</param>
@@ -87,8 +56,13 @@ public class PaymentsController(IPaymentService paymentService, ILogger<Payments
                 return BadRequest(ApiResponse<PixResponseDto>.ErrorResponse("Dados inválidos"));
             }
 
-            var result = await _paymentService.GeneratePixPaymentAsync(request);
-            return Ok(ApiResponse<PixResponseDto>.SuccessResponse(result, "PIX gerado com sucesso"));
+            var result = await _paymentService.GeneratePixAsync(request);
+            if (!result.Succeeded)
+            {
+                var message = result.Errors?.FirstOrDefault()?.Message ?? result.Exception?.Message ?? "Erro ao gerar PIX";
+                return BadRequest(ApiResponse<PixResponseDto>.ErrorResponse(message));
+            }
+            return Ok(ApiResponse<PixResponseDto>.SuccessResponse(result.Data!, "PIX gerado com sucesso"));
         }
         catch (ArgumentException ex)
         {
@@ -103,8 +77,39 @@ public class PaymentsController(IPaymentService paymentService, ILogger<Payments
     }
 
     /// <summary>
-    /// Obtém o status de um pagamento
+    /// Endpoint genérico para Webhooks de pagamento
     /// </summary>
+    [HttpPost("webhook/{tenantId}/{provider}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> HandleWebhook(Guid tenantId, string provider)
+    {
+        try
+        {
+            using var reader = new StreamReader(Request.Body);
+            var payload = await reader.ReadToEndAsync();
+            var signature = Request.Headers["X-Signature"].ToString() ?? Request.Headers["X-Event-Id"].ToString() ?? string.Empty;
+
+            _logger.LogInformation("Recebido webhook para Tenant {TenantId}, Provider {Provider}. Payload size: {Size}", tenantId, provider, payload.Length);
+
+            var result = await _paymentService.ProcessWebhookAsync(tenantId, provider, payload, signature);
+
+            if (result.Succeeded)
+            {
+                return Ok();
+            }
+            else
+            {
+                var message = result.Errors?.FirstOrDefault()?.Message ?? result.Exception?.Message ?? "Erro ao processar webhook";
+                _logger.LogWarning("Falha ao processar webhook: {Message}", message);
+                return BadRequest(message);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro fatal no webhook");
+            return StatusCode(500, "Erro interno");
+        }
+    }
     /// <param name="paymentId">ID do pagamento</param>
     /// <returns>Status do pagamento</returns>
     [HttpGet("{paymentId}/status")]
@@ -128,55 +133,4 @@ public class PaymentsController(IPaymentService paymentService, ILogger<Payments
         }
     }
 
-    /// <summary>
-    /// Processa estorno de um pagamento
-    /// </summary>
-    /// <param name="paymentId">ID do pagamento</param>
-    /// <param name="request">Dados do estorno</param>
-    /// <returns>Resultado do estorno</returns>
-    [HttpPost("{paymentId}/refund")]
-    [MapPermission(MODULE_PAYMENT, OPERATION_REVERSAL)]
-    public async Task<ActionResult<ApiResponse<RefundResponseDto>>> RefundPayment(Guid paymentId, [FromBody] RefundRequestDto request)
-    {
-        try
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ApiResponse<RefundResponseDto>.ErrorResponse("Dados inválidos"));
-            }
-
-            // Definir o PaymentId no request
-            request.PaymentId = paymentId;
-            
-            var result = await _paymentService.RefundPaymentAsync(request);
-            return Ok(ApiResponse<RefundResponseDto>.SuccessResponse(result, "Estorno processado com sucesso"));
-        }
-        catch (ArgumentException ex)
-        {
-            _logger.LogWarning(ex, "Dados inválidos para estorno do pagamento {PaymentId}", paymentId);
-            return BadRequest(ApiResponse<RefundResponseDto>.ErrorResponse(ex.Message));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erro ao processar estorno do pagamento {PaymentId}", paymentId);
-            return StatusCode(500, ApiResponse<RefundResponseDto>.ErrorResponse("Erro interno do servidor"));
-        }
-    }
-
-    // TODO: Implement webhook handlers
-    [HttpPost("webhook/stripe")]
-    [AllowAnonymous]
-    public async Task<IActionResult> StripeWebhook([FromBody] string payload)
-    {
-        // TODO: Implement Stripe webhook handler
-        return Ok();
-    }
-
-    [HttpPost("webhook/pagseguro")]
-    [AllowAnonymous]
-    public async Task<IActionResult> PagSeguroWebhook([FromBody] object notification)
-    {
-        // TODO: Implement PagSeguro webhook handler
-        return Ok();
-    }
 }

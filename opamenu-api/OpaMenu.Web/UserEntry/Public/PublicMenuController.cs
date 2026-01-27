@@ -5,6 +5,7 @@ using OpaMenu.Application.DTOs;
 using OpaMenu.Application.Services;
 using OpaMenu.Application.Services.Interfaces.Opamenu;
 using OpaMenu.Commons.Api.DTOs;
+using OpaMenu.Commons.Api.Commons;
 using OpaMenu.Domain.DTOs;
 using OpaMenu.Domain.DTOs.Category;
 using OpaMenu.Domain.DTOs.Coupon;
@@ -13,7 +14,9 @@ using OpaMenu.Domain.DTOs.Menu;
 using OpaMenu.Domain.DTOs.Order;
 using OpaMenu.Domain.DTOs.Product;
 using OpaMenu.Domain.DTOs.Tenant;
+using OpaMenu.Domain.DTOs.Payments;
 using OpaMenu.Web.UserEntry;
+using OpaMenu.Commons.Api.Commons;
 
 namespace OpaMenu.Web.UserEntry.Public;
 
@@ -27,7 +30,8 @@ public class PublicMenuController(
     IStorefrontService storefrontService, 
     ICouponService couponService,
     IOrderService orderService,
-    ICustomerService customerService
+    ICustomerService customerService,
+    IPaymentService paymentService
     ) : BaseController
 {
     private readonly IProductService _productService = productService;
@@ -37,6 +41,7 @@ public class PublicMenuController(
     private readonly ICouponService _couponService = couponService;
     private readonly IOrderService _orderService = orderService;
     private readonly ICustomerService _customerService = customerService;
+    private readonly IPaymentService _paymentService = paymentService;
 
     /// <summary>
     /// Obtém todos os dados da loja (Info, Menu, Categorias) em uma única requisição
@@ -162,6 +167,36 @@ public class PublicMenuController(
     public async Task<ActionResult<ResponseDTO<OrderResponseDto>>> UpdateDeliveryType(string slug, Guid id, [FromBody] UpdateOrderDeliveryTypeRequestDto request)
     {
         var serviceResponse = await _orderService.UpdateOrderDeliveryTypeAsync(id, request);
+        return BuildResponse(serviceResponse);
+    }
+
+    /// <summary>
+    /// Gera um pagamento PIX para um pedido público
+    /// </summary>
+    [HttpPost("orders/{id}/pix")]
+    public async Task<ActionResult<ResponseDTO<PixResponseDto>>> GeneratePixPayment(string slug, Guid id)
+    {
+        // 1. Validar Tenant
+        var tenantResponse = await _tenantService.GetTenantBusinessInfoBySlugAsync(slug);
+        if (!tenantResponse.Succeeded || tenantResponse.Data == null)
+            return NotFound(StaticResponseBuilder<PixResponseDto>.BuildError("Restaurante não encontrado"));
+        
+        // 2. Validar Pedido
+        var orderResponse = await _orderService.GetPublicOrderByIdAsync(slug, id);
+        if (!orderResponse.Succeeded || orderResponse.Data == null)
+            return NotFound(StaticResponseBuilder<PixResponseDto>.BuildError("Pedido não encontrado"));
+            
+        var order = orderResponse.Data;
+        
+        // 3. Gerar PIX
+        var pixRequest = new PixRequestDto
+        {
+            OrderId = id,
+            Amount = order.Total,
+            Description = $"Pedido #{order.Id}"
+        };
+
+        var serviceResponse = await _paymentService.GeneratePixAsync(pixRequest, tenantResponse.Data.Id);
         return BuildResponse(serviceResponse);
     }
 

@@ -5,6 +5,7 @@ using OpaMenu.Infrastructure.Shared.Data.Context;
 using OpaMenu.Infrastructure.Shared.Data.Context.Opamenu;
 using OpaMenu.Infrastructure.Repositories;
 using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
+using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 
 namespace OpaMenu.Infrastructure.Repositories;
 

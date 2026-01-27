@@ -5,6 +5,7 @@ using OpaMenu.Domain.Interfaces;
 using OpaMenu.Infrastructure.Shared.Data.Context.Opamenu;
 using OpaMenu.Infrastructure.Shared.Data.Context.MultTenant;
 using OpaMenu.Infrastructure.Shared.Data.Context.AccessControl;
+using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 
 namespace OpaMenu.Infrastructure.Repositories;
 

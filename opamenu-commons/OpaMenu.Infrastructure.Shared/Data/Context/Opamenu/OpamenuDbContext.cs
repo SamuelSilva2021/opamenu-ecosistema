@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
+using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Infrastructure.Shared.Data.Context.Opamenu;
@@ -22,6 +22,7 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
     public DbSet<ProductAddonGroupEntity> ProductAddonGroups { get; set; }
     public DbSet<OrderItemAddonEntity> OrderItemAddons { get; set; }
     public DbSet<PaymentMethodEntity> PaymentMethods { get; set; }
+    public DbSet<TenantPaymentConfigEntity> TenantPaymentConfigs { get; set; }
     public DbSet<TenantPaymentMethodEntity> TenantPaymentMethods { get; set; }
     public DbSet<CouponEntity> Coupons { get; set; }
     public DbSet<TenantCustomerEntity> TenantCustomers { get; set; }
@@ -341,21 +342,25 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.OrderId).IsRequired();
+            entity.Property(e => e.TenantId).IsRequired();
             entity.Property(e => e.Amount).IsRequired().HasColumnType("decimal(10,2)");
             entity.Property(e => e.Method).HasConversion<string>().IsRequired();
             entity.Property(e => e.Status).HasConversion<string>().IsRequired();
+            entity.Property(e => e.Provider).HasConversion<string>().IsRequired();
+            entity.Property(e => e.QrCode).HasColumnType("text");
             entity.Property(e => e.GatewayTransactionId).HasMaxLength(200);
+            entity.Property(e => e.ProviderPaymentId).HasMaxLength(200);
             entity.Property(e => e.GatewayResponse).HasMaxLength(1000);
             entity.Property(e => e.CreatedAt).IsRequired();
             entity.Property(e => e.Notes).HasMaxLength(500);
 
-            entity.HasOne(e => e.Order).WithMany(e => e.Payments).HasForeignKey(e => e.OrderId).OnDelete(DeleteBehavior.Cascade);
-            entity.HasMany(e => e.Refunds).WithOne(e => e.Payment).HasForeignKey(e => e.PaymentId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Order).WithMany(e => e.Payments).HasForeignKey(e => e.OrderId);
 
             entity.HasIndex(e => e.OrderId);
             entity.HasIndex(e => e.Status);
-            entity.HasIndex(e => e.CreatedAt);
             entity.HasIndex(e => e.GatewayTransactionId);
+            entity.HasIndex(e => e.ProviderPaymentId);
+            entity.HasIndex(e => new { e.TenantId, e.OrderId });
         });
 
         // PaymentRefund configuration
@@ -500,7 +505,7 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
 
             entity.Property(e => e.IsActive).IsRequired();
 
-            entity.Property(e => e.Configuration).HasMaxLength(500);
+            entity.Property(e => e.Configuration).HasColumnType("jsonb");
 
             entity.Property(e => e.DisplayOrder).IsRequired();
 
@@ -581,6 +586,18 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
             entity.HasIndex(e => e.ProductId);
             entity.HasIndex(e => e.IsPrimary);
             entity.HasIndex(e => e.UploadDate);
+        });
+
+        modelBuilder.Entity<PaymentTransactionEntity>(e =>
+        {
+            e.HasIndex(t => t.ProviderEventId);
+            e.Property(p => p.RawPayload).HasColumnType("jsonb");
+        });
+        
+        modelBuilder.Entity<TenantPaymentConfigEntity>(entity =>
+        {
+            entity.Property(e => e.Provider).HasConversion<string>().IsRequired();
+            entity.Property(e => e.PaymentMethod).HasConversion<string>().IsRequired();
         });
 
         modelBuilder.OpamenuSeed();

@@ -10,6 +10,7 @@ using OpaMenu.Domain.Interfaces;
 using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Commons.Api.Commons;
 using OpaMenu.Application.Services.Interfaces.Opamenu;
+using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 
 namespace OpaMenu.Application.Services.Opamenu;
 
@@ -224,7 +225,7 @@ public class ProductService(
         {
             if (minPrice < 0 || maxPrice < 0 || minPrice > maxPrice)
                 return StaticResponseBuilder<IEnumerable<ProductDto>>.BuildErrorResponse(
-                    new ArgumentException("PreÃ§o invÃ¡lido"));
+                    new ArgumentException("Preço inválido!"));
 
             var products = await _productRepository.GetProductsByPriceRangeAsync(minPrice, maxPrice);
             if (products == null)
@@ -265,10 +266,10 @@ public class ProductService(
             ArgumentNullException.ThrowIfNull(request);
 
             var category = await _categoryRepository.GetByIdAsync(request.CategoryId, _currentUserService.GetTenantGuid()!.Value)
-                ?? throw new ArgumentException($"Categoria com ID {request.CategoryId} nÃ£o encontrada.");
+                ?? throw new ArgumentException($"Categoria com ID {request.CategoryId} não encontrada.");
 
             if (!category.IsActive)
-                throw new ArgumentException("A categoria do produto estÃ¡ inativa.");
+                throw new ArgumentException("A categoria do produto está inativa.");
 
             var product = _mapper.Map<ProductEntity>(request);
 
@@ -454,7 +455,7 @@ public class ProductService(
             // Verificar se a categoria pertence ao tenant
             var category = await _categoryRepository.GetByIdAsync(categoryId, tenantId);
             if (category == null)
-                throw new ArgumentException("Categoria nÃ£o encontrada para esta loja.");
+                throw new ArgumentException("Categoria não encontrada para esta loja.");
 
             var productsEntity = await _productRepository.GetProductsByCategoryAsync(categoryId);
             var products = _mapper.Map<IEnumerable<ProductDto>>(productsEntity);
@@ -474,7 +475,7 @@ public class ProductService(
             var product = await _productRepository.GetProductWithDetailsAsync(id, tenantId);
 
             if (product == null)
-                return StaticResponseBuilder<ProductDto?>.BuildError("Produto nÃ£o encontrado");
+                return StaticResponseBuilder<ProductDto?>.BuildError("Produto não encontrado");
 
             var productDto = _mapper.Map<ProductDto?>(product);
             return StaticResponseBuilder<ProductDto?>.BuildOk(productDto);

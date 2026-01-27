@@ -41,7 +41,8 @@ namespace OpaMenu.Infrastructure.Configurations
                 .AddClasses(classes => classes
                     .InNamespaces(
                         "OpaMenu.Application.Services",
-                        "OpaMenu.Application.Features.Categories")
+                        "OpaMenu.Application.Features.Categories",
+                        "OpaMenu.Application.Services.Opamenu")
                     .Where(type => (type.Name.EndsWith("Service") || type.Name.EndsWith("Mapper")) && !type.IsAbstract))
                 .AsImplementedInterfaces()
                 .WithScopedLifetime());
@@ -50,8 +51,8 @@ namespace OpaMenu.Infrastructure.Configurations
             services.Scan(scan => scan
                 .FromAssemblies(infrastructureAssembly)
                 .AddClasses(classes => classes
-                    .InNamespaces("OpaMenu.Infrastructure.Services")
-                    .Where(type => type.Name.EndsWith("Service") && !type.IsAbstract))
+                    .InNamespaces("OpaMenu.Infrastructure.Services", "OpaMenu.Infrastructure.Services.Opamenu")
+                    .Where(type => (type.Name.EndsWith("Service") || type.Name.EndsWith("Resolver")) && !type.IsAbstract))
                 .AsImplementedInterfaces()
                 .WithScopedLifetime());
 

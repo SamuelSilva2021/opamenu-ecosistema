@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using OpaMenu.Domain.DTOs.Customer;
-using OpaMenu.Infrastructure.Shared.Entities;
+using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 
 namespace OpaMenu.Infrastructure.Mapper;
 

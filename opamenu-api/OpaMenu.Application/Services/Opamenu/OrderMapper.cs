@@ -1,6 +1,7 @@
 ﻿using OpaMenu.Application.Services.Interfaces.Opamenu;
 using OpaMenu.Domain.DTOs;
 using OpaMenu.Infrastructure.Shared.Entities;
+using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Application.Services.Opamenu;

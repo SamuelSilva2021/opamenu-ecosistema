@@ -15,7 +15,6 @@ namespace OpaMenu.Domain.DTOs.Payments
         public Guid Id { get; set; }
         public Guid OrderId { get; set; }
         public decimal Amount { get; set; }
-        public EPaymentMethod Method { get; set; }
         public EPaymentStatus Status { get; set; }
         public string? GatewayTransactionId { get; set; }
         public DateTime CreatedAt { get; set; }

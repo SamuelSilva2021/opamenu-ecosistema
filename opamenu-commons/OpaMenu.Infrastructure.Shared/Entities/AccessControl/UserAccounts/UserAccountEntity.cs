@@ -1,4 +1,5 @@
 ﻿using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts.Enum;
+using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;

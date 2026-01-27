@@ -1,4 +1,5 @@
 ﻿using OpaMenu.Infrastructure.Shared.Entities;
+using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 
 namespace OpaMenu.Domain.Interfaces
 {

@@ -2,6 +2,7 @@
 using OpaMenu.Domain.DTOs;
 using OpaMenu.Domain.DTOs.Addons;
 using OpaMenu.Infrastructure.Shared.Entities;
+using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 
 namespace OpaMenu.Infrastructure.Mapper;
 

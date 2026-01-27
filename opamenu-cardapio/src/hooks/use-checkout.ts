@@ -5,6 +5,7 @@ import { useOrder } from './use-order';
 import { useCart } from './use-cart';
 import { OrderRequest, EOrderType } from '@/types/cart';
 import { Order } from '@/types/api';
+import { orderService } from '@/services/order-service';
 
 export interface CheckoutHookReturn {
   currentStep: CheckoutSteps;
@@ -13,11 +14,12 @@ export interface CheckoutHookReturn {
   error: string | null;
   lastOrder: Order | null;
   showPixPayment: boolean;
+  qrCodePayload: string | undefined;
   setCurrentStep: (step: CheckoutSteps) => void;
   updateCheckoutData: (data: Partial<CheckoutData>) => void;
-  processOrder: (paymentMethodOverride?: string) => Promise<boolean>;
+  processOrder: (paymentMethodOverride?: string, skipConfirmationNavigation?: boolean) => Promise<Order | null>;
   resetCheckout: () => void;
-  handlePixPayment: () => void;
+  handlePixPayment: (order?: Order) => Promise<void>;
   confirmPixPayment: () => void;
 }
 
@@ -61,6 +63,7 @@ export const useCheckout = (): CheckoutHookReturn => {
   const [error, setError] = useState<string | null>(null);
   const [lastOrder, setLastOrder] = useState<Order | null>(null);
   const [showPixPayment, setShowPixPayment] = useState(false);
+  const [qrCodePayload, setQrCodePayload] = useState<string | undefined>(undefined);
 
   const { createOrder } = useOrder();
   const { items: cartItems, clearCart, coupon } = useCart();
@@ -79,7 +82,7 @@ export const useCheckout = (): CheckoutHookReturn => {
     setError(null);
   }, []);
 
-  const processOrder = useCallback(async (paymentMethodOverride?: string): Promise<boolean> => {
+  const processOrder = useCallback(async (paymentMethodOverride?: string, skipConfirmationNavigation: boolean = false): Promise<Order | null> => {
     try {
       setIsProcessing(true);
       setError(null);
@@ -143,14 +146,18 @@ export const useCheckout = (): CheckoutHookReturn => {
 
         // Limpar o carrinho APÓS o pedido ser criado com sucesso
         clearCart();
-        setCurrentStep(CheckoutSteps.CONFIRMATION);
-        return true;
+        
+        if (!skipConfirmationNavigation) {
+          setCurrentStep(CheckoutSteps.CONFIRMATION);
+        }
+        
+        return order;
       }
       
-      return false;
+      return null;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao processar pedido');
-      return false;
+      return null;
     } finally {
       setIsProcessing(false);
     }
@@ -168,9 +175,26 @@ export const useCheckout = (): CheckoutHookReturn => {
     localStorage.removeItem(storageKey);
   }, [storageKey]);
 
-  const handlePixPayment = useCallback(() => {
-    setShowPixPayment(true);
-  }, []);
+  const handlePixPayment = useCallback(async (orderOverride?: Order) => {
+    const order = orderOverride || lastOrder;
+    
+    if (!order?.id || !slug) {
+      setShowPixPayment(true);
+      return;
+    }
+
+    try {
+      setIsProcessing(true);
+      const pixData = await orderService.generatePixPayment(order.id, slug);
+      setQrCodePayload(pixData.qrCode);
+      setShowPixPayment(true);
+    } catch (error) {
+      console.error('Error generating PIX:', error);
+      setError('Erro ao gerar QR Code do PIX. Tente novamente.');
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [lastOrder, slug]);
 
   const confirmPixPayment = useCallback(() => {
     setShowPixPayment(false);
@@ -184,6 +208,7 @@ export const useCheckout = (): CheckoutHookReturn => {
     error,
     lastOrder,
     showPixPayment,
+    qrCodePayload,
     setCurrentStep,
     updateCheckoutData,
     processOrder,

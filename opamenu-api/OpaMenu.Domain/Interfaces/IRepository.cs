@@ -1,4 +1,5 @@
 ﻿using OpaMenu.Infrastructure.Shared.Entities;
+using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 using System.Linq.Expressions;
 
 namespace OpaMenu.Domain.Interfaces;

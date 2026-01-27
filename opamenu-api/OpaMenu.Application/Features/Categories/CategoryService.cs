@@ -6,6 +6,7 @@ using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Domain.Interfaces;
 using OpaMenu.Commons.Api.Commons;
 using OpaMenu.Commons.Api.DTOs;
+using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 
 namespace OpaMenu.Application.Features.Categories;
 

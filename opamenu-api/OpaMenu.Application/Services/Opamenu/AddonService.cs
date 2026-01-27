@@ -6,6 +6,7 @@ using OpaMenu.Domain.Interfaces;
 using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Commons.Api.Commons;
 using OpaMenu.Application.Services.Interfaces.Opamenu;
+using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 
 namespace OpaMenu.Application.Services.Opamenu;
 
@@ -69,7 +70,7 @@ public class AddonService(
         {
             var addonGroup = await _addonGroupRepository.GetByIdAsync(request.AddonGroupId, _currentUserService.GetTenantGuid()!.Value) ?? throw new ArgumentException("Grupo de adicionais nÃ£o encontrado");
             if (!await _addonRepository.IsNameUniqueInGroupAsync(request.Name, request.AddonGroupId))
-                throw new ArgumentException("JÃ¡ existe um adicional com este nome neste grupo");
+                throw new ArgumentException("Já existe um adicional com este nome neste grupo");
 
             var addonEntity = _mapper.Map<AddonEntity>(request);
             addonEntity.TenantId = _currentUserService.GetTenantGuid()!.Value;

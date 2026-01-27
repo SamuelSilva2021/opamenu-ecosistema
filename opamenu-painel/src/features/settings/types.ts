@@ -89,3 +89,35 @@ export interface CreateBankDetailsRequestDto {
 export interface UpdateBankDetailsRequestDto extends CreateBankDetailsRequestDto {
   id: string;
 }
+
+export const EPaymentProvider = {
+  MercadoPago: 0,
+  PagarMe: 1,
+  Gerencianet: 2,
+} as const;
+
+export type EPaymentProvider = typeof EPaymentProvider[keyof typeof EPaymentProvider];
+
+export const EPaymentMethod = {
+  CreditCard: 0,
+  DebitCard: 1,
+  Pix: 2,
+  Cash: 3,
+  BankTransfer: 4,
+  Ticket: 5
+} as const;
+
+export type EPaymentMethod = typeof EPaymentMethod[keyof typeof EPaymentMethod];
+
+export interface TenantPaymentConfigDto {
+  id?: string;
+  provider: EPaymentProvider;
+  paymentMethod: EPaymentMethod;
+  pixKey: string;
+  clientId: string;
+  clientSecret: string;
+  publicKey?: string;
+  accessToken?: string;
+  isSandbox?: boolean;
+  isActive: boolean;
+}

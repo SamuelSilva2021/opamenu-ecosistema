@@ -7,6 +7,7 @@ using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Domain.DTOs.Loyalty;
 using OpaMenu.Domain.Interfaces;
 using OpaMenu.Infrastructure.Shared.Entities;
+using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Application.Services.Opamenu;

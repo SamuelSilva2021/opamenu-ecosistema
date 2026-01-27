@@ -1,4 +1,5 @@
 ﻿using OpaMenu.Infrastructure.Shared.Entities;
+using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 using System;
 using System.Collections.Generic;
 using System.Linq;

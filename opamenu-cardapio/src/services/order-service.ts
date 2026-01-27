@@ -10,7 +10,8 @@ import {
   SelectedAddon,
   CancelOrderRequest,
   UpdateOrderPaymentRequest,
-  UpdateOrderDeliveryTypeRequest
+  UpdateOrderDeliveryTypeRequest,
+  PixResponseDto
 } from '@/types/api';
 
 // Serviço para gerenciar pedidos
@@ -89,6 +90,15 @@ export class OrderService {
   async checkOrderStatus(orderId: string, slug?: string): Promise<OrderStatus> {
     const order = await this.getOrderById(orderId, slug);
     return order.status;
+  }
+
+  // Gerar pagamento PIX
+  async generatePixPayment(orderId: string, slug: string): Promise<PixResponseDto> {
+    return withApiErrorHandling(async () => {
+      const endpoint = API_ENDPOINTS.PUBLIC.PIX(slug, orderId);
+      const response = await httpClient.post<PixResponseDto>(endpoint, {});
+      return response;
+    });
   }
 }
 

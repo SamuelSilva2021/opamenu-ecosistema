@@ -2,7 +2,7 @@
 using OpaMenu.Domain.DTOs.AddonGroup;
 using OpaMenu.Domain.DTOs.Addons;
 using OpaMenu.Domain.DTOs.Product;
-using OpaMenu.Infrastructure.Shared.Entities;
+using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 
 namespace OpaMenu.Application.Services.Interfaces.Opamenu;
 
@@ -16,28 +16,11 @@ public interface IProductAddonGroupMapper
     /// </summary>
     /// <param name="productAddonGroup">Entidade ProductAddonGroup</param>
     /// <returns>ProductAddonGroupResponseDto mapeado</returns>
-    ProductAddonGroupResponseDto MapToDto(ProductAddonGroupEntity productAddonGroup);
-    
-    /// <summary>
-    /// Mapeia uma coleÃ§Ã£o de entidades ProductAddonGroup para ProductAddonGroupResponseDto
-    /// </summary>
-    /// <param name="productAddonGroups">ColeÃ§Ã£o de entidades ProductAddonGroup</param>
-    /// <returns>ColeÃ§Ã£o de ProductAddonGroupResponseDto mapeados</returns>
+    ProductAddonGroupResponseDto MapToDto(ProductAddonGroupEntity productAddonGroup);   
     IEnumerable<ProductAddonGroupResponseDto> MapToDtos(IEnumerable<ProductAddonGroupEntity> productAddonGroups);
     
-    /// <summary>
-    /// Mapeia um AddProductAddonGroupRequestDto para entidade ProductAddonGroup
-    /// </summary>
-    /// <param name="request">Request de criaÃ§Ã£o</param>
-    /// <param name="productId">ID do produto</param>
-    /// <returns>Entidade ProductAddonGroup</returns>
     ProductAddonGroupEntity MapToEntity(AddProductAddonGroupRequestDto request, Guid productId);
-    
-    /// <summary>
-    /// Atualiza uma entidade ProductAddonGroup com dados do UpdateProductAddonGroupRequestDto
-    /// </summary>
-    /// <param name="request">Request de atualizaÃ§Ã£o</param>
-    /// <param name="productAddonGroup">Entidade ProductAddonGroup a ser atualizada</param>
+
     void MapToEntity(UpdateProductAddonGroupRequestDto request, ProductAddonGroupEntity productAddonGroup);
     
     /// <summary>

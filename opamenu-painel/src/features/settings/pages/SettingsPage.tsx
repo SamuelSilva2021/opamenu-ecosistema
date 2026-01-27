@@ -3,8 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Store, MapPin, Clock, CreditCard, Share2, Upload, Copy, Check, Facebook, MessageCircle, Gift, Landmark } from "lucide-react";
-
+import { Loader2, Store, MapPin, Clock, CreditCard, Share2, Upload, Copy, Check, Facebook, MessageCircle, Gift, Landmark, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,6 +20,7 @@ import { filesService } from "@/services/files.service";
 import type { OpeningHours, UpdateTenantBusinessRequestDto } from "../types";
 import LoyaltyPage from "@/features/loyalty/pages/LoyaltyPage";
 import { BankDetailsTab } from "../components/BankDetailsTab";
+import { PixConfigForm } from "../components/PixConfigForm";
 
 // Schema definition
 const formSchema = z.object({
@@ -60,6 +60,8 @@ export default function SettingsPage() {
   const { data: settings, isLoading } = useQuery({
     queryKey: ["settings"],
     queryFn: settingsService.getSettings,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false,
   });
 
   // Local state for complex fields
@@ -236,6 +238,7 @@ export default function SettingsPage() {
     { id: "address", label: "Endereço", icon: MapPin },
     { id: "hours", label: "Horários", icon: Clock },
     { id: "payments", label: "Pagamentos", icon: CreditCard },
+    { id: "pix-integration", label: "Integração PIX", icon: QrCode },
     { id: "bank-details", label: "Dados Bancários", icon: Landmark },
     { id: "social", label: "Redes Sociais", icon: Share2 },
     { id: "loyalty", label: "Fidelidade", icon: Gift },
@@ -275,6 +278,8 @@ export default function SettingsPage() {
             <LoyaltyPage />
           ) : activeTab === "bank-details" ? (
             <BankDetailsTab />
+          ) : activeTab === "pix-integration" ? (
+            <PixConfigForm />
           ) : (
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <fieldset disabled={!canUpdate} className="space-y-6 group-disabled:opacity-50">
@@ -494,7 +499,7 @@ export default function SettingsPage() {
                             {method === "PIX" && paymentMethods.includes("PIX") && (
                                 <div className="ml-8 animate-in slide-in-from-top-2 duration-300">
                                     <p className="text-sm text-muted-foreground mt-1">
-                                        Para utilizar o PIX, configure sua chave na aba <Button variant="link" className="p-0 h-auto font-bold" onClick={() => setActiveTab("bank-details")}>Dados Bancários</Button>.
+                                        Para utilizar o PIX, configure sua chave na aba <Button variant="link" className="p-0 h-auto font-bold" onClick={() => setActiveTab("pix-integration")}>Integração PIX</Button>.
                                     </p>
                                 </div>
                             )}

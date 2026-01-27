@@ -39,6 +39,14 @@ export interface LoyaltyProgramDto {
   isActive: boolean;
 }
 
+export interface PixResponseDto {
+  pixId: string;
+  qrCode: string;
+  qrCodeBase64: string;
+  amount: number;
+  expiresAt: string;
+}
+
 export interface CustomerResponseDto {
   id: string;
   name: string;

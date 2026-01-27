@@ -9,6 +9,7 @@ using OpaMenu.Domain.Interfaces;
 using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Commons.Api.Commons;
 using OpaMenu.Application.Services.Interfaces.Opamenu;
+using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 
 namespace OpaMenu.Application.Services.Opamenu;
 

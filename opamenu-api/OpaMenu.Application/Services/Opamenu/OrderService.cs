@@ -9,6 +9,7 @@ using OpaMenu.Domain.DTOs.Addons;
 using OpaMenu.Domain.DTOs.Order;
 using OpaMenu.Domain.Interfaces;
 using OpaMenu.Infrastructure.Shared.Entities;
+using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 using OpaMenu.Web.Models.DTOs;
 using System.Threading.Tasks;
@@ -99,10 +100,13 @@ public class OrderService(
             if (tenant == null)
                 return StaticResponseBuilder<OrderResponseDto>.BuildOk(new OrderResponseDto { });
 
-            var order = await _orderRepository.GetByIdWithIncludesAsync(id, o => o.TenantId == tenant.Id,
+            var order = await _orderRepository.GetByIdWithIncludesAsync(id,
                 o => o.Items,
                 o => o.StatusHistory,
                 o => o.Rejection!);
+
+            if (order == null || order.TenantId != tenant.Id)
+                return StaticResponseBuilder<OrderResponseDto>.BuildError("Pedido não encontrado");
 
             var orderDto = _mapper.Map<OrderResponseDto>(order);
             return StaticResponseBuilder<OrderResponseDto>.BuildOk(orderDto);
@@ -451,7 +455,6 @@ public class OrderService(
             // Processar pontos de fidelidade
             await _loyaltyService.ProcessOrderPointsAsync(createdOrder.Id, tenant.Id);
 
-            // Enviar notificaÃ§Ã£o de novo pedido para administradores
             try
             {
                 await _notificationService.NotifyNewOrderAsync(orderDto);
@@ -673,7 +676,7 @@ public class OrderService(
     {
         try
         {
-            var order = await _orderRepository.GetByIdWithIncludesAsync(id, o => o.Rejection);
+            var order = await _orderRepository.GetByIdWithIncludesAsync(id, o => o.Rejection!);
             if (order == null)
                 return StaticResponseBuilder<OrderResponseDto>.BuildNotFound(null!);
             if (order.Status != EOrderStatus.Pending && order.Status != EOrderStatus.Confirmed)

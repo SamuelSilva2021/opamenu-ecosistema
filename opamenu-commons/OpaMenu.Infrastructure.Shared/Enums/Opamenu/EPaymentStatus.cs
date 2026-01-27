@@ -8,12 +8,13 @@ namespace OpaMenu.Infrastructure.Shared.Enums.Opamenu
 {
     public enum EPaymentStatus
     {
-        Pending = 0,
-        Processing = 1,
-        Approved = 2,
-        Declined = 3,
-        Cancelled = 4,
-        Refunded = 5
+        Pending,        // Criado, aguardando pagamento
+        Authorized,     // (futuro cartão)
+        Paid,           // Confirmado via webhook
+        Expired,        // QR Code expirou
+        Failed,         // Erro no provedor
+        Refunded,       // Estornado
+        Cancelled       // Pedido cancelado
     }
     public static class PaymentStatusHelper
     {
@@ -22,11 +23,12 @@ namespace OpaMenu.Infrastructure.Shared.Enums.Opamenu
             return status switch
             {
                 EPaymentStatus.Pending => "Pendente",
-                EPaymentStatus.Processing => "Em Processamento",
-                EPaymentStatus.Approved => "Aprovado",
-                EPaymentStatus.Declined => "Recusado",
-                EPaymentStatus.Cancelled => "Cancelado",
+                EPaymentStatus.Authorized => "Autorizado",
+                EPaymentStatus.Paid => "Pago",
+                EPaymentStatus.Expired => "Expirado",
+                EPaymentStatus.Failed => "Falhou",
                 EPaymentStatus.Refunded => "Estornado",
+                EPaymentStatus.Cancelled => "Cancelado",
                 _ => "Unknown"
             };
         }
