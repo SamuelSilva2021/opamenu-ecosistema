@@ -10,6 +10,7 @@ import { OrderType } from "../types";
 
 import { useDebounce } from "@/hooks/use-debounce";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
+import { ZipCodeInput, type AddressData } from "@/components/common/ZipCodeInput";
 
 interface CustomerSelectorProps {
   selectedCustomer: Customer | null;
@@ -120,19 +121,26 @@ export function CustomerSelector({
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, "");
     if (value.length > 11) value = value.slice(0, 11);
-
-    let formatted = value;
+    
     if (value.length > 10) {
-      formatted = value.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3");
+      value = value.replace(/^(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
     } else if (value.length > 6) {
-      formatted = value.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3");
+      value = value.replace(/^(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3");
     } else if (value.length > 2) {
-      formatted = value.replace(/^(\d{2})(\d{0,5})/, "($1) $2");
-    } else if (value.length > 0) {
-      formatted = value.replace(/^(\d*)/, "($1");
+      value = value.replace(/^(\d{2})(\d{0,5})/, "($1) $2");
     }
     
-    setLocalPhone(formatted);
+    setLocalPhone(value);
+  };
+
+  const handleAddressLoaded = (data: AddressData) => {
+    setLocalStreet(data.logradouro);
+    setLocalNeighborhood(data.bairro);
+    setLocalCity(data.localidade);
+    setLocalState(data.uf);
+    if (data.complemento) {
+      setLocalComplement(data.complemento);
+    }
   };
 
   // Sincronizar estados locais quando abrir o modal ou mudar as props, se necessário
@@ -270,10 +278,11 @@ export function CustomerSelector({
                                 <div className="grid grid-cols-2 gap-2">
                                     <div className="grid gap-1">
                                         <label className="text-xs font-medium">CEP</label>
-                                        <Input 
+                                        <ZipCodeInput 
                                             placeholder="00000-000" 
                                             value={localZipCode}
                                             onChange={(e) => setLocalZipCode(e.target.value)}
+                                            onAddressLoaded={handleAddressLoaded}
                                             className="h-8"
                                         />
                                     </div>
