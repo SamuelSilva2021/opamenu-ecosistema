@@ -15,7 +15,8 @@ import {
   Tags,
   FolderTree,
   Ticket,
-  CreditCard
+  CreditCard,
+  Monitor
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,13 @@ const routes = [
     href: "/dashboard",
     variant: "default",
     module: "DASHBOARD",
+  },
+  {
+    title: "PDV / Caixa",
+    icon: Monitor,
+    href: "/dashboard/pos",
+    variant: "ghost",
+    module: "ORDER",
   },
   {
     title: "Grupos de Adicionais",

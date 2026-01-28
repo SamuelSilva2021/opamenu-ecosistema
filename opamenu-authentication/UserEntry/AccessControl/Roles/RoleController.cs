@@ -75,7 +75,7 @@ namespace Authenticator.API.UserEntry.AccessControl.Roles
         /// <param name="roleId">ID do role</param>
         /// <returns>Lista de permissões do role</returns>
         [HttpGet("{roleId:guid}/permissions")]
-        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
+        [Authorize(Roles = "SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

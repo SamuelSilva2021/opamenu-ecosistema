@@ -14,6 +14,7 @@ import CustomersPage from '@/features/customers/pages/CustomersPage'
 import PlanPage from '@/features/subscription/pages/PlanPage'
 import { Toaster } from "@/components/ui/toaster"
 import OrdersPage from './features/orders/pages/OrdersPage'
+import { POSPage } from '@/features/pos/pages/POSPage'
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
         {/* Rotas Protegidas */}
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardPage />} />
+          <Route path="pos" element={<POSPage />} />
           <Route path="products" element={<ProductsPage />} />
           <Route path="categories" element={<CategoriesPage />} />
           <Route path="addons" element={<AddonsPage />} />

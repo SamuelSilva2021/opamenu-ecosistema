@@ -239,15 +239,14 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
         {
             try
             {
-                var currentTenantId = _userContext.CurrentUser?.TenantId;
-                if (currentTenantId.HasValue && currentTenantId.Value != Guid.Empty)
-                {
-                    var role = await _roleRepository.GetByIdAsync(roleId);
-                    if (role == null || role.TenantId != currentTenantId.Value)
-                        return StaticResponseBuilder<IEnumerable<PermissionDTO>>.BuildOk([]);
-                }
+                var role = await _roleRepository.GetByIdAsync(roleId);
+                if (role == null)
+                    return StaticResponseBuilder<IEnumerable<PermissionDTO>>.BuildOk([]);
+
+                var permissionsAll = await _permissionRepository.GetAllAsync();
 
                 var relations = await _rolePermissionRepository.GetAllRolePermissionsByRoleIdAsync(roleId);
+
                 if (relations == null)
                     return StaticResponseBuilder<IEnumerable<PermissionDTO>>.BuildOk([]);
 
@@ -258,7 +257,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
                     .ToList();
 
                 IEnumerable<PermissionEntity> permissions = Enumerable.Empty<PermissionEntity>();
-                if (permissionIds.Any())
+                if (permissionIds.Count != 0)
                 {
                     permissions = await _permissionRepository.GetAllAsync(
                         filter: p => permissionIds.Contains(p.Id),

@@ -138,9 +138,33 @@ public class OrderService(
         
     }
     /// <summary>
-    /// Cria um novo pedido
+    /// Cria um novo pedido para entrega
     /// </summary>
     public async Task<ResponseDTO<OrderResponseDto>> CreateOrderDeliveryAsync(CreateOrderRequestDto requestDto)
+    {
+        return await CreateTenantOrderInternalAsync(requestDto, EOrderType.Delivery);
+    }
+
+    /// <summary>
+    /// Cria pedido para retirada balcão
+    /// </summary>
+    public async Task<ResponseDTO<OrderResponseDto>> CreateOrderPickupAsync(CreateOrderRequestDto requestDto)
+    {
+        return await CreateTenantOrderInternalAsync(requestDto, EOrderType.Counter);
+    }
+
+    /// <summary>
+    /// Cria pedido para consumo no local (mesa)
+    /// </summary>
+    public async Task<ResponseDTO<OrderResponseDto>> CreateOrderDineInAsync(CreateOrderRequestDto requestDto)
+    {
+        if (requestDto.OrderType == EOrderType.Table && !requestDto.TableId.HasValue)
+            return StaticResponseBuilder<OrderResponseDto>.BuildError("Mesa é obrigatória para pedidos locais.");
+
+        return await CreateTenantOrderInternalAsync(requestDto, EOrderType.Table);
+    }
+
+    private async Task<ResponseDTO<OrderResponseDto>> CreateTenantOrderInternalAsync(CreateOrderRequestDto requestDto, EOrderType orderType)
     {
         try
         {
@@ -162,7 +186,7 @@ public class OrderService(
             }
 
             var tenantCustomer = await _tenantCustomerRepository.GetByTenantIdAndCustomerIdAsync(tenantId, existingCustomer.Id);
-            //Se nÃ£o existir jÃ¡ cria um novo e atribui
+            //Se não existir já cria um novo e atribui
             tenantCustomer ??= await CreateTenantCustomer(tenantId, existingCustomer.Id);
 
 
@@ -171,10 +195,10 @@ public class OrderService(
                 CustomerName = requestDto.CustomerName!,
                 CustomerPhone = requestDto.CustomerPhone!,
                 CustomerEmail = requestDto.CustomerEmail,
-                DeliveryAddress = FormatDeliveryAddress(requestDto.DeliveryAddress),
-                IsDelivery = requestDto.OrderType == EOrderType.Delivery,
-                OrderType = requestDto.OrderType,
-                TableId = requestDto.OrderType == EOrderType.Table ? requestDto.TableId : null,
+                DeliveryAddress = orderType == EOrderType.Delivery ? FormatDeliveryAddress(requestDto.DeliveryAddress) : string.Empty,
+                IsDelivery = orderType == EOrderType.Delivery,
+                OrderType = orderType,
+                TableId = orderType == EOrderType.Table ? requestDto.TableId : null,
                 Notes = requestDto.Notes,
                 Status = EOrderStatus.Pending,
                 CreatedAt = DateTime.UtcNow,
@@ -223,7 +247,7 @@ public class OrderService(
 
             // Calcular totais
             order.Subtotal = order.Items.Sum(i => i.Subtotal);
-            order.DeliveryFee = requestDto.DeliveryFee ?? 0.0m;
+            order.DeliveryFee = orderType == EOrderType.Delivery ? (requestDto.DeliveryFee ?? 0.0m) : 0.0m;
             
             // Iniciar transação para garantir atomicidade entre atualização do cupom e criação do pedido
             using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeAsyncFlowOption.Enabled))
@@ -1006,14 +1030,7 @@ public class OrderService(
             return StaticResponseBuilder<OrderResponseDto>.BuildError("Erro interno ao atualizar entrega");
         }
     }
-    public async Task<ResponseDTO<OrderResponseDto>> CreateOrderPickupAsync(CreateOrderRequestDto requestDto)
-    {
-        throw new NotImplementedException();
-    }
-    public async Task<ResponseDTO<OrderResponseDto>> CreateOrderDineInAsync(CreateOrderRequestDto requestDto)
-    {
-        throw new NotImplementedException();
-    }
+
     #region Private Methods
     private static string FormatDeliveryAddress(AddressDto? address)
     {

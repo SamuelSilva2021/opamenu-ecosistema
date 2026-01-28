@@ -37,7 +37,7 @@ export default function CustomersPage() {
 
   const { data: customers = [], isLoading } = useQuery({
     queryKey: ["customers"],
-    queryFn: customersService.getCustomers,
+    queryFn: () => customersService.getCustomers(),
   });
 
   const columns = useMemo<ColumnDef<Customer>[]>(
