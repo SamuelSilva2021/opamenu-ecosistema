@@ -22,15 +22,9 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context.AccessControl
     /// Contexto do banco de dados de controle de acesso
     /// Conecta ao banco access_control_db
     /// </summary>
-    public class AccessControlDbContext : DbContext
+    public class AccessControlDbContext(DbContextOptions<AccessControlDbContext> options, ITenantContext? tenantContext = null) : DbContext(options)
     {
-        private readonly ITenantContext _tenantContext;
-
-        // Construtor utilizado em execução normal com ITenantContext resolvido pelo DI
-        public AccessControlDbContext(DbContextOptions<AccessControlDbContext> options, ITenantContext? tenantContext = null) : base(options)
-        {
-            _tenantContext = tenantContext ?? new DefaultTenantContext();
-        }
+        private readonly ITenantContext _tenantContext = tenantContext ?? new DefaultTenantContext();
 
         public DbSet<UserAccountEntity> UserAccounts { get; set; }
         public DbSet<AccessGroupEntity> AccessGroups { get; set; }

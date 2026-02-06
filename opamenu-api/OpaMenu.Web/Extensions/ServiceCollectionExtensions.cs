@@ -40,7 +40,7 @@ public static class ServiceCollectionExtensions
         {
             var connectionString = configuration.GetConnectionString("OpamenuDatabase");
             if (string.IsNullOrWhiteSpace(connectionString))
-                throw new InvalidOperationException("ConnectionString 'OpamenuDatabase' nÃ£o configurada.");
+                throw new InvalidOperationException("ConnectionString 'OpamenuDatabase' não configurada.");
 
             options.UseNpgsql(connectionString, npgsql =>
             {

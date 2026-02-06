@@ -55,17 +55,21 @@ public class OrdersController(IOrderService orderService, ILogger<OrdersControll
     [MapPermission(ORDER, OPERATION_INSERT)]
     public async Task<ActionResult<ApiResponse<OrderResponseDto>>> CreateOrder(CreateOrderRequestDto request)
     {
-        ResponseDTO<OrderResponseDto>? result = null;
-
-        if (request.OrderType == EOrderType.Delivery)
-            result = await _orderService.CreateOrderDeliveryAsync(request);
-        else if (request.OrderType == EOrderType.Counter)
-            result = await _orderService.CreateOrderPickupAsync(request);
-        else
-            result = await _orderService.CreateOrderDineInAsync(request);
-
+        var result = await _orderService.CreateOrderDeliveryAsync(request);
         return BuildResponse(result);
     }
+    /// <summary>
+    /// Cria um pedido pelo PDV
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    //[HttpPost]
+    //[MapPermission(ORDER, OPERATION_INSERT)]
+    //public async Task<ActionResult<ApiResponse<OrderResponseDto>>> CreateOrderPdv(CreateOrderRequestDto request)
+    //{
+    //    var result = await _orderService.CreateOrderPickupAsync(request);
+    //    return BuildResponse(result);
+    //}
 
     /// <summary>
     /// Adiciona itens a um pedido existente

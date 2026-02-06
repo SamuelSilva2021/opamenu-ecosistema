@@ -36,6 +36,12 @@ namespace OpaMenu.Application.Services.Interfaces.Opamenu
         /// <param name="requestDto"></param>
         /// <returns></returns>
         Task<ResponseDTO<OrderResponseDto>> CreateOrderDineInAsync(CreateOrderRequestDto requestDto);
+        /// <summary>
+        /// Cria um pedido via PDV
+        /// </summary>
+        /// <param name="requestDto"></param>
+        /// <returns></returns>
+        Task<ResponseDTO<OrderResponseDto>> CreateOrderPdv(CreateOrderRequestDto requestDto); 
         Task<ResponseDTO<OrderResponseDto>> CreatePublicOrderAsync(CreatePublicOrderRequestDto requestDto, string slug);
         Task<ResponseDTO<OrderResponseDto>> UpdateOrderAsync(Guid id, UpdateOrderRequestDto requestDto);
         Task<ResponseDTO<bool>> DeleteOrderAsync(Guid id);

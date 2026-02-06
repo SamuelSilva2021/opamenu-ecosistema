@@ -163,6 +163,10 @@ public class OrderService(
 
         return await CreateTenantOrderInternalAsync(requestDto, EOrderType.Table);
     }
+    public async Task<ResponseDTO<OrderResponseDto>> CreateOrderPdv(CreateOrderRequestDto requestDto)
+    {
+        return null;
+    }
 
     private async Task<ResponseDTO<OrderResponseDto>> CreateTenantOrderInternalAsync(CreateOrderRequestDto requestDto, EOrderType orderType)
     {
