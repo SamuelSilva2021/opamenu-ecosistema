@@ -1,0 +1,58 @@
+<svg width="400" height="150" viewBox="0 0 400 150" xmlns="http://www.w3.org/2000/svg">
+  <!-- Group for Logo Content -->
+  <g transform="translate(10, 25)">
+    <!-- Icon Group (Scaled up from 24x24 to ~100x100) -->
+    <g transform="scale(4.5) translate(0, 0)">
+       <!-- Fork -->
+       <path
+         d="M8 2V8C8 9.1 7.1 10 6 10C4.9 10 4 9.1 4 8V2"
+         stroke="#f97316"
+         stroke-width="2"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         fill="none"
+       />
+       <path
+         d="M6 10V22"
+         stroke="#f97316"
+         stroke-width="2"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         fill="none"
+       />
+       <path
+         d="M6 2V8"
+         stroke="#f97316"
+         stroke-width="2"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         fill="none"
+       />
+       <!-- Knife -->
+       <path
+         d="M16 2L16 8C16 10 17 11 18 11C19 11 20 10 20 8V2"
+         stroke="#f97316"
+         stroke-width="2"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         fill="none"
+       />
+       <path
+         d="M18 11V22"
+         stroke="#f97316"
+         stroke-width="2"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         fill="none"
+       />
+    </g>
+
+    <!-- Text Group (Offset to right of icon) -->
+    <g transform="translate(120, 75)">
+      <!-- OPA (Bold White) -->
+      <text font-family="Arial, sans-serif" font-weight="800" font-size="80" fill="#ffffff">Opa</text>
+      <!-- Menu (Regular White) -->
+      <text x="160" font-family="Arial, sans-serif" font-weight="400" font-size="80" fill="#ffffff">Menu</text>
+    </g>
+  </g>
+</svg>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
+import { OpaMenuLogo } from "@/components/common/OpaMenuLogo";
 import { hasPermission } from "@/lib/permissions";
 import {
   LayoutDashboard,
@@ -56,7 +57,7 @@ const routes = [
     variant: "ghost",
     module: "ADDON_GROUP",
   },
-    {
+  {
     title: "Adicionais",
     icon: Layers,
     href: "/dashboard/addons",
@@ -124,8 +125,8 @@ const routes = [
 
 function SidebarContent({ isCollapsed }: { isCollapsed?: boolean }) {
   const { user } = useAuthStore();
-  
-  const filteredRoutes = routes.filter(route => 
+
+  const filteredRoutes = routes.filter(route =>
     hasPermission(user, route.module, "READ")
   );
 
@@ -133,14 +134,28 @@ function SidebarContent({ isCollapsed }: { isCollapsed?: boolean }) {
     <div className="flex h-full flex-col bg-zinc-900 text-white">
       <div className={cn("flex h-16 items-center px-4 border-b border-zinc-800", isCollapsed ? "justify-center" : "px-6")}>
         <div className="flex items-center gap-2">
-            <div className="bg-primary rounded-lg p-1">
-                <UtensilsCrossed className="h-5 w-5 text-primary-foreground" />
+          {isCollapsed ? (
+            <div className="bg-primary rounded-full p-2 w-10 h-10 flex items-center justify-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-5 w-5 text-primary-foreground"
+              >
+                <path d="M8 2V8C8 9.1 7.1 10 6 10C4.9 10 4 9.1 4 8V2" />
+                <path d="M6 10V22" />
+                <path d="M6 2V8" />
+                <path d="M16 2L16 8C16 10 17 11 18 11C19 11 20 10 20 8V2" />
+                <path d="M18 11V22" />
+              </svg>
             </div>
-            {!isCollapsed && (
-            <span className="text-lg font-bold tracking-tight">
-                OpaMenu
-            </span>
-            )}
+          ) : (
+            <OpaMenuLogo isDark />
+          )}
         </div>
       </div>
       <ScrollArea className="flex-1 py-4">
@@ -160,31 +175,31 @@ function SidebarContent({ isCollapsed }: { isCollapsed?: boolean }) {
                       <div className="items-center justify-center shrink-0 grid grid-cols-12 w-full">
                         <route.icon className={cn("h-5 w-5 col-span-2")} />
                         {!isCollapsed && (
-                            <div className="col-span-10 flex items-center justify-between gap-2">
-                                <span>{route.title}</span>
-                                <Badge variant="secondary" className="text-[10px] px-1 py-0 h-5">Em breve</Badge>
-                            </div>
+                          <div className="col-span-10 flex items-center justify-between gap-2">
+                            <span>{route.title}</span>
+                            <Badge variant="secondary" className="text-[10px] px-1 py-0 h-5">Em breve</Badge>
+                          </div>
                         )}
                       </div>
                     </div>
                   ) : (
                     <NavLink
-                        to={route.href}
-                        end={route.href === "/dashboard"}
-                        className={({ isActive }) =>
+                      to={route.href}
+                      end={route.href === "/dashboard"}
+                      className={({ isActive }) =>
                         cn(
-                            "flex flex-row items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap",
-                            isActive 
-                                ? "bg-primary text-primary-foreground shadow-md" 
-                                : "text-zinc-400 hover:text-white hover:bg-zinc-800/50",
-                            isCollapsed && "justify-center px-2"
+                          "flex flex-row items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap",
+                          isActive
+                            ? "bg-primary text-primary-foreground shadow-md"
+                            : "text-zinc-400 hover:text-white hover:bg-zinc-800/50",
+                          isCollapsed && "justify-center px-2"
                         )
-                        }
+                      }
                     >
-                        <div className="items-center justify-center shrink-0 grid grid-cols-12 w-full">
-                            <route.icon className={cn("h-5 w-5 col-span-2")} />
-                            {!isCollapsed && <span className="inline-block col-span-10">{route.title}</span>}  
-                        </div>
+                      <div className="items-center justify-center shrink-0 grid grid-cols-12 w-full">
+                        <route.icon className={cn("h-5 w-5 col-span-2")} />
+                        {!isCollapsed && <span className="inline-block col-span-10">{route.title}</span>}
+                      </div>
                     </NavLink>
                   )}
                 </TooltipTrigger>
@@ -201,15 +216,15 @@ function SidebarContent({ isCollapsed }: { isCollapsed?: boolean }) {
         </nav>
       </ScrollArea>
       <div className="p-4 border-t border-zinc-800">
-         {!isCollapsed && (
-            <div className="rounded-lg bg-zinc-800/50 p-4">
-                <div className="flex items-center gap-2 mb-2">
-                    <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                    <span className="text-xs font-medium text-zinc-400">Sistema Online</span>
-                </div>
-                <p className="text-xs text-zinc-500">v1.0.0</p>
+        {!isCollapsed && (
+          <div className="rounded-lg bg-zinc-800/50 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-xs font-medium text-zinc-400">Sistema Online</span>
             </div>
-         )}
+            <p className="text-xs text-zinc-500">v1.0.0</p>
+          </div>
+        )}
       </div>
     </div>
   );
