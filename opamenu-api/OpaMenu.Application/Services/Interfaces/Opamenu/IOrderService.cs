@@ -13,7 +13,7 @@ namespace OpaMenu.Application.Services.Interfaces.Opamenu
     /// </summary>
     public interface IOrderService
     {
-        Task<ResponseDTO<IEnumerable<OrderResponseDto>>> GetOrdersAsync();
+        Task<ResponseDTO<IEnumerable<OrderResponseDto>>> GetOrdersAsync(DateTime? date = null);
         Task<PagedResponseDTO<OrderResponseDto>> GetOrdersPagedAsync(int pageNumber, int pageSize);
         Task<ResponseDTO<OrderResponseDto>> GetOrderByIdAsync(Guid id);
         Task<ResponseDTO<OrderResponseDto>> GetPublicOrderByIdAsync(string slug, Guid id);

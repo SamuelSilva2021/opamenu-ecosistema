@@ -64,10 +64,11 @@ public class OrderRepository(OpamenuDbContext context) : OpamenuRepository<Order
     /// <param name="startDate">Data inicial</param>
     /// <param name="endDate">Data final</param>
     /// <returns>ColeÃ§Ã£o de pedidos do perÃ­odo</returns>
-    public async Task<IEnumerable<OrderEntity>> GetOrdersByDateRangeAsync(DateTime startDate, DateTime endDate)
+    public async Task<IEnumerable<OrderEntity>> GetOrdersByDateRangeAsync(Guid tenantId, DateTime startDate, DateTime endDate)
     {
         return await _dbSet
-            .Where(o => o.CreatedAt >= startDate && 
+            .Where(o => o.TenantId == tenantId &&
+                       o.CreatedAt >= startDate && 
                        o.CreatedAt <= endDate)
             .Include(o => o.Items)
             .ThenInclude(i => i.Product)

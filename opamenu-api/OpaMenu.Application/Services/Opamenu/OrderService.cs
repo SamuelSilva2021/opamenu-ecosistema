@@ -52,14 +52,26 @@ public class OrderService(
     /// <summary>
     /// ObtÃ©m todos os pedidos
     /// </summary>
-    public async Task<ResponseDTO<IEnumerable<OrderResponseDto>>> GetOrdersAsync()
+    public async Task<ResponseDTO<IEnumerable<OrderResponseDto>>> GetOrdersAsync(DateTime? date = null)
     {
         try
         {
-            var orders = await _orderRepository.GetAllByTenantIdWithIncludesAsync(_currentUserService.GetTenantGuid()!.Value,
-                o => o.Items,
-                o => o.StatusHistory,
-                o => o.Rejection!);
+            IEnumerable<OrderEntity> orders;
+            var tenantId = _currentUserService.GetTenantGuid()!.Value;
+
+            if (date.HasValue)
+            {
+                var startDate = date.Value.Date;
+                var endDate = date.Value.Date.AddDays(1).AddTicks(-1);
+                orders = await _orderRepository.GetOrdersByDateRangeAsync(tenantId, startDate, endDate);
+            }
+            else
+            {
+                // Se não informado data, busca somente os de HE (UTC)
+                var startDate = DateTime.UtcNow.Date;
+                var endDate = DateTime.UtcNow.Date.AddDays(1).AddTicks(-1);
+                orders = await _orderRepository.GetOrdersByDateRangeAsync(tenantId, startDate, endDate);
+            }
 
             var orderDtos = _mapper.Map<IEnumerable<OrderResponseDto>>(orders);
 

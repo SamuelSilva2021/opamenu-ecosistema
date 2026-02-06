@@ -13,7 +13,7 @@ public interface IOrderRepository : IRepository<OrderEntity>
 
     Task<IEnumerable<OrderEntity>> GetOrdersByStatusAsync(EOrderStatus status);
     
-    Task<IEnumerable<OrderEntity>> GetOrdersByDateRangeAsync(DateTime startDate, DateTime endDate);
+    Task<IEnumerable<OrderEntity>> GetOrdersByDateRangeAsync(Guid tenantId, DateTime startDate, DateTime endDate);
 
     Task<IEnumerable<OrderEntity>> GetActiveOrdersWithProductAddonGroupAsync(Guid productAddonGroupId);
 

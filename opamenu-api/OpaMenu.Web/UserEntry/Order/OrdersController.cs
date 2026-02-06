@@ -25,7 +25,7 @@ public class OrdersController(IOrderService orderService, ILogger<OrdersControll
     /// </summary>
     [HttpGet]
     [MapPermission(ORDER, OPERATION_SELECT)]
-    public async Task<ActionResult<ApiResponse<IEnumerable<OrderResponseDto>>>> GetOrders([FromQuery] int? page = null, [FromQuery] int? pageSize = null)
+    public async Task<ActionResult<ApiResponse<IEnumerable<OrderResponseDto>>>> GetOrders([FromQuery] int? page = null, [FromQuery] int? pageSize = null, [FromQuery] DateTime? date = null)
     {
         if (page.HasValue && pageSize.HasValue)
         {
@@ -33,7 +33,7 @@ public class OrdersController(IOrderService orderService, ILogger<OrdersControll
             return BuildResponse(pagedResponse);
         }
 
-        var serviceResponse = await _orderService.GetOrdersAsync();
+        var serviceResponse = await _orderService.GetOrdersAsync(date);
         return BuildResponse(serviceResponse);
     }
 
