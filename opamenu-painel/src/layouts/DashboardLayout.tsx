@@ -31,7 +31,7 @@ export default function DashboardLayout() {
                 </Button>
                 <div className="md:hidden flex items-center gap-2">
                     <MobileSidebar />
-                    <span className="font-semibold text-lg">OpaMenu</span>
+                    <span className="font-semibold text-lg">Opamenu</span>
                 </div>
             </div>
             
