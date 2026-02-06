@@ -1,15 +1,32 @@
-
-export function OpaMenuLogo({ className = "", isDark = false, size = "default" }: { className?: string, isDark?: boolean, size?: "default" | "large" }) {
+export function OpaMenuLogo({ className = "", isDark = false, size = "default" }: { className?: string, isDark?: boolean, size?: "default" | "large" | "small" }) {
     const isLarge = size === "large";
+    const isSmall = size === "small";
+
+    const getIconSize = () => {
+        if (isLarge) return "w-32 h-32";
+        if (isSmall) return "w-9 h-9";
+        return "w-12 h-12";
+    };
+
+    const getSvgSize = () => {
+        if (isLarge) return "64";
+        if (isSmall) return "18";
+        return "24";
+    };
+
+    const getTextSize = () => {
+        if (isLarge) return "text-6xl";
+        if (isSmall) return "text-xl";
+        return "text-2xl";
+    };
 
     return (
-        <div className={`flex items-center ${isLarge ? "gap-6" : "gap-3"} ${className}`}>
+        <div className={`flex items-center ${isLarge ? "gap-6" : isSmall ? "gap-2" : "gap-3"} ${className}`}>
             {/* Icon - Fork and Knife in a circular badge */}
-            <div className={`relative flex items-center justify-center rounded-full bg-[#F37021] shadow-lg shrink-0 ${isLarge ? "w-32 h-32" : "w-12 h-12"
-                }`}>
+            <div className={`relative flex items-center justify-center rounded-full bg-[#F37021] shadow-lg shrink-0 ${getIconSize()}`}>
                 <svg
-                    width={isLarge ? "64" : "24"}
-                    height={isLarge ? "64" : "24"}
+                    width={getSvgSize()}
+                    height={getSvgSize()}
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -57,10 +74,12 @@ export function OpaMenuLogo({ className = "", isDark = false, size = "default" }
 
             {/* Text Logo */}
             <div className="flex flex-col leading-none">
-                <span className={`${isLarge ? "text-6xl" : "text-2xl"} font-bold text-[#F37021]`}>
+                <span className={`${getTextSize()} font-bold text-[#F37021]`}>
                     opa<span className={isDark ? "text-white" : "text-gray-800"}>menu</span>
                 </span>
-                <span className={`${isLarge ? "text-xl mt-2" : "text-[10px] mt-1"} text-gray-500 font-medium tracking-wide`}>CARDÁPIO DIGITAL</span>
+                {!isSmall && (
+                    <span className={`${isLarge ? "text-xl mt-2" : "text-[10px] mt-1"} text-gray-500 font-medium tracking-wide`}>CARDÁPIO DIGITAL</span>
+                )}
             </div>
         </div>
     );
