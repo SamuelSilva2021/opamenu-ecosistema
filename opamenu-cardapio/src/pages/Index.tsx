@@ -40,33 +40,33 @@ const StorefrontContent = () => {
   const [isOrdersModalOpen, setIsOrdersModalOpen] = useState(false);
 
   // Usar hooks customizados para dados da API
-  const { 
-    tenantBusiness, 
-    products, 
-    categories, 
+  const {
+    tenantBusiness,
+    products,
+    categories,
     coupons,
-    loading: storefrontLoading, 
-    error: storefrontError 
+    loading: storefrontLoading,
+    error: storefrontError
   } = useStorefront(slug);
-  
+
   const { customer, logout } = useCustomer();
-  
-  const { 
-    items: cartItems, 
+
+  const {
+    items: cartItems,
     totalItems: totalCartItems,
     subtotal: cartSubtotal,
     discount: cartDiscount,
     totalPrice: cartTotal,
     coupon: activeCoupon,
     addToCart,
-    addProductSelection, 
-    removeFromCart, 
+    addProductSelection,
+    removeFromCart,
     updateQuantity,
     clearCart,
     applyCoupon,
     removeCoupon
   } = useCart();
-  
+
   // Hook para gerenciar modal de produto
   const {
     isOpen: isModalOpen,
@@ -86,10 +86,10 @@ const StorefrontContent = () => {
       console.warn('⚠️ Products is not an array:', products);
       return [];
     }
-    
+
     return products.filter((product) => {
       const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           (product.description?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
+        (product.description?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
       const matchesCategory = selectedCategory === "all" || product.categoryId?.toString() === selectedCategory;
       return matchesSearch && matchesCategory && product.isActive;
     });
@@ -107,7 +107,7 @@ const StorefrontContent = () => {
     if (!Array.isArray(categories) || !Array.isArray(products)) {
       return [];
     }
-    
+
     const activeCategories = categories.filter(cat => cat.isActive);
     return activeCategories.map(cat => ({
       id: cat.id.toString(),
@@ -170,7 +170,7 @@ const StorefrontContent = () => {
 
   if (isCheckoutMode) {
     return (
-      <CheckoutPage 
+      <CheckoutPage
         onBackToMenu={() => setIsCheckoutMode(false)}
         tenant={tenantBusiness || undefined}
       />
@@ -185,8 +185,8 @@ const StorefrontContent = () => {
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : tenantBusiness ? (
-        <TenantHeader 
-          tenant={tenantBusiness} 
+        <TenantHeader
+          tenant={tenantBusiness}
           customer={customer}
           onLoginClick={() => setIsLoginModalOpen(true)}
           onLogoutClick={logout}
@@ -212,14 +212,14 @@ const StorefrontContent = () => {
 
       {/* 2. Main Layout Grid */}
       <div className="container mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
+
         {/* LEFT COLUMN - Main Content */}
         <div className="lg:col-span-2 space-y-6">
-          
+
           {/* Mobile Loyalty Card */}
           <div className="lg:hidden">
             {tenantBusiness?.loyaltyProgram?.isActive && (
-                <LoyaltyCard program={tenantBusiness.loyaltyProgram} />
+              <LoyaltyCard program={tenantBusiness.loyaltyProgram} />
             )}
           </div>
 
@@ -232,14 +232,14 @@ const StorefrontContent = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-56 bg-white z-50 shadow-lg border border-gray-200">
-                 <DropdownMenuItem onClick={() => setSelectedCategory("all")}>
-                    Todas as categorias
-                 </DropdownMenuItem>
-                 {categoryOptions.map(cat => (
-                    <DropdownMenuItem key={cat.id} onClick={() => setSelectedCategory(cat.id)}>
-                        {cat.name} ({cat.count})
-                    </DropdownMenuItem>
-                 ))}
+                <DropdownMenuItem onClick={() => setSelectedCategory("all")}>
+                  Todas as categorias
+                </DropdownMenuItem>
+                {categoryOptions.map(cat => (
+                  <DropdownMenuItem key={cat.id} onClick={() => setSelectedCategory(cat.id)}>
+                    {cat.name} ({cat.count})
+                  </DropdownMenuItem>
+                ))}
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -250,11 +250,22 @@ const StorefrontContent = () => {
                 placeholder="Busque por um produto..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 h-12 bg-white border-gray-200 focus:border-primary focus:ring-primary/20 transition-all text-base"
+                className="pl-12 pr-12 h-12 bg-white border-gray-200 focus:border-primary focus:ring-primary/20 transition-all text-base"
               />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <span className="sr-only">Limpar busca</span>
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
             </div>
           </div>
-          
+
           {/* Mobile Category Navigation */}
           <div className="lg:hidden">
             <div className="flex overflow-x-auto gap-3 pb-2 -mx-4 px-4 scrollbar-hide">
@@ -262,8 +273,8 @@ const StorefrontContent = () => {
                 onClick={() => setSelectedCategory("all")}
                 className={`
                   whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors
-                  ${selectedCategory === "all" 
-                    ? "bg-primary text-primary-foreground" 
+                  ${selectedCategory === "all"
+                    ? "bg-primary text-primary-foreground"
                     : "bg-white text-gray-600 border border-gray-200"}
                 `}
               >
@@ -275,8 +286,8 @@ const StorefrontContent = () => {
                   onClick={() => setSelectedCategory(cat.id)}
                   className={`
                     whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors
-                    ${selectedCategory === cat.id 
-                      ? "bg-primary text-primary-foreground" 
+                    ${selectedCategory === cat.id
+                      ? "bg-primary text-primary-foreground"
                       : "bg-white text-gray-600 border border-gray-200"}
                   `}
                 >
@@ -285,11 +296,18 @@ const StorefrontContent = () => {
               ))}
             </div>
           </div>
-          
+
           {/* Destaques / Product Grid */}
           <div>
-            <h2 className="hidden lg:block text-2xl font-bold text-gray-800 mb-6">Destaques</h2>
-            
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl lg:text-2xl font-bold text-gray-800">
+                {selectedCategory === "all" ? "Pincipais do Dia" : categoryOptions.find(c => c.id === selectedCategory)?.name}
+              </h2>
+              <span className="text-sm text-gray-500 font-medium bg-gray-100 px-3 py-1 rounded-full">
+                {filteredProducts.length} {filteredProducts.length === 1 ? 'produto' : 'produtos'}
+              </span>
+            </div>
+
             {productsLoading ? (
               <div className="flex justify-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -313,8 +331,24 @@ const StorefrontContent = () => {
                     />
                   ))
                 ) : (
-                  <div className="col-span-full text-center py-12 text-gray-500">
-                    Nenhum produto encontrado.
+                  <div className="col-span-full text-center py-20 bg-white rounded-2xl border-2 border-dashed border-gray-100">
+                    <div className="flex flex-col items-center max-w-xs mx-auto">
+                      <div className="bg-gray-50 p-4 rounded-full mb-4">
+                        <Search className="h-8 w-8 text-gray-300" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-800 mb-2">Sem resultados</h3>
+                      <p className="text-gray-500 mb-6">Não encontramos nada para "{searchQuery}". Tente outro termo ou limpe os filtros.</p>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setSearchQuery("");
+                          setSelectedCategory("all");
+                        }}
+                        className="w-full"
+                      >
+                        Limpar filtros
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -324,36 +358,36 @@ const StorefrontContent = () => {
 
         {/* RIGHT COLUMN - Sidebar (Sticky on Desktop) */}
         <div className="hidden lg:block space-y-6">
-            <div className="sticky top-4 space-y-6">
-                {tenantBusiness?.loyaltyProgram?.isActive && (
-                    <LoyaltyCard program={tenantBusiness.loyaltyProgram} />
-                )}
-                {tenantBusiness && customer && customer.street && (
-                    <DeliveryInfo tenant={tenantBusiness} customer={customer} />
-                )}
-                <InlineCart 
-                    cartItems={cartItems} 
-                    total={cartSubtotal}
-                    onUpdateQuantity={updateQuantity}
-                    onRemoveItem={removeFromCart}
-                    onClearCart={clearCart}
-                    onCheckout={() => setIsCheckoutMode(true)}
-                />
-            </div>
+          <div className="sticky top-4 space-y-6">
+            {tenantBusiness?.loyaltyProgram?.isActive && (
+              <LoyaltyCard program={tenantBusiness.loyaltyProgram} />
+            )}
+            {tenantBusiness && customer && customer.street && (
+              <DeliveryInfo tenant={tenantBusiness} customer={customer} />
+            )}
+            <InlineCart
+              cartItems={cartItems}
+              total={cartSubtotal}
+              onUpdateQuantity={updateQuantity}
+              onRemoveItem={removeFromCart}
+              onClearCart={clearCart}
+              onCheckout={() => setIsCheckoutMode(true)}
+            />
+          </div>
         </div>
-        
+
         {/* Mobile Bottom Navigation */}
         <div className="lg:hidden">
-          <BottomNavigation 
+          <BottomNavigation
             cartItemCount={totalCartItems}
             cartTotal={cartSubtotal}
             onCartClick={() => setIsCartOpen(true)}
             onProfileClick={() => {
-                if (customer) {
-                    setIsProfileModalOpen(true);
-                } else {
-                    setIsLoginModalOpen(true);
-                }
+              if (customer) {
+                setIsProfileModalOpen(true);
+              } else {
+                setIsLoginModalOpen(true);
+              }
             }}
             customer={customer}
             onLogoutClick={logout}
@@ -408,9 +442,9 @@ const StorefrontContent = () => {
         onValidateCoupon={handleValidateCoupon}
       />
 
-      <LoginModal 
-        isOpen={isLoginModalOpen} 
-        onClose={() => setIsLoginModalOpen(false)} 
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
       />
 
       <ProfileModal

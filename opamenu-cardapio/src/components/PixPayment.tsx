@@ -3,8 +3,10 @@ import QRCode from 'qrcode';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Copy, CheckCircle, Clock, RefreshCw } from 'lucide-react';
+import { Copy, CheckCircle, Clock, RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { orderService } from '@/services/order-service';
+import { OrderStatus } from '@/types/api';
 
 interface PixPaymentProps {
   orderId: string;
@@ -12,7 +14,8 @@ interface PixPaymentProps {
   pixKey?: string;
   merchantName?: string;
   merchantCity?: string;
-  qrCodePayload?: string; // New prop
+  qrCodePayload?: string;
+  slug?: string;
   onPaymentConfirmed?: () => void;
   onCancel?: () => void;
 }
@@ -24,6 +27,7 @@ const PixPayment: React.FC<PixPaymentProps> = ({
   merchantName = "OPAMENU",
   merchantCity = "BRASILIA",
   qrCodePayload,
+  slug,
   onPaymentConfirmed,
   onCancel
 }) => {
@@ -32,6 +36,8 @@ const PixPayment: React.FC<PixPaymentProps> = ({
   const [copied, setCopied] = useState(false);
   const [timeLeft, setTimeLeft] = useState(900); // 15 minutos em segundos
   const [isExpired, setIsExpired] = useState(false);
+  const [isPolling, setIsPolling] = useState(true);
+  const [orderStatus, setOrderStatus] = useState<OrderStatus>(OrderStatus.Pending);
 
   // Função para gerar o código PIX (simplificado para demonstração)
   const generatePixCode = () => {
@@ -39,10 +45,10 @@ const PixPayment: React.FC<PixPaymentProps> = ({
     if (qrCodePayload) return qrCodePayload;
 
     const txId = `OPAMENU${orderId}`;
-    
+
     // Código PIX simplificado (em produção, usar biblioteca oficial ou API do banco)
     const pixPayload = `00020126580014BR.GOV.BCB.PIX0136${pixKey}5204000053039865802BR5913${merchantName}6008${merchantCity}62070503***6304`;
-    
+
     return pixPayload;
   };
 
@@ -58,7 +64,7 @@ const PixPayment: React.FC<PixPaymentProps> = ({
       try {
         const code = generatePixCode();
         setPixCode(code);
-        
+
         const qrUrl = await QRCode.toDataURL(code, {
           width: 256,
           margin: 1,
@@ -67,7 +73,7 @@ const PixPayment: React.FC<PixPaymentProps> = ({
             light: '#FFFFFF'
           }
         });
-        
+
         setQrCodeUrl(qrUrl);
       } catch (error) {
         console.error('Erro ao gerar QR Code:', error);
@@ -78,10 +84,10 @@ const PixPayment: React.FC<PixPaymentProps> = ({
     generateQRCode();
   }, [orderId, amount, pixKey, qrCodePayload]);
 
-  // Timer de expiração
   useEffect(() => {
     if (timeLeft <= 0) {
       setIsExpired(true);
+      setIsPolling(false);
       return;
     }
 
@@ -92,13 +98,42 @@ const PixPayment: React.FC<PixPaymentProps> = ({
     return () => clearInterval(timer);
   }, [timeLeft]);
 
+  // Polling de status do pedido
+  useEffect(() => {
+    if (!isPolling || !orderId || isExpired) return;
+
+    const pollStatus = async () => {
+      try {
+        const status = await orderService.checkOrderStatus(orderId, slug);
+
+        // Se o status mudou para Confirmed ou superior, o pagamento foi identificado
+        if (status !== OrderStatus.Pending && status !== OrderStatus.Cancelled) {
+          setOrderStatus(status);
+          setIsPolling(false);
+          toast.success('Pagamento confirmado com sucesso!');
+
+          // Pequeno delay para o usuário ver a mensagem de sucesso
+          setTimeout(() => {
+            if (onPaymentConfirmed) onPaymentConfirmed();
+          }, 2000);
+        }
+      } catch (error) {
+        console.error('Erro ao verificar status do pagamento:', error);
+      }
+    };
+
+    const pollInterval = setInterval(pollStatus, 5000); // Polling a cada 5 segundos
+
+    return () => clearInterval(pollInterval);
+  }, [isPolling, orderId, slug, isExpired, onPaymentConfirmed]);
+
   // Copiar código PIX
   const handleCopyCode = async () => {
     try {
       await navigator.clipboard.writeText(pixCode);
       setCopied(true);
       toast.success('Código PIX copiado!');
-      
+
       setTimeout(() => {
         setCopied(false);
       }, 3000);
@@ -121,7 +156,7 @@ const PixPayment: React.FC<PixPaymentProps> = ({
     setIsExpired(false);
     const code = generatePixCode();
     setPixCode(code);
-    
+
     QRCode.toDataURL(code, {
       width: 256,
       margin: 1,
@@ -172,11 +207,19 @@ const PixPayment: React.FC<PixPaymentProps> = ({
             <Badge variant="outline" className="text-xs sm:text-sm">
               Pedido #{orderId}
             </Badge>
-            <div className="flex items-center gap-2 text-sm bg-muted/50 px-3 py-1 rounded-full">
-              <Clock className="h-4 w-4" />
-              <span className={timeLeft < 300 ? 'text-red-500 font-medium' : 'text-muted-foreground font-medium'}>
-                {formatTime(timeLeft)}
-              </span>
+            <div className="flex items-center gap-4">
+              {isPolling && (
+                <div className="flex items-center gap-2 text-xs text-primary animate-pulse">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Verificando pagamento...
+                </div>
+              )}
+              <div className="flex items-center gap-2 text-sm bg-muted/50 px-3 py-1 rounded-full">
+                <Clock className="h-4 w-4" />
+                <span className={timeLeft < 300 ? 'text-red-500 font-medium' : 'text-muted-foreground font-medium'}>
+                  {formatTime(timeLeft)}
+                </span>
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -190,19 +233,19 @@ const PixPayment: React.FC<PixPaymentProps> = ({
               <div className="text-3xl sm:text-4xl font-bold text-[#16a34a]">
                 R$ {amount.toFixed(2)}
               </div>
-              
+
               {qrCodeUrl && (
                 <div className="flex justify-center">
                   <div className="p-2 sm:p-4 bg-white rounded-xl border-2 border-gray-100 shadow-sm">
-                    <img 
-                      src={qrCodeUrl} 
-                      alt="QR Code PIX" 
+                    <img
+                      src={qrCodeUrl}
+                      alt="QR Code PIX"
                       className="w-56 h-56 sm:w-64 sm:h-64"
                     />
                   </div>
                 </div>
               )}
-              
+
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground px-4">
                   Use o app do seu banco para escanear o código
@@ -277,14 +320,14 @@ const PixPayment: React.FC<PixPaymentProps> = ({
 
           {/* Botões */}
           <div className="flex flex-col sm:flex-row gap-4 pt-2">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={onCancel}
               className="flex-1 order-2 sm:order-1 h-12 text-base"
             >
               Voltar
             </Button>
-            <Button 
+            <Button
               onClick={onPaymentConfirmed}
               className="flex-1 bg-[#16a34a] hover:bg-[#15803d] order-1 sm:order-2 h-12 text-base font-medium shadow-md shadow-green-900/10"
             >

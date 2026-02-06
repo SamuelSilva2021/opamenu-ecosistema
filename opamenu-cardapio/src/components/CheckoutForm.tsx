@@ -17,11 +17,11 @@ interface CheckoutFormProps {
   error?: string | null;
 }
 
-const CheckoutForm = ({ 
-  checkoutData, 
-  onDataChange, 
-  onBack, 
-  onNext, 
+const CheckoutForm = ({
+  checkoutData,
+  onDataChange,
+  onBack,
+  onNext,
   isProcessing = false,
   error
 }: CheckoutFormProps) => {
@@ -72,17 +72,17 @@ const CheckoutForm = ({
       newData.state,
       newData.zipCode ? `CEP: ${newData.zipCode}` : null
     ].filter(Boolean);
-    
-    onDataChange({ 
-      ...data, 
-      deliveryAddress: addressParts.join(', ') 
+
+    onDataChange({
+      ...data,
+      deliveryAddress: addressParts.join(', ')
     });
   };
 
   const handleCepChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawCep = e.target.value.replace(/\D/g, '');
     const formattedCep = rawCep.replace(/^(\d{5})(\d)/, '$1-$2');
-    
+
     updateFullAddress({ zipCode: formattedCep });
 
     if (rawCep.length === 8) {
@@ -90,7 +90,7 @@ const CheckoutForm = ({
       try {
         const response = await fetch(`https://viacep.com.br/ws/${rawCep}/json/`);
         const data = await response.json();
-        
+
         if (!data.erro) {
           updateFullAddress({
             zipCode: formattedCep,
@@ -105,11 +105,11 @@ const CheckoutForm = ({
             return newErrors;
           });
         } else {
-          setValidationErrors(prev => ({...prev, zipCode: 'CEP não encontrado'}));
+          setValidationErrors(prev => ({ ...prev, zipCode: 'CEP não encontrado' }));
         }
       } catch (error) {
         console.error('Erro ao buscar CEP', error);
-        setValidationErrors(prev => ({...prev, zipCode: 'Erro ao buscar CEP'}));
+        setValidationErrors(prev => ({ ...prev, zipCode: 'Erro ao buscar CEP' }));
       } finally {
         setIsLoadingCep(false);
       }
@@ -138,14 +138,7 @@ const CheckoutForm = ({
   return (
     <div className="max-w-2xl mx-auto p-0 md:p-1">
       <Card className="border-0 shadow-none md:border md:shadow-sm rounded-none md:rounded-xl">
-        <CardHeader className="p-4 md:p-6">
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5 text-primary" />
-            Dados para Entrega
-          </CardTitle>
-        </CardHeader>
-        
-        <CardContent className="p-1 md:p-6 space-y-6">
+        <CardContent className="p-4 md:p-6 space-y-6">
           {error && (
             <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
               {error}
@@ -155,7 +148,7 @@ const CheckoutForm = ({
           {/* Informações do Cliente */}
           <div className="space-y-4">
             <h3 className="font-semibold text-lg">Informações de Contato</h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="customerName" className="flex items-center gap-2">
@@ -215,12 +208,12 @@ const CheckoutForm = ({
           {/* Tipo de Entrega */}
           <div className="space-y-4">
             <h3 className="font-semibold text-lg">Tipo de Pedido</h3>
-            <RadioGroup 
+            <RadioGroup
               value={checkoutData.isDelivery ? 'delivery' : 'pickup'}
               onValueChange={(value) => onDataChange({ isDelivery: value === 'delivery' })}
               className="grid gap-3"
             >
-              <label 
+              <label
                 htmlFor="delivery"
                 className={`
                   flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all hover:bg-muted/50 gap-3
@@ -240,7 +233,7 @@ const CheckoutForm = ({
                 )}
               </label>
 
-              <label 
+              <label
                 htmlFor="pickup"
                 className={`
                   flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all hover:bg-muted/50 gap-3
@@ -266,10 +259,10 @@ const CheckoutForm = ({
           {checkoutData.isDelivery && (
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-opamenu-orange" />    
+                <MapPin className="h-5 w-5 text-opamenu-orange" />
                 <h3 className="font-semibold text-lg">Endereço de Entrega</h3>
               </div>
-              
+
               <div className="space-y-4">
                 {/* CEP */}
                 <div className="space-y-2">
@@ -410,16 +403,16 @@ const CheckoutForm = ({
 
           {/* Botões de Navegação */}
           <div className="flex justify-between pt-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={onBack}
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Voltar ao Carrinho
+              Voltar ao Início
             </Button>
-            
-            <Button 
+
+            <Button
               onClick={handleSubmit}
               disabled={isProcessing}
               className="flex items-center gap-2 bg-opamenu-orange hover:bg-opamenu-orange/90"

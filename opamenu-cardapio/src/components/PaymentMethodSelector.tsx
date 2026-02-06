@@ -63,7 +63,7 @@ const PaymentMethodSelector = ({
       return;
     }
     setValidationError('');
-    
+
     // Se for PIX, mostrar tela de pagamento PIX
     if (selectedMethod === 'pix' && onPixPayment) {
       onPixPayment();
@@ -93,14 +93,7 @@ const PaymentMethodSelector = ({
   return (
     <div className="max-w-2xl mx-auto p-1">
       <Card className="border-0 shadow-none md:border md:shadow-sm rounded-none md:rounded-xl">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5 text-opamenu-green" />
-            Método de Pagamento
-          </CardTitle>
-        </CardHeader>
-        
-        <CardContent className="p-1 md:p-6 space-y-6">
+        <CardContent className="p-4 md:p-6 space-y-6">
           {error && (
             <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
               {error}
@@ -135,22 +128,21 @@ const PaymentMethodSelector = ({
 
           <div className="space-y-4">
             <h3 className="font-semibold text-lg">Escolha como deseja pagar</h3>
-            
+
             <RadioGroup value={selectedMethod} onValueChange={handleMethodChange}>
               {paymentMethods.map((method) => (
                 <div
                   key={method.id}
-                  className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-all hover:bg-muted/50 ${
-                    selectedMethod === method.id 
-                      ? 'border-opamenu-green bg-opamenu-green/5' 
+                  className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-all hover:bg-muted/50 ${selectedMethod === method.id
+                      ? 'border-opamenu-green bg-opamenu-green/5'
                       : 'border-border'
-                  }`}
+                    }`}
                 >
                   <RadioGroupItem value={method.id} id={method.id} className="sr-only" />
-                  
+
                   <div className="flex items-center gap-3 flex-1">
                     {getMethodIcon(method.type)}
-                    
+
                     <div className="flex-1">
                       <Label htmlFor={method.id} className="cursor-pointer">
                         <div className="font-medium text-base">{method.name}</div>
@@ -181,7 +173,7 @@ const PaymentMethodSelector = ({
                   </p>
                 </div>
               )}
-              
+
               {selectedMethod === 'dinheiro' && (
                 <div className="space-y-2">
                   <h4 className="font-medium text-green-600">Pagamento em Dinheiro</h4>
@@ -191,7 +183,7 @@ const PaymentMethodSelector = ({
                   </p>
                 </div>
               )}
-              
+
               {selectedMethod === 'cartao' && (
                 <div className="space-y-2">
                   <h4 className="font-medium text-purple-600">Pagamento no Cartão</h4>
@@ -206,16 +198,16 @@ const PaymentMethodSelector = ({
 
           {/* Botões de Navegação */}
           <div className="flex justify-between pt-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={onBack}
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
               Voltar
             </Button>
-            
-            <Button 
+
+            <Button
               onClick={handleNext}
               disabled={isProcessing || !selectedMethod}
               className="flex items-center gap-2 bg-opamenu-green hover:bg-opamenu-green/90"

@@ -5,6 +5,7 @@ using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Commons.Api.Commons;
 using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 using OpaMenu.Application.Services.Interfaces.Opamenu;
+using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 
 namespace OpaMenu.Application.Services.Opamenu;
 
@@ -101,6 +102,43 @@ public class DashboardService(
 
             var activeCustomersGrowth = 0.0;
 
+            // Average Ticket
+            var averageTicket = totalOrdersCount > 0 ? totalRevenue / totalOrdersCount : 0;
+
+            // Daily Sales (Last 7 Days)
+            var weekAgo = startOfToday.AddDays(-6);
+            var lastWeekOrders = (await _orderRepository.FindAsync(o => 
+                o.TenantId == tenantId && 
+                o.CreatedAt >= weekAgo && 
+                o.Status != EOrderStatus.Cancelled && 
+                o.Status != EOrderStatus.Rejected)).ToList();
+
+            var dailySales = Enumerable.Range(0, 7)
+                .Select(offset => weekAgo.AddDays(offset))
+                .Select(date => new DailySaleDto
+                {
+                    Date = date.ToString("dd/MM"),
+                    Total = lastWeekOrders
+                        .Where(o => o.CreatedAt.Date == date.Date)
+                        .Sum(o => o.Total)
+                }).ToList();
+
+            // Category Sales (Distribution)
+            // Note: This requires including OrderItems and Products
+            var categorySales = lastWeekOrders
+                .SelectMany(o => o.Items ?? new List<OrderItemEntity>())
+                .Where(i => i.Product != null && i.Product.Category != null)
+                .GroupBy(i => i.Product!.Category!.Name)
+                .Select(g => new CategorySaleDto
+                {
+                    CategoryName = g.Key,
+                    Total = g.Sum(i => i.UnitPrice * i.Quantity),
+                    Quantity = g.Sum(i => i.Quantity)
+                })
+                .OrderByDescending(c => c.Total)
+                .Take(5)
+                .ToList();
+
             var summary = new DashboardSummaryDto
             {
                 TotalRevenue = totalRevenue,
@@ -108,10 +146,13 @@ public class DashboardService(
                 OrdersToday = ordersTodayCount,
                 OrdersTodayGrowth = ordersTodayGrowth,
                 TotalOrders = totalOrdersCount,
-                TotalOrdersGrowth = ordersGrowth,
+                TotalOrdersGrowth = (decimal)ordersGrowth,
                 ActiveCustomers = activeCustomersCount,
                 ActiveCustomersGrowth = activeCustomersGrowth,
-                RecentOrders = recentOrdersDto
+                AverageTicket = averageTicket,
+                RecentOrders = recentOrdersDto,
+                DailySales = dailySales,
+                CategorySales = categorySales
             };
 
             return StaticResponseBuilder<DashboardSummaryDto>.BuildOk(summary);

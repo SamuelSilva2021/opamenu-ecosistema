@@ -1,4 +1,5 @@
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,19 +7,21 @@ import { Product as ApiProduct, ProductWithAddons } from "@/types/api";
 import { getFullImageUrl } from "@/utils/image-url";
 
 interface ProductCardProps {
-  product: ApiProduct | ProductWithAddons;
+  product?: ApiProduct | ProductWithAddons;
+  isLoading?: boolean;
   cartQuantity?: number;
-  onAddToCart: (productId: string) => void;
-  onRemoveFromCart: (productId: string) => void;
-  onProductClick: (productId: string) => void;
+  onAddToCart?: (productId: string) => void;
+  onRemoveFromCart?: (productId: string) => void;
+  onProductClick?: (productId: string) => void;
 }
 
-const ProductCard = ({ 
-  product, 
-  cartQuantity = 0, 
-  onAddToCart, 
-  onRemoveFromCart, 
-  onProductClick 
+const ProductCard = ({
+  product,
+  isLoading = false,
+  cartQuantity = 0,
+  onAddToCart = () => { },
+  onRemoveFromCart = () => { },
+  onProductClick = () => { }
 }: ProductCardProps) => {
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -27,18 +30,41 @@ const ProductCard = ({
     }).format(price);
   };
 
+  if (isLoading || !product) {
+    return (
+      <Card className="bg-card border-border overflow-hidden">
+        <div className="aspect-[4/3] p-2">
+          <Skeleton className="w-full h-full rounded-lg" />
+        </div>
+        <CardContent className="p-4 space-y-3">
+          <Skeleton className="h-6 w-3/4" />
+          <Skeleton className="h-4 w-full" />
+          <div className="flex justify-between items-center">
+            <Skeleton className="h-8 w-1/3" />
+            <Skeleton className="h-8 w-8 rounded-full" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="group hover:shadow-lg transition-all duration-300 hover:scale-[1.02] bg-card border-border overflow-hidden animate-fade-in-up cursor-pointer" onClick={() => onProductClick(product.id)}>
-      
+    <Card
+      className="group hover:shadow-lg transition-all duration-300 hover:scale-[1.02] bg-card border-border overflow-hidden animate-fade-in-up cursor-pointer"
+      onClick={() => onProductClick(product.id)}
+    >
+
       <div className="aspect-[4/3] overflow-hidden bg-white p-2 relative flex items-center justify-center">
         {product.imageUrl ? (
-          <img 
-            src={getFullImageUrl(product.imageUrl) || ''} 
+          <img
+            src={getFullImageUrl(product.imageUrl) || ''}
             alt={product.name}
+            loading="lazy"
+            decodings="async"
             className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-opamenu-green/20"> 
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-opamenu-green/20">
             <div className="text-center text-muted-foreground">
               <div className="text-4xl mb-2">🍽️</div>
               <p className="text-sm">Imagem não disponível</p>
@@ -49,7 +75,7 @@ const ProductCard = ({
 
       <CardContent className="p-4">
         <div className="mb-3">
-          <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors">  
+          <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors">
             {product.name}
           </h3>
           <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
@@ -59,7 +85,7 @@ const ProductCard = ({
 
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <span className="text-2xl font-bold text-primary"> 
+            <span className="text-2xl font-bold text-primary">
               {formatPrice(product.price)}
             </span>
           </div>
@@ -93,6 +119,20 @@ const ProductCard = ({
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
+            )}
+
+            {cartQuantity === 0 && product.isActive && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 w-8 p-0 text-primary hover:bg-primary/10"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddToCart(product.id);
+                }}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
             )}
           </div>
         </div>
