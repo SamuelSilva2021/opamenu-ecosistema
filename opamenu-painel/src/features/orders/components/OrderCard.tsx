@@ -32,7 +32,7 @@ export function OrderCard({ order }: OrderCardProps) {
       <Card className="cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow">
         <CardHeader className="p-4 pb-2">
           <div className="flex justify-between items-start">
-            <CardTitle className="text-sm font-medium">#{order.id}</CardTitle>
+            <CardTitle className="text-sm font-medium">#{String(order.orderNumber || 0).padStart(3, '0')}</CardTitle>
             <Badge variant="outline" className="text-xs">
               {order.isDelivery ? "Delivery" : "Retirada"}
             </Badge>
@@ -51,7 +51,7 @@ export function OrderCard({ order }: OrderCardProps) {
                 </div>
               ))}
             </div>
-            
+
             <div className="flex justify-between items-center pt-2 border-t mt-2">
               <div className="flex items-center text-xs text-muted-foreground" title={new Date(order.createdAt).toLocaleString()}>
                 <Clock className="h-3 w-3 mr-1" />

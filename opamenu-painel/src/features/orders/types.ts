@@ -50,6 +50,7 @@ export interface Order {
   estimatedPreparationMinutes?: number;
   estimatedDeliveryTime?: string;
   queuePosition?: number;
+  orderNumber: number;
   items: OrderItem[];
 }
 

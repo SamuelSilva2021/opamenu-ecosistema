@@ -18,5 +18,6 @@ public interface IOrderRepository : IRepository<OrderEntity>
     Task<IEnumerable<OrderEntity>> GetActiveOrdersWithProductAddonGroupAsync(Guid productAddonGroupId);
 
     Task<IEnumerable<OrderEntity>> GetPagedByTenantIdWithDetailsAsync(Guid tenantId, int pageNumber, int pageSize);
+    Task<int?> GetLastOrderNumberAsync(Guid tenantId, DateTime date);
 }
 

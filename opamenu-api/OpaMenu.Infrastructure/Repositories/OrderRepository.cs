@@ -110,4 +110,12 @@ public class OrderRepository(OpamenuDbContext context) : OpamenuRepository<Order
             .Take(pageSize)
             .ToListAsync();
     }
+
+    public async Task<int?> GetLastOrderNumberAsync(Guid tenantId, DateTime date)
+    {
+        return await _dbSet
+            .Where(o => o.TenantId == tenantId && 
+                        o.CreatedAt.Date == date.Date)
+            .MaxAsync(o => (int?)o.OrderNumber);
+    }
 }

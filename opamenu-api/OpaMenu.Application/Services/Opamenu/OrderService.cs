@@ -303,6 +303,10 @@ public class OrderService(
                 order.Total = order.Subtotal + order.DeliveryFee - order.DiscountAmount;
                 if (order.Total < 0) order.Total = 0;
 
+                // Definir número do pedido (sequencial diário)
+                var lastOrderNumber = await _orderRepository.GetLastOrderNumberAsync(tenantId, DateTime.UtcNow);
+                order.OrderNumber = (lastOrderNumber ?? 0) + 1;
+
                 var createdOrder = await _orderRepository.AddAsync(order);
                 var orderDto = _mapper.Map<OrderResponseDto>(createdOrder);
 
@@ -476,6 +480,10 @@ public class OrderService(
 
             order.Total = order.Subtotal + order.DeliveryFee - order.DiscountAmount;
             if (order.Total < 0) order.Total = 0;
+
+            // Definir número do pedido (sequencial diário)
+            var lastOrderNumber = await _orderRepository.GetLastOrderNumberAsync(tenant.Id, DateTime.UtcNow);
+            order.OrderNumber = (lastOrderNumber ?? 0) + 1;
 
             var createdOrder = await _orderRepository.AddAsync(order);
             var orderDto = _mapper.Map<OrderResponseDto>(createdOrder);

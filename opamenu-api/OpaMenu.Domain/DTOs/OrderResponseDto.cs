@@ -30,6 +30,7 @@ namespace OpaMenu.Domain.DTOs
         public int? EstimatedPreparationMinutes { get; set; }
         public DateTime? EstimatedDeliveryTime { get; set; }
         public int? QueuePosition { get; set; }
+        public int OrderNumber { get; set; }
         public List<OrderItemResponseDto> Items { get; set; } = new();
     }
 }

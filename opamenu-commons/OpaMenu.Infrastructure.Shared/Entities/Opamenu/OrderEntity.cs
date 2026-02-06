@@ -69,6 +69,9 @@ public class OrderEntity : BaseEntity
     [Column("queue_position")]
     public int QueuePosition { get; set; } = 0;
 
+    [Column("order_number")]
+    public int OrderNumber { get; set; }
+
     [Required]
     [Column("customer_id")]
     public Guid CustomerId { get; set; }
