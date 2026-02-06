@@ -15,13 +15,16 @@ public class ExternalAuthenticationService : IAuthenticationService
 {
     private readonly IConfiguration _configuration;
     private readonly ILogger<ExternalAuthenticationService> _logger;
+    private readonly HttpClient _httpClient;
 
     public ExternalAuthenticationService(
         IConfiguration configuration,
-        ILogger<ExternalAuthenticationService> logger)
+        ILogger<ExternalAuthenticationService> logger,
+        HttpClient httpClient)
     {
         _configuration = configuration;
         _logger = logger;
+        _httpClient = httpClient;
     }
 
     public Task<bool> ValidateTokenAsync(string token)
@@ -84,10 +87,33 @@ public class ExternalAuthenticationService : IAuthenticationService
         }
     }
 
-    public Task<string> RefreshTokenAsync(string refreshToken)
+    public async Task<string> RefreshTokenAsync(string refreshToken)
     {
-        // Refresh token deve ser implementado via chamada para o saas-authentication-api
-        // Por enquanto, retorna uma exceção indicando que não está implementado
-        throw new NotImplementedException("Refresh token deve ser realizado através do saas-authentication-api");
+        try
+        {
+            var authUrl = _configuration["Authentication:ExternalAuthUrl"];
+            if (string.IsNullOrEmpty(authUrl))
+            {
+                throw new InvalidOperationException("External Auth URL not configured");
+            }
+
+            var payload = new { refreshToken };
+            var content = new StringContent(System.Text.Json.JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync($"{authUrl}/auth/refresh-token", content);
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Failed to refresh token. Status: {StatusCode}", response.StatusCode);
+                return string.Empty;
+            }
+
+            return await response.Content.ReadAsStringAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error refreshing token");
+            throw;
+        }
     }
 }

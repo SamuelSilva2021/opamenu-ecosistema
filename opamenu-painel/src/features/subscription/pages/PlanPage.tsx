@@ -20,6 +20,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { subscriptionService } from "../subscription.service";
 import { usePermission } from "@/hooks/usePermission";
+import { PermissionGate } from "@/components/auth/PermissionGate";
 
 export default function PlanPage() {
   const { can } = usePermission();
@@ -138,140 +139,146 @@ export default function PlanPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Meu Plano</h1>
-        <p className="text-muted-foreground">
-          Gerencie sua assinatura e visualize detalhes do seu plano atual.
-        </p>
+    <PermissionGate module="SUBSCRIPTION" operation="READ" fallback={
+      <div className="flex h-[400px] items-center justify-center">
+        <p className="text-muted-foreground">Você não tem permissão para visualizar informações do plano.</p>
       </div>
+    }>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Meu Plano</h1>
+          <p className="text-muted-foreground">
+            Gerencie sua assinatura e visualize detalhes do seu plano atual.
+          </p>
+        </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Detalhes da Assinatura</span>
-              <Badge variant={getStatusColor(subscription.status) as any}>
-                {getStatusLabel(subscription.status)}
-              </Badge>
-            </CardTitle>
-            <CardDescription>Informações sobre seu plano atual</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-muted-foreground" />
-                <span className="font-medium">Plano Atual</span>
-              </div>
-              <span className="text-lg font-bold">{subscription.planName}</span>
-            </div>
-            
-            <Separator />
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-muted-foreground" />
-                <span className="font-medium">Próxima Renovação</span>
-              </div>
-              <span>{formatDate(subscription.currentPeriodEnd)}</span>
-            </div>
-
-            <Separator />
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-muted-foreground" />
-                <span className="font-medium">Dias Restantes</span>
-              </div>
-              <Badge variant="outline" className="text-base px-3 py-1">
-                {subscription.daysRemaining} dias
-              </Badge>
-            </div>
-
-            {subscription.isTrial && (
-              <div className="mt-4 p-4 bg-secondary/20 rounded-lg border border-secondary text-secondary-foreground text-sm">
-                Seu período de teste acaba em {subscription.trialEndsAt ? formatDate(subscription.trialEndsAt) : "breve"}.
-              </div>
-            )}
-
-            {subscription.cancelAtPeriodEnd && (
-               <div className="mt-4 p-4 bg-destructive/10 rounded-lg border border-destructive/20 text-destructive text-sm font-medium">
-                 Sua assinatura foi cancelada e encerrará em {formatDate(subscription.currentPeriodEnd)}.
-               </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Ações</CardTitle>
-            <CardDescription>Gerencie sua assinatura</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Gerencie seus métodos de pagamento e faturas diretamente no nosso portal seguro.
-            </p>
-            
-            <Button 
-              className="w-full gap-2" 
-              onClick={handleManageBilling}
-              disabled={billingPortalMutation.isPending || !canUpdate}
-            >
-              {billingPortalMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-              <ExternalLink className="w-4 h-4" />
-              Gerenciar Cobrança e Faturas
-            </Button>
-
-            {!subscription.cancelAtPeriodEnd && subscription.status !== 'canceled' && canUpdate && (
-              <>
-                <div className="relative py-2">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">
-                      Zona de Perigo
-                    </span>
-                  </div>
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Detalhes da Assinatura</span>
+                <Badge variant={getStatusColor(subscription.status) as any}>
+                  {getStatusLabel(subscription.status)}
+                </Badge>
+              </CardTitle>
+              <CardDescription>Informações sobre seu plano atual</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-muted-foreground" />
+                  <span className="font-medium">Plano Atual</span>
                 </div>
+                <span className="text-lg font-bold">{subscription.planName}</span>
+              </div>
 
-                <AlertDialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
-                  <AlertDialogTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
-                    >
-                      Cancelar Assinatura
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Tem certeza que deseja cancelar?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Ao cancelar, você perderá acesso aos recursos premium ao final do período atual ({formatDate(subscription.currentPeriodEnd)}).
-                        Esta ação pode ser desfeita entrando em contato com o suporte antes do término do período.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Voltar</AlertDialogCancel>
-                      <AlertDialogAction 
-                        onClick={handleCancelSubscription}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        disabled={cancelMutation.isPending}
+              <Separator />
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-muted-foreground" />
+                  <span className="font-medium">Próxima Renovação</span>
+                </div>
+                <span>{formatDate(subscription.currentPeriodEnd)}</span>
+              </div>
+
+              <Separator />
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-muted-foreground" />
+                  <span className="font-medium">Dias Restantes</span>
+                </div>
+                <Badge variant="outline" className="text-base px-3 py-1">
+                  {subscription.daysRemaining} dias
+                </Badge>
+              </div>
+
+              {subscription.isTrial && (
+                <div className="mt-4 p-4 bg-secondary/20 rounded-lg border border-secondary text-secondary-foreground text-sm">
+                  Seu período de teste acaba em {subscription.trialEndsAt ? formatDate(subscription.trialEndsAt) : "breve"}.
+                </div>
+              )}
+
+              {subscription.cancelAtPeriodEnd && (
+                <div className="mt-4 p-4 bg-destructive/10 rounded-lg border border-destructive/20 text-destructive text-sm font-medium">
+                  Sua assinatura foi cancelada e encerrará em {formatDate(subscription.currentPeriodEnd)}.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Ações</CardTitle>
+              <CardDescription>Gerencie sua assinatura</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Gerencie seus métodos de pagamento e faturas diretamente no nosso portal seguro.
+              </p>
+
+              <Button
+                className="w-full gap-2"
+                onClick={handleManageBilling}
+                disabled={billingPortalMutation.isPending || !canUpdate}
+              >
+                {billingPortalMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                <ExternalLink className="w-4 h-4" />
+                Gerenciar Cobrança e Faturas
+              </Button>
+
+              {!subscription.cancelAtPeriodEnd && subscription.status !== 'canceled' && canUpdate && (
+                <>
+                  <div className="relative py-2">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">
+                        Zona de Perigo
+                      </span>
+                    </div>
+                  </div>
+
+                  <AlertDialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
                       >
-                        {cancelMutation.isPending ? (
-                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        ) : null}
-                        Confirmar Cancelamento
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </>
-            )}
-          </CardContent>
-        </Card>
+                        Cancelar Assinatura
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Tem certeza que deseja cancelar?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Ao cancelar, você perderá acesso aos recursos premium ao final do período atual ({formatDate(subscription.currentPeriodEnd)}).
+                          Esta ação pode ser desfeita entrando em contato com o suporte antes do término do período.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Voltar</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleCancelSubscription}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          disabled={cancelMutation.isPending}
+                        >
+                          {cancelMutation.isPending ? (
+                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                          ) : null}
+                          Confirmar Cancelamento
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </PermissionGate>
   );
 }

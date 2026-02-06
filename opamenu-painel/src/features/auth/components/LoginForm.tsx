@@ -42,9 +42,9 @@ export function LoginForm() {
       if (!loginResponse.succeeded) {
         throw loginResponse;
       }
-      
+
       // 2. Set Token immediately to be available for the next request
-      setAccessToken(loginResponse.data.accessToken);
+      setAccessToken(loginResponse.data.accessToken, loginResponse.data.refreshToken);
 
       // 3. Fetch Permissions
       const permissionsResponse = await authService.getPermissions();
@@ -57,12 +57,12 @@ export function LoginForm() {
     onSuccess: (data) => {
       // 4. Store User Info
       setUser(data.permissionsResponse.data);
-      
+
       // 5. Navigate
       navigate("/dashboard");
     },
     onError: (err) => {
-      setAccessToken(""); // Clear token if anything fails
+      setAccessToken("", ""); // Clear token if anything fails
       setError(err);
     },
   });

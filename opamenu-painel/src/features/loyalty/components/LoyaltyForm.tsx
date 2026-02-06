@@ -44,9 +44,10 @@ interface LoyaltyFormProps {
   initialData?: LoyaltyProgram | null;
   onSubmit: (data: FormValues) => void;
   isLoading?: boolean;
+  readOnly?: boolean;
 }
 
-export function LoyaltyForm({ initialData, onSubmit, isLoading }: LoyaltyFormProps) {
+export function LoyaltyForm({ initialData, onSubmit, isLoading, readOnly }: LoyaltyFormProps) {
   const { toast } = useToast();
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema) as any,
@@ -99,10 +100,11 @@ export function LoyaltyForm({ initialData, onSubmit, isLoading }: LoyaltyFormPro
                   </div>
                   <FormControl>
                     <Switch
+                      disabled={readOnly}
                       checked={field.value}
                       onCheckedChange={async (checked) => {
                         field.onChange(checked);
-                        
+
                         // Se já existe um ID (edição), chama o endpoint de toggle imediatamente
                         if (initialData?.id) {
                           try {
@@ -136,7 +138,7 @@ export function LoyaltyForm({ initialData, onSubmit, isLoading }: LoyaltyFormPro
                   <FormItem>
                     <FormLabel>Nome do Programa</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ex: Clube de Vantagens" {...field} />
+                      <Input placeholder="Ex: Clube de Vantagens" {...field} disabled={readOnly} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -149,7 +151,7 @@ export function LoyaltyForm({ initialData, onSubmit, isLoading }: LoyaltyFormPro
                   <FormItem>
                     <FormLabel>R$ - Moeda por ponto</FormLabel>
                     <FormControl>
-                      <Input step="0.1" {...field} placeholder="Ex: 1 real valeu 1 ponto" />
+                      <Input step="0.1" {...field} placeholder="Ex: 1 real valeu 1 ponto" disabled={readOnly} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -163,7 +165,7 @@ export function LoyaltyForm({ initialData, onSubmit, isLoading }: LoyaltyFormPro
                   <FormItem>
                     <FormLabel>Pontos por moeda</FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.1" {...field} />
+                      <Input type="number" step="0.1" {...field} disabled={readOnly} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -182,6 +184,7 @@ export function LoyaltyForm({ initialData, onSubmit, isLoading }: LoyaltyFormPro
                       placeholder="Descreva os benefícios do programa..."
                       className="resize-none"
                       {...field}
+                      disabled={readOnly}
                     />
                   </FormControl>
                   <FormMessage />
@@ -197,11 +200,12 @@ export function LoyaltyForm({ initialData, onSubmit, isLoading }: LoyaltyFormPro
                   <FormItem>
                     <FormLabel>Valor Mínimo do Pedido (R$)</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="number" 
-                        step="0.01" 
+                      <Input
+                        type="number"
+                        step="0.01"
                         {...field}
                         onChange={e => field.onChange(Number(e.target.value))}
+                        disabled={readOnly}
                       />
                     </FormControl>
                     <FormDescription>
@@ -219,14 +223,15 @@ export function LoyaltyForm({ initialData, onSubmit, isLoading }: LoyaltyFormPro
                   <FormItem>
                     <FormLabel>Validade dos Pontos (dias)</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="number" 
-                        {...field} 
-                        value={field.value ?? ""} 
+                      <Input
+                        type="number"
+                        {...field}
+                        value={field.value ?? ""}
                         onChange={(e) => {
                           const val = e.target.value === "" ? undefined : Number(e.target.value);
                           field.onChange(val);
                         }}
+                        disabled={readOnly}
                       />
                     </FormControl>
                     <FormDescription>
@@ -238,12 +243,14 @@ export function LoyaltyForm({ initialData, onSubmit, isLoading }: LoyaltyFormPro
               />
             </div>
 
-            <div className="flex justify-end">
-              <Button type="submit" disabled={isLoading}>
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Salvar Configurações
-              </Button>
-            </div>
+            {!readOnly && (
+              <div className="flex justify-end">
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Salvar Configurações
+                </Button>
+              </div>
+            )}
           </form>
         </Form>
       </CardContent>

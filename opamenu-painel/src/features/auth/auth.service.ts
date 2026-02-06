@@ -1,5 +1,5 @@
-import { apiAuth } from "@/lib/axios";
-import type { AuthResponse, LoginRequest, PermissionsResponse, RegisterTenantRequest, PlanDto } from "./types";
+import { apiAuth, api } from "@/lib/axios";
+import type { AuthResponse, LoginRequest, PermissionsResponse, RegisterTenantRequest, PlanDto, LoginResponse } from "./types";
 import type { RegisterFormData } from "./validation";
 
 export const authService = {
@@ -9,38 +9,44 @@ export const authService = {
   },
 
   register: async (data: RegisterFormData): Promise<ApiResponse<any>> => {
-        const payload: RegisterTenantRequest = {
-            companyName: data.companyName,
-            document: data.document,
-            firstName: data.firstName,
-            lastName: data.lastName,
-            email: data.email,
-            password: data.password,
-            confirmPassword: data.confirmPassword
-        };
-        const response = await apiAuth.post<ApiResponse<any>>("/register", payload);
-        return response.data;
-    },
+    const payload: RegisterTenantRequest = {
+      companyName: data.companyName,
+      document: data.document,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      password: data.password,
+      confirmPassword: data.confirmPassword
+    };
+    const response = await apiAuth.post<ApiResponse<any>>("/register", payload);
+    return response.data;
+  },
 
-    getPlans: async (): Promise<PlanDto[]> => {
-        const response = await apiAuth.get<PlanDto[]>("/plans/active");
-        return response.data;
-    },
+  getPlans: async (): Promise<PlanDto[]> => {
+    const response = await apiAuth.get<PlanDto[]>("/plans/active");
+    return response.data;
+  },
 
-    activatePlan: async (planId: string): Promise<ApiResponse<string>> => {
-        const response = await apiAuth.post<ApiResponse<string>>(`/subscription/activate/${planId}`, {});
-        return response.data;
-    },
+  activatePlan: async (planId: string): Promise<ApiResponse<string>> => {
+    const response = await apiAuth.post<ApiResponse<string>>(`/subscription/activate/${planId}`, {});
+    return response.data;
+  },
 
   getPermissions: async (): Promise<PermissionsResponse> => {
     const response = await apiAuth.get<PermissionsResponse>("/auth/me");
     return response.data;
   },
+
+  refreshToken: async (refreshToken: string): Promise<LoginResponse> => {
+    // Calls local API proxy
+    const response = await api.post<LoginResponse>("/auth/refresh-token", { refreshToken });
+    return response.data;
+  },
 };
 
 interface ApiResponse<T> {
-    succeeded: boolean;
-    message: string | null;
-    errors: any[] | null;
-    data: T;
+  succeeded: boolean;
+  message: string | null;
+  errors: any[] | null;
+  data: T;
 }

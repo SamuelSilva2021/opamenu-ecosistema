@@ -4,8 +4,11 @@ import { LoyaltyForm } from "../components/LoyaltyForm";
 import { loyaltyService } from "../loyalty.service";
 import type { CreateLoyaltyProgramRequest, UpdateLoyaltyProgramRequest } from "../types";
 import { Loader2 } from "lucide-react";
+import { usePermission } from "@/hooks/usePermission";
+import { PermissionGate } from "@/components/auth/PermissionGate";
 
 export default function LoyaltyPage() {
+  const { can } = usePermission();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -72,20 +75,29 @@ export default function LoyaltyPage() {
     );
   }
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Fidelidade</h2>
-        <p className="text-muted-foreground">
-          Gerencie o programa de recompensas para seus clientes.
-        </p>
-      </div>
+  const canUpdate = can("LOYALTY", "UPDATE");
 
-      <LoyaltyForm 
-        initialData={program} 
-        onSubmit={handleSubmit} 
-        isLoading={createMutation.isPending || updateMutation.isPending} 
-      />
-    </div>
+  return (
+    <PermissionGate module="LOYALTY" operation="READ" fallback={
+      <div className="flex h-[400px] items-center justify-center">
+        <p className="text-muted-foreground">Você não tem permissão para acessar o programa de fidelidade.</p>
+      </div>
+    }>
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Fidelidade</h2>
+          <p className="text-muted-foreground">
+            Gerencie o programa de recompensas para seus clientes.
+          </p>
+        </div>
+
+        <LoyaltyForm
+          initialData={program}
+          onSubmit={handleSubmit}
+          isLoading={createMutation.isPending || updateMutation.isPending}
+          readOnly={!canUpdate}
+        />
+      </div>
+    </PermissionGate>
   );
 }
