@@ -3,8 +3,13 @@ import { OrderStatus, type Order, type UpdateOrderStatusRequest } from "./types"
 
 export const ordersService = {
   getOrders: async (date?: Date): Promise<Order[]> => {
-    const params = date ? { date: date.toISOString().split('T')[0] } : {};
-    const response = await api.get<Order[]>("/orders", { params });
+    const d = date || new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+
+    const response = await api.get<Order[]>("/orders", { params: { date: dateStr } });
     return response.data;
   },
 

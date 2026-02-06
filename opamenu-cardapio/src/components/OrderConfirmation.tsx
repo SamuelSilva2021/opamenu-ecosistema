@@ -17,7 +17,7 @@ const OrderConfirmation = ({ order, onBackToMenu, onNewOrder }: OrderConfirmatio
   const [currentOrder, setCurrentOrder] = useState<Order | null>(order);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { getOrderById } = useOrder();
-  
+
   useEffect(() => {
     if (!currentOrder?.id) return;
 
@@ -41,7 +41,7 @@ const OrderConfirmation = ({ order, onBackToMenu, onNewOrder }: OrderConfirmatio
   // Função para atualizar manualmente
   const handleRefreshStatus = async () => {
     if (!currentOrder?.id) return;
-    
+
     try {
       setIsRefreshing(true);
       const updatedOrder = await getOrderById(currentOrder.id);
@@ -68,12 +68,12 @@ const OrderConfirmation = ({ order, onBackToMenu, onNewOrder }: OrderConfirmatio
     if (!date) {
       return 'Data não disponível';
     }
-    
+
     const parsedDate = new Date(date);
     if (isNaN(parsedDate.getTime())) {
       return 'Data inválida';
     }
-    
+
     return new Intl.DateTimeFormat('pt-BR', {
       day: '2-digit',
       month: '2-digit',
@@ -146,7 +146,7 @@ const OrderConfirmation = ({ order, onBackToMenu, onNewOrder }: OrderConfirmatio
         return statusStr;
     }
   };
-  
+
   if (!currentOrder) {
     return (
       <div className="max-w-4xl mx-auto p-4 md:p-6">
@@ -186,8 +186,8 @@ const OrderConfirmation = ({ order, onBackToMenu, onNewOrder }: OrderConfirmatio
         <CardHeader className="pb-4 px-4 md:px-6">
           <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <span className="flex items-center gap-2 text-xl">
-              <Package className="h-6 w-6 text-opamenu-green" />  
-              Pedido #{currentOrder.id}
+              <Package className="h-6 w-6 text-opamenu-green" />
+              Pedido #{String(currentOrder.orderNumber || 0).padStart(3, '0')}
             </span>
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <Badge className={`${getStatusColor(currentOrder.status)} text-sm py-1 px-3 flex-1 sm:flex-none justify-center`}>
@@ -205,7 +205,7 @@ const OrderConfirmation = ({ order, onBackToMenu, onNewOrder }: OrderConfirmatio
             </div>
           </CardTitle>
         </CardHeader>
-        
+
         <CardContent className="space-y-6 px-4 md:px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Dados do Cliente */}
@@ -339,16 +339,16 @@ const OrderConfirmation = ({ order, onBackToMenu, onNewOrder }: OrderConfirmatio
 
       {/* Botões de Ação */}
       <div className="flex flex-col sm:flex-row gap-4 pt-2 px-4 md:px-0">
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           onClick={onBackToMenu}
           className="flex items-center justify-center gap-2 flex-1 h-12 text-base order-2 sm:order-1"
         >
           <ArrowLeft className="h-4 w-4" />
           Voltar ao Menu
         </Button>
-        
-        <Button 
+
+        <Button
           onClick={onNewOrder}
           className="flex items-center justify-center gap-2 flex-1 bg-opamenu-green hover:bg-opamenu-green/90 h-12 text-base font-medium shadow-md shadow-green-900/10 order-1 sm:order-2"
         >
@@ -356,7 +356,7 @@ const OrderConfirmation = ({ order, onBackToMenu, onNewOrder }: OrderConfirmatio
           Fazer Novo Pedido
         </Button>
       </div>
-    </div>
+    </div >
   );
 };
 

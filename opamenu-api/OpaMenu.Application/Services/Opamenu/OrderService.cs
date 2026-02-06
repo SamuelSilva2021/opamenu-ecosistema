@@ -57,19 +57,29 @@ public class OrderService(
         try
         {
             IEnumerable<OrderEntity> orders;
-            var tenantId = _currentUserService.GetTenantGuid()!.Value;
+            var tenantGuid = _currentUserService.GetTenantGuid();
+
+            if (!tenantGuid.HasValue)
+            {
+                _logger.LogWarning("Tentativa de buscar pedidos sem TenantId no contexto.");
+                return StaticResponseBuilder<IEnumerable<OrderResponseDto>>.BuildError("Estabelecimento não identificado. Por favor, faça login novamente.");
+            }
+
+            var tenantId = tenantGuid.Value;
 
             if (date.HasValue)
             {
-                var startDate = date.Value.Date;
-                var endDate = date.Value.Date.AddDays(1).AddTicks(-1);
+                var startDate = DateTime.SpecifyKind(date.Value.Date, DateTimeKind.Utc);
+                var endDate = startDate.AddDays(1).AddTicks(-1);
+                _logger.LogInformation("Buscando pedidos para o Tenant {TenantId} na data {Date} (Range: {Start} a {End})", tenantId, date.Value.ToShortDateString(), startDate, endDate);
                 orders = await _orderRepository.GetOrdersByDateRangeAsync(tenantId, startDate, endDate);
             }
             else
             {
-                // Se não informado data, busca somente os de HE (UTC)
-                var startDate = DateTime.UtcNow.Date;
-                var endDate = DateTime.UtcNow.Date.AddDays(1).AddTicks(-1);
+                // Se não informado data, busca somente os de hoje (UTC)
+                var startDate = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
+                var endDate = startDate.AddDays(1).AddTicks(-1);
+                _logger.LogInformation("Buscando pedidos de hoje para o Tenant {TenantId} (Range UTC: {Start} a {End})", tenantId, startDate, endDate);
                 orders = await _orderRepository.GetOrdersByDateRangeAsync(tenantId, startDate, endDate);
             }
 
@@ -80,7 +90,7 @@ public class OrderService(
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao obter pedidos");
-            return StaticResponseBuilder<IEnumerable<OrderResponseDto>>.BuildError("Erro interno do servidor");
+            return StaticResponseBuilder<IEnumerable<OrderResponseDto>>.BuildErrorResponse(ex);
         }
     }
     /// <summary>

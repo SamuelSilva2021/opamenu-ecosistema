@@ -1,4 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { ordersService } from "../orders.service";
 import { OrdersKanban } from "../components/OrdersKanban";
 import { OrderStatus, type Order } from "../types";
@@ -11,12 +22,14 @@ export default function OrdersPage() {
   const { can } = usePermission();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  
+
   const canUpdate = can("ORDER", "UPDATE");
 
+  const [date, setDate] = useState<Date>(new Date());
+
   const { data: orders = [], isLoading, isFetching } = useQuery({
-    queryKey: ["orders"],
-    queryFn: ordersService.getOrders,
+    queryKey: ["orders", date],
+    queryFn: () => ordersService.getOrders(date),
     refetchInterval: 30000, // Poll every 30s
   });
 
@@ -60,9 +73,32 @@ export default function OrdersPage() {
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Pedidos</h2>
         <div className="flex items-center space-x-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant={"outline"}
+                className={cn(
+                  "w-[240px] justify-start text-left font-normal",
+                  !date && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {date ? format(date, "PPP", { locale: ptBR }) : <span>Selecione uma data</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={(d) => d && setDate(d)}
+                initialFocus
+                locale={ptBR}
+              />
+            </PopoverContent>
+          </Popover>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => queryClient.invalidateQueries({ queryKey: ["orders"] })}
             disabled={isFetching}
           >
