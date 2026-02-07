@@ -15,6 +15,7 @@ export interface CartContextType {
   updateQuantity: (itemId: number | string, quantity: number) => void;
   increaseQuantity: (itemId: number | string) => void;
   decreaseQuantity: (itemId: number | string) => void;
+  editCartItem: (itemId: string, selection: ProductSelection) => void;
   clearCart: () => void;
   getItemQuantity: (productId: string) => number;
   applyCoupon: (coupon: Coupon) => void;
@@ -39,11 +40,11 @@ const calculateUnitPrice = (basePrice: number, selectedAddons: any[] = []): numb
 // Helper para comparar addons
 const areAddonsEqual = (addons1: any[] = [], addons2: any[] = []) => {
   if (addons1.length !== addons2.length) return false;
-  
+
   // Ordenar para garantir comparação consistente
   const sorted1 = [...addons1].sort((a, b) => a.addon.id.localeCompare(b.addon.id));
   const sorted2 = [...addons2].sort((a, b) => a.addon.id.localeCompare(b.addon.id));
-  
+
   return sorted1.every((item, index) => {
     const item2 = sorted2[index];
     return item.addon.id === item2.addon.id && item.quantity === item2.quantity;
@@ -56,7 +57,7 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
   const [items, setItems] = useState<CartItem[]>([]);
   const [coupon, setCoupon] = useState<Coupon | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  
+
   const storageKey = slug ? `opamenu-cart-${slug}` : CART_STORAGE_KEY;
 
   // Carregar carrinho do localStorage
@@ -67,8 +68,8 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
         const parsedCart = JSON.parse(savedCart);
         // Migração: garantir que itens antigos tenham ID se possível
         const migratedCart = parsedCart.map((item: CartItem) => ({
-            ...item,
-            cartItemId: item.cartItemId || generateCartItemId()
+          ...item,
+          cartItemId: item.cartItemId || generateCartItemId()
         }));
         setItems(migratedCart);
       } else {
@@ -96,7 +97,7 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
   // Helper para encontrar item
   const findItemIndex = useCallback((currentItems: CartItem[], itemId: string) => {
     if (typeof itemId === 'string') {
-        return currentItems.findIndex(item => item.cartItemId === itemId);
+      return currentItems.findIndex(item => item.cartItemId === itemId);
     }
     return currentItems.findIndex(item => item.product.id === itemId);
   }, []);
@@ -109,19 +110,19 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
     const totalPrice = unitPrice * quantity;
 
     setItems(currentItems => {
-      const existingItemIndex = currentItems.findIndex(item => 
+      const existingItemIndex = currentItems.findIndex(item =>
         item.product.id === product.id && (!item.selectedAddons || item.selectedAddons.length === 0)
       );
-      
+
       if (existingItemIndex >= 0) {
         // Atualizar item existente
         return currentItems.map((item, index) =>
           index === existingItemIndex
-            ? { 
-                ...item, 
-                quantity: item.quantity + quantity,
-                totalPrice: item.unitPrice * (item.quantity + quantity)
-              }
+            ? {
+              ...item,
+              quantity: item.quantity + quantity,
+              totalPrice: item.unitPrice * (item.quantity + quantity)
+            }
             : item
         );
       } else {
@@ -142,31 +143,31 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
   // Adicionar produto com adicionais ao carrinho
   const addProductSelection = useCallback((selection: ProductSelection) => {
     const { product, selectedAddons, quantity } = selection;
-    
+
     if (quantity <= 0) return;
 
     const unitPrice = calculateUnitPrice(product.price, selectedAddons);
     const totalPrice = unitPrice * quantity;
 
     setItems(currentItems => {
-        // Verificar se já existe um item com os mesmos adicionais
-        const existingItemIndex = currentItems.findIndex(item => 
-            item.product.id === product.id && 
-            areAddonsEqual(item.selectedAddons, selectedAddons)
-        );
+      // Verificar se já existe um item com os mesmos adicionais
+      const existingItemIndex = currentItems.findIndex(item =>
+        item.product.id === product.id &&
+        areAddonsEqual(item.selectedAddons, selectedAddons)
+      );
 
-        if (existingItemIndex >= 0) {
-            // Atualizar item existente
-            return currentItems.map((item, index) =>
-              index === existingItemIndex
-                ? { 
-                    ...item, 
-                    quantity: item.quantity + quantity,
-                    totalPrice: item.unitPrice * (item.quantity + quantity)
-                  }
-                : item
-            );
-        }
+      if (existingItemIndex >= 0) {
+        // Atualizar item existente
+        return currentItems.map((item, index) =>
+          index === existingItemIndex
+            ? {
+              ...item,
+              quantity: item.quantity + quantity,
+              totalPrice: item.unitPrice * (item.quantity + quantity)
+            }
+            : item
+        );
+      }
 
       const newItem: CartItem = {
         cartItemId: generateCartItemId(),
@@ -176,18 +177,60 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
         unitPrice,
         totalPrice,
       };
-      
+
       return [...currentItems, newItem];
+    });
+  }, []);
+
+  // Editar item do carrinho
+  const editCartItem = useCallback((itemId: string, selection: ProductSelection) => {
+    // 1. Remove old item
+    setItems(currentItems => {
+      const filtered = currentItems.filter(item => item.cartItemId !== itemId);
+
+      // 2. Add as new item (reuse logic from addProductSelection but on filtered list)
+      const { product, selectedAddons, quantity } = selection;
+      const unitPrice = calculateUnitPrice(product.price, selectedAddons);
+      const totalPrice = unitPrice * quantity;
+
+      // Check for existing item to merge
+      const existingItemIndex = filtered.findIndex(item =>
+        item.product.id === product.id &&
+        areAddonsEqual(item.selectedAddons, selectedAddons)
+      );
+
+      if (existingItemIndex >= 0) {
+        return filtered.map((item, index) =>
+          index === existingItemIndex
+            ? {
+              ...item,
+              quantity: item.quantity + quantity,
+              totalPrice: item.unitPrice * (item.quantity + quantity)
+            }
+            : item
+        );
+      }
+
+      const newItem: CartItem = {
+        cartItemId: generateCartItemId(), // Generate new ID to avoid conflicts
+        product,
+        quantity,
+        selectedAddons,
+        unitPrice,
+        totalPrice,
+      };
+
+      return [...filtered, newItem];
     });
   }, []);
 
   // Remover produto do carrinho
   const removeFromCart = useCallback((itemId: string) => {
     setItems(currentItems => {
-        if (typeof itemId === 'string') {
-            return currentItems.filter(item => item.cartItemId !== itemId);
-        }
-        return currentItems.filter(item => item.product.id !== itemId);
+      if (typeof itemId === 'string') {
+        return currentItems.filter(item => item.cartItemId !== itemId);
+      }
+      return currentItems.filter(item => item.product.id !== itemId);
     });
   }, []);
 
@@ -200,16 +243,16 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
 
     setItems(currentItems =>
       currentItems.map(item => {
-        const isTarget = typeof itemId === 'string' 
-            ? item.cartItemId === itemId 
-            : item.product.id === itemId;
+        const isTarget = typeof itemId === 'string'
+          ? item.cartItemId === itemId
+          : item.product.id === itemId;
 
         return isTarget
-          ? { 
-              ...item, 
-              quantity,
-              totalPrice: item.unitPrice * quantity
-            }
+          ? {
+            ...item,
+            quantity,
+            totalPrice: item.unitPrice * quantity
+          }
           : item;
       })
     );
@@ -219,16 +262,16 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
   const increaseQuantity = useCallback((itemId: string) => {
     setItems(currentItems =>
       currentItems.map(item => {
-        const isTarget = typeof itemId === 'string' 
-            ? item.cartItemId === itemId 
-            : item.product.id === itemId;
+        const isTarget = typeof itemId === 'string'
+          ? item.cartItemId === itemId
+          : item.product.id === itemId;
 
         return isTarget
-          ? { 
-              ...item, 
-              quantity: item.quantity + 1,
-              totalPrice: item.unitPrice * (item.quantity + 1)
-            }
+          ? {
+            ...item,
+            quantity: item.quantity + 1,
+            totalPrice: item.unitPrice * (item.quantity + 1)
+          }
           : item;
       })
     );
@@ -238,9 +281,9 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
   const decreaseQuantity = useCallback((itemId: string) => {
     setItems(currentItems =>
       currentItems.map(item => {
-        const isTarget = typeof itemId === 'string' 
-            ? item.cartItemId === itemId 
-            : item.product.id === itemId;
+        const isTarget = typeof itemId === 'string'
+          ? item.cartItemId === itemId
+          : item.product.id === itemId;
 
         if (isTarget) {
           const newQuantity = item.quantity - 1;
@@ -289,7 +332,7 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
 
   const discount = useMemo(() => {
     if (!coupon) return 0;
-    
+
     if (coupon.eDiscountType === EDiscountType.Porcentagem) {
       return (subtotal * coupon.discountValue) / 100;
     } else {
@@ -314,6 +357,7 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
     updateQuantity,
     increaseQuantity,
     decreaseQuantity,
+    editCartItem,
     clearCart,
     getItemQuantity,
     applyCoupon,

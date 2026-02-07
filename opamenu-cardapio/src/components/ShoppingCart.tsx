@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Plus, Minus, ShoppingBag, Tag, Loader2 } from "lucide-react";
+import { X, Plus, Minus, ShoppingBag, Tag, Loader2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -21,13 +21,14 @@ interface ShoppingCartProps {
   onApplyCoupon: (coupon: Coupon) => void;
   onRemoveCoupon: () => void;
   onValidateCoupon: (code: string) => Promise<boolean>;
+  onEditItem?: (item: CartItem) => void;
 }
 
-const ShoppingCart = ({ 
-  isOpen, 
-  onClose, 
-  cartItems, 
-  onUpdateQuantity, 
+const ShoppingCart = ({
+  isOpen,
+  onClose,
+  cartItems,
+  onUpdateQuantity,
   onRemoveItem,
   onCheckout,
   subtotal,
@@ -36,7 +37,8 @@ const ShoppingCart = ({
   coupon,
   onApplyCoupon,
   onRemoveCoupon,
-  onValidateCoupon
+  onValidateCoupon,
+  onEditItem
 }: ShoppingCartProps) => {
   const [couponCode, setCouponCode] = useState("");
   const [isValidating, setIsValidating] = useState(false);
@@ -44,10 +46,10 @@ const ShoppingCart = ({
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
-    
+
     setIsValidating(true);
     setCouponError("");
-    
+
     try {
       const isValid = await onValidateCoupon(couponCode);
       if (isValid) {
@@ -79,16 +81,15 @@ const ShoppingCart = ({
     <>
       {/* Backdrop - apenas para dispositivos móveis */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm md:hidden"
           onClick={onClose}
         />
       )}
-      
+
       {/* Cart Panel */}
-      <div className={`fixed right-0 top-0 h-full w-[80vw] sm:w-[400px] max-w-md bg-card shadow-2xl z-50 transform transition-transform duration-300 border-l ${
-        isOpen ? 'translate-x-0' : 'translate-x-full'
-      }`}>
+      <div className={`fixed right-0 top-0 h-full w-[80vw] sm:w-[400px] max-w-md bg-card shadow-2xl z-50 transform transition-transform duration-300 border-l ${isOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}>
         <div className="h-full rounded-none flex flex-col">
           <div className="flex flex-row items-center justify-between p-6 border-b bg-card">
             <div className="flex items-center gap-2">
@@ -127,8 +128,8 @@ const ShoppingCart = ({
                       <div className="flex gap-3">
                         <div className="w-16 h-16 bg-muted rounded-lg overflow-hidden flex-shrink-0">
                           {item.product.imageUrl ? (
-                            <img 
-                              src={item.product.imageUrl} 
+                            <img
+                              src={item.product.imageUrl}
                               alt={item.product.name}
                               className="w-full h-full object-cover"
                             />
@@ -138,7 +139,7 @@ const ShoppingCart = ({
                             </div>
                           )}
                         </div>
-                        
+
                         <div className="flex-1 min-w-0 flex flex-col justify-center">
                           <h4 className="font-medium text-foreground line-clamp-2 text-sm">
                             {item.product.name}
@@ -149,10 +150,26 @@ const ShoppingCart = ({
                         </div>
 
                         <div className="flex items-start gap-1">
-                           <Button
+                          {onEditItem && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onEditItem(item);
+                              }}
+                              className="text-muted-foreground hover:text-primary hover:bg-primary/10 h-8 w-8 -mt-1"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          )}
+                          <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => onRemoveItem(item.cartItemId || item.product.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onRemoveItem(item.cartItemId || item.product.id);
+                            }}
                             className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8 -mt-1 -mr-1"
                           >
                             <X className="h-4 w-4" />
@@ -185,7 +202,10 @@ const ShoppingCart = ({
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => onUpdateQuantity(item.cartItemId || item.product.id, item.quantity - 1)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onUpdateQuantity(item.cartItemId || item.product.id, item.quantity - 1);
+                            }}
                             className="h-8 w-8 p-0"
                           >
                             <Minus className="h-3 w-3" />
@@ -195,7 +215,10 @@ const ShoppingCart = ({
                           </span>
                           <Button
                             size="sm"
-                            onClick={() => onUpdateQuantity(item.cartItemId || item.product.id, item.quantity + 1)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onUpdateQuantity(item.cartItemId || item.product.id, item.quantity + 1);
+                            }}
                             className="h-8 w-8 p-0 bg-opamenu-orange hover:bg-opamenu-orange/90"
                           >
                             <Plus className="h-3 w-3" />
@@ -221,9 +244,9 @@ const ShoppingCart = ({
                             </p>
                           </div>
                         </div>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={onRemoveCoupon}
                           className="text-red-500 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0"
                         >
@@ -239,8 +262,8 @@ const ShoppingCart = ({
                           className="h-9"
                           disabled={isValidating}
                         />
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           onClick={handleApplyCoupon}
                           disabled={!couponCode || isValidating}
                           className="h-9"
@@ -274,7 +297,7 @@ const ShoppingCart = ({
                     </div>
                   </div>
 
-                  <Button 
+                  <Button
                     className="w-full bg-opamenu-orange hover:bg-opamenu-orange/90 text-white font-semibold py-4 text-lg transition-all duration-200 hover:shadow-lg"
                     size="lg"
                     onClick={onCheckout}

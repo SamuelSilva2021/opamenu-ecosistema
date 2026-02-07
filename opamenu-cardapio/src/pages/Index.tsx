@@ -12,6 +12,7 @@ import BottomNavigation from "@/components/BottomNavigation";
 import { couponService } from "@/services/coupon-service";
 import { useCart, useProductModal, useStorefront, useCustomer } from "@/hooks";
 import { Product } from "@/types/api";
+import { CartItem } from "@/types/cart";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, ShoppingCart as ShoppingCartIcon, Loader2, ChevronDown } from "lucide-react";
@@ -38,6 +39,7 @@ const StorefrontContent = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isOrdersModalOpen, setIsOrdersModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<CartItem | null>(null);
 
   // Usar hooks customizados para dados da API
   const {
@@ -64,7 +66,8 @@ const StorefrontContent = () => {
     updateQuantity,
     clearCart,
     applyCoupon,
-    removeCoupon
+    removeCoupon,
+    editCartItem
   } = useCart();
 
   // Hook para gerenciar modal de produto
@@ -378,6 +381,10 @@ const StorefrontContent = () => {
               onRemoveItem={removeFromCart}
               onClearCart={clearCart}
               onCheckout={() => setIsCheckoutMode(true)}
+              onEditItem={(item) => {
+                setEditingItem(item);
+                openProductModal(item.product.id);
+              }}
             />
           </div>
         </div>
@@ -420,11 +427,23 @@ const StorefrontContent = () => {
       {selectedProduct && (
         <ProductModal
           isOpen={isModalOpen}
-          onClose={closeProductModal}
-          product={selectedProduct}
-          onAddToCart={(selection) => {
-            addProductSelection(selection);
+          onClose={() => {
             closeProductModal();
+            setEditingItem(null);
+          }}
+          product={selectedProduct}
+          initialSelectedAddons={editingItem?.selectedAddons}
+          initialQuantity={editingItem?.quantity}
+          confirmLabel={editingItem ? "Atualizar" : "Adicionar"}
+          onAddToCart={(selection) => {
+            if (editingItem && editingItem.cartItemId) {
+              editCartItem(editingItem.cartItemId, selection);
+              setIsCartOpen(true);
+            } else {
+              addProductSelection(selection);
+            }
+            closeProductModal();
+            setEditingItem(null);
           }}
         />
       )}
@@ -435,6 +454,11 @@ const StorefrontContent = () => {
         cartItems={cartItems}
         onUpdateQuantity={updateQuantity}
         onRemoveItem={removeFromCart}
+        onEditItem={(item) => {
+          setEditingItem(item);
+          openProductModal(item.product.id);
+          setIsCartOpen(false); // Close cart to show modal? Or keep it open? Usually standard to close cart overlap.
+        }}
         onCheckout={() => {
           setIsCartOpen(false);
           setIsCheckoutMode(true);
