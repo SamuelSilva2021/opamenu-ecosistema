@@ -17,6 +17,6 @@ namespace OpaMenu.Domain.DTOs
         [StringLength(500)]
         public string? Notes { get; set; }
         
-        public List<CreateOrderItemAddonRequestDto> Addons { get; set; } = new();
+        public List<CreateOrderItemAditionalRequestDto> Aditionals { get; set; } = new();
     }
 }

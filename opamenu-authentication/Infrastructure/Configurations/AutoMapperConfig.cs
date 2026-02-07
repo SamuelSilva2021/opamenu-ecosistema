@@ -1,7 +1,5 @@
 using Authenticator.API.Infrastructure.Mapper.AccessControl.AccessGroup;
 using Authenticator.API.Infrastructure.Mapper.AccessControl.Module;
-using Authenticator.API.Infrastructure.Mapper.AccessControl.Operation;
-using Authenticator.API.Infrastructure.Mapper.AccessControl.Permissions;
 using Authenticator.API.Infrastructure.Mapper.AccessControl.Roles;
 using Authenticator.API.Infrastructure.Mapper.AccessControl.UserAccount;
 using Authenticator.API.Infrastructure.Mapper.MultiTenant;
@@ -28,10 +26,7 @@ namespace Authenticator.API.Infrastructure.Configurations
                 cfg.AddProfile<SubscriptionProfile>();
                 cfg.AddProfile<AccessGroupProfile>();
                 cfg.AddProfile<GroupTypeProfile>();
-                cfg.AddProfile<PermissionProfile>();
-                cfg.AddProfile<PermissionOperationProfile>();
                 cfg.AddProfile<ModuleProfile>();
-                cfg.AddProfile<OperationProfile>();
                 cfg.AddProfile<RoleProfile>();
             });
         }

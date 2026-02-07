@@ -20,7 +20,7 @@ namespace OpaMenu.Application.Services.Opamenu;
 public class ProductService(
     IProductRepository productRepository,
     ICategoryRepository categoryRepository,
-    IProductAddonGroupService productAddonGroupService,
+    IProductAditionalGroupService productAditionalGroupService,
     IMapper mapper,
     ICurrentUserService currentUserService,
     ITenantRepository tenantRepository,
@@ -30,7 +30,7 @@ public class ProductService(
 {
     private readonly IProductRepository _productRepository = productRepository;
     private readonly ICategoryRepository _categoryRepository = categoryRepository;
-    private readonly IProductAddonGroupService _productAddonGroupService = productAddonGroupService;
+    private readonly IProductAditionalGroupService _productAditionalGroupService = productAditionalGroupService;
     private readonly IMapper _mapper = mapper;
     private readonly ICurrentUserService _currentUserService = currentUserService;
     private readonly ITenantRepository _tenantRepository = tenantRepository;
@@ -319,28 +319,28 @@ public class ProductService(
 
             var result = await UpdateProductAsync(updatedProduct);
 
-            if (request.AddonGroups != null)
+            if (request.AditionalGroups != null)
             {
-                var currentGroups = await _productAddonGroupService.GetProductAddonGroupsAsync(id);
-                var currentGroupIds = currentGroups.Data!.Select(g => g.AddonGroupId).ToList();
+                var currentGroups = await _productAditionalGroupService.GetProductAditionalGroupsAsync(id);
+                var currentGroupIds = currentGroups.Data!.Select(g => g.AditionalGroupId).ToList();
 
-                var groupsToRemove = currentGroupIds.Except(request.AddonGroups.Select(g => g.AddonGroupId));
+                var groupsToRemove = currentGroupIds.Except(request.AditionalGroups.Select(g => g.AditionalGroupId));
                 if (groupsToRemove.Any())
                 {
-                    await _productAddonGroupService.BulkRemoveAddonGroupsFromProductAsync(id, groupsToRemove);
+                    await _productAditionalGroupService.BulkRemoveAditionalGroupsFromProductAsync(id, groupsToRemove);
                 }
 
-                var newGroups = request.AddonGroups.Where(g => !currentGroupIds.Contains(g.AddonGroupId));
+                var newGroups = request.AditionalGroups.Where(g => !currentGroupIds.Contains(g.AditionalGroupId));
                 if (newGroups.Any())
                 {
-                    await _productAddonGroupService.BulkAddAddonGroupsToProductAsync(id, newGroups);
+                    await _productAditionalGroupService.BulkAddAditionalGroupsToProductAsync(id, newGroups);
                 }
 
                 // Atualizar grupos existentes
-                var groupsToUpdate = request.AddonGroups.Where(g => currentGroupIds.Contains(g.AddonGroupId));
+                var groupsToUpdate = request.AditionalGroups.Where(g => currentGroupIds.Contains(g.AditionalGroupId));
                 foreach (var groupUpdate in groupsToUpdate)
                 {
-                    var updateRequest = new UpdateProductAddonGroupRequestDto
+                    var updateRequest = new UpdateProductAditionalGroupRequestDto
                     {
                         DisplayOrder = groupUpdate.DisplayOrder,
                         IsRequired = groupUpdate.IsRequired,
@@ -348,8 +348,8 @@ public class ProductService(
                         MaxSelectionsOverride = groupUpdate.MaxSelectionsOverride
                     };
 
-                    await _productAddonGroupService.UpdateProductAddonGroupAsync(
-                        id, groupUpdate.AddonGroupId, updateRequest);
+                    await _productAditionalGroupService.UpdateProductAditionalGroupAsync(
+                        id, groupUpdate.AditionalGroupId, updateRequest);
                 }
             }
             var productDto = _mapper.Map<ProductDto>(result.Data);

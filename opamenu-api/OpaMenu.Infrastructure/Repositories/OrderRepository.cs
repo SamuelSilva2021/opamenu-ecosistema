@@ -78,21 +78,21 @@ public class OrderRepository(OpamenuDbContext context) : OpamenuRepository<Order
     }
     
     /// <summary>
-    /// ObtÃ©m pedidos ativos que contÃªm um ProductAddonGroup especÃ­fico
+    /// ObtÃ©m pedidos ativos que contÃªm um ProductAditionalGroup especÃ­fico
     /// </summary>
-    /// <param name="productAddonGroupId">ID do ProductAddonGroup</param>
-    /// <returns>ColeÃ§Ã£o de pedidos ativos com o ProductAddonGroup</returns>
-    public async Task<IEnumerable<OrderEntity>> GetActiveOrdersWithProductAddonGroupAsync(Guid productAddonGroupId)
+    /// <param name="productAditionalGroupId">ID do ProductAditionalGroup</param>
+    /// <returns>ColeÃ§Ã£o de pedidos ativos com o ProductAditionalGroup</returns>
+    public async Task<IEnumerable<OrderEntity>> GetActiveOrdersWithProductAditionalGroupAsync(Guid productAditionalGroupId)
     {
         return await _dbSet
             .Where(o => o.Status != EOrderStatus.Cancelled && 
                        o.Status != EOrderStatus.Delivered &&
-                       o.Items.Any(i => i.Addons.Any(a => a.Addon.AddonGroupId == productAddonGroupId)))
+                       o.Items.Any(i => i.Aditionals.Any(a => a.Aditional.AditionalGroupId == productAditionalGroupId)))
             .Include(o => o.Items)
                 .ThenInclude(i => i.Product)
             .Include(o => o.Items)
-                .ThenInclude(i => i.Addons)
-                    .ThenInclude(a => a.Addon)
+                .ThenInclude(i => i.Aditionals)
+                    .ThenInclude(a => a.Aditional)
             .Include(o => o.StatusHistory)
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync();

@@ -4,8 +4,8 @@ import RegisterPage from '@/pages/auth/RegisterPage'
 import PlansPage from '@/pages/payment/PlansPage'
 import DashboardLayout from '@/layouts/DashboardLayout'
 import DashboardPage from '@/pages/dashboard/DashboardPage'
-import AddonGroupsPage from '@/features/addons/pages/AddonGroupsPage'
-import AddonsPage from '@/features/addons/pages/AddonsPage'
+import AditionalGroupsPage from '@/features/aditionals/pages/AditionalGroupsPage'
+import AditionalsPage from '@/features/aditionals/pages/AditionalsPage'
 import CategoriesPage from '@/features/categories/pages/CategoriesPage'
 import ProductsPage from '@/features/products/pages/ProductsPage'
 import SettingsPage from '@/features/settings/pages/SettingsPage'
@@ -24,15 +24,15 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/plans" element={<PlansPage />} />
         <Route path="/payment-required" element={<PlansPage />} />
-        
+
         {/* Rotas Protegidas */}
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardPage />} />
           <Route path="pos" element={<POSPage />} />
           <Route path="products" element={<ProductsPage />} />
           <Route path="categories" element={<CategoriesPage />} />
-          <Route path="addons" element={<AddonsPage />} />
-          <Route path="addon-groups" element={<AddonGroupsPage />} />
+          <Route path="aditionals" element={<AditionalsPage />} />
+          <Route path="aditional-groups" element={<AditionalGroupsPage />} />
           <Route path="coupons" element={<CouponsPage />} />
           <Route path="orders" element={<OrdersPage />} />
           <Route path="customers" element={<CustomersPage />} />

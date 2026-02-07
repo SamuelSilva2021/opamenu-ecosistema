@@ -1,12 +1,11 @@
-export interface ProductAddonGroupResponse {
+export interface ProductAditionalGroupResponse {
   id: string;
   productId: string;
-  addonGroupId: string;
-  addonGroup: {
+  aditionalGroupId: string;
+  aditionalGroup: {
     id: string;
     name: string;
     description?: string;
-    // Add other fields as needed based on AddonGroupResponseDto
   };
   displayOrder: number;
   isRequired: boolean;
@@ -26,11 +25,11 @@ export interface Product {
   displayOrder: number;
   createdAt: string;
   updatedAt: string;
-  addonGroups: ProductAddonGroupResponse[];
+  aditionalGroups: ProductAditionalGroupResponse[];
 }
 
-export interface AddProductAddonGroupRequest {
-  addonGroupId: string;
+export interface AddProductAditionalGroupRequest {
+  aditionalGroupId: string;
   displayOrder: number;
   isRequired: boolean;
   minSelectionsOverride?: number;
@@ -45,7 +44,7 @@ export interface CreateProductRequest {
   imageUrl?: string;
   isActive: boolean;
   displayOrder: number;
-  addonGroups?: AddProductAddonGroupRequest[];
+  aditionalGroups?: AddProductAditionalGroupRequest[];
 }
 
 export interface UpdateProductRequest {
@@ -56,10 +55,10 @@ export interface UpdateProductRequest {
   imageUrl?: string;
   isActive: boolean;
   displayOrder: number;
-  addonGroups?: AddProductAddonGroupRequest[];
+  aditionalGroups?: AddProductAditionalGroupRequest[];
 }
 
-export interface UpdateProductAddonGroupRequest {
+export interface UpdateProductAditionalGroupRequest {
   displayOrder: number;
   isRequired: boolean;
   minSelectionsOverride?: number;

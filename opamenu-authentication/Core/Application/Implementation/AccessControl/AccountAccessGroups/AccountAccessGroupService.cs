@@ -34,27 +34,11 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Accoun
         {
             try
             {
-                var tenantId = _userContext.CurrentUser?.TenantId;
-                if (!tenantId.HasValue)
-                {
-                    return ResponseBuilder<IEnumerable<AccessGroupDTO>>
-                        .Fail(new ErrorDTO { Message = "Tenant não identificado" })
-                        .WithCode(400)
-                        .Build();
-                }
-
                 var user = await _userRepository.GetByIdAsync(userId);
-                if (user == null || user.TenantId != tenantId)
-                {
-                    return ResponseBuilder<IEnumerable<AccessGroupDTO>>
-                        .Fail(new ErrorDTO { Message = "usuário não encontrado no tenant" })
-                        .WithCode(404)
-                        .Build();
-                }
 
                 var links = await _accountAccessGroupRepository.GetByUserAsync(userId);
                 var groups = links
-                    .Where(aag => aag.AccessGroup != null && aag.AccessGroup.IsActive && aag.AccessGroup.TenantId == tenantId)
+                    .Where(aag => aag.AccessGroup != null && aag.AccessGroup.IsActive)
                     .Select(aag => aag.AccessGroup)
                     .ToList();
 

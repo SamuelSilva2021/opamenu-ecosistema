@@ -1,11 +1,24 @@
 // Tipos para o sistema de permissões baseado em módulos (nova estrutura)
 
-export type OperationType = 'CREATE' | 'SELECT' | 'UPDATE' | 'DELETE';
+export type OperationType = 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'SELECT';
 
+// Nova estrutura simplificada (3 níveis: Usuário -> Perfil -> Permissão)
+export interface SimplifiedPermission {
+  module: string;
+  actions: string[];
+}
+
+export interface SimplifiedRole {
+  id: string;
+  name: string;
+  permissions: SimplifiedPermission[];
+}
+
+// Mantido para compatibilidade durante a migração
 export interface ModulePermission {
   id: string;
   key: string;
-  operations: OperationType[];
+  operations: string[];
 }
 
 export interface RolePermission {

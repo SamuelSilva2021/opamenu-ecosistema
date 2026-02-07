@@ -36,9 +36,9 @@ namespace Authenticator.API.Core.Domain.AccessControl.Roles.DTOs
         public Guid? ApplicationId { get; set; }
 
         /// <summary>
-        /// IDs das permissões a serem sincronizadas com o role
+        /// Permissões a serem sincronizadas com o role
         /// </summary>
-        public List<Guid>? PermissionIds { get; set; } = new List<Guid>();
+        public List<SimplifiedPermissionDTO>? Permissions { get; set; } = new List<SimplifiedPermissionDTO>();
 
         /// <summary>
         /// IDs dos grupos de acesso a serem sincronizados com o role

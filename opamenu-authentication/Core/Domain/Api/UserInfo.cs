@@ -1,3 +1,4 @@
+using Authenticator.API.Core.Domain.AccessControl.Roles.DTOs;
 using Authenticator.API.Core.Domain.AccessControl.Modules.DTOs;
 using Authenticator.API.Core.Domain.AccessControl.UserAccounts.DTOs;
 using Authenticator.API.Core.Domain.MultiTenant.Tenant.DTOs;
@@ -33,6 +34,11 @@ public class UserInfo
     /// Permissões do usuário
     /// </summary>
     public UserPermissionsDTO Permissions { get; set; } = new UserPermissionsDTO();
+
+    /// <summary>
+    /// Perfil (Role) simplificado o usuário
+    /// </summary>
+    public SimplifiedRoleDTO? Role { get; set; }
 
     /// <summary>
     /// Informações do tenant (se aplicável)

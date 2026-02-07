@@ -39,12 +39,12 @@ import { CurrencyInput } from "@/components/ui/currency-input";
 import type { Product, CreateProductRequest, UpdateProductRequest } from "../types";
 import { productsService } from "../products.service";
 import { categoriesService } from "@/features/categories/categories.service";
-import { addonsService } from "@/features/addons/addons.service";
+import { aditionalsService } from "@/features/aditionals/aditionals.service";
 import { filesService } from "@/services/files.service";
 import { useToast } from "@/hooks/use-toast";
 
-const productAddonGroupSchema = z.object({
-  addonGroupId: z.string().min(1, "Selecione um grupo"),
+const productAditionalGroupSchema = z.object({
+  aditionalGroupId: z.string().min(1, "Selecione um grupo"),
   displayOrder: z.coerce.number().default(0),
   isRequired: z.boolean().default(false),
   minSelectionsOverride: z.coerce.number().optional(),
@@ -59,7 +59,7 @@ const formSchema = z.object({
   imageUrl: z.string().optional(),
   isActive: z.boolean().default(true),
   displayOrder: z.coerce.number().default(0),
-  addonGroups: z.array(productAddonGroupSchema).optional(),
+  aditionalGroups: z.array(productAditionalGroupSchema).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -88,16 +88,16 @@ export function ProductForm({
     enabled: open,
   });
 
-  const { data: addonGroups = [] } = useQuery({
-    queryKey: ["addon-groups"],
-    queryFn: addonsService.getGroups,
+  const { data: aditionalGroups = [] } = useQuery({
+    queryKey: ["aditional-groups"],
+    queryFn: aditionalsService.getGroups,
     enabled: open,
   });
 
-  // Fetch product addon groups separately to ensure we have the details
-  const { data: productAddonGroupsData } = useQuery({
-    queryKey: ["product-addon-groups", initialData?.id],
-    queryFn: () => productsService.getProductAddonGroups(initialData!.id),
+  // Fetch product aditional groups separately to ensure we have the details
+  const { data: productAditionalGroupsData } = useQuery({
+    queryKey: ["product-aditional-groups", initialData?.id],
+    queryFn: () => productsService.getProductAditionalGroups(initialData!.id),
     enabled: !!initialData?.id && open,
   });
 
@@ -111,18 +111,18 @@ export function ProductForm({
       imageUrl: "",
       isActive: true,
       displayOrder: 0,
-      addonGroups: [],
+      aditionalGroups: [],
     },
   });
 
   const { fields } = useFieldArray({
     control: form.control,
-    name: "addonGroups",
+    name: "aditionalGroups",
   });
 
   useEffect(() => {
     if (open && initialData) {
-      const groupsToUse = productAddonGroupsData || initialData.addonGroups || [];
+      const groupsToUse = productAditionalGroupsData || initialData.aditionalGroups || [];
 
       form.reset({
         name: initialData.name,
@@ -132,8 +132,8 @@ export function ProductForm({
         imageUrl: initialData.imageUrl || "",
         isActive: initialData.isActive,
         displayOrder: initialData.displayOrder,
-        addonGroups: groupsToUse.map((g) => ({
-          addonGroupId: g.addonGroupId,
+        aditionalGroups: groupsToUse.map((g) => ({
+          aditionalGroupId: g.aditionalGroupId,
           displayOrder: g.displayOrder,
           isRequired: g.isRequired,
           minSelectionsOverride: g.minSelectionsOverride,
@@ -149,10 +149,10 @@ export function ProductForm({
         imageUrl: "",
         isActive: true,
         displayOrder: 0,
-        addonGroups: [],
+        aditionalGroups: [],
       });
     }
-  }, [initialData, productAddonGroupsData, form, open]);
+  }, [initialData, productAditionalGroupsData, form, open]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -170,19 +170,19 @@ export function ProductForm({
 
           const options = {
             maxSizeMB: 1, // Reduzido para 1MB para garantir margem de segurança
-            maxWidthOrHeight: 1920, 
+            maxWidthOrHeight: 1920,
             useWebWorker: false,
             initialQuality: 0.7,
           };
-          
+
           const compressedBlob = await imageCompression(file, options);
           console.log(`Compressed file size: ${(compressedBlob.size / 1024 / 1024).toFixed(2)} MB`);
-          
-          fileToUpload = new File([compressedBlob], file.name, { 
+
+          fileToUpload = new File([compressedBlob], file.name, {
             type: file.type,
             lastModified: new Date().getTime()
           });
-          
+
         } catch (compressionError) {
           console.error("Erro na compressão de imagem:", compressionError);
         }
@@ -190,10 +190,10 @@ export function ProductForm({
 
       const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB exatos
       if (fileToUpload.size > MAX_SIZE_BYTES) {
-        toast({ 
-          title: "Arquivo muito grande", 
-          description: `Mesmo após otimização, a imagem tem ${(fileToUpload.size / 1024 / 1024).toFixed(2)}MB. O limite é 5MB. Por favor, escolha outra imagem.`, 
-          variant: "destructive" 
+        toast({
+          title: "Arquivo muito grande",
+          description: `Mesmo após otimização, a imagem tem ${(fileToUpload.size / 1024 / 1024).toFixed(2)}MB. O limite é 5MB. Por favor, escolha outra imagem.`,
+          variant: "destructive"
         });
         setIsUploading(false);
         e.target.value = "";
@@ -217,12 +217,12 @@ export function ProductForm({
   };
 
   const handleSubmit = (values: FormValues) => {
-    const validGroups = values.addonGroups?.filter(g => g.addonGroupId !== "");
-    
+    const validGroups = values.aditionalGroups?.filter(g => g.aditionalGroupId !== "");
+
     onSubmit({
       ...values,
-      addonGroups: validGroups?.map(g => ({
-        addonGroupId: g.addonGroupId,
+      aditionalGroups: validGroups?.map(g => ({
+        aditionalGroupId: g.aditionalGroupId,
         displayOrder: g.displayOrder,
         isRequired: g.isRequired,
         minSelectionsOverride: g.minSelectionsOverride ?? undefined,
@@ -243,53 +243,16 @@ export function ProductForm({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col flex-1 min-h-0">
             <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nome do Produto</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Ex: X-Bacon" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Descrição</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Detalhes do produto..." 
-                          className="resize-none h-24" 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
                   <FormField
                     control={form.control}
-                    name="price"
+                    name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Preço</FormLabel>
+                        <FormLabel>Nome do Produto</FormLabel>
                         <FormControl>
-                          <CurrencyInput
-                            placeholder="R$ 0,00"
-                            value={field.value}
-                            onChange={field.onChange}
-                          />
+                          <Input placeholder="Ex: X-Bacon" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -298,182 +261,220 @@ export function ProductForm({
 
                   <FormField
                     control={form.control}
-                    name="displayOrder"
+                    name="description"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Ordem de Exibição</FormLabel>
+                        <FormLabel>Descrição</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="number" 
-                            min="0"
-                            {...field} 
+                          <Textarea
+                            placeholder="Detalhes do produto..."
+                            className="resize-none h-24"
+                            {...field}
                           />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                </div>
 
-                <div className="grid grid-cols-[1fr_auto] gap-4 items-end">
-                  <FormField
-                    control={form.control}
-                    name="categoryId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Categoria</FormLabel>
-                        <Select 
-                          onValueChange={field.onChange} 
-                          value={field.value}
-                        >
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="price"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Preço</FormLabel>
                           <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione uma categoria" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {categories.map((category) => (
-                              <SelectItem key={category.id} value={category.id.toString()}>
-                                {category.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="isActive"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col gap-2 rounded-lg border p-3 h-full justify-center">
-                        <div className="flex items-center gap-2">
-                          <FormLabel className="text-base cursor-pointer" htmlFor="is-active-switch">Ativo</FormLabel>
-                          <FormControl>
-                            <Switch
-                              id="is-active-switch"
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
+                            <CurrencyInput
+                              placeholder="R$ 0,00"
+                              value={field.value}
+                              onChange={field.onChange}
                             />
                           </FormControl>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-              <div className="space-y-6">
-                <div className="space-y-4">
-                  <FormLabel>Imagem do Produto</FormLabel>
-                  <div className="flex flex-col items-center gap-4 p-4 border-2 border-dashed rounded-lg h-[340px] justify-center">
-                    {form.watch("imageUrl") ? (
-                      <div className="relative w-full h-full rounded-lg overflow-hidden bg-muted flex items-center justify-center">
-                        <img 
-                          src={form.watch("imageUrl")} 
-                          alt="Preview" 
-                          className="w-full h-full object-contain"
+                    <FormField
+                      control={form.control}
+                      name="displayOrder"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Ordem de Exibição</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min="0"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-[1fr_auto] gap-4 items-end">
+                    <FormField
+                      control={form.control}
+                      name="categoryId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Categoria</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione uma categoria" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {categories.map((category) => (
+                                <SelectItem key={category.id} value={category.id.toString()}>
+                                  {category.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="isActive"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col gap-2 rounded-lg border p-3 h-full justify-center">
+                          <div className="flex items-center gap-2">
+                            <FormLabel className="text-base cursor-pointer" htmlFor="is-active-switch">Ativo</FormLabel>
+                            <FormControl>
+                              <Switch
+                                id="is-active-switch"
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <FormLabel>Imagem do Produto</FormLabel>
+                    <div className="flex flex-col items-center gap-4 p-4 border-2 border-dashed rounded-lg h-[340px] justify-center">
+                      {form.watch("imageUrl") ? (
+                        <div className="relative w-full h-full rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+                          <img
+                            src={form.watch("imageUrl")}
+                            alt="Preview"
+                            className="w-full h-full object-contain"
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-2 right-2 h-8 w-8"
+                            onClick={() => form.setValue("imageUrl", "")}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center flex-1 text-muted-foreground">
+                          <Upload className="h-12 w-12 mb-2" />
+                          <span className="text-sm">Clique para fazer upload</span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2 w-full mt-auto">
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          id="image-upload"
+                          onChange={handleImageUpload}
+                          disabled={isUploading}
                         />
                         <Button
                           type="button"
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-2 right-2 h-8 w-8"
-                          onClick={() => form.setValue("imageUrl", "")}
+                          variant="outline"
+                          className="w-full"
+                          disabled={isUploading}
+                          onClick={() => document.getElementById("image-upload")?.click()}
                         >
-                          <X className="h-4 w-4" />
+                          {isUploading ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Enviando...
+                            </>
+                          ) : (
+                            "Selecionar Imagem"
+                          )}
                         </Button>
                       </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center flex-1 text-muted-foreground">
-                        <Upload className="h-12 w-12 mb-2" />
-                        <span className="text-sm">Clique para fazer upload</span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2 w-full mt-auto">
-                      <Input 
-                        type="file" 
-                        accept="image/*"
-                        className="hidden" 
-                        id="image-upload"
-                        onChange={handleImageUpload}
-                        disabled={isUploading}
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="w-full"
-                        disabled={isUploading}
-                        onClick={() => document.getElementById("image-upload")?.click()}
-                      >
-                        {isUploading ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Enviando...
-                          </>
-                        ) : (
-                          "Selecionar Imagem"
-                        )}
-                      </Button>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <Separator className="my-6" />
+              <Separator className="my-6" />
 
-            {/* Addon Groups */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <FormLabel className="text-base">Grupos de Adicionais</FormLabel>
-              </div>
-              
-              <ScrollArea className="h-[300px] pr-4">
-                <div className="space-y-4">
-                  {fields.map((field) => {
-                     const currentGroup = addonGroups.find(g => g.id === field.addonGroupId);
-                     return (
-                    <div key={field.id} className="bg-muted/50 p-4 rounded-lg space-y-4 border">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <FormLabel className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Grupo</FormLabel>
-                          <div className="text-sm font-medium mt-1">
-                            {currentGroup?.name || "Grupo não encontrado"}
+              {/* Aditional Groups */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <FormLabel className="text-base">Grupos de Adicionais</FormLabel>
+                </div>
+
+                <ScrollArea className="h-[300px] pr-4">
+                  <div className="space-y-4">
+                    {fields.map((field) => {
+                      const currentGroup = aditionalGroups.find(g => g.id === field.aditionalGroupId);
+                      return (
+                        <div key={field.id} className="bg-muted/50 p-4 rounded-lg space-y-4 border">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1">
+                              <FormLabel className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Grupo</FormLabel>
+                              <div className="text-sm font-medium mt-1">
+                                {currentGroup?.name || "Grupo não encontrado"}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="flex flex-col gap-1">
+                              <span className="text-xs font-medium text-muted-foreground">Obrigatório</span>
+                              <span className="text-sm">{field.isRequired ? "Sim" : "Não"}</span>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <span className="text-xs font-medium text-muted-foreground">Ordem</span>
+                              <span className="text-sm">{field.displayOrder}</span>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <span className="text-xs font-medium text-muted-foreground">Mín. Seleções</span>
+                              <span className="text-sm">{field.minSelectionsOverride ?? "Padrão"}</span>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <span className="text-xs font-medium text-muted-foreground">Máx. Seleções</span>
+                              <span className="text-sm">{field.maxSelectionsOverride ?? "Padrão"}</span>
+                            </div>
                           </div>
                         </div>
+                      )
+                    })}
+                    {fields.length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground text-sm border-2 border-dashed rounded-lg">
+                        Nenhum grupo vinculado
                       </div>
-
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="flex flex-col gap-1">
-                            <span className="text-xs font-medium text-muted-foreground">Obrigatório</span>
-                            <span className="text-sm">{field.isRequired ? "Sim" : "Não"}</span>
-                        </div>
-                         <div className="flex flex-col gap-1">
-                            <span className="text-xs font-medium text-muted-foreground">Ordem</span>
-                            <span className="text-sm">{field.displayOrder}</span>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                            <span className="text-xs font-medium text-muted-foreground">Mín. Seleções</span>
-                            <span className="text-sm">{field.minSelectionsOverride ?? "Padrão"}</span>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                            <span className="text-xs font-medium text-muted-foreground">Máx. Seleções</span>
-                            <span className="text-sm">{field.maxSelectionsOverride ?? "Padrão"}</span>
-                        </div>
-                      </div>
-                    </div>
-                  )})}
-                  {fields.length === 0 && (
-                    <div className="text-center py-8 text-muted-foreground text-sm border-2 border-dashed rounded-lg">
-                      Nenhum grupo vinculado
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
-            </div>
+                    )}
+                  </div>
+                </ScrollArea>
+              </div>
 
             </div>
             <DialogFooter className="px-6 py-4 border-t mt-auto bg-background">

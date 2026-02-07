@@ -23,13 +23,13 @@ public class ProductsController(
     IProductService productService,
     IProductValidationService validationService,
     ILogger<ProductsController> logger,
-    IProductAddonGroupService productAddonGroupService
+    IProductAditionalGroupService productAditionalGroupService
     ) : BaseController
 {
     private readonly IProductService _productService = productService;
     private readonly IProductValidationService _validationService = validationService;
     private readonly ILogger<ProductsController> _logger = logger;
-    private readonly IProductAddonGroupService _productAddonGroupService = productAddonGroupService;
+    private readonly IProductAditionalGroupService _productAditionalGroupService = productAditionalGroupService;
 
     /// <summary>
     /// Get all products with optional filters
@@ -158,22 +158,22 @@ public class ProductsController(
     /// <summary>
     /// Obter todos os produtos com seus grupos de adicionais
     /// </summary>
-    [HttpGet("with-addons")]
+    [HttpGet("with-aditionals")]
     [MapPermission(MODULE_PRODUCT, OPERATION_SELECT)]
-    public async Task<ActionResult<IEnumerable<ProductWithAddonsResponseDto>>> GetAllProductsWithAddons()
+    public async Task<ActionResult<IEnumerable<ProductWithAditionalsResponseDto>>> GetAllProductsWithAditionals()
     {
-        var serviceResponse = await _productAddonGroupService.GetAllProductsWithAddonsAsync();
+        var serviceResponse = await _productAditionalGroupService.GetAllProductsWithAditionalsAsync();
         return BuildResponse(serviceResponse);
     }
 
     /// <summary>
-    /// Obter produtos que usam um grupo de adicionais específico
+    /// Obter produtos que usam um grupo de adicionais especÃ­fico
     /// </summary>
-    [HttpGet("addon-groups/{addonGroupId:int}/products")]
+    [HttpGet("aditional-groups/{aditionalGroupId:int}/products")]
     [MapPermission(MODULE_PRODUCT, OPERATION_SELECT)]
-    public async Task<ActionResult<ApiResponse<IEnumerable<ProductDto>>>> GetProductsWithAddonGroup(Guid addonGroupId)
+    public async Task<ActionResult<ApiResponse<IEnumerable<ProductDto>>>> GetProductsWithAditionalGroup(Guid aditionalGroupId)
     {
-        var products = await _productAddonGroupService.GetProductsWithAddonGroupAsync(addonGroupId);
+        var products = await _productAditionalGroupService.GetProductsWithAditionalGroupAsync(aditionalGroupId);
         return BuildResponse(products);
     }
 }

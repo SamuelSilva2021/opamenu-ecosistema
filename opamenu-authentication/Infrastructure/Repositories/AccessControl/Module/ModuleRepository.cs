@@ -20,13 +20,10 @@ namespace Authenticator.API.Infrastructure.Repositories.AccessControl.Module
 
         private class FlatRowDTO
         {
-            public Guid GroupId { get; set; }
-            public string? GroupCode { get; set; }
             public Guid RoleId { get; set; }
             public string? RoleCode { get; set; }
-            public Guid ModuleId { get; set; }
             public string? ModuleKey { get; set; }
-            public string? Operations { get; set; }
+            public string? Actions { get; set; } // JSON list from DB
         }
 
         public async Task<UserPermissionsDTO> GetModulesByUserAsync(Guid userId)
@@ -36,57 +33,45 @@ namespace Authenticator.API.Infrastructure.Repositories.AccessControl.Module
             using (var connection = new NpgsqlConnection(connectionString)) 
             {
                 var sql = @"SELECT 
-                                ag.id as GroupId,
-	                            ag.code as GroupCode,
-	                            r.id as RoleId,
-	                            r.code as RoleCode,
-	                            m.id as ModuleId,
-	                            m.key ModuleKey, 
-	                            o.value as Operations
-                            FROM public.access_group ag
-                            JOIN public.account_access_group aag ON ag.id = aag.access_group_id
-                                and aag.is_active = true
-                            JOIN public.role_access_group rag ON aag.access_group_id = rag.access_group_id
-                                and rag.is_active = true
-                            JOIN public.role r ON rag.role_id = r.id
-                                and r.is_active = true
+                                r.id as RoleId,
+                                r.code as RoleCode,
+                                rp.module_key as ModuleKey, 
+                                rp.actions as Actions
+                            FROM public.user_account ua
+                            JOIN public.role r ON ua.role_id = r.id
+                                AND r.is_active = true
                             JOIN public.role_permission rp ON r.id = rp.role_id
-                                and rp.is_active = true
-                            JOIN public.permission p ON rp.permission_id = p.id
-                                and p.is_active = true
-                            JOIN public.permission_operation po ON p.id = po.permission_id
-                                and po.is_active = true
-                            JOIN public.module m ON p.module_id = m.id
-                                and m.is_active = true
-                            JOIN public.operation o ON po.operation_id = o.id
-                            WHERE aag.user_account_id = @UserId
-                              AND aag.is_active = true";
+                                AND rp.is_active = true
+                            WHERE ua.id = @UserId";
 
                 var param = new DynamicParameters();
                 param.Add("@UserId", userId, DbType.Guid);
 
                 var rows = await connection.QueryAsync<FlatRowDTO>(sql, param);
 
-                var result = rows
-                    .GroupBy(g => new { g.GroupId, g.GroupCode })
-                    .Select(g => new AccessGroupBasicDTO
+                // Reconstruct the DTO structure for compatibility
+                var result = new List<AccessGroupBasicDTO>
+                {
+                    new AccessGroupBasicDTO
                     {
-                        Id = g.Key.GroupId,
-                        Code = g.Key.GroupCode,
-                        Roles = g.GroupBy(r => new { r.RoleId, r.RoleCode })
-                                 .Select(rg => new RolesBasicDTO
-                                 {
-                                     Id = rg.Key.RoleId,
-                                     Code = rg.Key.RoleCode,
-                                     Modules = rg.GroupBy(m => new { m.ModuleId, m.ModuleKey })
-                                                 .Select(mg => new ModuleBasicDTO
-                                                 {
-                                                     Id = mg.Key.ModuleId,
-                                                     Key = mg.Key.ModuleKey,
-                                                     Operations = mg.Select(o => o.Operations).Distinct().ToList()
-                                                 }).ToList()
-                                 }).ToList()
-                    }).ToList();
+                        Id = Guid.Empty, // No longer using specific groups
+                        Code = "DEFAULT",
+                        Roles = rows.GroupBy(r => new { r.RoleId, r.RoleCode })
+                                     .Select(rg => new RolesBasicDTO
+                                     {
+                                         Id = rg.Key.RoleId,
+                                         Code = rg.Key.RoleCode,
+                                         Modules = rg.Select(m => new ModuleBasicDTO
+                                         {
+                                             Id = Guid.Empty, // Module ID is less relevant now than Key
+                                             Key = m.ModuleKey ?? string.Empty,
+                                             Operations = !string.IsNullOrEmpty(m.Actions) 
+                                                ? System.Text.Json.JsonSerializer.Deserialize<List<string>>(m.Actions) ?? []
+                                                : []
+                                         }).ToList()
+                                     }).ToList()
+                    }
+                };
 
                 return new UserPermissionsDTO
                 {

@@ -18,7 +18,7 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.1")
+                .HasAnnotation("ProductVersion", "9.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -471,686 +471,6 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
                         });
                 });
 
-            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.AccessControl.OperationEntity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text")
-                        .HasColumnName("description");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_active");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("name");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Value")
-                        .HasColumnType("text")
-                        .HasColumnName("value");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Value")
-                        .IsUnique();
-
-                    b.ToTable("operation", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("d1183fa8-5cae-7b65-cd00-3d1db4a55fac"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Permite visualizar registros",
-                            IsActive = true,
-                            Name = "Leitura",
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Value = "READ"
-                        },
-                        new
-                        {
-                            Id = new Guid("a9cc2de8-8f88-b419-87ad-9d152f92a84b"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Permite criar novos registros",
-                            IsActive = true,
-                            Name = "Criação",
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Value = "CREATE"
-                        },
-                        new
-                        {
-                            Id = new Guid("0c6e99a2-af92-4ff8-80b7-332b1636479f"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Permite atualizar registros existentes",
-                            IsActive = true,
-                            Name = "Atualização",
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Value = "UPDATE"
-                        },
-                        new
-                        {
-                            Id = new Guid("830f881f-76d6-79db-c78a-5f4952ff9a4c"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Permite excluir registros",
-                            IsActive = true,
-                            Name = "Exclusão",
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Value = "DELETE"
-                        });
-                });
-
-            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.AccessControl.PermissionEntity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_active");
-
-                    b.Property<Guid?>("ModuleId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("module_id");
-
-                    b.Property<Guid?>("TenantId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("tenant_id");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ModuleId");
-
-                    b.ToTable("permission", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("4e5ce036-8fe9-604a-3467-1b1d52a2d062"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            ModuleId = new Guid("13482be3-f205-837c-cceb-e28f14015000"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("74a25ad4-d36b-704c-a7de-5b72dee4995a"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            ModuleId = new Guid("f30c45da-30a3-45cb-f932-88af5354e1e6"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("5085d645-c38b-d136-fddc-ae069bce2891"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            ModuleId = new Guid("4822a024-3dd0-674d-638d-ddee1f7b1a2b"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("57918dc5-6eda-b645-0cb5-cf46df9363bc"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            ModuleId = new Guid("6f331ece-a4ea-74f6-158b-c7a5be39cc41"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("3ffe4f75-0bb0-4ad7-703f-518f5dfe811d"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            ModuleId = new Guid("aa19bde8-48c1-7dd4-1f18-bd177952614d"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("ff3110e4-d152-7a75-a688-afa08b77e035"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            ModuleId = new Guid("d8265dac-ea6a-353a-5bd5-065d519df46b"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("d6afa7ac-9c27-8d3e-691f-188d47b0703e"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            ModuleId = new Guid("9b464720-4a29-d649-f64a-7b8ebec95bcf"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("891db09d-58af-160d-f10b-c17b93a6e834"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            ModuleId = new Guid("f415b1d6-6989-b41d-dcb8-4a0a824fc7f1"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("82e4ee38-f1df-4c99-3bb0-a8b58ba4a22e"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            ModuleId = new Guid("20bf5030-e615-8586-a0b1-c624ce259deb"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("6ed448d2-c4b5-3cd5-e185-c6793bd3b152"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            ModuleId = new Guid("a7060970-7bc8-8e98-4566-e00676be1578"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("7765f93c-ad43-8f7e-d12e-ffd3718e09c9"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            ModuleId = new Guid("3ad894aa-3bdf-db04-9715-a1134c4c8825"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("8b5cc96d-89b7-43a0-f90a-117e24243bf4"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            ModuleId = new Guid("de03bd4d-f7e9-0b1b-f3a3-2b5ea9ee30b8"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        });
-                });
-
-            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.AccessControl.PermissionOperationEntity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_active");
-
-                    b.Property<Guid>("OperationId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("operation_id");
-
-                    b.Property<Guid>("PermissionId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("permission_id");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OperationId");
-
-                    b.HasIndex("PermissionId", "OperationId")
-                        .IsUnique();
-
-                    b.ToTable("permission_operation", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("4f14a7f6-7ee3-97ab-1a12-dbcb79cbbf9f"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("d1183fa8-5cae-7b65-cd00-3d1db4a55fac"),
-                            PermissionId = new Guid("4e5ce036-8fe9-604a-3467-1b1d52a2d062"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("1ce9de28-af8a-05d9-8775-9c26be0bf911"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("a9cc2de8-8f88-b419-87ad-9d152f92a84b"),
-                            PermissionId = new Guid("4e5ce036-8fe9-604a-3467-1b1d52a2d062"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("8bb35719-b0dd-6b5a-fcca-6671beb129c1"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("0c6e99a2-af92-4ff8-80b7-332b1636479f"),
-                            PermissionId = new Guid("4e5ce036-8fe9-604a-3467-1b1d52a2d062"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("a44cb1d7-9c1b-ce3a-0d8a-0b47779029dc"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("830f881f-76d6-79db-c78a-5f4952ff9a4c"),
-                            PermissionId = new Guid("4e5ce036-8fe9-604a-3467-1b1d52a2d062"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("4efa00f4-01c3-32c7-d932-b1c9eb0475fc"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("d1183fa8-5cae-7b65-cd00-3d1db4a55fac"),
-                            PermissionId = new Guid("74a25ad4-d36b-704c-a7de-5b72dee4995a"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("08bf4490-b956-8e11-534b-71285173a866"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("a9cc2de8-8f88-b419-87ad-9d152f92a84b"),
-                            PermissionId = new Guid("74a25ad4-d36b-704c-a7de-5b72dee4995a"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("6e046476-5376-bf5b-ce70-30ac8f575df7"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("0c6e99a2-af92-4ff8-80b7-332b1636479f"),
-                            PermissionId = new Guid("74a25ad4-d36b-704c-a7de-5b72dee4995a"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("f758bdbd-7aa7-bc4c-c4eb-f408e3d8c129"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("830f881f-76d6-79db-c78a-5f4952ff9a4c"),
-                            PermissionId = new Guid("74a25ad4-d36b-704c-a7de-5b72dee4995a"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("f4b7b087-8eb8-4bfe-8b3a-1f97bf787d02"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("d1183fa8-5cae-7b65-cd00-3d1db4a55fac"),
-                            PermissionId = new Guid("5085d645-c38b-d136-fddc-ae069bce2891"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("d3b2425b-1480-4481-e0aa-aaae749ca0b1"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("a9cc2de8-8f88-b419-87ad-9d152f92a84b"),
-                            PermissionId = new Guid("5085d645-c38b-d136-fddc-ae069bce2891"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("3f88c7df-4ee0-c86b-82db-bb5cecd6b003"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("0c6e99a2-af92-4ff8-80b7-332b1636479f"),
-                            PermissionId = new Guid("5085d645-c38b-d136-fddc-ae069bce2891"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("cccc2036-6c84-1921-1af0-9a5c0e6d483c"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("830f881f-76d6-79db-c78a-5f4952ff9a4c"),
-                            PermissionId = new Guid("5085d645-c38b-d136-fddc-ae069bce2891"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("cb18a34a-a3ce-9f50-f5ef-d833b0c11287"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("d1183fa8-5cae-7b65-cd00-3d1db4a55fac"),
-                            PermissionId = new Guid("57918dc5-6eda-b645-0cb5-cf46df9363bc"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("c46a3806-1202-0544-2271-06e70cdb4bb1"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("a9cc2de8-8f88-b419-87ad-9d152f92a84b"),
-                            PermissionId = new Guid("57918dc5-6eda-b645-0cb5-cf46df9363bc"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("621bd31f-5135-0337-0445-6356c52cb520"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("0c6e99a2-af92-4ff8-80b7-332b1636479f"),
-                            PermissionId = new Guid("57918dc5-6eda-b645-0cb5-cf46df9363bc"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("ca01c561-f141-a2d6-c6d9-780ae4b45158"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("830f881f-76d6-79db-c78a-5f4952ff9a4c"),
-                            PermissionId = new Guid("57918dc5-6eda-b645-0cb5-cf46df9363bc"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("f2affb89-72cf-75f9-05ee-31c5f1ecc55e"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("d1183fa8-5cae-7b65-cd00-3d1db4a55fac"),
-                            PermissionId = new Guid("3ffe4f75-0bb0-4ad7-703f-518f5dfe811d"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("def72cac-85db-b40d-f612-3f030810e2cb"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("a9cc2de8-8f88-b419-87ad-9d152f92a84b"),
-                            PermissionId = new Guid("3ffe4f75-0bb0-4ad7-703f-518f5dfe811d"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("feec90d0-ac9b-f282-94a1-9ccd30ebf69b"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("0c6e99a2-af92-4ff8-80b7-332b1636479f"),
-                            PermissionId = new Guid("3ffe4f75-0bb0-4ad7-703f-518f5dfe811d"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("5c4490c5-5d53-7ad4-af3c-6552895f6cb2"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("830f881f-76d6-79db-c78a-5f4952ff9a4c"),
-                            PermissionId = new Guid("3ffe4f75-0bb0-4ad7-703f-518f5dfe811d"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("c9b02319-a31d-11ce-845f-17b9cb213096"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("d1183fa8-5cae-7b65-cd00-3d1db4a55fac"),
-                            PermissionId = new Guid("ff3110e4-d152-7a75-a688-afa08b77e035"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("83157f49-463a-4c4e-3f4f-0c34304064cb"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("a9cc2de8-8f88-b419-87ad-9d152f92a84b"),
-                            PermissionId = new Guid("ff3110e4-d152-7a75-a688-afa08b77e035"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("dcac12d5-446f-2318-77b6-6a76028800af"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("0c6e99a2-af92-4ff8-80b7-332b1636479f"),
-                            PermissionId = new Guid("ff3110e4-d152-7a75-a688-afa08b77e035"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("60e25e4d-24fe-9fc7-b9c3-93817ee3fa27"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("830f881f-76d6-79db-c78a-5f4952ff9a4c"),
-                            PermissionId = new Guid("ff3110e4-d152-7a75-a688-afa08b77e035"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("94a68158-a871-8c40-22c1-3e8f1e65dd0f"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("d1183fa8-5cae-7b65-cd00-3d1db4a55fac"),
-                            PermissionId = new Guid("d6afa7ac-9c27-8d3e-691f-188d47b0703e"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("7bf9f602-f57e-0cb4-076f-32b77e025f2b"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("a9cc2de8-8f88-b419-87ad-9d152f92a84b"),
-                            PermissionId = new Guid("d6afa7ac-9c27-8d3e-691f-188d47b0703e"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("d596bb91-4de6-2530-b83b-b4bf6756c4f6"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("0c6e99a2-af92-4ff8-80b7-332b1636479f"),
-                            PermissionId = new Guid("d6afa7ac-9c27-8d3e-691f-188d47b0703e"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("8b953ae4-f669-1ddd-091d-5e76bf18a0b9"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("830f881f-76d6-79db-c78a-5f4952ff9a4c"),
-                            PermissionId = new Guid("d6afa7ac-9c27-8d3e-691f-188d47b0703e"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("277512a5-1a9a-e351-d80d-21d53d72af34"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("d1183fa8-5cae-7b65-cd00-3d1db4a55fac"),
-                            PermissionId = new Guid("891db09d-58af-160d-f10b-c17b93a6e834"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("1e739438-54f3-e828-9bbd-bc0133fa960e"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("a9cc2de8-8f88-b419-87ad-9d152f92a84b"),
-                            PermissionId = new Guid("891db09d-58af-160d-f10b-c17b93a6e834"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("ff716dd2-1c6d-ef20-1bbb-d6a8c77b5fc2"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("0c6e99a2-af92-4ff8-80b7-332b1636479f"),
-                            PermissionId = new Guid("891db09d-58af-160d-f10b-c17b93a6e834"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("c4b7da8d-3d9b-ba07-9ea5-4a9a02006021"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("830f881f-76d6-79db-c78a-5f4952ff9a4c"),
-                            PermissionId = new Guid("891db09d-58af-160d-f10b-c17b93a6e834"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("ed24312c-0c7a-111e-99d1-015e82fe696a"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("d1183fa8-5cae-7b65-cd00-3d1db4a55fac"),
-                            PermissionId = new Guid("82e4ee38-f1df-4c99-3bb0-a8b58ba4a22e"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("5fa84bb3-5842-897c-c69e-b2494ea75e9f"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("a9cc2de8-8f88-b419-87ad-9d152f92a84b"),
-                            PermissionId = new Guid("82e4ee38-f1df-4c99-3bb0-a8b58ba4a22e"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("df5e9c46-2527-5224-854b-bb486082ae4e"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("0c6e99a2-af92-4ff8-80b7-332b1636479f"),
-                            PermissionId = new Guid("82e4ee38-f1df-4c99-3bb0-a8b58ba4a22e"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("b38d3e52-204e-7595-54c1-7c3514de2f50"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("830f881f-76d6-79db-c78a-5f4952ff9a4c"),
-                            PermissionId = new Guid("82e4ee38-f1df-4c99-3bb0-a8b58ba4a22e"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("bde69f79-41f1-1e23-6332-6c6473153c9c"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("d1183fa8-5cae-7b65-cd00-3d1db4a55fac"),
-                            PermissionId = new Guid("6ed448d2-c4b5-3cd5-e185-c6793bd3b152"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("5e07e56b-9f39-773e-aaf8-1d65cfa98f88"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("a9cc2de8-8f88-b419-87ad-9d152f92a84b"),
-                            PermissionId = new Guid("6ed448d2-c4b5-3cd5-e185-c6793bd3b152"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("c6df2e95-92ac-7466-18bc-52b113ec77af"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("0c6e99a2-af92-4ff8-80b7-332b1636479f"),
-                            PermissionId = new Guid("6ed448d2-c4b5-3cd5-e185-c6793bd3b152"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("56f703c6-af2a-165c-f813-f0b731769f78"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("830f881f-76d6-79db-c78a-5f4952ff9a4c"),
-                            PermissionId = new Guid("6ed448d2-c4b5-3cd5-e185-c6793bd3b152"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("e4ae6e94-c94c-0054-6eff-4c5ac2c80971"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("d1183fa8-5cae-7b65-cd00-3d1db4a55fac"),
-                            PermissionId = new Guid("7765f93c-ad43-8f7e-d12e-ffd3718e09c9"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("5e7ae7c5-dd9b-8097-7cc3-f02ed6a0aa35"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("a9cc2de8-8f88-b419-87ad-9d152f92a84b"),
-                            PermissionId = new Guid("7765f93c-ad43-8f7e-d12e-ffd3718e09c9"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("0b33e73e-832d-f7cf-129b-6e320e49ef20"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("0c6e99a2-af92-4ff8-80b7-332b1636479f"),
-                            PermissionId = new Guid("7765f93c-ad43-8f7e-d12e-ffd3718e09c9"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("d9108a4f-9203-04ac-6464-0f2d32ff2efc"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("830f881f-76d6-79db-c78a-5f4952ff9a4c"),
-                            PermissionId = new Guid("7765f93c-ad43-8f7e-d12e-ffd3718e09c9"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("d27bdf7b-a132-a1ea-4485-401877ea4956"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("d1183fa8-5cae-7b65-cd00-3d1db4a55fac"),
-                            PermissionId = new Guid("8b5cc96d-89b7-43a0-f90a-117e24243bf4"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("82178c5f-dcb9-7adf-83a5-bc4a9d4b8950"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("a9cc2de8-8f88-b419-87ad-9d152f92a84b"),
-                            PermissionId = new Guid("8b5cc96d-89b7-43a0-f90a-117e24243bf4"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("598f5406-6414-2905-5512-e1f22d8f570f"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("0c6e99a2-af92-4ff8-80b7-332b1636479f"),
-                            PermissionId = new Guid("8b5cc96d-89b7-43a0-f90a-117e24243bf4"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("8e7f3c7c-d1ed-7e71-0fe6-6a6f0e90abae"),
-                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            OperationId = new Guid("830f881f-76d6-79db-c78a-5f4952ff9a4c"),
-                            PermissionId = new Guid("8b5cc96d-89b7-43a0-f90a-117e24243bf4"),
-                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
-                        });
-                });
-
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.AccessControl.RoleAccessGroupEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1235,6 +555,9 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
 
+                    b.Property<bool>("IsSystem")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -1263,6 +586,7 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Acesso total ao sistema",
                             IsActive = true,
+                            IsSystem = false,
                             Name = "Super Administrador",
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
@@ -1273,6 +597,7 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Administrador do estabelecimento",
                             IsActive = true,
+                            IsSystem = false,
                             Name = "Administrador",
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         });
@@ -1285,6 +610,11 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.PrimitiveCollection<List<string>>("Actions")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("actions");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -1292,9 +622,11 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
 
-                    b.Property<Guid>("PermissionId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("permission_id");
+                    b.Property<string>("ModuleKey")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("module_key");
 
                     b.Property<Guid>("RoleId")
                         .HasColumnType("uuid")
@@ -1305,227 +637,248 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PermissionId");
-
-                    b.HasIndex("RoleId", "PermissionId")
-                        .IsUnique();
+                    b.HasIndex("RoleId", "ModuleKey");
 
                     b.ToTable("role_permission", (string)null);
 
                     b.HasData(
                         new
                         {
-                            Id = new Guid("c275fb34-e87e-1130-6a98-daba72f032f1"),
+                            Id = new Guid("6109438b-666b-c9ec-b56d-b3826c27e0f7"),
+                            Actions = new List<string> { "READ", "CREATE", "UPDATE", "DELETE" },
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("4e5ce036-8fe9-604a-3467-1b1d52a2d062"),
+                            ModuleKey = "DASHBOARD",
                             RoleId = new Guid("724add9f-febd-c615-19db-8e526968da25"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("f22f0f21-eda0-5a0d-9932-ae3408c4d73b"),
+                            Id = new Guid("621b724b-3f07-a045-902c-e3742108cd46"),
+                            Actions = new List<string> { "READ", "CREATE", "UPDATE", "DELETE" },
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("4e5ce036-8fe9-604a-3467-1b1d52a2d062"),
+                            ModuleKey = "DASHBOARD",
                             RoleId = new Guid("4534e34a-3a31-ef0c-2a17-b57ea1d45cb6"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("810f21d3-fcf1-4613-0d50-5176853c333c"),
+                            Id = new Guid("a0e6a4fe-ce63-744f-46f0-f043ffc9f52a"),
+                            Actions = new List<string> { "READ", "CREATE", "UPDATE", "DELETE" },
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("74a25ad4-d36b-704c-a7de-5b72dee4995a"),
+                            ModuleKey = "ADITIONAL_GROUP",
                             RoleId = new Guid("724add9f-febd-c615-19db-8e526968da25"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("064ad572-9ba8-f0de-ea3e-e3926a8aa61e"),
+                            Id = new Guid("ae09b375-68a5-cf77-c7a9-8a797517f359"),
+                            Actions = new List<string> { "READ", "CREATE", "UPDATE", "DELETE" },
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("74a25ad4-d36b-704c-a7de-5b72dee4995a"),
+                            ModuleKey = "ADITIONAL_GROUP",
                             RoleId = new Guid("4534e34a-3a31-ef0c-2a17-b57ea1d45cb6"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("23c7a0ec-1a8b-7b49-ccc8-38bb8a37ac53"),
+                            Id = new Guid("96874e72-413b-1374-d3f9-65a348bc5f1c"),
+                            Actions = new List<string> { "READ", "CREATE", "UPDATE", "DELETE" },
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("5085d645-c38b-d136-fddc-ae069bce2891"),
+                            ModuleKey = "ADITIONAL",
                             RoleId = new Guid("724add9f-febd-c615-19db-8e526968da25"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("cbe32b35-ed56-6f64-c987-9cfd78c7f9aa"),
+                            Id = new Guid("3a5beddc-59ef-836a-5b68-b118654c6cfe"),
+                            Actions = new List<string> { "READ", "CREATE", "UPDATE", "DELETE" },
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("5085d645-c38b-d136-fddc-ae069bce2891"),
+                            ModuleKey = "ADITIONAL",
                             RoleId = new Guid("4534e34a-3a31-ef0c-2a17-b57ea1d45cb6"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("ac65d5ac-81fe-288a-13fd-d0ebdda9731a"),
+                            Id = new Guid("f42751c1-e9eb-37ca-e52d-9de6b1ec1595"),
+                            Actions = new List<string> { "READ", "CREATE", "UPDATE", "DELETE" },
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("57918dc5-6eda-b645-0cb5-cf46df9363bc"),
+                            ModuleKey = "PRODUCT",
                             RoleId = new Guid("724add9f-febd-c615-19db-8e526968da25"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("db3df29d-c3a7-a4c1-54c0-38362e8508c9"),
+                            Id = new Guid("8a36cd1b-803d-1e1f-bd56-98b59b75a5de"),
+                            Actions = new List<string> { "READ", "CREATE", "UPDATE", "DELETE" },
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("57918dc5-6eda-b645-0cb5-cf46df9363bc"),
+                            ModuleKey = "PRODUCT",
                             RoleId = new Guid("4534e34a-3a31-ef0c-2a17-b57ea1d45cb6"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("9d088010-f633-94b6-3558-e59530b28ac7"),
+                            Id = new Guid("a1b99574-afa9-e011-da32-a4b56a6e8aa3"),
+                            Actions = new List<string> { "READ", "CREATE", "UPDATE", "DELETE" },
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("3ffe4f75-0bb0-4ad7-703f-518f5dfe811d"),
+                            ModuleKey = "SETTINGS",
                             RoleId = new Guid("724add9f-febd-c615-19db-8e526968da25"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("8d991424-decf-2ef1-3d5d-9578c4053bbb"),
+                            Id = new Guid("4ca88129-5a57-5042-36ee-4821d5bdd77d"),
+                            Actions = new List<string> { "READ", "CREATE", "UPDATE", "DELETE" },
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("3ffe4f75-0bb0-4ad7-703f-518f5dfe811d"),
+                            ModuleKey = "SETTINGS",
                             RoleId = new Guid("4534e34a-3a31-ef0c-2a17-b57ea1d45cb6"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("abbcba5c-d2a2-5bd1-1ad8-2385ebd8e11e"),
+                            Id = new Guid("95f0c29e-53f9-5810-0c06-be2f013ed4c0"),
+                            Actions = new List<string> { "READ", "CREATE", "UPDATE", "DELETE" },
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("ff3110e4-d152-7a75-a688-afa08b77e035"),
+                            ModuleKey = "CATEGORY",
                             RoleId = new Guid("724add9f-febd-c615-19db-8e526968da25"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("b2aa0e1c-a62d-9dba-aa48-1b71209e87e6"),
+                            Id = new Guid("710cf9d8-d056-c475-f3fd-63ef9f64bf2b"),
+                            Actions = new List<string> { "READ", "CREATE", "UPDATE", "DELETE" },
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("ff3110e4-d152-7a75-a688-afa08b77e035"),
+                            ModuleKey = "CATEGORY",
                             RoleId = new Guid("4534e34a-3a31-ef0c-2a17-b57ea1d45cb6"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("8bd67bc4-2d66-70e3-10c2-08c55be8d34e"),
+                            Id = new Guid("2553895f-dca2-074e-70bd-91f176a9a95e"),
+                            Actions = new List<string> { "READ", "CREATE", "UPDATE", "DELETE" },
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("d6afa7ac-9c27-8d3e-691f-188d47b0703e"),
+                            ModuleKey = "ORDER",
                             RoleId = new Guid("724add9f-febd-c615-19db-8e526968da25"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("415aa751-2810-90b6-a342-0b197cd5f43c"),
+                            Id = new Guid("5238e92d-8af1-3a3e-7ada-e005537e89b0"),
+                            Actions = new List<string> { "READ", "CREATE", "UPDATE", "DELETE" },
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("d6afa7ac-9c27-8d3e-691f-188d47b0703e"),
+                            ModuleKey = "ORDER",
                             RoleId = new Guid("4534e34a-3a31-ef0c-2a17-b57ea1d45cb6"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("a1956b56-243d-3659-0f17-5f72c912f74c"),
+                            Id = new Guid("3f442530-6a55-c4de-1f7c-d84ca02127b7"),
+                            Actions = new List<string> { "READ", "CREATE", "UPDATE", "DELETE" },
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("891db09d-58af-160d-f10b-c17b93a6e834"),
+                            ModuleKey = "TABLE",
                             RoleId = new Guid("724add9f-febd-c615-19db-8e526968da25"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("6a6c4a8f-39f5-b674-0c75-8c6c84783d83"),
+                            Id = new Guid("296d5a1c-cfee-0528-923e-97665c86fff4"),
+                            Actions = new List<string> { "READ", "CREATE", "UPDATE", "DELETE" },
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("891db09d-58af-160d-f10b-c17b93a6e834"),
+                            ModuleKey = "TABLE",
                             RoleId = new Guid("4534e34a-3a31-ef0c-2a17-b57ea1d45cb6"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("e43ebb58-9c3a-493a-0ea1-a65374863e96"),
+                            Id = new Guid("4d30ea3f-980a-5243-b88d-3ab629c248d4"),
+                            Actions = new List<string> { "READ", "CREATE", "UPDATE", "DELETE" },
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("82e4ee38-f1df-4c99-3bb0-a8b58ba4a22e"),
+                            ModuleKey = "CUSTOMER",
                             RoleId = new Guid("724add9f-febd-c615-19db-8e526968da25"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("b66b445c-9aa5-7a4a-dd4a-767ac959e161"),
+                            Id = new Guid("48110f70-f135-7fb4-e381-bd1cadeaa493"),
+                            Actions = new List<string> { "READ", "CREATE", "UPDATE", "DELETE" },
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("82e4ee38-f1df-4c99-3bb0-a8b58ba4a22e"),
+                            ModuleKey = "CUSTOMER",
                             RoleId = new Guid("4534e34a-3a31-ef0c-2a17-b57ea1d45cb6"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("343209af-3f1e-62cd-c5e2-ebd0d93c896e"),
+                            Id = new Guid("cd3226c5-c36a-b664-fe33-98299080ff6d"),
+                            Actions = new List<string> { "READ", "CREATE", "UPDATE", "DELETE" },
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("6ed448d2-c4b5-3cd5-e185-c6793bd3b152"),
+                            ModuleKey = "PAYMENT",
                             RoleId = new Guid("724add9f-febd-c615-19db-8e526968da25"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("973f191b-727f-cec6-95a3-861b4065fb45"),
+                            Id = new Guid("6454f469-be9d-6322-23cc-67d0c099bf33"),
+                            Actions = new List<string> { "READ", "CREATE", "UPDATE", "DELETE" },
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("6ed448d2-c4b5-3cd5-e185-c6793bd3b152"),
+                            ModuleKey = "PAYMENT",
                             RoleId = new Guid("4534e34a-3a31-ef0c-2a17-b57ea1d45cb6"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("382fca83-7d5e-f15c-64fb-d58c212e3774"),
+                            Id = new Guid("7207671f-3e58-dec0-c03c-256591af4c2f"),
+                            Actions = new List<string> { "READ", "CREATE", "UPDATE", "DELETE" },
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("7765f93c-ad43-8f7e-d12e-ffd3718e09c9"),
+                            ModuleKey = "COUPON",
                             RoleId = new Guid("724add9f-febd-c615-19db-8e526968da25"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("93a44a8c-a499-bc6d-b156-cd02044f85eb"),
+                            Id = new Guid("792de7db-6f24-f089-86c7-bebcf98f0fbb"),
+                            Actions = new List<string> { "READ", "CREATE", "UPDATE", "DELETE" },
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("7765f93c-ad43-8f7e-d12e-ffd3718e09c9"),
+                            ModuleKey = "COUPON",
                             RoleId = new Guid("4534e34a-3a31-ef0c-2a17-b57ea1d45cb6"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("d4bf4b07-95cd-5c10-daff-8844445ac205"),
+                            Id = new Guid("95fa54d7-c059-2560-77ef-5580ce321834"),
+                            Actions = new List<string> { "READ", "CREATE", "UPDATE", "DELETE" },
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("8b5cc96d-89b7-43a0-f90a-117e24243bf4"),
+                            ModuleKey = "LOYALTY",
                             RoleId = new Guid("724add9f-febd-c615-19db-8e526968da25"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("0a0ad000-30e2-e219-d9ac-84394c6e5bf9"),
+                            Id = new Guid("23656d51-12f7-68d9-7f6d-29e7cd61b1ef"),
+                            Actions = new List<string> { "READ", "CREATE", "UPDATE", "DELETE" },
                             CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
-                            PermissionId = new Guid("8b5cc96d-89b7-43a0-f90a-117e24243bf4"),
+                            ModuleKey = "LOYALTY",
                             RoleId = new Guid("4534e34a-3a31-ef0c-2a17-b57ea1d45cb6"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         });
@@ -1593,6 +946,10 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
                         .HasColumnType("character varying(20)")
                         .HasColumnName("phone_number");
 
+                    b.Property<Guid?>("RoleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("role_id");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -1618,6 +975,8 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
                     b.HasIndex("Email")
                         .IsUnique();
 
+                    b.HasIndex("RoleId");
+
                     b.HasIndex("TenantId");
 
                     b.HasIndex("Username")
@@ -1635,67 +994,11 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
                             IsEmailVerified = true,
                             LastName = "Admin",
                             PasswordHash = "$2a$11$rR/VYsNgEYRwaJt/bMn2ieq.izZrI8dUMfd4yottdElTWQL/vh7eO",
+                            RoleId = new Guid("724add9f-febd-c615-19db-8e526968da25"),
                             Status = "Ativo",
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             Username = "admin"
                         });
-                });
-
-            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant.BankDetailsEntity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("AccountNumber")
-                        .HasColumnType("text")
-                        .HasColumnName("account_number");
-
-                    b.Property<int?>("AccountType")
-                        .HasColumnType("integer")
-                        .HasColumnName("account_type");
-
-                    b.Property<string>("Agency")
-                        .HasColumnType("text")
-                        .HasColumnName("agency");
-
-                    b.Property<int?>("BankId")
-                        .HasColumnType("integer")
-                        .HasColumnName("bank_id");
-
-                    b.Property<string>("BankName")
-                        .HasColumnType("text")
-                        .HasColumnName("bank_name");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsPixKeySelected")
-                        .HasColumnType("boolean")
-                        .HasColumnName("pix_key_selected");
-
-                    b.Property<string>("PixKey")
-                        .HasColumnType("text")
-                        .HasColumnName("pix_key");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("tenant_id");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TenantId");
-
-                    b.ToTable("bank_details");
                 });
 
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant.TenantEntity", b =>
@@ -1899,34 +1202,6 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
                     b.Navigation("Application");
                 });
 
-            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.AccessControl.PermissionEntity", b =>
-                {
-                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.AccessControl.ModuleEntity", "Module")
-                        .WithMany("Permissions")
-                        .HasForeignKey("ModuleId");
-
-                    b.Navigation("Module");
-                });
-
-            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.AccessControl.PermissionOperationEntity", b =>
-                {
-                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.AccessControl.OperationEntity", "Operation")
-                        .WithMany("PermissionOperations")
-                        .HasForeignKey("OperationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.AccessControl.PermissionEntity", "Permission")
-                        .WithMany("PermissionOperations")
-                        .HasForeignKey("PermissionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Operation");
-
-                    b.Navigation("Permission");
-                });
-
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.AccessControl.RoleAccessGroupEntity", b =>
                 {
                     b.HasOne("OpaMenu.Infrastructure.Shared.Entities.AccessControl.AccessGroupEntity", "AccessGroup")
@@ -1948,32 +1223,22 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
 
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.AccessControl.RolePermissionEntity", b =>
                 {
-                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.AccessControl.PermissionEntity", "Permission")
-                        .WithMany("RolePermissions")
-                        .HasForeignKey("PermissionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("OpaMenu.Infrastructure.Shared.Entities.AccessControl.RoleEntity", "Role")
                         .WithMany("RolePermissions")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Permission");
-
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant.BankDetailsEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts.UserAccountEntity", b =>
                 {
-                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant.TenantEntity", "Tenant")
-                        .WithMany("BankDetails")
-                        .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.AccessControl.RoleEntity", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId");
 
-                    b.Navigation("Tenant");
+                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.AccessControl.AccessGroupEntity", b =>
@@ -1993,23 +1258,6 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
                     b.Navigation("AccessGroups");
                 });
 
-            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.AccessControl.ModuleEntity", b =>
-                {
-                    b.Navigation("Permissions");
-                });
-
-            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.AccessControl.OperationEntity", b =>
-                {
-                    b.Navigation("PermissionOperations");
-                });
-
-            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.AccessControl.PermissionEntity", b =>
-                {
-                    b.Navigation("PermissionOperations");
-
-                    b.Navigation("RolePermissions");
-                });
-
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.AccessControl.RoleEntity", b =>
                 {
                     b.Navigation("RoleAccessGroups");
@@ -2020,11 +1268,6 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts.UserAccountEntity", b =>
                 {
                     b.Navigation("AccountAccessGroups");
-                });
-
-            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant.TenantEntity", b =>
-                {
-                    b.Navigation("BankDetails");
                 });
 #pragma warning restore 612, 618
         }

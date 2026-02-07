@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts.Enum;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -13,13 +14,6 @@ public static class AccessControlDbContextSeed
 
     public static void AccessControlSeed(this ModelBuilder modelBuilder)
     {
-        // 1. Operations
-        var opRead = CreateOperation("READ", "Leitura", "Permite visualizar registros");
-        var opCreate = CreateOperation("CREATE", "Criação", "Permite criar novos registros");
-        var opUpdate = CreateOperation("UPDATE", "Atualização", "Permite atualizar registros existentes");
-        var opDelete = CreateOperation("DELETE", "Exclusão", "Permite excluir registros");
-
-        modelBuilder.Entity<OperationEntity>().HasData(opRead, opCreate, opUpdate, opDelete);
 
         // 2. Group Types
         var gtSystemAdmin = CreateGroupType("SYSTEM_ADMIN", "Administradores do Sistema", "Equipe de analistas do sistema");
@@ -58,35 +52,40 @@ public static class AccessControlDbContextSeed
 
         modelBuilder.Entity<ModuleEntity>().HasData(modules);
 
-        // 6. Permissions & 7. Links
-        var permissions = new List<PermissionEntity>();
-        var permissionOperations = new List<PermissionOperationEntity>();
+        // 6. Role Permissions (New Flattened Format)
         var rolePermissions = new List<RolePermissionEntity>();
+        var allActions = new List<string> { "READ", "CREATE", "UPDATE", "DELETE" };
 
         foreach (var module in modules)
         {
-            var permission = CreatePermission(module);
-            permissions.Add(permission);
-
-            // Link Permission -> Operations (All 4)
-            permissionOperations.Add(CreatePermissionOperation(permission.Id, opRead.Id));
-            permissionOperations.Add(CreatePermissionOperation(permission.Id, opCreate.Id));
-            permissionOperations.Add(CreatePermissionOperation(permission.Id, opUpdate.Id));
-            permissionOperations.Add(CreatePermissionOperation(permission.Id, opDelete.Id));
-
-            // Link Role -> Permission
             // SUPER_ADMIN gets everything
-            rolePermissions.Add(CreateRolePermission(roleSuperAdmin.Id, permission.Id));
+            rolePermissions.Add(new RolePermissionEntity
+            {
+                Id = GenerateId($"RP_SUPER_{module.Key}"),
+                RoleId = roleSuperAdmin.Id,
+                ModuleKey = module.Key,
+                Actions = allActions,
+                IsActive = true,
+                CreatedAt = _seedDate,
+                UpdatedAt = _seedDate
+            });
 
-            // ADMIN gets everything (for now)
-            rolePermissions.Add(CreateRolePermission(roleAdmin.Id, permission.Id));
+            // ADMIN gets everything
+            rolePermissions.Add(new RolePermissionEntity
+            {
+                Id = GenerateId($"RP_ADMIN_{module.Key}"),
+                RoleId = roleAdmin.Id,
+                ModuleKey = module.Key,
+                Actions = allActions,
+                IsActive = true,
+                CreatedAt = _seedDate,
+                UpdatedAt = _seedDate
+            });
         }
 
-        modelBuilder.Entity<PermissionEntity>().HasData(permissions);
-        modelBuilder.Entity<PermissionOperationEntity>().HasData(permissionOperations);
         modelBuilder.Entity<RolePermissionEntity>().HasData(rolePermissions);
 
-        // Link Role -> AccessGroup
+        // Link Role -> AccessGroup (Keep for backward compatibility if needed, but the plan is to move to direct Roles)
         var roleAccessGroups = new List<RoleAccessGroupEntity>
         {
             CreateRoleAccessGroup(roleSuperAdmin.Id, groupSystemAdmin.Id),
@@ -98,7 +97,7 @@ public static class AccessControlDbContextSeed
         // 8. Initial User (System Admin)
         // Note: Using a fixed hash is required to prevent "PendingModelChangesWarning" because BCrypt generates a new salt every time.
         // Password: "Abc@123"
-        var userAdmin = CreateUserAccount("admin", "admin@opamenu.com.br", "System", "Admin", "$2a$11$rR/VYsNgEYRwaJt/bMn2ieq.izZrI8dUMfd4yottdElTWQL/vh7eO");
+        var userAdmin = CreateUserAccount("admin", "admin@opamenu.com.br", "System", "Admin", "$2a$11$rR/VYsNgEYRwaJt/bMn2ieq.izZrI8dUMfd4yottdElTWQL/vh7eO", roleSuperAdmin.Id);
         modelBuilder.Entity<UserAccountEntity>().HasData(userAdmin);
 
         // 9. Link User -> AccessGroup (System Admin Group)
@@ -107,19 +106,6 @@ public static class AccessControlDbContextSeed
     }
 
 
-    private static OperationEntity CreateOperation(string value, string name, string description)
-    {
-        return new OperationEntity
-        {
-            Id = GenerateId($"OP_{value}"),
-            Value = value,
-            Name = name,
-            Description = description,
-            IsActive = true,
-            CreatedAt = _seedDate,
-            UpdatedAt = _seedDate
-        };
-    }
 
     private static GroupTypeEntity CreateGroupType(string code, string name, string description)
     {
@@ -180,38 +166,15 @@ public static class AccessControlDbContextSeed
         };
     }
 
-    private static PermissionEntity CreatePermission(ModuleEntity module)
-    {
-        return new PermissionEntity
-        {
-            Id = GenerateId($"PERM_{module.Key}"),
-            ModuleId = module.Id,
-            IsActive = true,
-            CreatedAt = _seedDate,
-            UpdatedAt = _seedDate
-        };
-    }
 
-    private static PermissionOperationEntity CreatePermissionOperation(Guid permissionId, Guid operationId)
-    {
-        return new PermissionOperationEntity
-        {
-            Id = GenerateId($"PO_{permissionId}_{operationId}"),
-            PermissionId = permissionId,
-            OperationId = operationId,
-            IsActive = true,
-            CreatedAt = _seedDate,
-            UpdatedAt = _seedDate
-        };
-    }
-
-    private static RolePermissionEntity CreateRolePermission(Guid roleId, Guid permissionId)
+    private static RolePermissionEntity CreateRolePermission(Guid roleId, string moduleKey, List<string> actions)
     {
         return new RolePermissionEntity
         {
-            Id = GenerateId($"RP_{roleId}_{permissionId}"),
+            Id = GenerateId($"RP_{roleId}_{moduleKey}"),
             RoleId = roleId,
-            PermissionId = permissionId,
+            ModuleKey = moduleKey,
+            Actions = actions,
             IsActive = true,
             CreatedAt = _seedDate,
             UpdatedAt = _seedDate
@@ -240,7 +203,7 @@ public static class AccessControlDbContextSeed
         }
     }
 
-    private static UserAccountEntity CreateUserAccount(string username, string email, string firstName, string lastName, string passwordHash)
+    private static UserAccountEntity CreateUserAccount(string username, string email, string firstName, string lastName, string passwordHash, Guid? roleId)
     {
         return new UserAccountEntity
         {
@@ -252,6 +215,7 @@ public static class AccessControlDbContextSeed
             PasswordHash = passwordHash,
             Status = EUserAccountStatus.Ativo,
             IsEmailVerified = true,
+            RoleId = roleId,
             CreatedAt = _seedDate,
             UpdatedAt = _seedDate
         };

@@ -140,6 +140,9 @@ public class ProductRepository(
     {
         return await _dbSet
             .Include(p => p.Category)
+            .Include(p => p.AditionalGroups)
+                .ThenInclude(pag => pag.AditionalGroup)
+                    .ThenInclude(ag => ag.Aditionals)
             .Where(p => p.TenantId == tenantId && p.IsActive && p.Category.IsActive)
             .OrderBy(p => p.Category.DisplayOrder)
             .ThenBy(p => p.DisplayOrder)
@@ -151,9 +154,9 @@ public class ProductRepository(
     {
         return await _dbSet
             .Include(p => p.Category)
-            .Include(p => p.AddonGroups)
-                .ThenInclude(pag => pag.AddonGroup)
-                    .ThenInclude(ag => ag.Addons)
+            .Include(p => p.AditionalGroups)
+                .ThenInclude(pag => pag.AditionalGroup)
+                    .ThenInclude(ag => ag.Aditionals)
             .FirstOrDefaultAsync(p => p.Id == id && p.TenantId == tenantId);
     }
 }

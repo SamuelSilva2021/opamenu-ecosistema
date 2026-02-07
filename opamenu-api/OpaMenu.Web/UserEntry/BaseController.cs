@@ -189,8 +189,8 @@ namespace OpaMenu.Web.UserEntry
         public const string MODULE_DASHBOARD = "DASHBOARD";
         public const string MODULE_CATEGORY = "CATEGORY";
         public const string MODULE_PRODUCT = "PRODUCT";
-        public const string MODULE_ADDON_GROUP = "ADDON_GROUP";
-        public const string MODULE_ADDON = "ADDON";
+        public const string MODULE_ADITIONAL_GROUP = "ADITIONAL_GROUP";
+        public const string MODULE_ADITIONAL = "ADITIONAL";
         public const string ORDER = "ORDER";
         public const string MODULE_TABLE = "TABLE";
         public const string MODULE_COUPON = "COUPON";

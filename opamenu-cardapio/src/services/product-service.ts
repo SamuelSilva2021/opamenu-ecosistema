@@ -47,7 +47,7 @@ export class ProductService {
     pageSize?: number;
   }): Promise<PaginatedResponse<Product>> {
     const params: Record<string, string> = {};
-    
+
     if (filters?.categoryId) params.categoryId = filters.categoryId;
     if (filters?.search) params.search = filters.search;
     if (filters?.isActive !== undefined) params.isActive = filters.isActive.toString();
@@ -145,36 +145,36 @@ export const getCachedProducts = async (slug?: string): Promise<Product[]> => {
   if (!slug) return [];
 
   const cacheKey = `menu-products-${slug}`;
-  
+
   // Tentar buscar do cache primeiro
   const cached = cacheService.get<ProductDto[]>(cacheKey);
   if (cached) {
     return cached;
   }
-  
+
   // Buscar da API e cachear
   const menuResponse = await productService.getMenuProductsBySlug(slug);
   const items = menuResponse.products || [];
   const mapped = items.map(mapProductDtoToProduct);
   cacheService.set(cacheKey, mapped, 10);
-  return mapped; 
+  return mapped;
 };
 
 export const getCachedCategories = async (slug?: string): Promise<Category[]> => {
   if (!slug) return [];
 
   const cacheKey = `active-categories-${slug}`;
-  
+
   // Tentar buscar do cache primeiro
   const cached = cacheService.get<Category[]>(cacheKey);
   if (cached) {
     return cached;
   }
-  
+
   // Buscar da API e cachear
   const categories = await categoryService.getActiveCategoriesBySlug(slug);
   cacheService.set(cacheKey, categories, 30); // Cache por 30 minutos
-  
+
   return categories;
 };
 
@@ -183,44 +183,52 @@ export const getCachedProductWithAddons = async (productId: string, slug?: strin
   if (!slug) throw new Error("Slug required");
 
   const cacheKey = `product-with-addons-${slug}-${productId}`;
-  
+
   // Tentar buscar do cache primeiro
   const cached = cacheService.get<ProductWithAddons>(cacheKey);
   if (cached) {
     return cached;
   }
-  
+
   // Buscar da API e cachear
   const product = await productService.getProductByIdAndSlug(productId, slug);
 
-  const wrappers: ProductAddonGroupResponseDto[] = product.addonGroups || [];
+  const wrappers: ProductAddonGroupResponseDto[] = product.aditionalGroups || [];
 
-  const mappedAddonGroups: AddonGroup[] = wrappers.map((wrapper) => {
-    const group = wrapper.addonGroup;
-    const minSelections = wrapper.minSelectionsOverride ?? group.minSelections;
-    const maxSelections = wrapper.maxSelectionsOverride ?? group.maxSelections;
-    const addons: Addon[] = group.addons.map((a) => ({
-      id: a.id,
-      name: a.name,
-      description: a.description,
-      price: a.price,
-      isActive: a.isActive,
-      displayOrder: a.displayOrder,
-    }));
+  const mappedAddonGroups: AddonGroup[] = wrappers
+    .map((wrapper) => {
+      const group = wrapper.aditionalGroup;
 
-    return {
-      id: group.id,
-      name: group.name,
-      description: group.description,
-      type: group.type,
-      minSelections,
-      maxSelections,
-      isRequired: wrapper.isRequired,
-      displayOrder: wrapper.displayOrder,
-      isActive: group.isActive,
-      addons,
-    };
-  });
+      if (!group) {
+        console.warn('⚠️ ProductAddonGroup missing aditionalGroup data:', wrapper);
+        return null;
+      }
+
+      const minSelections = wrapper.minSelectionsOverride ?? group.minSelections;
+      const maxSelections = wrapper.maxSelectionsOverride ?? group.maxSelections;
+      const addons: Addon[] = (group.aditionals || []).map((a) => ({
+        id: a.id,
+        name: a.name,
+        description: a.description,
+        price: a.price,
+        isActive: a.isActive,
+        displayOrder: a.displayOrder,
+      }));
+
+      return {
+        id: group.id,
+        name: group.name,
+        description: group.description || undefined,
+        type: group.type,
+        minSelections,
+        maxSelections,
+        isRequired: wrapper.isRequired,
+        displayOrder: wrapper.displayOrder,
+        isActive: group.isActive,
+        addons,
+      } as AddonGroup;
+    })
+    .filter((g): g is AddonGroup => g !== null);
 
   mappedAddonGroups.sort((a, b) => a.displayOrder - b.displayOrder);
 
@@ -230,7 +238,7 @@ export const getCachedProductWithAddons = async (productId: string, slug?: strin
   };
 
   cacheService.set(cacheKey, productWithAddons, 5); // Cache por 5 minutos
-  
+
   return productWithAddons;
 };
 
@@ -259,7 +267,7 @@ export const validateApiConnection = async (): Promise<boolean> => {
   try {
     const products = await productService.getMenuProducts();
     const categories = await categoryService.getActiveCategories();
-    
+
     return true;
   } catch (error) {
     return false;

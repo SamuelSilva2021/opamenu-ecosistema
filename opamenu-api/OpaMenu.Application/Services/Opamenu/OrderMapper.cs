@@ -131,7 +131,7 @@ public class OrderMapper : IOrderMapper
             Subtotal = orderItem.Subtotal,
             Notes = orderItem.Notes,
             ImageUrl = orderItem.Product?.ImageUrl,
-            Addons = orderItem.Addons?.Select(MapToOrderItemAddonDto).ToList() ?? new List<OrderItemAddonResponseDto>()
+            Aditionals = orderItem.Aditionals?.Select(MapToOrderItemAditionalDto).ToList() ?? new List<OrderItemAditionalResponseDto>()
         };
     }
 
@@ -149,38 +149,27 @@ public class OrderMapper : IOrderMapper
     }
 
     /// <summary>
-    /// Mapeia uma entidade OrderItemAddon para OrderItemAddonResponseDto
+    /// Mapeia uma entidade OrderItemAditional para OrderItemAditionalResponseDto
     /// </summary>
-    /// <param name="orderItemAddon">Entidade OrderItemAddon</param>
-    /// <returns>OrderItemAddonResponseDto mapeado</returns>
-    public OrderItemAddonResponseDto MapToOrderItemAddonDto(OrderItemAddonEntity orderItemAddon)
+    /// <param name="orderItemAditional">Entidade OrderItemAditional</param>
+    /// <returns>OrderItemAditionalResponseDto mapeado</returns>
+    public OrderItemAditionalResponseDto MapToOrderItemAditionalDto(OrderItemAditionalEntity orderItemAditional)
     {
-        if (orderItemAddon == null)
-            throw new ArgumentNullException(nameof(orderItemAddon));
+        if (orderItemAditional == null)
+            throw new ArgumentNullException(nameof(orderItemAditional));
 
-        return new OrderItemAddonResponseDto
+        return new OrderItemAditionalResponseDto
         {
-            Id = orderItemAddon.Id,
-            AddonId = orderItemAddon.AddonId,
-            AddonName = orderItemAddon.AddonName,
-            UnitPrice = orderItemAddon.UnitPrice,
-            Quantity = orderItemAddon.Quantity,
-            Subtotal = orderItemAddon.Subtotal
+            Id = orderItemAditional.Id,
+            AditionalId = orderItemAditional.AditionalId,
+            AditionalName = orderItemAditional.AditionalName,
+            UnitPrice = orderItemAditional.UnitPrice,
+            Quantity = orderItemAditional.Quantity,
+            Subtotal = orderItemAditional.Subtotal
         };
     }
 
-    /// <summary>
-    /// Mapeia uma coleÃ§Ã£o de entidades OrderItemAddon para OrderItemAddonResponseDto
-    /// </summary>
-    /// <param name="orderItemAddons">ColeÃ§Ã£o de entidades OrderItemAddon</param>
-    /// <returns>ColeÃ§Ã£o de OrderItemAddonResponseDto mapeados</returns>
-    public IEnumerable<OrderItemAddonResponseDto> MapToOrderItemAddonDtos(IEnumerable<OrderItemAddonEntity> orderItemAddons)
-    {
-        if (orderItemAddons == null)
-            return Enumerable.Empty<OrderItemAddonResponseDto>();
 
-        return orderItemAddons.Select(MapToOrderItemAddonDto);
-    }
 
     /// <summary>
     /// Mapeia um CreateOrderItemRequestDto para entidade OrderItem
@@ -201,23 +190,23 @@ public class OrderMapper : IOrderMapper
             UnitPrice = 0,
             Subtotal = 0, 
             Notes = request.Notes,
-            Addons = new List<OrderItemAddonEntity>()
+            Aditionals = new List<OrderItemAditionalEntity>()
         };
 
-        // Mapear addons
-        if (request.Addons?.Any() == true)
+        // Mapear aditionals
+        if (request.Aditionals?.Any() == true)
         {
-            foreach (var addonRequest in request.Addons)
+            foreach (var aditionalRequest in request.Aditionals)
             {
-                var addon = new OrderItemAddonEntity
+                var aditional = new OrderItemAditionalEntity
                 {
                     OrderItemId = orderId, 
-                    AddonId = addonRequest.AddonId,
-                    Quantity = addonRequest.Quantity,
+                    AditionalId = aditionalRequest.AditionalId,
+                    Quantity = aditionalRequest.Quantity,
                     UnitPrice = 0,
                     Subtotal = 0 
                 };
-                orderItem.Addons.Add(addon);
+                orderItem.Aditionals.Add(aditional);
             }
         }
 

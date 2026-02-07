@@ -37,7 +37,6 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context.MultTenant
             modelBuilder.Ignore<UserAccountEntity>();
             modelBuilder.Ignore<AccessGroupEntity>();
             modelBuilder.Ignore<RoleEntity>();
-            modelBuilder.Ignore<PermissionEntity>();
 
             modelBuilder.Entity<TenantEntity>(entity =>
             {

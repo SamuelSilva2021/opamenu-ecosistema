@@ -1,21 +1,21 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
-  MoreHorizontal, 
+import {
+  Plus,
+  Edit,
+  Trash2,
+  MoreHorizontal,
   ArrowUpDown,
   Search,
   Filter,
   ImageIcon,
   Layers
 } from "lucide-react";
-import { 
-  useReactTable, 
-  getCoreRowModel, 
-  getFilteredRowModel, 
-  getPaginationRowModel, 
+import {
+  useReactTable,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
   getSortedRowModel,
   flexRender,
   type ColumnDef,
@@ -27,7 +27,7 @@ import { productsService } from "../products.service";
 import { categoriesService } from "@/features/categories/categories.service";
 import type { Product, CreateProductRequest, UpdateProductRequest } from "../types";
 import { ProductForm } from "../components/ProductForm";
-import { ProductAddonGroupManager } from "../components/ProductAddonGroupManager";
+import { ProductAditionalGroupManager } from "../components/ProductAditionalGroupManager";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -75,8 +75,8 @@ export default function ProductsPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [manageAddonGroupsProductId, setManageAddonGroupsProductId] = useState<string | null>(null);
-  
+  const [manageAditionalGroupsProductId, setManageAditionalGroupsProductId] = useState<string | null>(null);
+
   // Table states
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -312,7 +312,7 @@ export default function ProductsPage() {
                     <Edit className="mr-2 h-4 w-4" />
                     Editar
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setManageAddonGroupsProductId(product.id)}>
+                  <DropdownMenuItem onClick={() => setManageAditionalGroupsProductId(product.id)}>
                     <Layers className="mr-2 h-4 w-4" />
                     Gerenciar Adicionais
                   </DropdownMenuItem>
@@ -324,7 +324,7 @@ export default function ProductsPage() {
               )}
               {canEdit && canDelete && <DropdownMenuSeparator />}
               {canDelete && (
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={() => setDeleteId(product.id)}
                   className="text-red-600 focus:text-red-600"
                 >
@@ -403,7 +403,7 @@ export default function ProductsPage() {
                   ))}
                 </SelectContent>
               </Select>
-              
+
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-full sm:w-[180px]">
                   <div className="flex items-center gap-2">
@@ -421,7 +421,7 @@ export default function ProductsPage() {
           </div>
 
           <div className="rounded-md border overflow-hidden">
-             <div className="overflow-x-auto">
+            <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   {table.getHeaderGroups().map((headerGroup) => (
@@ -432,9 +432,9 @@ export default function ProductsPage() {
                             {header.isPlaceholder
                               ? null
                               : flexRender(
-                                  header.column.columnDef.header,
-                                  header.getContext()
-                                )}
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
                           </TableHead>
                         );
                       })}
@@ -465,7 +465,7 @@ export default function ProductsPage() {
                         className="h-24 text-center"
                       >
                         {isLoading ? (
-                           <div className="flex items-center justify-center py-4">
+                          <div className="flex items-center justify-center py-4">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                           </div>
                         ) : (
@@ -508,11 +508,11 @@ export default function ProductsPage() {
         isLoading={createMutation.isPending || updateMutation.isPending}
       />
 
-      <ProductAddonGroupManager
-        productId={manageAddonGroupsProductId}
-        productName={products.find(p => p.id === manageAddonGroupsProductId)?.name}
-        open={!!manageAddonGroupsProductId}
-        onOpenChange={(open) => !open && setManageAddonGroupsProductId(null)}
+      <ProductAditionalGroupManager
+        productId={manageAditionalGroupsProductId}
+        productName={products.find(p => p.id === manageAditionalGroupsProductId)?.name}
+        open={!!manageAditionalGroupsProductId}
+        onOpenChange={(open) => !open && setManageAditionalGroupsProductId(null)}
       />
 
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>

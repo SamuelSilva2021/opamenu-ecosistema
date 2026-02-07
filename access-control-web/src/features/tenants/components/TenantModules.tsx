@@ -19,8 +19,8 @@ import {
   Apps as AppsIcon,
   Close as CloseIcon,
 } from '@mui/icons-material';
-import type { TenantSummary, Module, Permission } from '../../../shared/types';
-import { ModuleService, PermissionService } from '../../../shared/services';
+import type { TenantSummary, Module } from '../../../shared/types';
+import { ModuleService, TenantService } from '../../../shared/services';
 
 export interface TenantModulesProps {
   open: boolean;
@@ -30,11 +30,10 @@ export interface TenantModulesProps {
 
 interface TenantModuleState {
   modules: Module[];
-  permissions: Permission[];
 }
 
 export const TenantModules = ({ open, tenant, onClose }: TenantModulesProps) => {
-  const [state, setState] = useState<TenantModuleState>({ modules: [], permissions: [] });
+  const [state, setState] = useState<TenantModuleState>({ modules: [] });
   const [selectedModuleIds, setSelectedModuleIds] = useState<string[]>([]);
   const [initialModuleIds, setInitialModuleIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -50,18 +49,15 @@ export const TenantModules = ({ open, tenant, onClose }: TenantModulesProps) => 
     setError(null);
 
     try {
-      const [modulesResponse, tenantPermissions] = await Promise.all([
+      const [modulesResponse, tenantModules] = await Promise.all([
         ModuleService.getModules({ page: 1, limit: 100 }),
-        PermissionService.getPermissionsByTenant(tenant.id),
+        TenantService.getModules(tenant.id),
       ]);
 
       const modules = modulesResponse.data.filter(module => module.isActive);
+      const activeModuleIds = tenantModules.map(m => m.id);
 
-      const activeModuleIds = tenantPermissions
-        .filter(permission => permission.isActive && permission.moduleId)
-        .map(permission => permission.moduleId as string);
-
-      setState({ modules, permissions: tenantPermissions });
+      setState({ modules });
       setSelectedModuleIds(activeModuleIds);
       setInitialModuleIds(activeModuleIds);
     } catch (err: unknown) {
@@ -105,25 +101,11 @@ export const TenantModules = ({ open, tenant, onClose }: TenantModulesProps) => 
       const toRemove = initialModuleIds.filter(id => !selectedModuleIds.includes(id));
 
       for (const moduleId of toAdd) {
-        await PermissionService.createPermission({
-          tenantId: tenant.id,
-          moduleId,
-          isActive: true,
-        });
+        await TenantService.addModule(tenant.id, moduleId);
       }
 
-      if (toRemove.length > 0) {
-        const permissionsToRemove = state.permissions.filter(
-          permission =>
-            permission.moduleId &&
-            toRemove.includes(permission.moduleId) &&
-            permission.tenantId === tenant.id &&
-            !permission.roleId,
-        );
-
-        for (const permission of permissionsToRemove) {
-          await PermissionService.deletePermission(permission.id);
-        }
+      for (const moduleId of toRemove) {
+        await TenantService.removeModule(tenant.id, moduleId);
       }
 
       setInitialModuleIds(selectedModuleIds);

@@ -40,7 +40,7 @@ namespace OpaMenu.Infrastructure.Shared.Entities.AccessControl
         /// <summary>
         /// Data em que o acesso foi concedido
         /// </summary>
-        public DateTime GrantedAt { get; set; } = DateTime.UtcNow;
+        public DateTime GrantedAt { get; set; }
 
         /// <summary>
         /// Data de expiração do relacionamento
@@ -50,12 +50,12 @@ namespace OpaMenu.Infrastructure.Shared.Entities.AccessControl
         /// <summary>
         /// Data de criação do relacionamento
         /// </summary>
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; }
 
         /// <summary>
         /// Data de atualização
         /// </summary>
-        public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; set; }
 
         // Navigation properties
         public virtual UserAccountEntity UserAccount { get; set; } = null!;

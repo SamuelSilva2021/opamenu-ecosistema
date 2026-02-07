@@ -1,149 +1,85 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from '../../features/auth';
 import { DashboardPage } from '../../features/dashboard';
-import { AccessGroupsPage } from '../../features/access-groups';
 import { ModulesPage } from '../../features/modules';
-import { OperationsPage, OperationsTestPage } from '../../features/operations';
-import { PermissionsPage } from '../../features/permissions';
 import { RolesPage } from '../../features/roles';
 import { UsersPage } from '../../features/users';
 import { TenantsPage } from '../../features/tenants';
 import { ProtectedRoute } from './ProtectedRoute';
 import { MainLayout } from '../../shared/components';
 import { ROUTES } from '../../shared/constants';
-import { GroupTypesPage } from '../../features/group-types';
 
 export const AppRoutes = () => {
   return (
     <Routes>
       {/* Rota raiz - redireciona para dashboard */}
       <Route path="/" element={<Navigate to={ROUTES.DASHBOARD} replace />} />
-      
+
       {/* Rota de login - pública */}
       <Route path={ROUTES.LOGIN} element={<LoginPage />} />
-      
+
       {/* Rotas protegidas com layout */}
-      <Route 
-        path={ROUTES.DASHBOARD} 
+      <Route
+        path={ROUTES.DASHBOARD}
         element={
           <ProtectedRoute>
             <MainLayout>
               <DashboardPage />
             </MainLayout>
           </ProtectedRoute>
-        } 
+        }
       />
-      
-      {/* Rotas de Access Groups */}
-      <Route 
-        path={ROUTES.ACCESS_GROUPS} 
-        element={
-          <ProtectedRoute>
-            <MainLayout>
-              <AccessGroupsPage />
-            </MainLayout>
-          </ProtectedRoute>
-        } 
-      />
-      
-      {/* Rotas de Group Types */}
-      <Route 
-        path={ROUTES.GROUP_TYPES} 
-        element={
-          <ProtectedRoute>
-            <MainLayout>
-              <GroupTypesPage />
-            </MainLayout>
-          </ProtectedRoute>
-        } 
-      />
-      
+
       {/* Rotas de Módulos */}
-      <Route 
-        path={ROUTES.MODULES} 
+      <Route
+        path={ROUTES.MODULES}
         element={
           <ProtectedRoute>
             <MainLayout>
               <ModulesPage />
             </MainLayout>
           </ProtectedRoute>
-        } 
+        }
       />
-      
-      {/* Rotas de Operações */}
-      <Route 
-        path={ROUTES.OPERATIONS} 
-        element={
-          <ProtectedRoute>
-            <MainLayout>
-              <OperationsPage />
-            </MainLayout>
-          </ProtectedRoute>
-        } 
-      />
-      
-      {/* Rota de teste para Operations */}
-      <Route 
-        path={ROUTES.OPERATIONS_TEST} 
-        element={
-          <ProtectedRoute>
-            <MainLayout>
-              <OperationsTestPage />
-            </MainLayout>
-          </ProtectedRoute>
-        } 
-      />
-      
-      {/* Rotas de Permissões */}
-      <Route 
-        path={ROUTES.PERMISSIONS} 
-        element={
-          <ProtectedRoute>
-            <MainLayout>
-              <PermissionsPage />
-            </MainLayout>
-          </ProtectedRoute>
-        } 
-      />
-      
+
       {/* Rotas de Roles */}
-      <Route 
-        path={ROUTES.ROLES} 
+      <Route
+        path={ROUTES.ROLES}
         element={
           <ProtectedRoute>
             <MainLayout>
               <RolesPage />
             </MainLayout>
           </ProtectedRoute>
-        } 
+        }
       />
-      
+
       {/* Rotas de Usuários */}
-      <Route 
-        path={ROUTES.USERS} 
+      <Route
+        path={ROUTES.USERS}
         element={
           <ProtectedRoute>
             <MainLayout>
               <UsersPage />
             </MainLayout>
           </ProtectedRoute>
-        } 
+        }
       />
 
       {/* Rotas de Tenants */}
-      <Route 
-        path={ROUTES.TENANTS} 
+      <Route
+        path={ROUTES.TENANTS}
         element={
           <ProtectedRoute>
             <MainLayout>
               <TenantsPage />
             </MainLayout>
           </ProtectedRoute>
-        } 
+        }
       />
-      
+
       {/* TODO: Adicionar mais rotas conforme necessário */}
-      
+
       {/* Rota de fallback - redireciona para dashboard */}
       <Route path="*" element={<Navigate to={ROUTES.DASHBOARD} replace />} />
     </Routes>

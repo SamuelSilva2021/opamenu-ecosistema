@@ -33,7 +33,7 @@ namespace OpaMenu.Domain.DTOs.Product
         // Category information
         public string CategoryName { get; set; } = string.Empty;
         
-        // Addon Groups information
-        public List<ProductAddonGroupResponseDto> AddonGroups { get; set; } = new();
+        // Aditional Groups information
+        public List<ProductAditionalGroupResponseDto> AditionalGroups { get; set; } = new();
     }
 }

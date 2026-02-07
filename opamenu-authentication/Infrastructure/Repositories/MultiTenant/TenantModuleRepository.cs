@@ -30,5 +30,10 @@ namespace Authenticator.API.Infrastructure.Repositories.MultiTenant
             await _dbSet.AddRangeAsync(modules);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<TenantModuleEntity?> GetByTenantAndModuleIdAsync(Guid tenantId, Guid moduleId)
+        {
+            return await _dbSet.FirstOrDefaultAsync(tm => tm.TenantId == tenantId && tm.ModuleId == moduleId);
+        }
     }
 }

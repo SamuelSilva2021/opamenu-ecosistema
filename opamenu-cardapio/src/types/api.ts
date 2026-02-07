@@ -20,7 +20,7 @@ export interface TenantBusinessResponseDto {
   addressCity?: string;
   addressState?: string;
   addressZipcode?: string;
-  openingHours?: string | object; 
+  openingHours?: string | object;
   paymentMethods?: string | object;
   latitude?: number;
   longitude?: number;
@@ -84,14 +84,14 @@ export interface AddonGroupResponseDto {
   isRequired: boolean;
   displayOrder: number;
   isActive: boolean;
-  addons: AddonResponseDto[];
+  aditionals: AddonResponseDto[];
 }
 
 export interface ProductAddonGroupResponseDto {
   id: string;
   productId: string;
-  addonGroupId: string;
-  addonGroup: AddonGroupResponseDto;
+  aditionalGroupId: string; // Also likely aditionalGroupId based on C# AditionalGroupId
+  aditionalGroup: AddonGroupResponseDto;
   displayOrder: number;
   isRequired: boolean;
   minSelectionsOverride?: number;
@@ -110,7 +110,7 @@ export interface ProductDto {
   createdAt: string;
   updatedAt: string;
   categoryName: string;
-  addonGroups: ProductAddonGroupResponseDto[];
+  aditionalGroups: ProductAddonGroupResponseDto[];
 }
 
 export interface CategoryResponseDto {

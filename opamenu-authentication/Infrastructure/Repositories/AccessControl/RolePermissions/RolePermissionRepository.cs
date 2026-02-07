@@ -23,9 +23,7 @@ namespace Authenticator.API.Infrastructure.Repositories.AccessControl.RolePermis
             {
                 return await GetAllAsync(
                     filter: rp => rp.RoleId == roleId,
-                    include: query => query
-                        .Include(rp => rp.Role)
-                        .Include(rp => rp.Permission)
+                    include: query => query.Include(rp => rp.Role)
                 );
             }
             catch (Exception ex)
@@ -35,39 +33,19 @@ namespace Authenticator.API.Infrastructure.Repositories.AccessControl.RolePermis
             }
         }
 
-        public async Task<IEnumerable<RolePermissionEntity>> GetByPermissionIdAsync(Guid permissionId)
-        {
-            try
-            {
-                return await GetAllAsync(
-                    filter: rp => rp.PermissionId == permissionId && rp.IsActive,
-                    include: query => query
-                        .Include(rp => rp.Role)
-                        .Include(rp => rp.Permission)
-                );
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao buscar relações por permissão {PermissionId}", permissionId);
-                throw;
-            }
-        }
-
-        public async Task<RolePermissionEntity?> GetByRoleAndPermissionAsync(Guid roleId, Guid permissionId)
+        public async Task<RolePermissionEntity?> GetByRoleAndModuleAsync(Guid roleId, string moduleKey)
         {
             try
             {
                 var relations = await GetAllAsync(
-                    filter: rp => rp.RoleId == roleId && rp.PermissionId == permissionId && rp.IsActive,
-                    include: query => query
-                        .Include(rp => rp.Role)
-                        .Include(rp => rp.Permission)
+                    filter: rp => rp.RoleId == roleId && rp.ModuleKey == moduleKey && rp.IsActive,
+                    include: query => query.Include(rp => rp.Role)
                 );
                 return relations.FirstOrDefault();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao buscar relação entre role {RoleId} e permissão {PermissionId}", roleId, permissionId);
+                _logger.LogError(ex, "Erro ao buscar relação entre role {RoleId} e módulo {ModuleKey}", roleId, moduleKey);
                 throw;
             }
         }
@@ -92,11 +70,11 @@ namespace Authenticator.API.Infrastructure.Repositories.AccessControl.RolePermis
             }
         }
 
-        public async Task<bool> RemoveByRoleAndPermissionsAsync(Guid roleId, IEnumerable<Guid> permissionIds)
+        public async Task<bool> RemoveByRoleAndModulesAsync(Guid roleId, IEnumerable<string> moduleKeys)
         {
             try
             {
-                var relations = await GetAllAsync(rp => rp.RoleId == roleId && permissionIds.Contains(rp.PermissionId) && rp.IsActive);
+                var relations = await GetAllAsync(rp => rp.RoleId == roleId && moduleKeys.Contains(rp.ModuleKey) && rp.IsActive);
                 foreach (var relation in relations)
                 {
                     relation.IsActive = false;
@@ -107,7 +85,7 @@ namespace Authenticator.API.Infrastructure.Repositories.AccessControl.RolePermis
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao remover relações específicas do role {RoleId}", roleId);
+                _logger.LogError(ex, "Erro ao remover relações específicas por módulo do role {RoleId}", roleId);
                 throw;
             }
         }

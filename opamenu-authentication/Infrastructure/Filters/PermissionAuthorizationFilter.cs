@@ -100,9 +100,22 @@ namespace Authenticator.API.Infrastructure.Filters
 
                 if (userInfoResponse.Succeeded && userInfoResponse.Data != null)
                 {
-                    var accessGroup = userInfoResponse.Data.Permissions.AccessGroups;
-                    var roles = accessGroup.SelectMany(ag => ag.Roles).ToList();
-                    modules = roles.SelectMany(r => r.Modules).DistinctBy(m => m.Key).ToList();
+                    // Prioriza a nova estrutura simplificada de Role direta
+                    if (userInfoResponse.Data.Role != null)
+                    {
+                        modules = userInfoResponse.Data.Role.Permissions.Select(p => new ModuleBasicDTO
+                        {
+                            Key = p.Module,
+                            Operations = p.Actions
+                        });
+                    }
+                    else
+                    {
+                        // Fallback para a estrutura antiga (AccessGroups)
+                        var accessGroup = userInfoResponse.Data.Permissions.AccessGroups;
+                        var roles = accessGroup.SelectMany(ag => ag.Roles).ToList();
+                        modules = roles.SelectMany(r => r.Modules).DistinctBy(m => m.Key).ToList();
+                    }
                 }
                 else
                 {

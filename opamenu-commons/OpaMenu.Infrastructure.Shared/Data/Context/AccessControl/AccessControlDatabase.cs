@@ -33,9 +33,6 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context.AccessControl
         public DbSet<RoleEntity> Roles { get; set; }
         public DbSet<RoleAccessGroupEntity> RoleAccessGroups { get; set; }
         public DbSet<RolePermissionEntity> RolePermissions { get; set; }
-        public DbSet<PermissionEntity> Permissions { get; set; }
-        public DbSet<PermissionOperationEntity> PermissionOperations { get; set; }
-        public DbSet<OperationEntity> Operations { get; set; }
         public DbSet<ApplicationEntity> Applications { get; set; }
         public DbSet<ModuleEntity> Modules { get; set; }
 
@@ -66,10 +63,10 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context.AccessControl
                 entity.Ignore(e => e.UserAccounts);
                 entity.Ignore(e => e.AccessGroups);
                 entity.Ignore(e => e.Roles);
-                entity.Ignore(e => e.Permissions);
                 entity.Ignore(e => e.Subscriptions);
                 entity.Ignore(e => e.ActiveSubscription);
                 entity.Ignore(e => e.BusinessInfo);
+                entity.Ignore(e => e.BankDetails);
             });
 
             modelBuilder.Entity<UserAccountEntity>(entity =>
@@ -94,6 +91,7 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context.AccessControl
                 entity.Property(e => e.LastLoginAt).HasColumnName("last_login_at");
                 entity.Property(e => e.PasswordResetToken).HasColumnName("password_reset_token").HasMaxLength(500);
                 entity.Property(e => e.PasswordResetExpiresAt).HasColumnName("password_reset_expires_at");
+                entity.Property(e => e.RoleId).HasColumnName("role_id");
 
                 entity.HasMany(u => u.AccountAccessGroups)
                     .WithOne(aag => aag.UserAccount)
@@ -218,10 +216,11 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context.AccessControl
             {
                 entity.ToTable("role_permission");
                 entity.HasKey(e => e.Id);
-                entity.HasIndex(e => new { e.RoleId, e.PermissionId }).IsUnique();
+                entity.HasIndex(e => new { e.RoleId, e.ModuleKey });
                 entity.Property(e => e.Id).HasColumnName("id");
                 entity.Property(e => e.RoleId).HasColumnName("role_id");
-                entity.Property(e => e.PermissionId).HasColumnName("permission_id");
+                entity.Property(e => e.ModuleKey).HasColumnName("module_key").HasMaxLength(100).IsRequired();
+                entity.Property(e => e.Actions).HasColumnName("actions").HasColumnType("jsonb");
                 entity.Property(e => e.IsActive).HasColumnName("is_active");
             });
 
@@ -262,56 +261,8 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context.AccessControl
                     .OnDelete(DeleteBehavior.SetNull);
             });
 
-            modelBuilder.Entity<PermissionEntity>(entity =>
-            {
-                entity.ToTable("permission");
-                entity.HasKey(e => e.Id);
-                // Índices ajustados: relação Permission↔Role agora é exclusiva via RolePermission (N:N)
 
-                entity.Property(e => e.Id).HasColumnName("id");
-                entity.Property(e => e.ModuleId).HasColumnName("module_id");
-                entity.Property(e => e.TenantId).HasColumnName("tenant_id");
-                entity.Property(e => e.IsActive).HasColumnName("is_active");
 
-                entity.HasMany(p => p.RolePermissions)
-                    .WithOne(rp => rp.Permission)
-                    .HasForeignKey(rp => rp.PermissionId);
-            });
-
-            modelBuilder.Entity<OperationEntity>(entity =>
-            {
-                entity.ToTable("operation");
-                entity.HasKey(e => e.Id);
-                entity.HasIndex(e => e.Value).IsUnique();
-
-                entity.Property(e => e.Id).HasColumnName("id");
-                entity.Property(e => e.Name).HasColumnName("name").HasMaxLength(100);
-                entity.Property(e => e.Description).HasColumnName("description");
-                entity.Property(e => e.Value).HasColumnName("value");
-                entity.Property(e => e.IsActive).HasColumnName("is_active");
-            });
-
-            modelBuilder.Entity<PermissionOperationEntity>(entity =>
-            {
-                entity.ToTable("permission_operation");
-                entity.HasKey(e => e.Id);
-                entity.HasIndex(e => new { e.PermissionId, e.OperationId }).IsUnique();
-
-                entity.Property(e => e.Id).HasColumnName("id");
-                entity.Property(e => e.PermissionId).HasColumnName("permission_id");
-                entity.Property(e => e.OperationId).HasColumnName("operation_id");
-                entity.Property(e => e.IsActive).HasColumnName("is_active");
-
-                entity.HasOne(d => d.Permission)
-                    .WithMany(p => p.PermissionOperations)
-                    .HasForeignKey(d => d.PermissionId)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                entity.HasOne(d => d.Operation)
-                    .WithMany(p => p.PermissionOperations)
-                    .HasForeignKey(d => d.OperationId)
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
 
             base.OnModelCreating(modelBuilder);
 
@@ -319,7 +270,6 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context.AccessControl
             modelBuilder.Entity<UserAccountEntity>().HasQueryFilter(e => !_tenantContext.HasTenant || e.TenantId == _tenantContext.TenantId);
             modelBuilder.Entity<AccessGroupEntity>().HasQueryFilter(e => !_tenantContext.HasTenant || e.TenantId == _tenantContext.TenantId);
             modelBuilder.Entity<RoleEntity>().HasQueryFilter(e => !_tenantContext.HasTenant || e.TenantId == _tenantContext.TenantId);
-            modelBuilder.Entity<PermissionEntity>().HasQueryFilter(e => !_tenantContext.HasTenant || e.TenantId == _tenantContext.TenantId);
 
             // Adicione filtros para as entidades de relacionamento baseados em suas entidades pai
             modelBuilder.Entity<AccountAccessGroupEntity>().HasQueryFilter(e =>
@@ -329,10 +279,7 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context.AccessControl
                 !_tenantContext.HasTenant || e.AccessGroup.TenantId == _tenantContext.TenantId);
 
             modelBuilder.Entity<RolePermissionEntity>().HasQueryFilter(e =>
-                !_tenantContext.HasTenant || e.Permission.TenantId == _tenantContext.TenantId);
-
-            modelBuilder.Entity<PermissionOperationEntity>().HasQueryFilter(e =>
-                !_tenantContext.HasTenant || e.Permission.TenantId == _tenantContext.TenantId);
+                !_tenantContext.HasTenant || e.Role.TenantId == _tenantContext.TenantId);
 
             modelBuilder.ApplyUtcDateTimeConvention();
             modelBuilder.AccessControlSeed();

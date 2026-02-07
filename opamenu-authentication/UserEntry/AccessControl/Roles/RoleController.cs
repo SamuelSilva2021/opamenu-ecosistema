@@ -1,6 +1,5 @@
 using Authenticator.API.Core.Application.Interfaces.AccessControl.Roles;
 using Authenticator.API.Core.Domain.AccessControl.Roles.DTOs;
-using Authenticator.API.Core.Domain.AccessControl.Permissions.DTOs;
 using Authenticator.API.Core.Domain.AccessControl.AccessGroup.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -84,7 +83,7 @@ namespace Authenticator.API.UserEntry.AccessControl.Roles
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = "Busca permissões do role",Description = "Retorna todas as permissões associadas ao role"
         )]
-        public async Task<ActionResult<IEnumerable<PermissionDTO>>> GetPermissionsByRole([FromRoute] Guid roleId)
+        public async Task<ActionResult<IEnumerable<SimplifiedPermissionDTO>>> GetPermissionsByRole([FromRoute] Guid roleId)
         {
             var response = await _roleService.GetPermissionsByRoleAsync(roleId);
             return BuildResponse(response);
@@ -153,9 +152,9 @@ namespace Authenticator.API.UserEntry.AccessControl.Roles
             Summary = "Atribui permissões ao role",
             Description = "Associa uma lista de permissões ao role especificado"
         )]
-        public async Task<ActionResult> AssignPermissionsToRole([FromRoute] Guid roleId, [FromBody] List<Guid> permissionIds)
+        public async Task<ActionResult> AssignPermissionsToRole([FromRoute] Guid roleId, [FromBody] List<SimplifiedPermissionDTO> permissions)
         {
-            var response = await _roleService.AssignPermissionsToRoleAsync(roleId, permissionIds);
+            var response = await _roleService.AssignPermissionsToRoleAsync(roleId, permissions);
             return BuildResponse(response);
         }
 
@@ -265,9 +264,9 @@ namespace Authenticator.API.UserEntry.AccessControl.Roles
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = "Remove permissões do role",Description = "Remove a associação de permissões do role especificado")]
-        public async Task<ActionResult> RemovePermissionsFromRole([FromRoute] Guid roleId, [FromBody] List<Guid> permissionIds)
+        public async Task<ActionResult> RemovePermissionsFromRole([FromRoute] Guid roleId, [FromBody] List<string> moduleKeys)
         {
-            var response = await _roleService.RemovePermissionsFromRoleAsync(roleId, permissionIds);
+            var response = await _roleService.RemovePermissionsFromRoleAsync(roleId, moduleKeys);
             return BuildResponse(response);
         }
 

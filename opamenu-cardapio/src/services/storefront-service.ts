@@ -1,15 +1,15 @@
 import { httpClient, withApiErrorHandling } from './http-client';
-import { 
-  StorefrontData, 
-  ApiResponse, 
-  MenuResponseDto, 
-  TenantBusinessResponseDto, 
-  TenantBusinessInfo, 
-  CategoryResponseDto, 
-  Category, 
-  ProductDto, 
-  ProductWithAddons, 
-  AddonGroup, 
+import {
+  StorefrontData,
+  ApiResponse,
+  MenuResponseDto,
+  TenantBusinessResponseDto,
+  TenantBusinessInfo,
+  CategoryResponseDto,
+  Category,
+  ProductDto,
+  ProductWithAddons,
+  AddonGroup,
   ProductAddonGroupResponseDto,
   CouponDto,
   Coupon
@@ -88,27 +88,38 @@ const mapProduct = (dto: ProductDto): ProductWithAddons => {
     createdAt: dto.createdAt,
     updatedAt: dto.updatedAt,
     categoryName: dto.categoryName,
-    addonGroups: (dto.addonGroups || []).map(pag => mapProductAddonGroup(pag))
+    addonGroups: (dto.aditionalGroups || [])
+      .map(pag => mapProductAddonGroup(pag))
+      .filter((group): group is AddonGroup => group !== null)
   };
 };
 
-const mapProductAddonGroup = (pag: ProductAddonGroupResponseDto): AddonGroup => {
-  const group = pag.addonGroup;
+const mapProductAddonGroup = (pag: ProductAddonGroupResponseDto): AddonGroup | null => {
+  const group = pag.aditionalGroup;
+  if (!group) {
+    console.warn('⚠️ ProductAddonGroup missing aditionalGroup data:', pag);
+    return null;
+  }
   return {
     ...group,
-    // Use overrides from the relationship if they exist, otherwise fallback to group defaults
-    displayOrder: pag.displayOrder,
-    isRequired: pag.isRequired,
+    id: group.id,
+    name: group.name,
+    description: group.description,
+    type: group.type,
     minSelections: pag.minSelectionsOverride ?? group.minSelections,
     maxSelections: pag.maxSelectionsOverride ?? group.maxSelections,
-    addons: (group.addons || []).map(addon => ({
-      ...addon
+    isRequired: pag.isRequired, // Use override from relation
+    displayOrder: pag.displayOrder, // Use override from relation
+    isActive: group.isActive,
+    addons: (group.aditionals || []).map(addon => ({
+      ...addon,
+      price: addon.price
     }))
   };
 };
 
 const deduplicateCategories = (categories: CategoryResponseDto[]): CategoryResponseDto[] => {
-  const seen = new Set<number>();
+  const seen = new Set<string>();
   return categories.filter(category => {
     if (seen.has(category.id)) {
       return false;
@@ -120,16 +131,16 @@ const deduplicateCategories = (categories: CategoryResponseDto[]): CategoryRespo
 
 export const getStorefrontData = async (slug: string): Promise<StorefrontData | null> => {
   return withApiErrorHandling(async () => {
-    const response = await httpClient.get<MenuResponseDto>(`/public/${slug}/storefront`);       
-    
+    const response = await httpClient.get<MenuResponseDto>(`/public/${slug}/storefront`);
+
     const tenantBusiness = response.tenantBusiness ? mapTenantBusiness(response.tenantBusiness) : null;
     if (!tenantBusiness) return null;
     const uniqueCategories = deduplicateCategories(response.categories || []);
     return {
-         tenantBusiness,
-         categories: uniqueCategories.map(mapCategory),
-         products: (response.products || []).map(mapProduct),
-         coupons: response.coupons as Coupon[] || []
-       };
+      tenantBusiness,
+      categories: uniqueCategories.map(mapCategory),
+      products: (response.products || []).map(mapProduct),
+      coupons: response.coupons as Coupon[] || []
+    };
   });
 };

@@ -15,12 +15,10 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import {
-  Group as GroupIcon,
   Security as SecurityIcon,
   Person as PersonIcon,
   Settings as SettingsIcon,
   Dashboard as DashboardIcon,
-  PlayArrow as OperationIcon,
   AdminPanelSettings as RoleIcon,
   Business as BusinessIcon,
   ExpandLess,
@@ -87,22 +85,6 @@ export const Sidebar = ({ open, onClose, onToggle }: SidebarProps) => {
       icon: <SecurityIcon />,
       children: [
         {
-          id: 'access-groups',
-          title: 'Grupos de Acesso',
-          icon: <GroupIcon />,
-          path: '/access-groups',
-          moduleKey: ModuleKey.ACCESS_GROUP,
-          operation: 'SELECT',
-        },
-        {
-          id: 'group-types',
-          title: 'Tipos de Grupo',
-          icon: <GroupIcon />,
-          path: '/group-types',
-          moduleKey: ModuleKey.GROUP_TYPE,
-          operation: 'SELECT',
-        },
-        {
           id: 'modules',
           title: 'Módulos',
           icon: <SecurityIcon />,
@@ -111,24 +93,8 @@ export const Sidebar = ({ open, onClose, onToggle }: SidebarProps) => {
           operation: 'SELECT',
         },
         {
-          id: 'operations',
-          title: 'Operações',
-          icon: <OperationIcon />,
-          path: '/operations',
-          moduleKey: ModuleKey.OPERATION_MODULE,
-          operation: 'SELECT',
-        },
-        {
-          id: 'permissions',
-          title: 'Permissões',
-          icon: <SecurityIcon />,
-          path: '/permissions',
-          moduleKey: ModuleKey.PERMISSION_MODULE,
-          operation: 'SELECT',
-        },
-        {
           id: 'roles',
-          title: 'Papéis',
+          title: 'Perfis (Roles)',
           icon: <RoleIcon />,
           path: '/roles',
           moduleKey: ModuleKey.ROLE_MODULE,
@@ -197,18 +163,18 @@ export const Sidebar = ({ open, onClose, onToggle }: SidebarProps) => {
         // Se a seção tem filhos, filtra os filhos primeiro
         if (section.children) {
           const filteredChildren = section.children.filter(hasPermissionForItem);
-          
+
           // Se não sobrou nenhum filho com permissão, esconde a seção inteira
           if (filteredChildren.length === 0) {
             return null;
           }
-          
+
           return {
             ...section,
             children: filteredChildren
           };
         }
-        
+
         // Para seções sem filhos, verifica a permissão da própria seção
         return hasPermissionForItem(section) ? section : null;
       })
@@ -279,106 +245,106 @@ export const Sidebar = ({ open, onClose, onToggle }: SidebarProps) => {
         ) : (
           <List sx={{ py: 1 }}>
             {filteredMenuSections.map((section, sectionIndex) => (
-            <Box key={section.id}>
-              {sectionIndex > 0 && <Divider sx={{ my: 1 }} />}
-              
-              {/* Section Item */}
-              <ListItem disablePadding>
-                <ListItemButton
-                  onClick={() => handleSectionClick(section)}
-                  selected={isActiveSection(section)}
-                  sx={{
-                    mx: 1,
-                    borderRadius: 1,
-                    '&.Mui-selected': {
-                      backgroundColor: 'primary.main',
-                      color: 'primary.contrastText',
-                      '&:hover': {
-                        backgroundColor: 'primary.dark',
-                      },
-                      '& .MuiListItemIcon-root': {
-                        color: 'primary.contrastText',
-                      },
-                    },
-                  }}
-                >
-                  <ListItemIcon sx={{ minWidth: 40 }}>
-                    {section.icon}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={section.title}
-                    primaryTypographyProps={{
-                      fontSize: '0.875rem',
-                      fontWeight: isActiveSection(section) ? 600 : 400,
-                    }}
-                  />
-                  {section.children && (
-                    expandedSections.includes(section.id) ? <ExpandLess /> : <ExpandMore />
-                  )}
-                </ListItemButton>
-              </ListItem>
+              <Box key={section.id}>
+                {sectionIndex > 0 && <Divider sx={{ my: 1 }} />}
 
-              {/* Section Children */}
-              {section.children && (
-                <Collapse
-                  in={expandedSections.includes(section.id)}
-                  timeout="auto"
-                  unmountOnExit
-                >
-                  <List component="div" disablePadding>
-                    {section.children.map((item) => (
-                      <ListItem key={item.id} disablePadding>
-                        <ListItemButton
-                          onClick={() => handleItemClick(item)}
-                          selected={isActiveItem(item.path)}
-                          disabled={!!item.badge}
-                          sx={{
-                            pl: 4,
-                            mx: 1,
-                            borderRadius: 1,
-                            '&.Mui-selected': {
-                              backgroundColor: 'primary.light',
-                              color: 'primary.contrastText',
-                            },
-                            '&.Mui-disabled': {
-                              opacity: 0.6,
-                            },
-                          }}
-                        >
-                          <ListItemIcon sx={{ minWidth: 36 }}>
-                            {item.icon}
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={item.title}
-                            primaryTypographyProps={{
-                              fontSize: '0.8rem',
-                              fontWeight: isActiveItem(item.path) ? 600 : 400,
+                {/* Section Item */}
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={() => handleSectionClick(section)}
+                    selected={isActiveSection(section)}
+                    sx={{
+                      mx: 1,
+                      borderRadius: 1,
+                      '&.Mui-selected': {
+                        backgroundColor: 'primary.main',
+                        color: 'primary.contrastText',
+                        '&:hover': {
+                          backgroundColor: 'primary.dark',
+                        },
+                        '& .MuiListItemIcon-root': {
+                          color: 'primary.contrastText',
+                        },
+                      },
+                    }}
+                  >
+                    <ListItemIcon sx={{ minWidth: 40 }}>
+                      {section.icon}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={section.title}
+                      primaryTypographyProps={{
+                        fontSize: '0.875rem',
+                        fontWeight: isActiveSection(section) ? 600 : 400,
+                      }}
+                    />
+                    {section.children && (
+                      expandedSections.includes(section.id) ? <ExpandLess /> : <ExpandMore />
+                    )}
+                  </ListItemButton>
+                </ListItem>
+
+                {/* Section Children */}
+                {section.children && (
+                  <Collapse
+                    in={expandedSections.includes(section.id)}
+                    timeout="auto"
+                    unmountOnExit
+                  >
+                    <List component="div" disablePadding>
+                      {section.children.map((item) => (
+                        <ListItem key={item.id} disablePadding>
+                          <ListItemButton
+                            onClick={() => handleItemClick(item)}
+                            selected={isActiveItem(item.path)}
+                            disabled={!!item.badge}
+                            sx={{
+                              pl: 4,
+                              mx: 1,
+                              borderRadius: 1,
+                              '&.Mui-selected': {
+                                backgroundColor: 'primary.light',
+                                color: 'primary.contrastText',
+                              },
+                              '&.Mui-disabled': {
+                                opacity: 0.6,
+                              },
                             }}
-                          />
-                          {item.badge && (
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                bgcolor: 'warning.light',
-                                color: 'warning.contrastText',
-                                px: 1,
-                                py: 0.25,
-                                borderRadius: 1,
-                                fontSize: '0.7rem',
+                          >
+                            <ListItemIcon sx={{ minWidth: 36 }}>
+                              {item.icon}
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={item.title}
+                              primaryTypographyProps={{
+                                fontSize: '0.8rem',
+                                fontWeight: isActiveItem(item.path) ? 600 : 400,
                               }}
-                            >
-                              {item.badge}
-                            </Typography>
-                          )}
-                        </ListItemButton>
-                      </ListItem>
-                    ))}
-                  </List>
-                </Collapse>
-              )}
-            </Box>
-          ))}
-        </List>
+                            />
+                            {item.badge && (
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  bgcolor: 'warning.light',
+                                  color: 'warning.contrastText',
+                                  px: 1,
+                                  py: 0.25,
+                                  borderRadius: 1,
+                                  fontSize: '0.7rem',
+                                }}
+                              >
+                                {item.badge}
+                              </Typography>
+                            )}
+                          </ListItemButton>
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Collapse>
+                )}
+              </Box>
+            ))}
+          </List>
         )}
       </Box>
 

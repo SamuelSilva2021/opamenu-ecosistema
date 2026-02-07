@@ -8,8 +8,8 @@ export const OrderType = {
 
 export type OrderType = typeof OrderType[keyof typeof OrderType];
 
-export interface CartItemAddon {
-  addonId: string;
+export interface CartItemAditional {
+  aditionalId: string;
   name: string;
   price: number;
   quantity: number;
@@ -20,6 +20,6 @@ export interface CartItem {
   product: Product;
   quantity: number;
   notes?: string;
-  addons: CartItemAddon[];
+  aditionals: CartItemAditional[];
   totalPrice: number;
 }

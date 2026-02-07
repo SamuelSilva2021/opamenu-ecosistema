@@ -5,7 +5,7 @@ using OpaMenu.Application.Services.Interfaces.Opamenu;
 using OpaMenu.Commons.Api.Commons;
 using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Domain.DTOs;
-using OpaMenu.Domain.DTOs.Addons;
+using OpaMenu.Domain.DTOs.Aditionals;
 using OpaMenu.Domain.DTOs.Order;
 using OpaMenu.Domain.Interfaces;
 using OpaMenu.Infrastructure.Shared.Entities;
@@ -22,7 +22,7 @@ namespace OpaMenu.Application.Services.Opamenu;
 public class OrderService(
     IOrderRepository orderRepository,
     IProductRepository productRepository,
-    IAddonRepository addonRepository,
+    IAditionalRepository aditionalRepository,
     ICouponRepository couponRepository,
     INotificationService notificationService,
     ICurrentUserService currentUserService,
@@ -37,7 +37,7 @@ public class OrderService(
 {
     private readonly IOrderRepository _orderRepository = orderRepository;
     private readonly IProductRepository _productRepository = productRepository;
-    private readonly IAddonRepository _addonRepository = addonRepository;
+    private readonly IAditionalRepository _aditionalRepository = aditionalRepository;
     private readonly ICouponRepository _couponRepository = couponRepository;
     private readonly INotificationService _notificationService = notificationService;
     private readonly ICurrentUserService _currentUserService = currentUserService;
@@ -249,23 +249,23 @@ public class OrderService(
                     Subtotal = product.Price * itemDto.Quantity
                 };
 
-                // Adicionar addons
-                foreach (var addonDto in itemDto.Addons)
+                // Adicionar aditionals
+                foreach (var aditionalDto in itemDto.Aditionals)
                 {
-                    var addon = await _addonRepository.GetByIdAsync(addonDto.AddonId, tenantId);
-                    if (addon == null) continue;
+                    var aditional = await _aditionalRepository.GetByIdAsync(aditionalDto.AditionalId, tenantId);
+                    if (aditional == null) continue;
 
-                    var orderItemAddon = new OrderItemAddonEntity
+                    var orderItemAditional = new OrderItemAditionalEntity
                     {
-                        AddonId = addonDto.AddonId,
-                        AddonName = addon.Name,
-                        UnitPrice = addon.Price,
-                        Quantity = addonDto.Quantity,
-                        Subtotal = addon.Price * addonDto.Quantity
+                        AditionalId = aditionalDto.AditionalId,
+                        AditionalName = aditional.Name,
+                        UnitPrice = aditional.Price,
+                        Quantity = aditionalDto.Quantity,
+                        Subtotal = aditional.Price * aditionalDto.Quantity
                     };
 
-                    orderItem.Addons.Add(orderItemAddon);
-                    orderItem.Subtotal += orderItemAddon.Subtotal;
+                    orderItem.Aditionals.Add(orderItemAditional);
+                    orderItem.Subtotal += orderItemAditional.Subtotal;
                 }
 
                 order.Items.Add(orderItem);
@@ -433,23 +433,23 @@ public class OrderService(
                     Subtotal = product.Price * itemDto.Quantity
                 };
 
-                // Adicionar addons
-                foreach (var addonDto in itemDto.Addons)
+                // Adicionar aditionals
+                foreach (var aditionalDto in itemDto.Aditionals)
                 {
-                    var addon = await _addonRepository.GetByIdAsync(addonDto.AddonId, tenant.Id);
-                    if (addon == null) continue;
+                    var aditional = await _aditionalRepository.GetByIdAsync(aditionalDto.AditionalId, tenant.Id);
+                    if (aditional == null) continue;
 
-                    var orderItemAddon = new OrderItemAddonEntity
+                    var orderItemAditional = new OrderItemAditionalEntity
                     {
-                        AddonId = addonDto.AddonId,
-                        AddonName = addon.Name,
-                        UnitPrice = addon.Price,
-                        Quantity = addonDto.Quantity,
-                        Subtotal = addon.Price * addonDto.Quantity
+                        AditionalId = aditionalDto.AditionalId,
+                        AditionalName = aditional.Name,
+                        UnitPrice = aditional.Price,
+                        Quantity = aditionalDto.Quantity,
+                        Subtotal = aditional.Price * aditionalDto.Quantity
                     };
 
-                    orderItem.Addons.Add(orderItemAddon);
-                    orderItem.Subtotal += orderItemAddon.Subtotal;
+                    orderItem.Aditionals.Add(orderItemAditional);
+                    orderItem.Subtotal += orderItemAditional.Subtotal;
                 }
 
                 order.Items.Add(orderItem);
@@ -867,23 +867,23 @@ public class OrderService(
                     OrderId = order.Id // Ensure link
                 };
 
-                // Adicionar addons
-                foreach (var addonDto in itemDto.Addons)
+                // Adicionar aditionals
+                foreach (var aditionalDto in itemDto.Aditionals)
                 {
-                    var addon = await _addonRepository.GetByIdAsync(addonDto.AddonId, tenantId);
-                    if (addon == null) continue;
+                    var aditional = await _aditionalRepository.GetByIdAsync(aditionalDto.AditionalId, tenantId);
+                    if (aditional == null) continue;
 
-                    var orderItemAddon = new OrderItemAddonEntity
+                    var orderItemAditional = new OrderItemAditionalEntity
                     {
-                        AddonId = addonDto.AddonId,
-                        AddonName = addon.Name,
-                        UnitPrice = addon.Price,
-                        Quantity = addonDto.Quantity,
-                        Subtotal = addon.Price * addonDto.Quantity
+                        AditionalId = aditionalDto.AditionalId,
+                        AditionalName = aditional.Name,
+                        UnitPrice = aditional.Price,
+                        Quantity = aditionalDto.Quantity,
+                        Subtotal = aditional.Price * aditionalDto.Quantity
                     };
 
-                    orderItem.Addons.Add(orderItemAddon);
-                    orderItem.Subtotal += orderItemAddon.Subtotal;
+                    orderItem.Aditionals.Add(orderItemAditional);
+                    orderItem.Subtotal += orderItemAditional.Subtotal;
                 }
 
                 order.Items.Add(orderItem);
@@ -1103,16 +1103,16 @@ public class OrderService(
             if (item.Quantity <= 0)
                 return (false, "Quantidade deve ser maior que zero");
 
-            foreach (var addon in item.Addons)
+            foreach (var aditional in item.Aditionals)
             {
-                var addonEntity = await _addonRepository.GetByIdAsync(addon.AddonId, tenantId);
-                if (addonEntity == null)
-                    return (false, $"Adicional com ID {addon.AddonId} nÃ£o encontrado");
+                var aditionalEntity = await _aditionalRepository.GetByIdAsync(aditional.AditionalId, tenantId);
+                if (aditionalEntity == null)
+                    return (false, $"Adicional com ID {aditional.AditionalId} nÃ£o encontrado");
 
-                if (!addonEntity.IsActive)
-                    return (false, $"Adicional '{addonEntity.Name}' nÃ£o estÃ¡ ativo");
+                if (!aditionalEntity.IsActive)
+                    return (false, $"Adicional '{aditionalEntity.Name}' nÃ£o estÃ¡ ativo");
 
-                if (addon.Quantity <= 0)
+                if (aditional.Quantity <= 0)
                     return (false, "Quantidade do adicional deve ser maior que zero");
             }
         }

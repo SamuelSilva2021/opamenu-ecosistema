@@ -127,7 +127,7 @@ const ProductModal = ({ isOpen, onClose, product, onAddToCart }: ProductModalPro
   };
 
   // Rolar para grupo específico
-  const scrollToGroup = (groupId: number) => {
+  const scrollToGroup = (groupId: string) => {
     const groupElement = groupRefs.current[groupId];
     const scrollContainer = scrollContainerRef.current;
     

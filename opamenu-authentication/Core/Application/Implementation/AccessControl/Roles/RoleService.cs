@@ -1,12 +1,10 @@
 using Authenticator.API.Core.Application.Interfaces.AccessControl.Roles;
 using Authenticator.API.Core.Application.Interfaces.AccessControl.RolePermissions;
 using Authenticator.API.Core.Application.Interfaces.AccessControl.RoleAccessGroups;
-using Authenticator.API.Core.Application.Interfaces.AccessControl.Permissions;
 using Authenticator.API.Core.Application.Interfaces.AccessControl.AccessGroup;
 using Authenticator.API.Core.Application.Interfaces.Auth;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
 using Authenticator.API.Core.Domain.AccessControl.Roles.DTOs;
-using Authenticator.API.Core.Domain.AccessControl.Permissions.DTOs;
 using Authenticator.API.Core.Domain.AccessControl.AccessGroup.DTOs;
 using Authenticator.API.Core.Domain.Api;
 using AutoMapper;
@@ -20,7 +18,6 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
     /// </summary>
     public class RoleService(
         IRoleRepository roleRepository,
-        IPermissionRepository permissionRepository,
         IAccessGroupRepository accessGroupRepository,
         IRolePermissionRepository rolePermissionRepository,
         IRoleAccessGroupRepository roleAccessGroupRepository,
@@ -29,7 +26,6 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
     ) : IRoleService
     {
         private readonly IRoleRepository _roleRepository = roleRepository;
-        private readonly IPermissionRepository _permissionRepository = permissionRepository;
         private readonly IAccessGroupRepository _accessGroupRepository = accessGroupRepository;
         private readonly IRolePermissionRepository _rolePermissionRepository = rolePermissionRepository;
         private readonly IRoleAccessGroupRepository _roleAccessGroupRepository = roleAccessGroupRepository;
@@ -41,7 +37,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
             try
             {
                 var entities = await _roleRepository.GetAllAsync(include: r => r
-                    .Include(x => x.RolePermissions)!.ThenInclude(rp => rp.Permission)
+                    .Include(x => x.RolePermissions)
                     .Include(x => x.RoleAccessGroups)!.ThenInclude(rag => rag.AccessGroup));
 
                 if (!entities.Any())
@@ -65,7 +61,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
                     page: page,
                     pageSize: limit,
                     include: r => r
-                        .Include(x => x.RolePermissions)!.ThenInclude(rp => rp.Permission)
+                        .Include(x => x.RolePermissions)
                         .Include(x => x.RoleAccessGroups)!.ThenInclude(rag => rag.AccessGroup));
 
                 if (!entities.Any())
@@ -93,7 +89,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
             try
             {
                 var entity = await _roleRepository.GetByIdAsync(id, include: r => r
-                    .Include(x => x.RolePermissions)!.ThenInclude(rp => rp.Permission)
+                    .Include(x => x.RolePermissions)
                     .Include(x => x.RoleAccessGroups)!.ThenInclude(rag => rag.AccessGroup));
 
                 if (entity == null)
@@ -129,7 +125,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
                 foreach (var role in entities)
                 {
                     var full = await _roleRepository.GetByIdAsync(role.Id, include: r => r
-                        .Include(x => x.RolePermissions)!.ThenInclude(rp => rp.Permission)
+                        .Include(x => x.RolePermissions)
                         .Include(x => x.RoleAccessGroups)!.ThenInclude(rag => rag.AccessGroup));
                     if (full != null)
                         entitiesWithIncludes.Add(full);
@@ -157,15 +153,15 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
 
                 var created = await _roleRepository.AddAsync(entity);
 
-                if (dto.PermissionIds != null && dto.PermissionIds.Any())
-                    await AssignPermissionsInternalAsync(created.Id, dto.PermissionIds);
+                if (dto.Permissions != null && dto.Permissions.Any())
+                    await AssignPermissionsInternalAsync(created.Id, dto.Permissions);
 
                 // Associar grupos de acesso
                 if (dto.AccessGroupIds != null && dto.AccessGroupIds.Any())
                     await AssignAccessGroupsInternalAsync(created.Id, dto.AccessGroupIds);
 
                 var full = await _roleRepository.GetByIdAsync(created.Id, include: r => r
-                    .Include(x => x.RolePermissions)!.ThenInclude(rp => rp.Permission)
+                    .Include(x => x.RolePermissions)
                     .Include(x => x.RoleAccessGroups)!.ThenInclude(rag => rag.AccessGroup));
 
                 var resultDto = _mapper.Map<RoleDTO>(full);
@@ -182,7 +178,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
             try
             {
                 var existing = await _roleRepository.GetByIdAsync(id, include: r => r
-                    .Include(x => x.RolePermissions)!.ThenInclude(rp => rp.Permission)
+                    .Include(x => x.RolePermissions)
                     .Include(x => x.RoleAccessGroups)!.ThenInclude(rag => rag.AccessGroup));
 
                 if (existing == null)
@@ -196,8 +192,8 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
                 existing.UpdatedAt = DateTime.Now;
                 await _roleRepository.UpdateAsync(existing);
 
-                if (dto.PermissionIds != null)
-                    await SyncRolePermissionsInternalAsync(id, dto.PermissionIds);
+                if (dto.Permissions != null)
+                    await SyncRolePermissionsInternalAsync(id, dto.Permissions);
 
                 if (dto.AccessGroupIds != null)
                     await SyncRoleAccessGroupsInternalAsync(id, dto.AccessGroupIds);
@@ -235,47 +231,31 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
             }
         }
 
-        public async Task<ResponseDTO<IEnumerable<PermissionDTO>>> GetPermissionsByRoleAsync(Guid roleId)
+        public async Task<ResponseDTO<IEnumerable<SimplifiedPermissionDTO>>> GetPermissionsByRoleAsync(Guid roleId)
         {
             try
             {
-                var role = await _roleRepository.GetByIdAsync(roleId);
+                var role = await _roleRepository.GetByIdAsync(roleId, include: r => r.Include(x => x.RolePermissions));
                 if (role == null)
-                    return StaticResponseBuilder<IEnumerable<PermissionDTO>>.BuildOk([]);
+                    return StaticResponseBuilder<IEnumerable<SimplifiedPermissionDTO>>.BuildOk([]);
 
-                var permissionsAll = await _permissionRepository.GetAllAsync();
-
-                var relations = await _rolePermissionRepository.GetAllRolePermissionsByRoleIdAsync(roleId);
-
-                if (relations == null)
-                    return StaticResponseBuilder<IEnumerable<PermissionDTO>>.BuildOk([]);
-
-                var permissionIds = relations
+                var dtos = role.RolePermissions
                     .Where(rp => rp.IsActive)
-                    .Select(rp => rp.PermissionId)
-                    .Distinct()
-                    .ToList();
+                    .Select(rp => new SimplifiedPermissionDTO
+                    {
+                        Module = rp.ModuleKey,
+                        Actions = rp.Actions
+                    });
 
-                IEnumerable<PermissionEntity> permissions = Enumerable.Empty<PermissionEntity>();
-                if (permissionIds.Count != 0)
-                {
-                    permissions = await _permissionRepository.GetAllAsync(
-                        filter: p => permissionIds.Contains(p.Id),
-                        include: p => p
-                            .Include(x => x.Module)
-                            .Include(x => x.PermissionOperations)!.ThenInclude(po => po.Operation));
-                }
-
-                var dtos = _mapper.Map<IEnumerable<PermissionDTO>>(permissions);
-                return StaticResponseBuilder<IEnumerable<PermissionDTO>>.BuildOk(dtos);
+                return StaticResponseBuilder<IEnumerable<SimplifiedPermissionDTO>>.BuildOk(dtos);
             }
             catch (Exception ex)
             {
-                return StaticResponseBuilder<IEnumerable<PermissionDTO>>.BuildErrorResponse(ex);
+                return StaticResponseBuilder<IEnumerable<SimplifiedPermissionDTO>>.BuildErrorResponse(ex);
             }
         }
 
-        public async Task<ResponseDTO<bool>> AssignPermissionsToRoleAsync(Guid roleId, List<Guid> permissionIds)
+        public async Task<ResponseDTO<bool>> AssignPermissionsToRoleAsync(Guid roleId, List<SimplifiedPermissionDTO> permissions)
         {
             try
             {
@@ -287,7 +267,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
                         return StaticResponseBuilder<bool>.BuildError("Role não encontrada");
                 }
 
-                var result = await AssignPermissionsInternalAsync(roleId, permissionIds);
+                var result = await AssignPermissionsInternalAsync(roleId, permissions);
                 return StaticResponseBuilder<bool>.BuildOk(result);
             }
             catch (Exception ex)
@@ -296,7 +276,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
             }
         }
 
-        public async Task<ResponseDTO<bool>> RemovePermissionsFromRoleAsync(Guid roleId, List<Guid> permissionIds)
+        public async Task<ResponseDTO<bool>> RemovePermissionsFromRoleAsync(Guid roleId, List<string> moduleKeys)
         {
             try
             {
@@ -308,7 +288,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
                         return StaticResponseBuilder<bool>.BuildError("Role não encontrada");
                 }
 
-                var removed = await _rolePermissionRepository.RemoveByRoleAndPermissionsAsync(roleId, permissionIds);
+                var removed = await _rolePermissionRepository.RemoveByRoleAndModulesAsync(roleId, moduleKeys);
                 return StaticResponseBuilder<bool>.BuildOk(removed);
             }
             catch (Exception ex)
@@ -386,7 +366,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
             }
         }
 
-        private async Task<bool> AssignPermissionsInternalAsync(Guid roleId, List<Guid> permissionIds)
+        private async Task<bool> AssignPermissionsInternalAsync(Guid roleId, List<SimplifiedPermissionDTO> permissions)
         {
             try
             {
@@ -394,50 +374,35 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
                 if (role == null)
                     throw new ArgumentException("Role não encontrada");
 
-                foreach (var permissionId in permissionIds)
-                {
-                    var permission = await _permissionRepository.GetByIdAsync(permissionId) ??
-                        throw new ArgumentException($"Permissão com ID {permissionId} não encontrada");
-                }
-
                 var existing = await _rolePermissionRepository.GetAllRolePermissionsByRoleIdAsync(roleId);
-                var existingIdsActive = existing.Where(rp => rp.IsActive).Select(rp => rp.PermissionId).ToList();
-                var existingInactive = existing.Where(rp => !rp.IsActive).ToList();
 
-                if (existingInactive.Count != 0)
+                foreach (var perm in permissions)
                 {
-                    foreach (var rel in existingInactive)
+                    var rel = existing.FirstOrDefault(rp => rp.ModuleKey == perm.Module);
+                    if (rel != null)
                     {
-                        if (permissionIds.Contains(rel.PermissionId))
-                        {
-                            rel.IsActive = true;
-                            rel.UpdatedAt = DateTime.Now;
-                        }
+                        rel.Actions = perm.Actions;
+                        rel.IsActive = true;
+                        rel.UpdatedAt = DateTime.Now;
+                        await _rolePermissionRepository.UpdateAsync(rel);
                     }
-                    await _rolePermissionRepository.UpdateRangeAsync(existingInactive);
-                }
-
-                var newIds = permissionIds.Except(existingIdsActive).Except(existingInactive.Select(p => p.PermissionId)).ToList();
-
-                var relations = new List<RolePermissionEntity>();
-                foreach (var pid in newIds)
-                {
-                    relations.Add(new RolePermissionEntity
+                    else
                     {
-                        Id = Guid.NewGuid(),
-                        RoleId = roleId,
-                        PermissionId = pid,
-                        IsActive = true,
-                        CreatedAt = DateTime.Now
-                    });
+                        await _rolePermissionRepository.AddAsync(new RolePermissionEntity
+                        {
+                            Id = Guid.NewGuid(),
+                            RoleId = roleId,
+                            ModuleKey = perm.Module,
+                            Actions = perm.Actions,
+                            IsActive = true,
+                            CreatedAt = DateTime.Now
+                        });
+                    }
                 }
-
-                if (relations.Count > 0)
-                    await _rolePermissionRepository.AddRangeAsync(relations);
 
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }
@@ -482,18 +447,21 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
             
         }
 
-        private async Task<ResponseDTO<bool>> SyncRolePermissionsInternalAsync(Guid roleId, List<Guid> permissionIds)
+        private async Task<ResponseDTO<bool>> SyncRolePermissionsInternalAsync(Guid roleId, List<SimplifiedPermissionDTO> permissions)
         {
             try
             {
                 var existing = await _rolePermissionRepository.GetAllRolePermissionsByRoleIdAsync(roleId);
-                var toAdd = permissionIds.Except(existing.Where(rp => rp.IsActive).Select(rp => rp.PermissionId)).ToList();
-                var toRemove = existing.Where(rp => rp.IsActive && !permissionIds.Contains(rp.PermissionId)).Select(rp => rp.PermissionId).ToList();
-
-                if (toAdd.Any())
-                    await AssignPermissionsInternalAsync(roleId, toAdd);
+                
+                // Remove module keys not present in the new list
+                var newModuleKeys = permissions.Select(p => p.Module).ToList();
+                var toRemove = existing.Where(rp => !newModuleKeys.Contains(rp.ModuleKey)).Select(rp => rp.ModuleKey).ToList();
+                
                 if (toRemove.Any())
-                    await _rolePermissionRepository.RemoveByRoleAndPermissionsAsync(roleId, toRemove);
+                    await _rolePermissionRepository.RemoveByRoleAndModulesAsync(roleId, toRemove);
+
+                // Add or update existing
+                await AssignPermissionsInternalAsync(roleId, permissions);
 
                 return StaticResponseBuilder<bool>.BuildOk(true);
             }
@@ -501,7 +469,6 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
             {
                 return StaticResponseBuilder<bool>.BuildErrorResponse(ex);
             }
-
         }
 
         private async Task<ResponseDTO<bool>> SyncRoleAccessGroupsInternalAsync(Guid roleId, List<Guid> accessGroupIds)
@@ -531,7 +498,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
             try
             {
                 var roleEntity = await _roleRepository.GetByIdAsync(id, include: r => r
-                .Include(x => x.RolePermissions)!.ThenInclude(rp => rp.Permission)
+                .Include(x => x.RolePermissions)
                 .Include(x => x.RoleAccessGroups)!.ThenInclude(rag => rag.AccessGroup));
 
                 if (roleEntity == null)

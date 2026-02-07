@@ -29,7 +29,7 @@ public partial class Product
 
     public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 
-    public virtual ICollection<ProductAddonGroup> ProductAddonGroups { get; set; } = new List<ProductAddonGroup>();
+    public virtual ICollection<ProductAditionalGroup> ProductAditionalGroups { get; set; } = new List<ProductAditionalGroup>();
 
     public virtual ICollection<ProductImage> ProductImages { get; set; } = new List<ProductImage>();
 }

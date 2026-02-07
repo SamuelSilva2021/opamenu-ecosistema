@@ -37,9 +37,9 @@ namespace Authenticator.API.Core.Domain.AccessControl.Roles.DTOs
         public Guid? ApplicationId { get; set; }
 
         /// <summary>
-        /// IDs das permissões a serem atribuídas ao role
+        /// Permissões a serem atribuídas ao role
         /// </summary>
-        public List<Guid> PermissionIds { get; set; } = new List<Guid>();
+        public List<SimplifiedPermissionDTO> Permissions { get; set; } = new List<SimplifiedPermissionDTO>();
 
         /// <summary>
         /// IDs dos grupos de acesso a serem atribuídos ao role

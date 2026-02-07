@@ -1,3 +1,4 @@
+using Authenticator.API.Core.Domain.AccessControl.Modules.DTOs;
 using Authenticator.API.Core.Domain.Api;
 using Authenticator.API.Core.Domain.MultiTenant.Tenant.DTOs;
 
@@ -41,5 +42,9 @@ namespace Authenticator.API.Core.Application.Interfaces.MultiTenant
         /// <param name="id"></param>
         /// <returns></returns>
         Task<ResponseDTO<bool>> DeleteAsync(Guid id);
+
+        Task<ResponseDTO<IEnumerable<ModuleDTO>>> GetModulesAsync(Guid tenantId);
+        Task<ResponseDTO<bool>> AddModuleAsync(Guid tenantId, Guid moduleId);
+        Task<ResponseDTO<bool>> RemoveModuleAsync(Guid tenantId, Guid moduleId);
     }
 }

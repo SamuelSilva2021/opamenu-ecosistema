@@ -80,6 +80,20 @@ namespace Authenticator.API.UserEntry.Users
         }
 
         /// <summary>
+        /// Obtém detalhes de um usuário por ID
+        /// </summary>
+        [HttpGet("tenant-user/{id:guid}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ResponseDTO<UserAccountDTO>>> GetUserByIdAndTenantId([FromRoute] Guid id)
+        {
+            var response = await _userService.GetUserAccountByIdAndTenantIdAsync(id);
+            return BuildResponse(response);
+        }
+
+        /// <summary>
         /// Cria um novo usuário no tenant atual
         /// </summary>
         [HttpPost]
@@ -170,7 +184,7 @@ namespace Authenticator.API.UserEntry.Users
         /// Lista grupos de acesso vinculados a um usuário
         /// </summary>
         [HttpGet("{id:guid}/access-groups")]
-        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
+        [Authorize(Roles = "SUPER_ADMIN")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

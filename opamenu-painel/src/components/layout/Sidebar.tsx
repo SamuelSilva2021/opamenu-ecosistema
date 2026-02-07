@@ -53,16 +53,16 @@ const routes = [
   {
     title: "Grupos de Adicionais",
     icon: Tags,
-    href: "/dashboard/addon-groups",
+    href: "/dashboard/aditional-groups",
     variant: "ghost",
-    module: "ADDON_GROUP",
+    module: "ADITIONAL_GROUP",
   },
   {
     title: "Adicionais",
     icon: Layers,
-    href: "/dashboard/addons",
+    href: "/dashboard/aditionals",
     variant: "ghost",
-    module: "ADDON",
+    module: "ADITIONAL",
   },
   {
     title: "Categorias",

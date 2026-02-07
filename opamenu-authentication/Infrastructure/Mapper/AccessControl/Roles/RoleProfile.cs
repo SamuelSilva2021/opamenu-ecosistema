@@ -1,6 +1,5 @@
 ﻿using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
 using Authenticator.API.Core.Domain.AccessControl.AccessGroup.DTOs;
-using Authenticator.API.Core.Domain.AccessControl.Permissions.DTOs;
 using Authenticator.API.Core.Domain.AccessControl.Roles.DTOs;
 using AutoMapper;
 
@@ -31,9 +30,13 @@ namespace Authenticator.API.Infrastructure.Mapper.AccessControl.Roles
                 .ForMember(dest => dest.Permissions, opt => opt.MapFrom(src =>
                     src.RolePermissions != null && src.RolePermissions.Any(rp => rp.IsActive)
                         ? src.RolePermissions
-                            .Where(rp => rp.IsActive && rp.Permission != null)
-                            .Select(rp => rp.Permission)
-                        : new List<PermissionEntity>()))
+                            .Where(rp => rp.IsActive)
+                            .Select(rp => new SimplifiedPermissionDTO
+                            {
+                                Module = rp.ModuleKey,
+                                Actions = rp.Actions
+                            })
+                        : new List<SimplifiedPermissionDTO>()))
                 .ForMember(dest => dest.AccessGroups, opt => opt.MapFrom(src =>
                     src.RoleAccessGroups != null && src.RoleAccessGroups.Any(rag => rag.IsActive)
                         ? src.RoleAccessGroups

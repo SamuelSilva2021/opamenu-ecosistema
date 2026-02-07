@@ -52,14 +52,19 @@ namespace OpaMenu.Infrastructure.Shared.Entities.AccessControl
         public bool IsActive { get; set; } = true;
 
         /// <summary>
+        /// Se é um role do sistema (padrão) que não pode ser excluído pelo tenant
+        /// </summary>
+        public bool IsSystem { get; set; } = false;
+
+        /// <summary>
         /// Data de criação
         /// </summary>
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; }
 
         /// <summary>
         /// Data de atualização
         /// </summary>
-        public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; set; }
 
         // Navigation properties
         public ICollection<RolePermissionEntity> RolePermissions { get; set; } = new List<RolePermissionEntity>();

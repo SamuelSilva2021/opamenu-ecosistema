@@ -34,6 +34,6 @@ public class ProductEntity : BaseEntity
     // Navigation property
     public virtual CategoryEntity Category { get; set; } = null!;  
     public virtual ICollection<ProductImageEntity> Images { get; set; } = new List<ProductImageEntity>();
-    public virtual ICollection<ProductAddonGroupEntity> AddonGroups { get; set; } = new List<ProductAddonGroupEntity>();
+    public virtual ICollection<ProductAditionalGroupEntity> AditionalGroups { get; set; } = new List<ProductAditionalGroupEntity>();
 }
 

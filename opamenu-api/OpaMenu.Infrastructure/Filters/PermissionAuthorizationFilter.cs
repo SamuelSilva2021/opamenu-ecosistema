@@ -104,15 +104,11 @@ namespace OpaMenu.Infrastructure.Filters
                                 .Select(rag => rag.Role)
                                 .Where(r => r.IsActive)
                                 .SelectMany(r => r.RolePermissions)
-                                .Select(rp => rp.Permission)
-                                .Where(p => p.IsActive)
-                                .Select(p => new 
+                                .Where(rp => rp.IsActive)
+                                .Select(rp => new 
                                 { 
-                                    ModuleKey = p.Module.Key, 
-                                    Operations = p.PermissionOperations
-                                        .Where(po => po.IsActive)
-                                        .Select(po => po.Operation.Value)
-                                        .ToList()
+                                    ModuleKey = rp.ModuleKey, 
+                                    Operations = rp.Actions
                                 })
                                 .ToListAsync();
 

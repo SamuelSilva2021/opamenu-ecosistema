@@ -76,13 +76,9 @@ public class DbContextProvider : IDbContextProvider
                entityType == typeof(AccessGroupEntity) ||
                entityType == typeof(GroupTypeEntity) ||
                entityType == typeof(AccountAccessGroupEntity) ||
-               entityType == typeof(RoleTypeEntity) ||
                entityType == typeof(RoleEntity) ||
                entityType == typeof(RoleAccessGroupEntity) ||
                entityType == typeof(RolePermissionEntity) ||
-               entityType == typeof(PermissionEntity) ||
-               entityType == typeof(OperationEntity) ||
-               entityType == typeof(PermissionOperationEntity) ||
                entityType == typeof(ApplicationEntity) ||
                entityType == typeof(ModuleEntity);
     }

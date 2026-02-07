@@ -32,6 +32,6 @@ namespace OpaMenu.Domain.DTOs
         /// <summary>
         /// Grupos de adicionais para associar ao produto durante a criação
         /// </summary>
-        public List<AddProductAddonGroupRequestDto>? AddonGroups { get; set; }
+        public List<AddProductAditionalGroupRequestDto>? AditionalGroups { get; set; }
     }
 }

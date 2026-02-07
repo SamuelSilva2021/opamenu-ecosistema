@@ -1,5 +1,4 @@
-import type { Permission } from './permission.types';
-import type { AccessGroup } from './access-group.types';
+import type { SimplifiedPermission } from './permission.types';
 
 // Tipos de Roles (Papéis)
 export interface Role {
@@ -12,18 +11,16 @@ export interface Role {
   isActive: boolean;
   createdAt: string;
   updatedAt?: string;
-  permissions?: Permission[];
-  accessGroups?: AccessGroup[];
+  permissions?: SimplifiedPermission[];
 }
 
 export interface CreateRoleRequest {
   name: string;
-  description: string; // Agora obrigatório
+  description: string;
   code?: string;
   tenantId?: string;
   applicationId?: string;
-  permissionIds?: string[];
-  accessGroupIds?: string[];
+  permissions?: SimplifiedPermission[];
   isActive?: boolean;
 }
 
@@ -34,8 +31,7 @@ export interface UpdateRoleRequest {
   isActive?: boolean;
   tenantId?: string;
   applicationId?: string;
-  permissionIds?: string[];
-  accessGroupIds?: string[];
+  permissions?: SimplifiedPermission[];
 }
 
 // Tipos para associação de grupos de acesso a roles

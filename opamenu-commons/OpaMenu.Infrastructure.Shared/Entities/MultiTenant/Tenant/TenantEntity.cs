@@ -235,7 +235,6 @@ namespace OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant
         public ICollection<UserAccountEntity> UserAccounts { get; set; } = [];
         public ICollection<AccessGroupEntity> AccessGroups { get; set; } = [];
         public ICollection<RoleEntity> Roles { get; set; } = [];
-        public ICollection<PermissionEntity> Permissions { get; set; } = [];
         public virtual SubscriptionEntity? ActiveSubscription { get; set; }
         public virtual ICollection<SubscriptionEntity> Subscriptions { get; set; } = [];
         public virtual TenantBusinessEntity? BusinessInfo { get; set; }

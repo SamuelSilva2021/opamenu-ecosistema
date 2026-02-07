@@ -17,21 +17,21 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.8")
+                .HasAnnotation("ProductVersion", "9.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.AddonEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.AditionalEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<Guid>("AddonGroupId")
+                    b.Property<Guid>("AditionalGroupId")
                         .HasColumnType("uuid")
-                        .HasColumnName("addon_group_id");
+                        .HasColumnName("aditional_group_id");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -75,12 +75,12 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AddonGroupId");
+                    b.HasIndex("AditionalGroupId");
 
-                    b.ToTable("addons");
+                    b.ToTable("aditionals");
                 });
 
-            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.AddonGroupEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.AditionalGroupEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -136,7 +136,7 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
 
                     b.HasKey("Id");
 
-                    b.ToTable("addon_groups");
+                    b.ToTable("aditional_groups");
                 });
 
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.CategoryEntity", b =>
@@ -628,22 +628,22 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.ToTable("orders", (string)null);
                 });
 
-            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.OrderItemAddonEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.OrderItemAditionalEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<Guid>("AddonId")
+                    b.Property<Guid>("AditionalId")
                         .HasColumnType("uuid")
-                        .HasColumnName("addon_id");
+                        .HasColumnName("aditional_id");
 
-                    b.Property<string>("AddonName")
+                    b.Property<string>("AditionalName")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
-                        .HasColumnName("addon_name");
+                        .HasColumnName("aditional_name");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -675,11 +675,11 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AddonId");
+                    b.HasIndex("AditionalId");
 
                     b.HasIndex("OrderItemId");
 
-                    b.ToTable("order_item_addons");
+                    b.ToTable("order_item_aditionals");
                 });
 
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.OrderItemEntity", b =>
@@ -1178,16 +1178,16 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.ToTable("payment_transaction");
                 });
 
-            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.ProductAddonGroupEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.ProductAditionalGroupEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<Guid>("AddonGroupId")
+                    b.Property<Guid>("AditionalGroupId")
                         .HasColumnType("uuid")
-                        .HasColumnName("addon_group_id");
+                        .HasColumnName("aditional_group_id");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -1223,12 +1223,12 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AddonGroupId");
+                    b.HasIndex("AditionalGroupId");
 
-                    b.HasIndex("ProductId", "AddonGroupId")
+                    b.HasIndex("ProductId", "AditionalGroupId")
                         .IsUnique();
 
-                    b.ToTable("product_addon_groups");
+                    b.ToTable("product_aditional_groups");
                 });
 
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.ProductEntity", b =>
@@ -1611,15 +1611,15 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.ToTable("tenant_payment_methods");
                 });
 
-            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.AddonEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.AditionalEntity", b =>
                 {
-                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.Opamenu.AddonGroupEntity", "AddonGroup")
-                        .WithMany("Addons")
-                        .HasForeignKey("AddonGroupId")
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.Opamenu.AditionalGroupEntity", "AditionalGroup")
+                        .WithMany("Aditionals")
+                        .HasForeignKey("AditionalGroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("AddonGroup");
+                    b.Navigation("AditionalGroup");
                 });
 
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.CustomerLoyaltyBalanceEntity", b =>
@@ -1670,21 +1670,21 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.Navigation("Table");
                 });
 
-            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.OrderItemAddonEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.OrderItemAditionalEntity", b =>
                 {
-                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.Opamenu.AddonEntity", "Addon")
-                        .WithMany("OrderItemAddons")
-                        .HasForeignKey("AddonId")
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.Opamenu.AditionalEntity", "Aditional")
+                        .WithMany("OrderItemAditionals")
+                        .HasForeignKey("AditionalId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("OpaMenu.Infrastructure.Shared.Entities.Opamenu.OrderItemEntity", "OrderItem")
-                        .WithMany("Addons")
+                        .WithMany("Aditionals")
                         .HasForeignKey("OrderItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Addon");
+                    b.Navigation("Aditional");
 
                     b.Navigation("OrderItem");
                 });
@@ -1769,21 +1769,21 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.Navigation("Payment");
                 });
 
-            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.ProductAddonGroupEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.ProductAditionalGroupEntity", b =>
                 {
-                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.Opamenu.AddonGroupEntity", "AddonGroup")
-                        .WithMany("ProductAddonGroups")
-                        .HasForeignKey("AddonGroupId")
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.Opamenu.AditionalGroupEntity", "AditionalGroup")
+                        .WithMany("ProductAditionalGroups")
+                        .HasForeignKey("AditionalGroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("OpaMenu.Infrastructure.Shared.Entities.Opamenu.ProductEntity", "Product")
-                        .WithMany("AddonGroups")
+                        .WithMany("AditionalGroups")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("AddonGroup");
+                    b.Navigation("AditionalGroup");
 
                     b.Navigation("Product");
                 });
@@ -1832,16 +1832,16 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.Navigation("PaymentMethod");
                 });
 
-            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.AddonEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.AditionalEntity", b =>
                 {
-                    b.Navigation("OrderItemAddons");
+                    b.Navigation("OrderItemAditionals");
                 });
 
-            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.AddonGroupEntity", b =>
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.AditionalGroupEntity", b =>
                 {
-                    b.Navigation("Addons");
+                    b.Navigation("Aditionals");
 
-                    b.Navigation("ProductAddonGroups");
+                    b.Navigation("ProductAditionalGroups");
                 });
 
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.CategoryEntity", b =>
@@ -1874,7 +1874,7 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
 
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.OrderItemEntity", b =>
                 {
-                    b.Navigation("Addons");
+                    b.Navigation("Aditionals");
                 });
 
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.PaymentEntity", b =>
@@ -1889,7 +1889,7 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
 
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.ProductEntity", b =>
                 {
-                    b.Navigation("AddonGroups");
+                    b.Navigation("AditionalGroups");
 
                     b.Navigation("Images");
                 });

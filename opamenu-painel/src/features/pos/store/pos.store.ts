@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { OrderType } from "../types";
-import type { CartItem, CartItemAddon } from "../types";
+import type { CartItem, CartItemAditional } from "../types";
 import type { Product } from "../../products/types";
 import type { Customer } from "../../customers/types";
 
@@ -14,7 +14,7 @@ interface POSState {
   discount: number;
   couponCode?: string;
 
-  addItem: (product: Product, quantity: number, notes?: string, addons?: CartItemAddon[]) => void;
+  addItem: (product: Product, quantity: number, notes?: string, aditionals?: CartItemAditional[]) => void;
   removeItem: (tempId: string) => void;
   updateItemQuantity: (tempId: string, quantity: number) => void;
   setCustomer: (customer: Customer | null) => void;
@@ -24,7 +24,7 @@ interface POSState {
   setDiscount: (amount: number) => void;
   setCouponCode: (code?: string) => void;
   clearCart: () => void;
-  
+
   getSubtotal: () => number;
   getTotal: () => number;
 }
@@ -37,49 +37,49 @@ export const usePOSStore = create<POSState>()(
       orderType: OrderType.Counter,
       deliveryFee: 0,
       discount: 0,
-      
-      addItem: (product, quantity, notes, addons = []) => {
-        const addonsTotal = addons.reduce((acc, addon) => acc + (addon.price * addon.quantity), 0);
-        const itemTotal = (product.price * quantity) + addonsTotal;
-        
+
+      addItem: (product, quantity, notes, aditionals = []) => {
+        const aditionalsTotal = aditionals.reduce((acc, aditional) => acc + (aditional.price * aditional.quantity), 0);
+        const itemTotal = (product.price * quantity) + aditionalsTotal;
+
         const newItem: CartItem = {
           tempId: crypto.randomUUID(),
           product,
           quantity,
           notes,
-          addons,
+          aditionals,
           totalPrice: itemTotal
         };
-        
+
         set((state) => ({ items: [...state.items, newItem] }));
       },
-      
+
       removeItem: (tempId) => {
         set((state) => ({ items: state.items.filter(i => i.tempId !== tempId) }));
       },
-      
+
       updateItemQuantity: (tempId, quantity) => {
         if (quantity <= 0) {
-            get().removeItem(tempId);
-            return;
+          get().removeItem(tempId);
+          return;
         }
-        
+
         set((state) => {
           const items = state.items.map(item => {
             if (item.tempId === tempId) {
-               const addonsTotal = item.addons.reduce((acc, addon) => acc + (addon.price * addon.quantity), 0);
-               return {
-                 ...item,
-                 quantity,
-                 totalPrice: (item.product.price * quantity) + addonsTotal
-               };
+              const aditionalsTotal = item.aditionals.reduce((acc, aditional) => acc + (aditional.price * aditional.quantity), 0);
+              return {
+                ...item,
+                quantity,
+                totalPrice: (item.product.price * quantity) + aditionalsTotal
+              };
             }
             return item;
           });
           return { items };
         });
       },
-      
+
       setCustomer: (customer) => set({ customer }),
       setOrderType: (orderType) => set({ orderType }),
       setTableId: (tableId) => set({ tableId }),
@@ -87,11 +87,11 @@ export const usePOSStore = create<POSState>()(
       setDiscount: (discount) => set({ discount }),
       setCouponCode: (couponCode) => set({ couponCode }),
       clearCart: () => set({ items: [], customer: null, orderType: OrderType.Counter, tableId: undefined, deliveryFee: 0, discount: 0, couponCode: undefined }),
-      
+
       getSubtotal: () => {
         return get().items.reduce((acc, item) => acc + item.totalPrice, 0);
       },
-      
+
       getTotal: () => {
         const subtotal = get().getSubtotal();
         const { deliveryFee, discount } = get();

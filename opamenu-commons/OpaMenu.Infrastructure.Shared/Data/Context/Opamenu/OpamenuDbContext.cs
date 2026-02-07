@@ -17,10 +17,10 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
     public DbSet<OrderRejectionEntity> OrderRejections { get; set; }
     public DbSet<PaymentEntity> Payments { get; set; }
     public DbSet<PaymentRefundEntity> PaymentRefunds { get; set; }
-    public DbSet<AddonGroupEntity> AddonGroups { get; set; }
-    public DbSet<AddonEntity> Addons { get; set; }
-    public DbSet<ProductAddonGroupEntity> ProductAddonGroups { get; set; }
-    public DbSet<OrderItemAddonEntity> OrderItemAddons { get; set; }
+    public DbSet<AditionalGroupEntity> AditionalGroups { get; set; }
+    public DbSet<AditionalEntity> Aditionals { get; set; }
+    public DbSet<ProductAditionalGroupEntity> ProductAditionalGroups { get; set; }
+    public DbSet<OrderItemAditionalEntity> OrderItemAditionals { get; set; }
     public DbSet<PaymentMethodEntity> PaymentMethods { get; set; }
     public DbSet<TenantPaymentConfigEntity> TenantPaymentConfigs { get; set; }
     public DbSet<TenantPaymentMethodEntity> TenantPaymentMethods { get; set; }
@@ -434,43 +434,43 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
             entity.HasIndex(e => e.CustomerLoyaltyBalanceId);
         });
 
-        // Addon configuration
-        modelBuilder.Entity<AddonEntity>(entity =>
+        // Aditional configuration
+        modelBuilder.Entity<AditionalEntity>(entity =>
         {
-            entity.HasOne(d => d.AddonGroup)
-                  .WithMany(p => p.Addons)
-                  .HasForeignKey(d => d.AddonGroupId)
+            entity.HasOne(d => d.AditionalGroup)
+                  .WithMany(p => p.Aditionals)
+                  .HasForeignKey(d => d.AditionalGroupId)
                   .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // ProductAddonGroup configuration
-        modelBuilder.Entity<ProductAddonGroupEntity>(entity =>
+        // ProductAditionalGroup configuration
+        modelBuilder.Entity<ProductAditionalGroupEntity>(entity =>
         {
             entity.HasOne(d => d.Product)
-                  .WithMany(p => p.AddonGroups)
+                  .WithMany(p => p.AditionalGroups)
                   .HasForeignKey(d => d.ProductId)
                   .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasOne(d => d.AddonGroup)
-                  .WithMany(p => p.ProductAddonGroups)
-                  .HasForeignKey(d => d.AddonGroupId)
+            entity.HasOne(d => d.AditionalGroup)
+                  .WithMany(p => p.ProductAditionalGroups)
+                  .HasForeignKey(d => d.AditionalGroupId)
                   .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasIndex(e => new { e.ProductId, e.AddonGroupId }).IsUnique();
+            entity.HasIndex(e => new { e.ProductId, e.AditionalGroupId }).IsUnique();
         });
 
-        // OrderItemAddon configuration
-        modelBuilder.Entity<OrderItemAddonEntity>(entity =>
+        // OrderItemAditional configuration
+        modelBuilder.Entity<OrderItemAditionalEntity>(entity =>
         {
             entity.HasOne(d => d.OrderItem)
-                  .WithMany(p => p.Addons)
+                  .WithMany(p => p.Aditionals)
                   .HasForeignKey(d => d.OrderItemId)
                   .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasOne(d => d.Addon)
-                  .WithMany(p => p.OrderItemAddons)
-                  .HasForeignKey(d => d.AddonId)
-                  .OnDelete(DeleteBehavior.Restrict); // NÃ£o deletar addon se usado em pedido
+            entity.HasOne(d => d.Aditional)
+                  .WithMany(p => p.OrderItemAditionals)
+                  .HasForeignKey(d => d.AditionalId)
+                  .OnDelete(DeleteBehavior.Restrict); // Não deletar adicional se usado em pedido
         });
 
         // PaymentMethod configuration

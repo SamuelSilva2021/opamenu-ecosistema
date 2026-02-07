@@ -28,9 +28,10 @@ namespace Authenticator.API.Core.Application.Interfaces.AccessControl.UserAccoun
         Task<ResponseDTO<IEnumerable<UserAccountDTO>>> GetAllActiveUsersAsync();
 
         /// <summary>
-        /// Obtém detalhes de um usuário por ID (escopo do tenant atual)
+        /// Obtém detalhes de um usuário por ID (rota de superAdmin - usada pelo access-control-web)
         /// </summary>
         Task<ResponseDTO<UserAccountDTO>> GetUserAccountByIdAsync(Guid id);
+        Task<ResponseDTO<UserAccountDTO>> GetUserAccountByIdAndTenantIdAsync(Guid id);
 
         /// <summary>
         /// Cria um novo usuário (no tenant atual)

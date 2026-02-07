@@ -7,5 +7,6 @@ namespace Authenticator.API.Core.Application.Interfaces.MultiTenant
         Task<IEnumerable<TenantModuleEntity>> GetByTenantIdAsync(Guid tenantId);
         Task RemoveByTenantIdAsync(Guid tenantId);
         Task AddRangeAsync(IEnumerable<TenantModuleEntity> modules);
+        Task<TenantModuleEntity?> GetByTenantAndModuleIdAsync(Guid tenantId, Guid moduleId);
     }
 }

@@ -11,9 +11,9 @@ public partial class TempDbContext : DbContext
     {
     }
 
-    public virtual DbSet<Addon> Addons { get; set; }
+    public virtual DbSet<Aditional> Aditionals { get; set; }
 
-    public virtual DbSet<AddonGroup> AddonGroups { get; set; }
+    public virtual DbSet<AditionalGroup> AditionalGroups { get; set; }
 
     public virtual DbSet<Category> Categories { get; set; }
 
@@ -21,7 +21,7 @@ public partial class TempDbContext : DbContext
 
     public virtual DbSet<OrderItem> OrderItems { get; set; }
 
-    public virtual DbSet<OrderItemAddon> OrderItemAddons { get; set; }
+    public virtual DbSet<OrderItemAditional> OrderItemAditionals { get; set; }
 
     public virtual DbSet<OrderRejection> OrderRejections { get; set; }
 
@@ -33,7 +33,7 @@ public partial class TempDbContext : DbContext
 
     public virtual DbSet<Product> Products { get; set; }
 
-    public virtual DbSet<ProductAddonGroup> ProductAddonGroups { get; set; }
+    public virtual DbSet<ProductAditionalGroup> ProductAditionalGroups { get; set; }
 
     public virtual DbSet<ProductImage> ProductImages { get; set; }
 
@@ -72,21 +72,21 @@ public partial class TempDbContext : DbContext
                   .OnDelete(DeleteBehavior.Cascade);
         });
 
-        modelBuilder.Entity<Addon>(entity =>
+        modelBuilder.Entity<Aditional>(entity =>
         {
-            entity.HasIndex(e => e.AddonGroupId, "IX_Addons_AddonGroupId");
+            entity.HasIndex(e => e.AditionalGroupId, "IX_Aditionals_AditionalGroupId");
 
             entity.Property(e => e.Description).HasMaxLength(200);
             entity.Property(e => e.ImageUrl).HasMaxLength(500);
             entity.Property(e => e.Name).HasMaxLength(100);
             entity.Property(e => e.Price).HasPrecision(10, 2);
 
-            entity.HasOne(d => d.AddonGroup).WithMany(p => p.Addons).HasForeignKey(d => d.AddonGroupId);
+            entity.HasOne(d => d.AditionalGroup).WithMany(p => p.Aditionals).HasForeignKey(d => d.AditionalGroupId);
         });
 
-        modelBuilder.Entity<AddonGroup>(entity =>
+        modelBuilder.Entity<AditionalGroup>(entity =>
         {
-            entity.HasIndex(e => e.Name, "IX_AddonGroups_Name").IsUnique();
+            entity.HasIndex(e => e.Name, "IX_AditionalGroups_Name").IsUnique();
 
             entity.Property(e => e.Description).HasMaxLength(200);
             entity.Property(e => e.Name).HasMaxLength(100);
@@ -140,21 +140,21 @@ public partial class TempDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        modelBuilder.Entity<OrderItemAddon>(entity =>
+        modelBuilder.Entity<OrderItemAditional>(entity =>
         {
-            entity.HasIndex(e => e.AddonId, "IX_OrderItemAddons_AddonId");
+            entity.HasIndex(e => e.AditionalId, "IX_OrderItemAditionals_AditionalId");
 
-            entity.HasIndex(e => e.OrderItemId, "IX_OrderItemAddons_OrderItemId");
+            entity.HasIndex(e => e.OrderItemId, "IX_OrderItemAditionals_OrderItemId");
 
-            entity.Property(e => e.AddonName).HasMaxLength(100);
+            entity.Property(e => e.AditionalName).HasMaxLength(100);
             entity.Property(e => e.Subtotal).HasPrecision(10, 2);
             entity.Property(e => e.UnitPrice).HasPrecision(10, 2);
 
-            entity.HasOne(d => d.Addon).WithMany(p => p.OrderItemAddons)
-                .HasForeignKey(d => d.AddonId)
+            entity.HasOne(d => d.Aditional).WithMany(p => p.OrderItemAditionals)
+                .HasForeignKey(d => d.AditionalId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasOne(d => d.OrderItem).WithMany(p => p.OrderItemAddons).HasForeignKey(d => d.OrderItemId);
+            entity.HasOne(d => d.OrderItem).WithMany(p => p.OrderItemAditionals).HasForeignKey(d => d.OrderItemId);
         });
 
         modelBuilder.Entity<OrderRejection>(entity =>
@@ -237,15 +237,15 @@ public partial class TempDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        modelBuilder.Entity<ProductAddonGroup>(entity =>
+        modelBuilder.Entity<ProductAditionalGroup>(entity =>
         {
-            entity.HasIndex(e => e.AddonGroupId, "IX_ProductAddonGroups_AddonGroupId");
+            entity.HasIndex(e => e.AditionalGroupId, "IX_ProductAditionalGroups_AditionalGroupId");
 
-            entity.HasIndex(e => new { e.ProductId, e.AddonGroupId }, "IX_ProductAddonGroups_ProductId_AddonGroupId").IsUnique();
+            entity.HasIndex(e => new { e.ProductId, e.AditionalGroupId }, "IX_ProductAditionalGroups_ProductId_AditionalGroupId").IsUnique();
 
-            entity.HasOne(d => d.AddonGroup).WithMany(p => p.ProductAddonGroups).HasForeignKey(d => d.AddonGroupId);
+            entity.HasOne(d => d.AditionalGroup).WithMany(p => p.ProductAditionalGroups).HasForeignKey(d => d.AditionalGroupId);
 
-            entity.HasOne(d => d.Product).WithMany(p => p.ProductAddonGroups).HasForeignKey(d => d.ProductId);
+            entity.HasOne(d => d.Product).WithMany(p => p.ProductAditionalGroups).HasForeignKey(d => d.ProductId);
         });
 
         modelBuilder.Entity<ProductImage>(entity =>

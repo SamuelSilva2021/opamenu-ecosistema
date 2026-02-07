@@ -1,6 +1,4 @@
 using Authenticator.API.Core.Domain.AccessControl.AccessGroup.DTOs;
-using Authenticator.API.Core.Domain.AccessControl.Permissions.DTOs;
-
 namespace Authenticator.API.Core.Domain.AccessControl.Roles.DTOs
 {
     /// <summary>
@@ -56,7 +54,7 @@ namespace Authenticator.API.Core.Domain.AccessControl.Roles.DTOs
         /// <summary>
         /// Permissões associadas ao role
         /// </summary>
-        public IEnumerable<PermissionDTO> Permissions { get; set; } = new List<PermissionDTO>();
+        public List<SimplifiedPermissionDTO> Permissions { get; set; } = [];
 
         /// <summary>
         /// Grupos de acesso associados ao role

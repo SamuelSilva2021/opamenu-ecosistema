@@ -32,6 +32,6 @@ public class OrderItemEntity : BaseEntity
 
     public virtual OrderEntity Order { get; set; } = null!;
     public virtual ProductEntity Product { get; set; } = null!;
-    public virtual ICollection<OrderItemAddonEntity> Addons { get; set; } = new List<OrderItemAddonEntity>();
+    public virtual ICollection<OrderItemAditionalEntity> Aditionals { get; set; } = new List<OrderItemAditionalEntity>();
 }
 

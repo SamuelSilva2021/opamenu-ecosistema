@@ -6,10 +6,9 @@ import {
 } from '../../shared/components';
 import { Add as AddIcon, AdminPanelSettings as RoleIcon } from '@mui/icons-material';
 import { Typography, Box, CircularProgress, Alert, Button } from '@mui/material';
-import { 
-  RolesList, 
+import {
+  RolesList,
   RoleDialog,
-  RoleAccessGroups,
   RolePermissions
 } from '../roles/components';
 import { useRoles } from '../roles/hooks';
@@ -31,10 +30,8 @@ import type { Role, CreateRoleRequest, UpdateRoleRequest } from '../../shared/ty
 export const RolesPage = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
-  const [accessGroupsOpen, setAccessGroupsOpen] = useState(false);
-  const [selectedRoleForGroups, setSelectedRoleForGroups] = useState<Role | null>(null);
-  const [permissionsOpen, setPermissionsOpen] = useState(false);
   const [selectedRoleForPermissions, setSelectedRoleForPermissions] = useState<Role | null>(null);
+  const [permissionsOpen, setPermissionsOpen] = useState(false);
 
   const {
     roles,
@@ -48,9 +45,9 @@ export const RolesPage = () => {
     deleteRole,
     toggleStatus,
     clearError,
-  } = useRoles({ 
-    autoLoad: true, 
-    pageSize: 10 
+  } = useRoles({
+    autoLoad: true,
+    pageSize: 10
   });
 
   /**
@@ -98,21 +95,6 @@ export const RolesPage = () => {
     }
   };
 
-  /**
-   * Abre dialog para gerenciar grupos de acesso do role
-   */
-  const handleManageGroups = (role: Role) => {
-    setSelectedRoleForGroups(role);
-    setAccessGroupsOpen(true);
-  };
-
-  /**
-   * Fecha dialog de grupos de acesso
-   */
-  const handleCloseAccessGroups = () => {
-    setAccessGroupsOpen(false);
-    setSelectedRoleForGroups(null);
-  };
 
   /**
    * Abre dialog para gerenciar permissões do role
@@ -142,10 +124,10 @@ export const RolesPage = () => {
         // Modo criação
         await createRole(data as CreateRoleRequest);
       }
-      
+
       setDialogOpen(false);
       setEditingRole(null);
-      
+
     } catch (err) {
       // Erro já é propagado para o dialog
       throw err;
@@ -170,7 +152,7 @@ export const RolesPage = () => {
 
   return (
     <ResponsiveContainer>
-      
+
       {/* Header da página */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <PageHeader
@@ -178,7 +160,7 @@ export const RolesPage = () => {
           subtitle="Gerenciamento de papéis e funções do sistema"
           icon={<RoleIcon />}
         />
-        
+
         <Button
           variant="contained"
           startIcon={<AddIcon />}
@@ -206,8 +188,8 @@ export const RolesPage = () => {
 
         {/* Estados de erro */}
         {error && (
-          <Alert 
-            severity="error" 
+          <Alert
+            severity="error"
             onClose={clearError}
             sx={{ mb: 3 }}
           >
@@ -223,7 +205,6 @@ export const RolesPage = () => {
             onEdit={handleEditRole}
             onDelete={handleDeleteRole}
             onToggleStatus={handleToggleStatus}
-            onManageGroups={handleManageGroups}
             onManagePermissions={handleManagePermissions}
             totalItems={totalItems}
             currentPage={currentPage}
@@ -244,12 +225,6 @@ export const RolesPage = () => {
         error={error}
       />
 
-      {/* Dialog de grupos de acesso */}
-      <RoleAccessGroups
-        open={accessGroupsOpen}
-        onClose={handleCloseAccessGroups}
-        role={selectedRoleForGroups}
-      />
 
       {/* Dialog de permissões */}
       <RolePermissions

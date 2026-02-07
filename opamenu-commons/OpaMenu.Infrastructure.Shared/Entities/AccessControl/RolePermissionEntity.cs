@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,42 +8,31 @@ using System.Threading.Tasks;
 namespace OpaMenu.Infrastructure.Shared.Entities.AccessControl
 {
     /// <summary>
-    /// Entidade que representa a relação entre papéis e permissões
+    /// Entidade que representa a relação entre papéis e permissões (Simplificada)
     /// </summary>
     public class RolePermissionEntity
     {
-        /// <summary>
-        /// ID único da relação papel-permissão
-        /// </summary>
         public Guid Id { get; set; }
-        /// <summary>
-        /// ID do papel
-        /// </summary>
         public Guid RoleId { get; set; }
+
         /// <summary>
-        /// ID da permissão
+        /// Chave do módulo (ex: DASHBOARD, PRODUCT, ORDER)
         /// </summary>
-        public Guid PermissionId { get; set; }
+        [Required]
+        [MaxLength(100)]
+        public string ModuleKey { get; set; } = string.Empty;
+
         /// <summary>
-        /// Se a relação está ativa
+        /// Lista de ações permitidas (ex: ["READ", "CREATE", "UPDATE", "DELETE"])
         /// </summary>
+        public List<string> Actions { get; set; } = new();
+
         public bool IsActive { get; set; } = true;
-        /// <summary>
-        /// Data de criação
-        /// </summary>
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        /// <summary>
-        /// Data de atualização
-        /// </summary>
-        public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
-        /// <summary>
-        /// Navegação para o papel
-        /// </summary>
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+
+        // Navigation properties
         public RoleEntity Role { get; set; } = null!;
-        /// <summary>
-        /// Navegação para a permissão
-        /// </summary>
-        public PermissionEntity Permission { get; set; } = null!;
     }
 }
 

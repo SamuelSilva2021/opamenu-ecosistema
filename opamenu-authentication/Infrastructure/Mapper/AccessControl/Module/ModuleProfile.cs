@@ -14,8 +14,7 @@ namespace Authenticator.API.Infrastructure.Mapper.AccessControl.Module
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.Application, opt => opt.Ignore())
-                .ForMember(dest => dest.Permissions, opt => opt.Ignore());
+                .ForMember(dest => dest.Application, opt => opt.Ignore());
                
 
             // UpdateDTO para Entity
@@ -23,8 +22,7 @@ namespace Authenticator.API.Infrastructure.Mapper.AccessControl.Module
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(_ => DateTime.Now))
-                .ForMember(dest => dest.Application, opt => opt.Ignore())
-                .ForMember(dest => dest.Permissions, opt => opt.Ignore());
+                .ForMember(dest => dest.Application, opt => opt.Ignore());
 
             // Entity para ResponseDTO
             CreateMap<ModuleEntity, ModuleDTO>()
@@ -38,8 +36,7 @@ namespace Authenticator.API.Infrastructure.Mapper.AccessControl.Module
 
             // ResponseDTO para Entity (para casos específicos)
             CreateMap<ModuleDTO, ModuleEntity>()
-                .ForMember(dest => dest.Application, opt => opt.Ignore())
-                .ForMember(dest => dest.Permissions, opt => opt.Ignore());
+                .ForMember(dest => dest.Application, opt => opt.Ignore());
         }
     }
 }

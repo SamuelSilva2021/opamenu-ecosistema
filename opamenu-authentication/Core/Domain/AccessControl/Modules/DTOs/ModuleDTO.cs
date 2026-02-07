@@ -1,5 +1,4 @@
-﻿using Authenticator.API.Core.Domain.AccessControl.Permissions.DTOs;
-
+﻿
 namespace Authenticator.API.Core.Domain.AccessControl.Modules.DTOs
 {
     /// <summary>
@@ -72,6 +71,5 @@ namespace Authenticator.API.Core.Domain.AccessControl.Modules.DTOs
         /// </summary>
         public DateTime? UpdatedAt { get; set; }
 
-        public IEnumerable<PermissionDTO> Permissions { get; set; }
     }
 }

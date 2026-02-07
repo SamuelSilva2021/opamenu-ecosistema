@@ -1,5 +1,5 @@
 // Tipos de Autenticação baseados na API
-import type { UserPermissions } from './permission.types';
+import type { UserPermissions, SimplifiedRole } from './permission.types';
 
 export interface LoginRequest {
   usernameOrEmail: string;
@@ -18,7 +18,8 @@ export interface UserInfo {
   username: string;
   email: string;
   fullName: string;
-  permissions: UserPermissions;
+  permissions: UserPermissions; // Mantido para compatibilidade
+  role?: SimplifiedRole;         // Novo formato 3-níveis
   tenant: {
     id: string;
     name: string;
@@ -36,6 +37,7 @@ export interface AuthUser {
   email: string;
   username: string;
   fullName: string;
+  role?: SimplifiedRole; // Novo formato
   tenant: {
     id: string;
     name: string;

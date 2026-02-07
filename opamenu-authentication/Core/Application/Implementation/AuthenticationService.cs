@@ -17,6 +17,7 @@ using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Subscription;
 using Authenticator.API.Core.Application.Interfaces.MultiTenant;
 using OpaMenu.Infrastructure.Shared.Data.Context.AccessControl;
 using OpaMenu.Infrastructure.Shared.Data.Context.MultTenant;
+using Authenticator.API.Core.Domain.AccessControl.Roles.DTOs;
 
 namespace Authenticator.API.Core.Application.Implementation;
 
@@ -175,11 +176,12 @@ public class AuthenticationService(
                 RefreshToken = refreshToken,
                 ExpiresIn = _jwtTokenService.GetTokenExpirationTime(),
                 TenantStatus = tenant?.Status.ToString(),
-                //SubscriptionStatus = subscription!.Status,
-                //// Requer pagamento se status for pendente ou suspenso, ou se assinatura nÃ£o estiver ativa/trial
-                //RequiresPayment = tenant?.Status == ETenantStatus.Pendente || 
-                //                  tenant?.Status == ETenantStatus.Suspenso ||
-                //                  (subscription != null && subscription.Status != ESubscriptionStatus.Ativo && subscription.Status != ESubscriptionStatus.Trial)
+                SubscriptionStatus = (ESubscriptionStatus)(subscription?.Status ?? ESubscriptionStatus.Cancelado),
+                // Requer pagamento se status for pendente ou suspenso, ou se assinatura não estiver ativa/trial
+                RequiresPayment = tenant?.Status == ETenantStatus.Pendente || 
+                                  tenant?.Status == ETenantStatus.Suspenso ||
+                                  (subscription != null && subscription.Status != ESubscriptionStatus.Ativo && subscription.Status != ESubscriptionStatus.Trial),
+                RedirectToPlanSelection = tenant != null && (subscription == null || (subscription.Status != ESubscriptionStatus.Ativo && subscription.Status != ESubscriptionStatus.Trial))
             };
 
             _logger.LogInformation("Login bem-sucedido parausuário: {UserId}", user.Id);
@@ -326,6 +328,28 @@ public class AuthenticationService(
 
             var userPermissions = await GetUserPermissionsAsync(user.Id);
 
+            // 3. Interseção com Módulos do Tenant (Contrato/Plano)
+            if (tenant != null)
+            {
+                var tenantModules = await _tenantModuleRepository.GetByTenantIdAsync(tenant.Id);
+                var subscribedModuleIds = tenantModules.Select(tm => tm.ModuleId).ToList();
+
+                var subscribedModuleKeys = await _accessControlContext.Modules
+                    .Where(m => subscribedModuleIds.Contains(m.Id) && m.IsActive)
+                    .Select(m => m.Key)
+                    .ToListAsync();
+
+                foreach (var group in userPermissions.AccessGroups)
+                {
+                    foreach (var role in group.Roles)
+                    {
+                        role.Modules = role.Modules
+                            .Where(m => subscribedModuleKeys.Contains(m.Key))
+                            .ToList();
+                    }
+                }
+            }
+
             var userInfo = new UserInfo
             {
                 Id = user.Id,
@@ -339,7 +363,17 @@ public class AuthenticationService(
                     Name = tenant.Name,
                     Slug = tenant.Slug,
                     CustomDomain = tenant.Domain
-                } : null
+                } : null,
+                Role = userPermissions.AccessGroups.SelectMany(ag => ag.Roles).Select(r => new SimplifiedRoleDTO
+                {
+                    Id = r.Id,
+                    Name = r.Code ?? "No Role",
+                    Permissions = r.Modules.Select(m => new SimplifiedPermissionDTO
+                    {
+                        Module = m.Key,
+                        Actions = m.Operations
+                    }).ToList()
+                }).FirstOrDefault()
             };
 
             _cache.Set(cacheKey, userInfo, TimeSpan.FromMinutes(15));
@@ -401,13 +435,23 @@ public class AuthenticationService(
     /// <returns></returns>
     private async Task<List<string>> GetUserPermissionsAsync(List<string> roles)
     {
-        return await _accessControlContext.RolePermissions
-            .Where(rp => roles.Contains(rp.Role!.Name) && rp.IsActive && rp.Permission.IsActive && rp.Role.IsActive)
+        // Nowpermissions are strings in the format "ModuleKey:Action" or just grouped by module
+        // For backward compatibility with things expecting a simple list of names, we'll return concatenated strings
+        var rolePermissions = await _accessControlContext.RolePermissions
+            .Where(rp => roles.Contains(rp.Role.Code) && rp.IsActive && rp.Role.IsActive)
             .Include(rp => rp.Role)
-            .Include(rp => rp.Permission)
-            .Select(rp => rp.Permission!.Name)
-            .Distinct()
             .ToListAsync();
+
+        var permissionStrings = new List<string>();
+        foreach (var rp in rolePermissions)
+        {
+            foreach (var action in rp.Actions)
+            {
+                permissionStrings.Add($"{rp.ModuleKey}:{action}");
+            }
+        }
+
+        return [.. permissionStrings.Distinct()];
     }
 
     /// <summary>

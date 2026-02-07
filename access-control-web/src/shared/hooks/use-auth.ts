@@ -2,7 +2,6 @@ import { useCallback } from 'react';
 import { useAuthStore } from '../stores';
 import { usePermissions } from '../stores/permission.store';
 import type { LoginRequest } from '../types';
-import type { OperationType } from '../types/permission.types';
 
 /**
  * Hook personalizado para gerenciar autenticação
@@ -47,20 +46,20 @@ export const useAuth = () => {
 
   // Métodos de permissão usando o novo sistema
   const hasModuleAccess = useCallback(
-    (moduleKey: string, operation?: OperationType): boolean => {
-      return hasAccess(moduleKey, operation);
+    (moduleKey: string, operation?: string): boolean => {
+      return hasAccess(moduleKey, operation as any);
     },
     [hasAccess]
   );
 
   const canPerformOperation = useCallback(
-    (moduleKey: string, operation: OperationType): boolean => {
-      return hasAccess(moduleKey, operation);
+    (moduleKey: string, operation: string): boolean => {
+      return hasAccess(moduleKey, operation as any);
     },
     [hasAccess]
   );
 
-  // Compatibilidade com métodos antigos (deprecated)
+  // Compatibilidade com métodos antigos
   const hasPermission = useCallback(
     (_permission: string): boolean => {
       console.warn('hasPermission é deprecated. Use hasModuleAccess com moduleKey e operation.');
@@ -70,19 +69,17 @@ export const useAuth = () => {
   );
 
   const hasRole = useCallback(
-    (_role: string): boolean => {
-      console.warn('hasRole é deprecated. Use hasModuleAccess com moduleKey.');
-      return false; // Por compatibilidade, sempre retorna false
+    (roleCode: string): boolean => {
+      return user?.role?.name === roleCode;
     },
-    []
+    [user]
   );
 
   const hasAnyPermission = useCallback(
-    (_permissions: string[]): boolean => {
-      console.warn('hasAnyPermission é deprecated. Use hasModuleAccess.');
-      return false; // Por compatibilidade, sempre retorna false
+    (moduleKeys: string[]): boolean => {
+      return moduleKeys.some(key => hasAccess(key));
     },
-    []
+    [hasAccess]
   );
 
   const hasAllPermissions = useCallback(
@@ -99,12 +96,12 @@ export const useAuth = () => {
     user,
     token,
     isLoading,
-    
+
     // Actions
     login,
     logout,
     setLoading,
-    
+
     // Novos métodos de permissão baseados em módulos
     hasModuleAccess,
     canPerformOperation,
@@ -113,7 +110,7 @@ export const useAuth = () => {
     canUpdate: (moduleKey: string) => canUpdate(moduleKey),
     canDelete: (moduleKey: string) => canDelete(moduleKey),
     getAccessibleModules,
-    
+
     // Métodos antigos (deprecated - mantidos para compatibilidade)
     hasPermission,
     hasRole,

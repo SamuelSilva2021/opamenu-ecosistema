@@ -104,7 +104,7 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Module
                 if (limit > 100) limit = 100;
 
                 var currentUser = _userContext.CurrentUser;
-                var entities = await _moduleRepository.GetPagedWithIncludesAsync(page, 100, m => m.Permissions);
+                var entities = await _moduleRepository.GetPagedWithIncludesAsync(page, 100);
                 var total = entities.Count();
 
                 var items = _mapper.Map<IEnumerable<ModuleDTO>>(entities);

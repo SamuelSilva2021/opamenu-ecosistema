@@ -1,4 +1,4 @@
-import type { PaginatedResponse, Tenant, TenantSummary, TenantFilters, ApiResponse } from '../types';
+import type { PaginatedResponse, Tenant, TenantSummary, TenantFilters, ApiResponse, Module } from '../types';
 import { httpClient } from '../utils';
 import { API_ENDPOINTS } from '../constants';
 
@@ -104,5 +104,38 @@ export class TenantService {
 
   static async deleteTenant(id: string): Promise<void> {
     await httpClient.delete<boolean | void>(API_ENDPOINTS.TENANT_BY_ID(id));
+  }
+
+  static async getModules(tenantId: string): Promise<Module[]> {
+    const response = await httpClient.get<Module[] | ApiResponse<Module[]>>(`${API_ENDPOINTS.TENANTS}/${tenantId}/modules`);
+
+    if ('succeeded' in response) {
+      if (!response.succeeded) {
+        throw new Error('Erro ao buscar módulos do tenant');
+      }
+      return response.data;
+    }
+
+    return response as Module[];
+  }
+
+  static async addModule(tenantId: string, moduleId: string): Promise<void> {
+    const response = await httpClient.post<boolean | ApiResponse<boolean>>(`${API_ENDPOINTS.TENANTS}/${tenantId}/modules/${moduleId}`, {});
+
+    if (typeof response === 'object' && 'succeeded' in response) {
+      if (!response.succeeded) {
+        throw new Error('Erro ao adicionar módulo ao tenant');
+      }
+    }
+  }
+
+  static async removeModule(tenantId: string, moduleId: string): Promise<void> {
+    const response = await httpClient.delete<boolean | ApiResponse<boolean>>(`${API_ENDPOINTS.TENANTS}/${tenantId}/modules/${moduleId}`);
+
+    if (typeof response === 'object' && 'succeeded' in response) {
+      if (!response.succeeded) {
+        throw new Error('Erro ao remover módulo do tenant');
+      }
+    }
   }
 }

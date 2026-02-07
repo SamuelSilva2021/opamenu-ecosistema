@@ -86,6 +86,13 @@ namespace OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts
         /// Tenant ao qual o usuário pertence - removido navigation property (tabela está em outro banco)
         /// </summary>
         // public TenantEntity? Tenant { get; set; }
+        /// <summary>
+        /// ID do Perfil (Role) do usuário
+        /// </summary>
+        public Guid? RoleId { get; set; }
+
+        public virtual RoleEntity? Role { get; set; }
+
         // Navigation properties
         public virtual ICollection<AccountAccessGroupEntity> AccountAccessGroups { get; set; } = [];
     }

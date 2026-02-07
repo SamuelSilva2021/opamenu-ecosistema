@@ -52,20 +52,6 @@ public interface IOrderMapper
     IEnumerable<OrderItemResponseDto> MapToOrderItemDtos(IEnumerable<OrderItemEntity> orderItems);
     
     /// <summary>
-    /// Mapeia uma entidade OrderItemAddon para OrderItemAddonResponseDto
-    /// </summary>
-    /// <param name="orderItemAddon">Entidade OrderItemAddon</param>
-    /// <returns>OrderItemAddonResponseDto mapeado</returns>
-    OrderItemAddonResponseDto MapToOrderItemAddonDto(OrderItemAddonEntity orderItemAddon);
-    
-    /// <summary>
-    /// Mapeia uma coleÃ§Ã£o de entidades OrderItemAddon para OrderItemAddonResponseDto
-    /// </summary>
-    /// <param name="orderItemAddons">ColeÃ§Ã£o de entidades OrderItemAddon</param>
-    /// <returns>ColeÃ§Ã£o de OrderItemAddonResponseDto mapeados</returns>
-    IEnumerable<OrderItemAddonResponseDto> MapToOrderItemAddonDtos(IEnumerable<OrderItemAddonEntity> orderItemAddons);
-    
-    /// <summary>
     /// Mapeia um CreateOrderItemRequestDto para entidade OrderItem
     /// </summary>
     /// <param name="request">Request de criaÃ§Ã£o do item</param>

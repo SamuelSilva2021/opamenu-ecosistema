@@ -23,7 +23,7 @@ public partial class OrderItem
 
     public virtual Order Order { get; set; } = null!;
 
-    public virtual ICollection<OrderItemAddon> OrderItemAddons { get; set; } = new List<OrderItemAddon>();
+    public virtual ICollection<OrderItemAditional> OrderItemAditionals { get; set; } = [];
 
     public virtual Product Product { get; set; } = null!;
 }

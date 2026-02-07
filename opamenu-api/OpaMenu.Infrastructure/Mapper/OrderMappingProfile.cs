@@ -37,7 +37,7 @@ public class OrderMappingProfile : Profile
 
         // Mapeamento de OrderItemEntity para OrderItemResponseDto
         CreateMap<OrderItemEntity, OrderItemResponseDto>()
-            .ForMember(dest => dest.Addons, opt => opt.MapFrom(src => src.Addons))
+            .ForMember(dest => dest.Aditionals, opt => opt.MapFrom(src => src.Aditionals))
             .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.Product.ImageUrl));
 
         // Mapeamento de CreateOrderItemRequestDto para OrderItemEntity
@@ -49,19 +49,19 @@ public class OrderMappingProfile : Profile
             .ForMember(dest => dest.ProductName, opt => opt.Ignore()) // Obtido do produto
             .ForMember(dest => dest.UnitPrice, opt => opt.Ignore()) // Obtido do produto
             .ForMember(dest => dest.Subtotal, opt => opt.Ignore()) // Calculado
-            .ForMember(dest => dest.Addons, opt => opt.MapFrom(src => src.Addons));
+            .ForMember(dest => dest.Aditionals, opt => opt.MapFrom(src => src.Aditionals));
 
-        // Mapeamento de OrderItemAddonEntity para OrderItemAddonResponseDto
-        CreateMap<OrderItemAddonEntity, OrderItemAddonResponseDto>();
+        // Mapeamento de OrderItemAditionalEntity para OrderItemAditionalResponseDto
+        CreateMap<OrderItemAditionalEntity, OrderItemAditionalResponseDto>();
 
-        // Mapeamento de CreateOrderItemAddonRequestDto para OrderItemAddonEntity
-        CreateMap<CreateOrderItemAddonRequestDto, OrderItemAddonEntity>()
+        // Mapeamento de CreateOrderItemAditionalRequestDto para OrderItemAditionalEntity
+        CreateMap<CreateOrderItemAditionalRequestDto, OrderItemAditionalEntity>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.OrderItemId, opt => opt.Ignore())
             .ForMember(dest => dest.OrderItem, opt => opt.Ignore())
-            .ForMember(dest => dest.Addon, opt => opt.Ignore())
-            .ForMember(dest => dest.AddonName, opt => opt.Ignore()) // Obtido do addon
-            .ForMember(dest => dest.UnitPrice, opt => opt.Ignore()) // Obtido do addon
+            .ForMember(dest => dest.Aditional, opt => opt.Ignore())
+            .ForMember(dest => dest.AditionalName, opt => opt.Ignore()) // Obtido do adicional
+            .ForMember(dest => dest.UnitPrice, opt => opt.Ignore()) // Obtido do adicional
             .ForMember(dest => dest.Subtotal, opt => opt.Ignore()); // Calculado
     }
 

@@ -141,6 +141,22 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.UserAc
         {
             try
             {
+                var user = await _userRepository.GetByIdAsync(id);
+                if (user == null)
+                    return StaticResponseBuilder<UserAccountDTO>.BuildOk(null!);
+
+                var dto = _mapper.Map<UserAccountDTO>(user);
+                return StaticResponseBuilder<UserAccountDTO>.BuildOk(dto);
+            }
+            catch (Exception ex)
+            {
+                return StaticResponseBuilder<UserAccountDTO>.BuildErrorResponse(ex);
+            }
+        }
+        public async Task<ResponseDTO<UserAccountDTO>> GetUserAccountByIdAndTenantIdAsync(Guid id)
+        {
+            try
+            {
                 var tenantId = _userContext.CurrentUser?.TenantId;
                 var user = await _userRepository.GetByIdAsync(id);
                 if (user == null || (tenantId.HasValue && user.TenantId != tenantId))

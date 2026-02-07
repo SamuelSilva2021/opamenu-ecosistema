@@ -14,6 +14,9 @@ using AutoMapper;
 using System.Text.RegularExpressions;
 using Authenticator.API.Core.Application.Interfaces.AccessControl.UserAccounts;
 using Authenticator.API.Core.Domain.AccessControl.UserAccounts.DTOs;
+using Authenticator.API.Core.Application.Interfaces.AccessControl.Module;
+using Authenticator.API.Core.Domain.AccessControl.Modules.DTOs;
+using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.TenantModule;
 
 using System.Linq.Expressions;
 
@@ -34,7 +37,9 @@ namespace Authenticator.API.Core.Application.Implementation.MultiTenant
         IRoleRepository roleRepository,
         IRoleAccessGroupRepository roleAccessGroupRepository,
         IGroupTypeRepository groupTypeRepository,
-        IUserAccountService userAccountService
+        IUserAccountService userAccountService,
+        ITenantModuleRepository tenantModuleRepository,
+        IModuleRepository moduleRepository
         ) : ITenantService
     {
         private readonly ITenantRepository _tenantRepository = tenantRepository;
@@ -52,6 +57,8 @@ namespace Authenticator.API.Core.Application.Implementation.MultiTenant
         private readonly IRoleAccessGroupRepository _roleAccessGroupRepository = roleAccessGroupRepository;
         private readonly IGroupTypeRepository _groupTypeRepository = groupTypeRepository;
         private readonly IUserAccountService _userAccountService = userAccountService;
+        private readonly ITenantModuleRepository _tenantModuleRepository = tenantModuleRepository;
+        private readonly IModuleRepository _moduleRepository = moduleRepository;
 
         public async Task<ResponseDTO<RegisterTenantResponseDTO>> AddTenantAsync(CreateTenantDTO tenant)
         {
@@ -194,6 +201,81 @@ namespace Authenticator.API.Core.Application.Implementation.MultiTenant
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao deletar tenant {TenantId}", id);
+                return StaticResponseBuilder<bool>.BuildErrorResponse(ex);
+            }
+        }
+
+        public async Task<ResponseDTO<IEnumerable<ModuleDTO>>> GetModulesAsync(Guid tenantId)
+        {
+            try
+            {
+                var tenantModules = await _tenantModuleRepository.GetByTenantIdAsync(tenantId);
+                var moduleIds = tenantModules.Select(tm => tm.ModuleId).ToList();
+                
+                var modules = new List<ModuleDTO>();
+                foreach (var moduleId in moduleIds)
+                {
+                    var module = await _moduleRepository.GetByIdAsync(moduleId);
+                    if (module != null)
+                    {
+                        modules.Add(_mapper.Map<ModuleDTO>(module));
+                    }
+                }
+                
+                return StaticResponseBuilder<IEnumerable<ModuleDTO>>.BuildOk(modules);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao buscar módulos do tenant {TenantId}", tenantId);
+                return StaticResponseBuilder<IEnumerable<ModuleDTO>>.BuildErrorResponse(ex);
+            }
+        }
+
+        public async Task<ResponseDTO<bool>> AddModuleAsync(Guid tenantId, Guid moduleId)
+        {
+            try
+            {
+                var tenant = await _tenantRepository.GetByIdAsync(tenantId);
+                if (tenant == null) return StaticResponseBuilder<bool>.BuildError("Tenant não encontrado");
+
+                var module = await _moduleRepository.GetByIdAsync(moduleId);
+                if (module == null) return StaticResponseBuilder<bool>.BuildError("Módulo não encontrado");
+
+                var existing = await _tenantModuleRepository.GetByTenantAndModuleIdAsync(tenantId, moduleId);
+                if (existing != null) return StaticResponseBuilder<bool>.BuildOk(true);
+
+                var tenantModule = new TenantModuleEntity
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = tenantId,
+                    ModuleId = moduleId,
+                    IsEnabled = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _tenantModuleRepository.AddAsync(tenantModule);
+                return StaticResponseBuilder<bool>.BuildOk(true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao adicionar módulo {ModuleId} ao tenant {TenantId}", moduleId, tenantId);
+                return StaticResponseBuilder<bool>.BuildErrorResponse(ex);
+            }
+        }
+
+        public async Task<ResponseDTO<bool>> RemoveModuleAsync(Guid tenantId, Guid moduleId)
+        {
+            try
+            {
+                var existing = await _tenantModuleRepository.GetByTenantAndModuleIdAsync(tenantId, moduleId);
+                if (existing == null) return StaticResponseBuilder<bool>.BuildOk(true);
+
+                await _tenantModuleRepository.DeleteAsync(existing);
+                return StaticResponseBuilder<bool>.BuildOk(true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao remover módulo {ModuleId} do tenant {TenantId}", moduleId, tenantId);
                 return StaticResponseBuilder<bool>.BuildErrorResponse(ex);
             }
         }

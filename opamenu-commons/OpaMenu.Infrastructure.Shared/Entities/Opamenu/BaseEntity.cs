@@ -13,12 +13,12 @@ public abstract class BaseEntity
     /// Data de criação da entidade.
     /// </summary>
     [Column(name: "created_at")]
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; }
     /// <summary>
     /// Data da ultima atualização da entidade.
     /// </summary>
     [Column(name: "updated_at")]
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; }
     /// <summary>
     /// Identificador do tenant ao qual a entidade pertence.
     /// </summary>

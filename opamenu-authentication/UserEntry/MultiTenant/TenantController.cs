@@ -4,6 +4,8 @@ using Authenticator.API.Core.Domain.MultiTenant.Tenant.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+using Authenticator.API.Core.Domain.AccessControl.Modules.DTOs;
+
 namespace Authenticator.API.UserEntry.MultiTenant;
 
 [Route("api/tenants")]
@@ -39,6 +41,30 @@ public class TenantController(ITenantService tenantService) : BaseController
     public async Task<ActionResult<ResponseDTO<bool>>> Delete(Guid id)
     {
         var result = await tenantService.DeleteAsync(id);
+        return BuildResponse(result);
+    }
+
+    [HttpGet("{id:guid}/modules")]
+    [Authorize(Roles = "SUPER_ADMIN")]
+    public async Task<ActionResult<ResponseDTO<IEnumerable<ModuleDTO>>>> GetModules(Guid id)
+    {
+        var result = await tenantService.GetModulesAsync(id);
+        return BuildResponse(result);
+    }
+
+    [HttpPost("{id:guid}/modules/{moduleId:guid}")]
+    [Authorize(Roles = "SUPER_ADMIN")]
+    public async Task<ActionResult<ResponseDTO<bool>>> AddModule(Guid id, Guid moduleId)
+    {
+        var result = await tenantService.AddModuleAsync(id, moduleId);
+        return BuildResponse(result);
+    }
+
+    [HttpDelete("{id:guid}/modules/{moduleId:guid}")]
+    [Authorize(Roles = "SUPER_ADMIN")]
+    public async Task<ActionResult<ResponseDTO<bool>>> RemoveModule(Guid id, Guid moduleId)
+    {
+        var result = await tenantService.RemoveModuleAsync(id, moduleId);
         return BuildResponse(result);
     }
 }

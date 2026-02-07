@@ -14,14 +14,9 @@ namespace Authenticator.API.Core.Application.Interfaces.AccessControl.RolePermis
         Task<IEnumerable<RolePermissionEntity>> GetAllRolePermissionsByRoleIdAsync(Guid roleId);
 
         /// <summary>
-        /// Busca relações por ID da permissão
+        /// Busca uma relação específica entre role e módulo
         /// </summary>
-        Task<IEnumerable<RolePermissionEntity>> GetByPermissionIdAsync(Guid permissionId);
-
-        /// <summary>
-        /// Busca uma relação específica entre role e permissão
-        /// </summary>
-        Task<RolePermissionEntity?> GetByRoleAndPermissionAsync(Guid roleId, Guid permissionId);
+        Task<RolePermissionEntity?> GetByRoleAndModuleAsync(Guid roleId, string moduleKey);
 
         /// <summary>
         /// Remove todas as relações de um role (soft delete)
@@ -29,8 +24,8 @@ namespace Authenticator.API.Core.Application.Interfaces.AccessControl.RolePermis
         Task<bool> RemoveAllByRoleIdAsync(Guid roleId);
 
         /// <summary>
-        /// Remove relações específicas (soft delete)
+        /// Remove relações específicas por módulo (soft delete)
         /// </summary>
-        Task<bool> RemoveByRoleAndPermissionsAsync(Guid roleId, IEnumerable<Guid> permissionIds);
+        Task<bool> RemoveByRoleAndModulesAsync(Guid roleId, IEnumerable<string> moduleKeys);
     }
 }

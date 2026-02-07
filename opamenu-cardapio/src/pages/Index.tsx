@@ -72,8 +72,14 @@ const StorefrontContent = () => {
     isOpen: isModalOpen,
     selectedProduct,
     openModal: openProductModal,
-    closeModal: closeProductModal
+    closeModal: closeProductModal,
+    error: modalError
   } = useProductModal(slug);
+
+  // Show toast on modal error
+  if (modalError) {
+    console.error("Product Modal Error:", modalError);
+  }
 
   // Use unified loading/error states
   const tenantLoading = storefrontLoading;

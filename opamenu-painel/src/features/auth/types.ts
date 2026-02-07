@@ -28,27 +28,27 @@ export interface AuthResponse {
 }
 
 export interface RegisterTenantRequest {
-    companyName: string;
-    document?: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
+  companyName: string;
+  document?: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
 }
 
 export interface PlanDto {
-    id: string;
-    name: string;
-    description: string;
-    price: number;
-    billingCycle: string;
-    features?: string[];
-    isActive: boolean;
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  billingCycle: string;
+  features?: string[];
+  isActive: boolean;
 }
 
 export interface ActivateTrialRequest {
-    planId: string;
+  planId: string;
 }
 
 // Permissions Types
@@ -56,6 +56,24 @@ export interface ModuleBasicDTO {
   id: string;
   key: string;
   operations: string[];
+}
+
+export interface RolesBasicDTO {
+  id: string;
+  code: string;
+  modules: ModuleBasicDTO[];
+}
+
+// Nova estrutura simplificada
+export interface SimplifiedPermission {
+  module: string;
+  actions: string[];
+}
+
+export interface SimplifiedRole {
+  id: string;
+  name: string;
+  permissions: SimplifiedPermission[];
 }
 
 export interface RolesBasicDTO {
@@ -87,7 +105,8 @@ export interface UserInfo {
   username: string;
   email: string;
   fullName: string;
-  permissions: UserPermissionsDTO;
+  permissions: UserPermissionsDTO; // Mantido para compatibilidade
+  role?: SimplifiedRole; // Novo formato simplificado
   tenant?: TenantInfoDTO;
 }
 

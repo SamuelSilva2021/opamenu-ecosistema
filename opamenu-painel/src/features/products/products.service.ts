@@ -5,9 +5,9 @@ import type {
   CreateProductRequest,
   UpdateProductRequest,
   ProductSearchRequest,
-  ProductAddonGroupResponse,
-  AddProductAddonGroupRequest,
-  UpdateProductAddonGroupRequest,
+  ProductAditionalGroupResponse,
+  AddProductAditionalGroupRequest,
+  UpdateProductAditionalGroupRequest,
 } from "./types";
 
 export const productsService = {
@@ -47,24 +47,24 @@ export const productsService = {
     return response.data;
   },
 
-  // Product Addon Groups
-  getProductAddonGroups: async (productId: string): Promise<ProductAddonGroupResponse[]> => {
-    const response = await api.get<ProductAddonGroupResponse[]>(`/products/${productId}/addon-groups`);
+  // Product Aditional Groups
+  getProductAditionalGroups: async (productId: string): Promise<ProductAditionalGroupResponse[]> => {
+    const response = await api.get<ProductAditionalGroupResponse[]>(`/products/${productId}/aditional-groups`);
     return response.data;
   },
 
-  addProductAddonGroup: async (productId: string, data: AddProductAddonGroupRequest): Promise<ApiResponse<ProductAddonGroupResponse>> => {
-    const response = await api.post<ApiResponse<ProductAddonGroupResponse>>(`/products/${productId}/addon-groups`, data);
+  addProductAditionalGroup: async (productId: string, data: AddProductAditionalGroupRequest): Promise<ApiResponse<ProductAditionalGroupResponse>> => {
+    const response = await api.post<ApiResponse<ProductAditionalGroupResponse>>(`/products/${productId}/aditional-groups`, data);
     return response.data;
   },
 
-  updateProductAddonGroup: async (productId: string, addonGroupId: string, data: UpdateProductAddonGroupRequest): Promise<ApiResponse<ProductAddonGroupResponse>> => {
-    const response = await api.put<ApiResponse<ProductAddonGroupResponse>>(`/products/${productId}/addon-groups/${addonGroupId}`, data);
+  updateProductAditionalGroup: async (productId: string, aditionalGroupId: string, data: UpdateProductAditionalGroupRequest): Promise<ApiResponse<ProductAditionalGroupResponse>> => {
+    const response = await api.put<ApiResponse<ProductAditionalGroupResponse>>(`/products/${productId}/aditional-groups/${aditionalGroupId}`, data);
     return response.data;
   },
 
-  deleteProductAddonGroup: async (productId: string, addonGroupId: string): Promise<ApiResponse<boolean>> => {
-    const response = await api.delete<ApiResponse<boolean>>(`/products/${productId}/addon-groups/${addonGroupId}`);
+  deleteProductAditionalGroup: async (productId: string, aditionalGroupId: string): Promise<ApiResponse<boolean>> => {
+    const response = await api.delete<ApiResponse<boolean>>(`/products/${productId}/aditional-groups/${aditionalGroupId}`);
     return response.data;
   },
 };

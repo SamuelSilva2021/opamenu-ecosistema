@@ -11,6 +11,7 @@ using Authenticator.API.Infrastructure.Providers;
 using Authenticator.API.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Npgsql;
@@ -37,7 +38,8 @@ public static class ServiceCollectionExtensions
         services.AddDbContext<AccessControlDbContext>((sp, options) =>
         {
             options.UseNpgsql(accessControlDataSource)
-                   .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+                   .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
+                   .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
 
             // Interceptor para garantir isolamento de tenant nas operaÃ§Ãµes de escrita
             var interceptor = sp.GetRequiredService<TenantSaveChangesInterceptor>();
