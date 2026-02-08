@@ -11,14 +11,16 @@ namespace Authenticator.API.Infrastructure.Mapper.AccessControl.UserAccount
         {
             // Entity para DTO
             CreateMap<UserAccountEntity, UserAccountDTO>()
-                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}".Trim()));
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}".Trim()))
+                .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role != null ? src.Role.Name : null));
 
             CreateMap<UserAccountEntity, UserAccountWithGroupsDTO>()
                 .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}".Trim()))
                 .ForMember(dest => dest.AccessGroups, opt => opt.MapFrom(src => src.AccountAccessGroups.Select(aag => aag.AccessGroup)));
 
             CreateMap<UserAccountEntity, UserAccountListDTO>()
-                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}".Trim()));
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}".Trim()))
+                .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role != null ? src.Role.Name : null));
 
             CreateMap<UserAccountDTO, UserAccountEntity>()
                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
@@ -51,6 +53,7 @@ namespace Authenticator.API.Infrastructure.Mapper.AccessControl.UserAccount
                 .ForMember(dest => dest.Status, opt => opt.Condition(src => src.Status.HasValue))
                 .ForMember(dest => dest.IsEmailVerified, opt => opt.Condition(src => src.IsEmailVerified.HasValue))
                 .ForMember(dest => dest.TenantId, opt => opt.Condition(src => src.TenantId.HasValue))
+                .ForMember(dest => dest.RoleId, opt => opt.Condition(src => src.RoleId.HasValue))
                 .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.SpecifyKind(src.CreatedAt, DateTimeKind.Utc)))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))

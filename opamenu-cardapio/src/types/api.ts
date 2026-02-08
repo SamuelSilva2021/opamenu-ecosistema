@@ -26,6 +26,7 @@ export interface TenantBusinessResponseDto {
   longitude?: number;
   loyaltyProgram?: LoyaltyProgramDto;
   pixKey?: string;
+  pixIntegration?: boolean;
 }
 
 export interface LoyaltyProgramDto {
@@ -374,6 +375,7 @@ export interface TenantBusinessInfo {
   openingHours: Record<string, { open: string; close: string; isOpen: boolean }> | null;
   paymentMethods: string[];
   pixKey?: string;
+  pixIntegration?: boolean;
   isOpen: boolean;
   latitude?: number;
   longitude?: number;

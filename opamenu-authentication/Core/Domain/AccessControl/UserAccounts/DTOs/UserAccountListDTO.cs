@@ -17,6 +17,8 @@ namespace Authenticator.API.Core.Domain.AccessControl.UserAccounts.DTOs
         public bool IsEmailVerified { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? LastLoginAt { get; set; }
+        public Guid? RoleId { get; set; }
+        public string? RoleName { get; set; }
         public string FullName => $"{FirstName} {LastName}".Trim();
     }
 }

@@ -24,6 +24,7 @@ import {
 import { UsersList } from './components/UsersList';
 import { UserForm } from './components/UserForm';
 import { UserAccessGroups } from './components/UserAccessGroups';
+import { UserRoles } from './components/UserRoles';
 import { useUsers } from './hooks/useUsers';
 import type { UserAccount } from '../../shared/types';
 
@@ -65,10 +66,12 @@ export function UsersPage() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<UserAccount | null>(null);
   const [formLoading, setFormLoading] = useState(false);
-  
-  // Estados do gerenciamento de grupos
+
+  // Estados do gerenciamento de grupos e roles
   const [accessGroupsOpen, setAccessGroupsOpen] = useState(false);
   const [selectedUserForGroups, setSelectedUserForGroups] = useState<UserAccount | null>(null);
+  const [rolesOpen, setRolesOpen] = useState(false);
+  const [selectedUserForRoles, setSelectedUserForRoles] = useState<UserAccount | null>(null);
 
   /**
    * Abre formulário para criar novo usuário
@@ -133,6 +136,22 @@ export function UsersPage() {
   const handleCloseAccessGroups = () => {
     setAccessGroupsOpen(false);
     setSelectedUserForGroups(null);
+  };
+
+  /**
+   * Abre gerenciamento de perfis (roles) para o usuário
+   */
+  const handleManageRoles = (user: UserAccount) => {
+    setSelectedUserForRoles(user);
+    setRolesOpen(true);
+  };
+
+  /**
+   * Fecha gerenciamento de perfis
+   */
+  const handleCloseRoles = () => {
+    setRolesOpen(false);
+    setSelectedUserForRoles(null);
   };
 
   /**
@@ -225,8 +244,8 @@ export function UsersPage() {
 
       {/* Erro global */}
       {error && (
-        <Alert 
-          severity="error" 
+        <Alert
+          severity="error"
           onClose={clearError}
           sx={{ mb: 2 }}
         >
@@ -273,6 +292,7 @@ export function UsersPage() {
         onDelete={handleDeleteUser}
         onToggleStatus={handleToggleStatus}
         onManageGroups={handleManageGroups}
+        onManageRoles={handleManageRoles}
         totalItems={totalItems}
         currentPage={currentPage}
         pageSize={pageSize}
@@ -314,9 +334,9 @@ export function UsersPage() {
           <Button onClick={handleCancelDelete}>
             Cancelar
           </Button>
-          <Button 
-            onClick={handleConfirmDelete} 
-            color="error" 
+          <Button
+            onClick={handleConfirmDelete}
+            color="error"
             variant="contained"
             disabled={loading}
           >
@@ -325,11 +345,18 @@ export function UsersPage() {
         </DialogActions>
       </Dialog>
 
-      {/* Gerenciamento de grupos de acesso */}
       <UserAccessGroups
         open={accessGroupsOpen}
         onClose={handleCloseAccessGroups}
         user={selectedUserForGroups}
+      />
+
+      {/* Gerenciamento de roles */}
+      <UserRoles
+        open={rolesOpen}
+        onClose={handleCloseRoles}
+        user={selectedUserForRoles}
+        onSuccess={refetch}
       />
     </ResponsiveContainer>
   );

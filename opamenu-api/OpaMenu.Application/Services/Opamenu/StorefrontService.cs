@@ -19,7 +19,8 @@ namespace OpaMenu.Application.Services.Opamenu
         IMapper mapper,
         IProductRepository productRepository,
         ICouponRepository couponRepository,
-        ILoyaltyProgramRepository loyaltyProgramRepository
+        ILoyaltyProgramRepository loyaltyProgramRepository,
+        ITenantPaymentConfigRepository tenantPaymentConfigRepository
         ) : IStorefrontService
     {
         private readonly ITenantRepository _tenantRepository = tenantRepository;
@@ -28,6 +29,7 @@ namespace OpaMenu.Application.Services.Opamenu
         private readonly IProductRepository _productRepository = productRepository;
         private readonly ICouponRepository _couponRepository = couponRepository;
         private readonly ILoyaltyProgramRepository _loyaltyProgramRepository = loyaltyProgramRepository;
+        private readonly ITenantPaymentConfigRepository _tenantPaymentConfigRepository = tenantPaymentConfigRepository;
 
         public async Task<ResponseDTO<MenuResponseDto>> GetStorefrontDataAsync(string slug)
         {
@@ -47,6 +49,11 @@ namespace OpaMenu.Application.Services.Opamenu
                 if (tenantBusinnessEntity != null)
                 {
                     tenantBusinness = _mapper.Map<TenantBusinessResponseDto>(tenantBusinnessEntity);
+
+                    // Fetch active PIX config from integration settings
+                    var pixConfig = await _tenantPaymentConfigRepository.GetActivePixConfigAsync(tenantId);
+                    if (pixConfig != null && pixConfig.IsActive)
+                        tenantBusinness = tenantBusinness with { PixIntegration = true };
 
                     var loyaltyProgram = await _loyaltyProgramRepository.GetByTenantIdAsync(tenantId);
                     if (loyaltyProgram != null && loyaltyProgram.IsActive)

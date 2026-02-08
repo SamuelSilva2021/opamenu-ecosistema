@@ -25,6 +25,8 @@ export interface UserAccount {
   lastLoginAt?: string;
   fullName: string;
   accessGroups?: AccessGroup[];
+  roleId?: string;
+  roleName?: string;
 }
 
 export interface CreateUserAccountRequest {
@@ -35,6 +37,7 @@ export interface CreateUserAccountRequest {
   lastName: string;
   phoneNumber?: string;
   tenantId?: string;
+  roleId?: string;
 }
 
 export interface UpdateUserAccountRequest {
@@ -46,6 +49,7 @@ export interface UpdateUserAccountRequest {
   status?: UserAccountStatus;
   isEmailVerified?: boolean;
   tenantId?: string;
+  roleId?: string;
   createdAt?: string;
 }
 

@@ -25,9 +25,11 @@ import {
   Email as EmailIcon,
   Phone as PhoneIcon,
   Lock as LockIcon,
-  Business as BusinessIcon
+  Business as BusinessIcon,
+  Security as SecurityIcon
 } from '@mui/icons-material';
-import { type UserAccount, type CreateUserAccountRequest, type UpdateUserAccountRequest, UserAccountStatus } from '../../../shared/types';
+import { type UserAccount, type CreateUserAccountRequest, type UpdateUserAccountRequest, UserAccountStatus, type Role } from '../../../shared/types';
+import { RoleService } from '../../../shared/services';
 
 interface UserFormProps {
   open: boolean;
@@ -47,6 +49,7 @@ interface FormData {
   lastName: string;
   phoneNumber: string;
   tenantId: string;
+  roleId: string;
   status: UserAccountStatus;
   createdAt?: string;
 }
@@ -60,6 +63,7 @@ interface FormErrors {
   lastName?: string;
   phoneNumber?: string;
   tenantId?: string;
+  roleId?: string;
   general?: string;
   createdAt?: string;
 }
@@ -79,7 +83,7 @@ export function UserForm({
   loading = false,
   onValidateEmail
 }: UserFormProps) {
-  
+
   const [formData, setFormData] = useState<FormData>({
     username: '',
     email: '',
@@ -89,9 +93,13 @@ export function UserForm({
     lastName: '',
     phoneNumber: '',
     tenantId: '',
+    roleId: '',
     status: UserAccountStatus.Active,
     createdAt: undefined
   });
+
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [loadingRoles, setLoadingRoles] = useState(false);
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [showPassword, setShowPassword] = useState(false);
@@ -112,6 +120,7 @@ export function UserForm({
           lastName: user.lastName || '',
           phoneNumber: user.phoneNumber || '',
           tenantId: user.tenantId || '',
+          roleId: user.roleId || '',
           status: user.status || UserAccountStatus.Active,
           createdAt: user.createdAt || undefined
         });
@@ -125,17 +134,31 @@ export function UserForm({
           lastName: '',
           phoneNumber: '',
           tenantId: '',
+          roleId: '',
           status: UserAccountStatus.Active,
           createdAt: undefined
         });
       }
       setErrors({});
+      loadRoles();
     }
   }, [open, user]);
 
+  const loadRoles = async () => {
+    setLoadingRoles(true);
+    try {
+      const data = await RoleService.getAllRoles();
+      setRoles(data);
+    } catch (error) {
+      console.error('Erro ao carregar roles:', error);
+    } finally {
+      setLoadingRoles(false);
+    }
+  };
+
   const handleFieldChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    
+
     if (errors[field as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
     }
@@ -152,7 +175,7 @@ export function UserForm({
         if (!value.trim()) return 'Email é obrigatório';
         if (value.length > 255) return 'Email não pode exceder 255 caracteres';
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Formato de email inválido';
-        
+
         if (onValidateEmail) {
           const isUnique = await onValidateEmail(value, user?.id);
           if (!isUnique) return 'Este email já está em uso';
@@ -202,7 +225,7 @@ export function UserForm({
 
     for (const [field, value] of Object.entries(formData)) {
       if (field === 'status') continue;
-      
+
       const error = await validateField(field as keyof FormData, value);
       if (error) {
         newErrors[field as keyof FormErrors] = error;
@@ -211,7 +234,7 @@ export function UserForm({
 
     setErrors(newErrors);
     setValidating(false);
-    
+
     return Object.keys(newErrors).length === 0;
   };
 
@@ -229,7 +252,8 @@ export function UserForm({
           phoneNumber: formData.phoneNumber || undefined,
           status: formData.status,
           isEmailVerified: user?.isEmailVerified,
-          tenantId: formData.tenantId || undefined
+          tenantId: formData.tenantId || undefined,
+          roleId: formData.roleId || undefined
         };
 
         await onSubmit(updateData);
@@ -241,7 +265,8 @@ export function UserForm({
           firstName: formData.firstName,
           lastName: formData.lastName,
           phoneNumber: formData.phoneNumber || undefined,
-          tenantId: formData.tenantId?.trim() || undefined
+          tenantId: formData.tenantId?.trim() || undefined,
+          roleId: formData.roleId || undefined
         };
 
         await onSubmit(createData);
@@ -249,24 +274,24 @@ export function UserForm({
 
       onClose();
     } catch (error: any) {
-      setErrors(prev => ({ 
-        ...prev, 
-        general: error.message || 'Erro ao salvar usuário' 
+      setErrors(prev => ({
+        ...prev,
+        general: error.message || 'Erro ao salvar usuário'
       }));
     }
   };
 
   const handleBlur = async (field: keyof FormData) => {
     const error = await validateField(field, formData[field] || '');
-    
+
     if (error) {
       setErrors(prev => ({ ...prev, [field]: error }));
     }
   };
 
   return (
-    <Dialog 
-      open={open} 
+    <Dialog
+      open={open}
       onClose={onClose}
       maxWidth="md"
       fullWidth
@@ -291,33 +316,33 @@ export function UserForm({
         )}
 
         <Stack spacing={3}>
-            <Box>
-              <Typography variant="subtitle1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <PersonIcon fontSize="small" />
-                Informações Básicas
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-            </Box>
+          <Box>
+            <Typography variant="subtitle1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <PersonIcon fontSize="small" />
+              Informações Básicas
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+          </Box>
 
-            <TextField
-              fullWidth
-              label="Username *"
-              value={formData.username}
-              onChange={(e) => handleFieldChange('username', e.target.value)}
-              onBlur={() => handleBlur('username')}
-              error={Boolean(errors.username)}
-              helperText={errors.username}
-              disabled={loading || validating}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <PersonIcon />
-                  </InputAdornment>
-                )
-              }}
-            />
+          <TextField
+            fullWidth
+            label="Username *"
+            value={formData.username}
+            onChange={(e) => handleFieldChange('username', e.target.value)}
+            onBlur={() => handleBlur('username')}
+            error={Boolean(errors.username)}
+            helperText={errors.username}
+            disabled={loading || validating}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <PersonIcon />
+                </InputAdornment>
+              )
+            }}
+          />
 
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <TextField
               fullWidth
               label="Nome *"
@@ -397,6 +422,37 @@ export function UserForm({
               }}
             />
           </Stack>
+
+          <FormControl fullWidth>
+            <InputLabel>Papel (Role)</InputLabel>
+            <Select
+              value={formData.roleId}
+              label="Papel (Role)"
+              onChange={(e) => handleFieldChange('roleId', e.target.value)}
+              disabled={loading || validating || loadingRoles}
+              sx={{
+                '& .MuiSelect-select': {
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1
+                }
+              }}
+              startAdornment={
+                <InputAdornment position="start" sx={{ mr: 1 }}>
+                  <SecurityIcon />
+                </InputAdornment>
+              }
+            >
+              <MenuItem value="">
+                <em>Nenhum</em>
+              </MenuItem>
+              {roles.map((role) => (
+                <MenuItem key={role.id} value={role.id}>
+                  {role.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
           {isEditMode && (
             <FormControl fullWidth>
@@ -480,13 +536,13 @@ export function UserForm({
       </DialogContent>
 
       <DialogActions sx={{ p: 2, gap: 1 }}>
-        <Button 
+        <Button
           onClick={onClose}
           disabled={loading || validating}
         >
           Cancelar
         </Button>
-        <Button 
+        <Button
           onClick={handleSubmit}
           variant="contained"
           disabled={loading || validating}

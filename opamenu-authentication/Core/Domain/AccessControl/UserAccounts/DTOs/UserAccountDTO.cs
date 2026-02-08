@@ -16,6 +16,8 @@ namespace Authenticator.API.Core.Domain.AccessControl.UserAccounts.DTOs
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
         public DateTime? LastLoginAt { get; set; }
+        public Guid? RoleId { get; set; }
+        public string? RoleName { get; set; }
         public string FullName => $"{FirstName} {LastName}".Trim();
     }
 }

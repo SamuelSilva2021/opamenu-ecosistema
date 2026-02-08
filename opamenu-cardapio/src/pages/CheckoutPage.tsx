@@ -237,7 +237,7 @@ const CheckoutPage = ({ onBackToMenu, tenant }: CheckoutPageProps) => {
                 discount={discount}
                 totalPrice={totalPrice}
                 availableMethods={tenant?.paymentMethods}
-                hasPixIntegration={!!tenant?.pixKey}
+                hasPixIntegration={!!tenant?.pixIntegration}
               />
             </AccordionContent>
           </AccordionItem>

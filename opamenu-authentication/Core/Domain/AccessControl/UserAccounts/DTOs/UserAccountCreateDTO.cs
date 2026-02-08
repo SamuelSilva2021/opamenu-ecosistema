@@ -52,5 +52,10 @@ namespace Authenticator.API.Core.Domain.AccessControl.UserAccounts.DTOs
         /// ID do tenant associado
         /// </summary>
         public Guid TenantId { get; set; }
+
+        /// <summary>
+        /// ID do papel (Role) associado
+        /// </summary>
+        public Guid? RoleId { get; set; }
     }
 }

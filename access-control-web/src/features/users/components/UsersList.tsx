@@ -1,10 +1,10 @@
-import { 
-  Paper, 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
-  TableHead, 
+import {
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
   TableRow,
   IconButton,
   Chip,
@@ -24,7 +24,8 @@ import {
   Phone as PhoneIcon,
   VerifiedUser as VerifiedIcon,
   Cancel as UnverifiedIcon,
-  Security as SecurityIcon
+  Security as SecurityIcon,
+  Badge as RoleIcon
 } from '@mui/icons-material';
 import { type UserAccount, UserAccountStatus } from '../../../shared/types';
 
@@ -35,7 +36,8 @@ interface UsersListProps {
   onDelete: (user: UserAccount) => void;
   onToggleStatus: (user: UserAccount) => void;
   onManageGroups: (user: UserAccount) => void;
-  
+  onManageRoles: (user: UserAccount) => void;
+
   // Paginação
   totalItems: number;
   currentPage: number;
@@ -56,13 +58,14 @@ interface UsersListProps {
  * - Tooltips informativos
  * - Loading states
  */
-export function UsersList({ 
-  users, 
+export function UsersList({
+  users,
   loading = false,
-  onEdit, 
-  onDelete, 
+  onEdit,
+  onDelete,
   onToggleStatus,
   onManageGroups,
+  onManageRoles,
   totalItems,
   currentPage,
   pageSize,
@@ -142,6 +145,7 @@ export function UsersList({
               <TableCell>Usuário</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>Telefone</TableCell>
+              <TableCell>Perfil</TableCell>
               <TableCell>Grupos de Acesso</TableCell>
               <TableCell align="center">Status</TableCell>
               <TableCell align="center">Email Verificado</TableCell>
@@ -151,10 +155,10 @@ export function UsersList({
           </TableHead>
           <TableBody>
             {users.map((user) => (
-              <TableRow 
-                key={user.id} 
+              <TableRow
+                key={user.id}
                 hover
-                sx={{ 
+                sx={{
                   '&:hover': { backgroundColor: 'action.hover' },
                   opacity: user.status === 'Ativo' ? 1 : 0.7
                 }}
@@ -162,9 +166,9 @@ export function UsersList({
                 {/* Coluna Usuário */}
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Avatar 
-                      sx={{ 
-                        width: 40, 
+                    <Avatar
+                      sx={{
+                        width: 40,
                         height: 40,
                         bgcolor: user.status === 'Ativo' ? 'primary.main' : 'grey.400',
                         fontSize: '0.875rem'
@@ -173,17 +177,17 @@ export function UsersList({
                       {getInitials(user.firstName, user.lastName)}
                     </Avatar>
                     <Box>
-                      <Typography 
-                        variant="subtitle2" 
+                      <Typography
+                        variant="subtitle2"
                         fontWeight={600}
-                        sx={{ 
+                        sx={{
                           color: user.status === 'Ativo' ? 'text.primary' : 'text.secondary'
                         }}
                       >
                         {user.fullName || `${user.firstName} ${user.lastName}`.trim()}
                       </Typography>
-                      <Typography 
-                        variant="caption" 
+                      <Typography
+                        variant="caption"
                         color="text.secondary"
                         sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
                       >
@@ -211,6 +215,22 @@ export function UsersList({
                       <PhoneIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
                       <Typography variant="body2">
                         {user.phoneNumber}
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      -
+                    </Typography>
+                  )}
+                </TableCell>
+
+                {/* Coluna Perfil */}
+                <TableCell>
+                  {user.roleName ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <SecurityIcon sx={{ fontSize: 16, color: 'primary.main' }} />
+                      <Typography variant="body2" fontWeight={500}>
+                        {user.roleName}
                       </Typography>
                     </Box>
                   ) : (
@@ -277,14 +297,14 @@ export function UsersList({
                 {/* Coluna Último Login */}
                 <TableCell align="center">
                   <Typography variant="body2" color="text.secondary">
-                    {user.lastLoginAt 
+                    {user.lastLoginAt
                       ? new Date(user.lastLoginAt).toLocaleDateString('pt-BR', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })
                       : 'Nunca'
                     }
                   </Typography>
@@ -326,6 +346,17 @@ export function UsersList({
                       </IconButton>
                     </Tooltip>
 
+                    {/* Gerenciar Roles */}
+                    <Tooltip title="Gerenciar perfil (role)">
+                      <IconButton
+                        size="small"
+                        onClick={() => onManageRoles(user)}
+                        color="info"
+                      >
+                        <RoleIcon />
+                      </IconButton>
+                    </Tooltip>
+
                     {/* Excluir */}
                     <Tooltip title="Excluir usuário">
                       <IconButton
@@ -354,7 +385,7 @@ export function UsersList({
         onRowsPerPageChange={handlePageSizeChange}
         rowsPerPageOptions={[5, 10, 25, 50]}
         labelRowsPerPage="Itens por página:"
-        labelDisplayedRows={({ from, to, count }) => 
+        labelDisplayedRows={({ from, to, count }) =>
           `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`
         }
         sx={{
