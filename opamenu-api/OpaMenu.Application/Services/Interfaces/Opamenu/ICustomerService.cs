@@ -13,6 +13,7 @@ namespace OpaMenu.Application.Services.Interfaces.Opamenu
     public interface ICustomerService
     {
         Task<ResponseDTO<IEnumerable<CustomerResponseDto>>>GetAll();
+        Task<PagedResponseDTO<CustomerResponseDto>> GetPagedAsync(string? search, int page, int limit);
         Task<ResponseDTO<CustomerResponseDto?>> GetPublicCustomer(string slug, string phoneNumber);
         Task<ResponseDTO<CustomerResponseDto?>> CreatePublicCustomerAsync(CreateCustomerRequestDto request, string slug);
         Task<ResponseDTO<CustomerResponseDto?>> UpdatePublicCustomerAsync(UpdateCustomerRequestDto request, string slug);

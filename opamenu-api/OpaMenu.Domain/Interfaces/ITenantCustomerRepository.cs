@@ -14,6 +14,7 @@ namespace OpaMenu.Domain.Interfaces
     public interface ITenantCustomerRepository
     {
         Task<IEnumerable<TenantCustomerEntity>> GetByTenantIdAsync(Guid tenantId);
+        Task<(IEnumerable<TenantCustomerEntity> Items, int TotalCount)> GetPagedByTenantIdAsync(Guid tenantId, string? search, int page, int limit);
         Task<TenantCustomerEntity?> GetByTenantIdAndCustomerIdAsync(Guid tenantId, Guid customerId);
         Task<TenantCustomerEntity?> CreateAsync(TenantCustomerEntity entity);
         Task<TenantCustomerEntity?> GetByTenantIdAndCustomerPhoneAsync(Guid tenantId, string phoneNumber);

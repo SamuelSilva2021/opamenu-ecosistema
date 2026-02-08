@@ -29,6 +29,30 @@ namespace OpaMenu.Infrastructure.Repositories
                 .Include(tc => tc.Customer)
                 .ToListAsync();
 
+        public async Task<(IEnumerable<TenantCustomerEntity> Items, int TotalCount)> GetPagedByTenantIdAsync(Guid tenantId, string? search, int page, int limit)
+        {
+            var query = _context.TenantCustomers
+                .Where(tc => tc.TenantId == tenantId)
+                .Include(tc => tc.Customer)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.ToLower();
+                query = query.Where(tc => tc.Customer.Name.ToLower().Contains(search) || 
+                                        tc.Customer.Phone.Contains(search));
+            }
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .OrderByDescending(tc => tc.Customer.CreatedAt)
+                .Skip((page - 1) * limit)
+                .Take(limit)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
+
         public async Task<TenantCustomerEntity?> GetByTenantIdAndCustomerIdAsync(Guid tenantId, Guid customerId) =>
             await _context.TenantCustomers
                 .Include(tc => tc.Customer)

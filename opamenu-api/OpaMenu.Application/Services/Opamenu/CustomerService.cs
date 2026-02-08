@@ -71,6 +71,32 @@ namespace OpaMenu.Application.Services.Opamenu
             }
         }
 
+        public async Task<PagedResponseDTO<CustomerResponseDto>> GetPagedAsync(string? search, int page, int limit)
+        {
+            try
+            {
+                var tenantId = _currentUserService.GetTenantGuid();
+                if (!tenantId.HasValue)
+                    return new PagedResponseDTO<CustomerResponseDto> { Succeeded = false, Errors = new List<ErrorDTO> { new ErrorDTO { Message = "Estabelecimento não identificado." } } };
+
+                var (items, totalCount) = await _tenantCustomerRepository.GetPagedByTenantIdAsync(tenantId.Value, search, page, limit);
+                var customersEntity = items.Select(tc => tc.Customer).ToList();
+                var customersDto = _mapper.Map<IEnumerable<CustomerResponseDto>>(customersEntity);
+                
+                return StaticResponseBuilder<CustomerResponseDto>.BuildPagedOk(customersDto, totalCount, page, limit);
+            }
+            catch (Exception ex)
+            {
+                var response = StaticResponseBuilder<CustomerResponseDto>.BuildErrorResponse(ex);
+                return new PagedResponseDTO<CustomerResponseDto>
+                {
+                    Succeeded = false,
+                    Errors = response.Errors,
+                    Code = response.Code
+                };
+            }
+        }
+
         public async Task<ResponseDTO<CustomerResponseDto?>> GetPublicCustomer(string slug, string phoneNumber)
         {
             try

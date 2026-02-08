@@ -50,6 +50,30 @@ export function CartSidebar() {
             return;
         }
 
+        if (orderType === OrderType.Delivery) {
+            const hasCustomer = !!customer || (!!tempCustomerName && !!tempCustomerPhone);
+            if (!hasCustomer) {
+                toast({
+                    title: "Cliente obrigatório",
+                    description: "Selecione um cliente ou informe os dados para o pedido rápido.",
+                    variant: "destructive"
+                });
+                return;
+            }
+
+            const hasAddress = (customer && !!customer.street && !!customer.streetNumber) ||
+                (tempCustomerAddress && !!tempCustomerAddress.street && !!tempCustomerAddress.number);
+
+            if (!hasAddress) {
+                toast({
+                    title: "Endereço obrigatório",
+                    description: "Informe o endereço completo (Rua e Número) para entrega.",
+                    variant: "destructive"
+                });
+                return;
+            }
+        }
+
         setIsLoading(true);
         try {
             await posService.createOrder(

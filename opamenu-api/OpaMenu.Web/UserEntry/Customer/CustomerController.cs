@@ -22,9 +22,12 @@ namespace OpaMenu.Web.UserEntry.Customer
 
         [HttpGet]
         [MapPermission(MODULE_CUSTOMER, OPERATION_SELECT)]
-        public async Task<ActionResult<ResponseDTO<IEnumerable<CustomerResponseDto>>>> GetAllCustomers()
+        public async Task<ActionResult<PagedResponseDTO<CustomerResponseDto>>> GetAllCustomers(
+            [FromQuery] int page = 1,
+            [FromQuery] int limit = 10,
+            [FromQuery] string? search = null)
         {
-            var serviceResponse = await _customerService.GetAll();
+            var serviceResponse = await _customerService.GetPagedAsync(search, page, limit);
             return BuildResponse(serviceResponse);
         }
     }
