@@ -116,7 +116,7 @@ const routes = [
     variant: "ghost",
     module: "SUBSCRIPTION",
   },
-    {
+  {
     title: "Acessos",
     icon: Users,
     variant: "ghost",
@@ -190,15 +190,13 @@ function SidebarContent({ isCollapsed }: { isCollapsed?: boolean }) {
                   <button
                     onClick={() => setIsExpanded(!isExpanded)}
                     className={cn(
-                      "flex flex-row items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap text-zinc-400 hover:text-white hover:bg-zinc-800/50",
+                      "flex flex-row items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap text-zinc-400 hover:text-white hover:bg-zinc-800/50 w-full",
                     )}
                   >
-                    <div className="items-center justify-center shrink-0 grid grid-cols-12 w-full">
-                      <route.icon className={cn("h-5 w-5 col-span-2")} />
-                      <span className="inline-block col-span-8">{route.title}</span>
-                      <div className="col-span-2 flex justify-end">
-                        {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                      </div>
+                    <route.icon className="h-5 w-5 shrink-0" />
+                    <span className="flex-1 text-left">{route.title}</span>
+                    <div className="shrink-0">
+                      {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                     </div>
                   </button>
                   {isExpanded && (
@@ -233,14 +231,14 @@ function SidebarContent({ isCollapsed }: { isCollapsed?: boolean }) {
                     {route.comingSoon ? (
                       <div
                         className={cn(
-                          "flex flex-row items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap opacity-50 cursor-not-allowed text-zinc-400",
+                          "flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap opacity-50 cursor-not-allowed text-zinc-400 w-full",
                           isCollapsed && "justify-center px-2"
                         )}
                       >
-                        <div className="items-center justify-center shrink-0 grid grid-cols-12 w-full">
-                          <route.icon className={cn("h-5 w-5 col-span-2")} />
+                        <div className={cn("flex flex-row items-center gap-3", !isCollapsed && "w-full")}>
+                          <route.icon className="h-5 w-5 shrink-0" />
                           {!isCollapsed && (
-                            <div className="col-span-10 flex items-center justify-between gap-2">
+                            <div className="flex-1 flex items-center justify-between gap-2">
                               <span>{route.title}</span>
                               <Badge variant="secondary" className="text-[10px] px-1 py-0 h-5">Em breve</Badge>
                             </div>
@@ -253,7 +251,7 @@ function SidebarContent({ isCollapsed }: { isCollapsed?: boolean }) {
                         end={route.href === "/dashboard"}
                         className={({ isActive }) =>
                           cn(
-                            "flex flex-row items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap",
+                            "flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap w-full",
                             isActive
                               ? "bg-primary text-primary-foreground shadow-md"
                               : "text-zinc-400 hover:text-white hover:bg-zinc-800/50",
@@ -261,9 +259,9 @@ function SidebarContent({ isCollapsed }: { isCollapsed?: boolean }) {
                           )
                         }
                       >
-                        <div className="items-center justify-center shrink-0 grid grid-cols-12 w-full">
-                          <route.icon className={cn("h-5 w-5 col-span-2")} />
-                          {!isCollapsed && <span className="inline-block col-span-10">{route.title}</span>}
+                        <div className={cn("flex flex-row items-center gap-3", !isCollapsed && "w-full")}>
+                          <route.icon className="h-5 w-5 shrink-0" />
+                          {!isCollapsed && <span className="flex-1 text-left">{route.title}</span>}
                         </div>
                       </NavLink>
                     )}

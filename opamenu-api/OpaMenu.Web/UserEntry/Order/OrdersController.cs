@@ -59,14 +59,19 @@ public class OrdersController(IOrderService orderService, ILogger<OrdersControll
         return BuildResponse(result);
     }
 
-    /// <summary>
-    /// Cria um novo pedido
-    /// </summary>
     [HttpPost]
     [MapPermission([ORDER, MODULE_PDV], OPERATION_INSERT)]
     public async Task<ActionResult<ApiResponse<OrderResponseDto>>> CreateOrder(CreateOrderRequestDto request)
     {
-        var result = await _orderService.CreateOrderDeliveryAsync(request);
+        ResponseDTO<OrderResponseDto> result;
+        
+        if (request.OrderType == EOrderType.Table)
+            result = await _orderService.CreateOrderDineInAsync(request);
+        else if (request.OrderType == EOrderType.Counter)
+            result = await _orderService.CreateOrderPickupAsync(request);
+        else
+            result = await _orderService.CreateOrderDeliveryAsync(request);
+            
         return BuildResponse(result);
     }
     /// <summary>

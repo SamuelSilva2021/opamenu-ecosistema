@@ -183,7 +183,7 @@ public class OrderService(
     /// </summary>
     public async Task<ResponseDTO<OrderResponseDto>> CreateOrderDineInAsync(CreateOrderRequestDto requestDto)
     {
-        if (requestDto.OrderType == EOrderType.Table && !requestDto.TableId.HasValue)
+        if (requestDto.OrderType == EOrderType.Table && string.IsNullOrEmpty(requestDto.TableId))
             return StaticResponseBuilder<OrderResponseDto>.BuildError("Mesa é obrigatória para pedidos locais.");
 
         return await CreateTenantOrderInternalAsync(requestDto, EOrderType.Table);
@@ -227,7 +227,6 @@ public class OrderService(
                 DeliveryAddress = orderType == EOrderType.Delivery ? FormatDeliveryAddress(requestDto.DeliveryAddress) : string.Empty,
                 IsDelivery = orderType == EOrderType.Delivery,
                 OrderType = orderType,
-                TableId = orderType == EOrderType.Table ? requestDto.TableId : null,
                 Notes = requestDto.Notes,
                 Status = EOrderStatus.Pending,
                 CreatedAt = DateTime.UtcNow,
@@ -235,6 +234,27 @@ public class OrderService(
                 CustomerId = tenantCustomer.Customer.Id,
                 TenantId = tenantId
             };
+
+            // Identificar mesa se for pedido local
+            if (orderType == EOrderType.Table && !string.IsNullOrEmpty(requestDto.TableId))
+            {
+                if (Guid.TryParse(requestDto.TableId, out var tableGuid))
+                {
+                    order.TableId = tableGuid;
+                }
+                else
+                {
+                    // Tentar buscar por nome (número da mesa)
+                    var table = await _tableRepository.GetByNameAsync(requestDto.TableId, tenantId);
+                    if (table != null)
+                    {
+                        order.TableId = table.Id;
+                    }
+                    // Se não encontrar mesa cadastrada, podemos decidir se salvamos apenas o nome 
+                    // em um campo de observação ou se retornamos erro. 
+                    // Pelas entidades atuais, TableId é FK para TableEntity.
+                }
+            }
 
             // Criar itens do pedido
             foreach (var itemDto in requestDto.Items)

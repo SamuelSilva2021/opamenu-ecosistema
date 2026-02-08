@@ -25,7 +25,7 @@ namespace OpaMenu.Domain.DTOs
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public EOrderType OrderType { get; set; } = EOrderType.Delivery;
 
-        public Guid? TableId { get; set; }
+        public string? TableId { get; set; }
 
         [StringLength(1000)]
         public string? Notes { get; set; }
