@@ -45,8 +45,9 @@ namespace Authenticator.API.UserEntry
         public ActionResult BuildResponse<R>(ResponseDTO<R> serviceResponse,
             Func<IList<ErrorDTO>, object>? errorHandler = null, object? eTagFromObject = null, string? etag = null)
         {
-            var isPaged = serviceResponse.GetType().IsGenericType &&
-                          serviceResponse.GetType().GetGenericTypeDefinition() == typeof(PagedResponseDTO<>);
+            var isPaged = serviceResponse.Data is not null && 
+                          serviceResponse.Data.GetType().IsGenericType &&
+                          serviceResponse.Data.GetType().GetGenericTypeDefinition() == typeof(PagedResponseDTO<>);
             var payload = isPaged ? (object)serviceResponse : (object?)serviceResponse.Data;
 
             return serviceResponse.Code switch

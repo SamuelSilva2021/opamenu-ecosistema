@@ -23,5 +23,18 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.UserAc
 
             return erros;
         }
+        public IList<ErrorDTO> LoginValidationAccessControl(UserAccountEntity user, string password, List<string> roles)
+        {
+            var isSuperAdmin = roles.Select(x => x.Contains("SUPER_ADMIN")).Any();
+
+            var erros = new List<ErrorDTO>();
+            if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+                erros.Add(new ErrorDTO { Message = "Credenciais inválidas", Code = "INVALID_CREDENTIALS" });
+
+            if (user!.Status != EUserAccountStatus.Ativo)
+                erros.Add(new ErrorDTO { Message = "Usuário inativo", Code = "INATIVE_USER", Details = ["Entre em contato com o suporte para mais detalhes"] });
+
+            return erros;
+        }
     }
 }

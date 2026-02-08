@@ -69,17 +69,16 @@ public class AuthenticationService(
             if (user == null)
             {
                 _logger.LogWarning("Usuário não encontrado: {UsernameOrEmail}", usernameOrEmail);
-                return ResponseBuilder<LoginResponse>
-                    .Fail(new ErrorDTO { Message = "Credenciais inválidas" }).WithCode(401).Build();
+                return ResponseBuilder<LoginResponse>.Fail(new ErrorDTO { Message = "Credenciais inválidas" }).WithCode(401).Build();
             }
 
             var accessGroups = await GetUserAccessGroupsAsync(user.Id);
-            var roles = await GetUserRolesAsync(accessGroups);
+            var roles = await GetUserRolesAsync(user.RoleId, accessGroups);
             var permissions = await GetUserPermissionsAsync(roles);
 
-            var validationResult =  _loginValidation.LoginValidation(user, password, roles);
+            var validationResult =  _loginValidation.LoginValidationAccessControl(user, password, roles);
             if (validationResult.Any())
-                return ResponseBuilder<LoginResponse>.Fail(validationResult.ToArray()).WithCode(401).Build();
+                return ResponseBuilder<LoginResponse>.Fail([.. validationResult]).WithCode(401).Build();
 
             var tenant = _multiTenantContext.Tenants.FirstOrDefault(t => t.Id == user.TenantId);
 
@@ -104,7 +103,6 @@ public class AuthenticationService(
                 ExpiresIn = _jwtTokenService.GetTokenExpirationTime(),
                 TenantStatus = tenant?.Status.ToString(),
                 SubscriptionStatus = subscription?.Status ?? ESubscriptionStatus.Cancelado,
-                // Requer pagamento se status for pendente ou suspenso, ou se assinatura não estiver ativa/trial
                 RequiresPayment = tenant?.Status == ETenantStatus.Pendente || 
                                   tenant?.Status == ETenantStatus.Suspenso ||
                                   (subscription != null && subscription.Status != ESubscriptionStatus.Ativo && subscription.Status != ESubscriptionStatus.Trial),
@@ -153,7 +151,7 @@ public class AuthenticationService(
             var tenant = _multiTenantContext.Tenants.FirstOrDefault(t => t.Id == user.TenantId);
 
             var accessGroups = await GetUserAccessGroupsAsync(user.Id);
-            var roles = await GetUserRolesAsync(accessGroups);
+            var roles = await GetUserRolesAsync(user.RoleId, accessGroups);
             var permissions = await GetUserPermissionsAsync(roles);
 
             var accessToken = _jwtTokenService.GenerateAccessToken(user, tenant, roles);
@@ -235,7 +233,7 @@ public class AuthenticationService(
             var permissions = await GetUserPermissionsAsync(user.Id);
 
             var accessGroups = await GetUserAccessGroupsAsync(user.Id);
-            var roles = await GetUserRolesAsync(accessGroups);
+            var roles = await GetUserRolesAsync(user.RoleId, accessGroups);
 
             var newAccessToken = _jwtTokenService.GenerateAccessToken(user, tenant, roles);
             var newRefreshToken = _jwtTokenService.GenerateRefreshToken();
@@ -413,19 +411,35 @@ public class AuthenticationService(
     }
 
     /// <summary>
-    /// ObtÃ©m as roles do usuário com base nos grupos de acesso
+    /// ObtÃ©m as roles do usuário com base nos grupos de acesso e RoleId direto
     /// </summary>
+    /// <param name="directRoleId"></param>
     /// <param name="accessGroups"></param>
     /// <returns></returns>
-    private async Task<List<string>> GetUserRolesAsync(List<string> accessGroups)
+    private async Task<List<string>> GetUserRolesAsync(Guid? directRoleId, List<string> accessGroups)
     {
-        return (await _accessControlContext.RoleAccessGroups
+        var roles = await _accessControlContext.RoleAccessGroups
             .Where(rag => accessGroups.Contains(rag.AccessGroup.Name) && rag.IsActive)
             .Include(rag => rag.Role)
             .Where(rag => rag.Role.IsActive)
             .Select(rag => rag.Role.Code)
             .Distinct()
-            .ToListAsync())!;
+            .ToListAsync();
+
+        if (directRoleId.HasValue)
+        {
+            var directRole = await _accessControlContext.Roles
+                .Where(r => r.Id == directRoleId.Value && r.IsActive)
+                .Select(r => r.Code)
+                .FirstOrDefaultAsync();
+
+            if (directRole != null && !roles.Contains(directRole))
+            {
+                roles.Add(directRole);
+            }
+        }
+
+        return roles!;
     }
 
     /// <summary>
@@ -480,9 +494,7 @@ public class AuthenticationService(
         };
 
         if (!_cache.TryGetValue(REFRESH_TOKENS_CACHE_KEY, out Dictionary<string, RefreshTokenData>? tokens))
-        {
-            tokens = new Dictionary<string, RefreshTokenData>();
-        }
+            tokens = [];
 
         tokens![refreshToken] = tokenData;
         _cache.Set(REFRESH_TOKENS_CACHE_KEY, tokens, TimeSpan.FromDays(7));

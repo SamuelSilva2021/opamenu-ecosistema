@@ -184,10 +184,6 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
                 if (existing == null)
                     return StaticResponseBuilder<RoleDTO>.BuildError("Role não encontrada");
 
-                var currentTenantId = _userContext.CurrentUser?.TenantId;
-                if (currentTenantId.HasValue && currentTenantId.Value != Guid.Empty && existing.TenantId != currentTenantId.Value)
-                    return StaticResponseBuilder<RoleDTO>.BuildError("Role não encontrada");
-
                 _mapper.Map(dto, existing);
                 existing.UpdatedAt = DateTime.Now;
                 await _roleRepository.UpdateAsync(existing);
@@ -453,14 +449,12 @@ namespace Authenticator.API.Core.Application.Implementation.AccessControl.Roles
             {
                 var existing = await _rolePermissionRepository.GetAllRolePermissionsByRoleIdAsync(roleId);
                 
-                // Remove module keys not present in the new list
                 var newModuleKeys = permissions.Select(p => p.Module).ToList();
                 var toRemove = existing.Where(rp => !newModuleKeys.Contains(rp.ModuleKey)).Select(rp => rp.ModuleKey).ToList();
                 
-                if (toRemove.Any())
+                if (toRemove.Count != 0)
                     await _rolePermissionRepository.RemoveByRoleAndModulesAsync(roleId, toRemove);
 
-                // Add or update existing
                 await AssignPermissionsInternalAsync(roleId, permissions);
 
                 return StaticResponseBuilder<bool>.BuildOk(true);

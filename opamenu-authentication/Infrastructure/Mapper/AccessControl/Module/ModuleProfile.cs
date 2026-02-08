@@ -22,7 +22,8 @@ namespace Authenticator.API.Infrastructure.Mapper.AccessControl.Module
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(_ => DateTime.Now))
-                .ForMember(dest => dest.Application, opt => opt.Ignore());
+                .ForMember(dest => dest.Application, opt => opt.Ignore())
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
             // Entity para ResponseDTO
             CreateMap<ModuleEntity, ModuleDTO>()

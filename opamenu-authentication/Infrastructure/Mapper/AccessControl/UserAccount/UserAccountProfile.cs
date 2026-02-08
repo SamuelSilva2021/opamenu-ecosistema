@@ -11,8 +11,7 @@ namespace Authenticator.API.Infrastructure.Mapper.AccessControl.UserAccount
         {
             // Entity para DTO
             CreateMap<UserAccountEntity, UserAccountDTO>()
-                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}".Trim()))
-                .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role != null ? src.Role.Name : null));
+                .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role.Name));
 
             CreateMap<UserAccountEntity, UserAccountWithGroupsDTO>()
                 .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}".Trim()))

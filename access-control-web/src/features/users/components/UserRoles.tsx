@@ -4,6 +4,7 @@ import {
     DialogTitle,
     DialogContent,
     DialogActions,
+    TextField,
     Button,
     Box,
     Typography,
@@ -11,19 +12,20 @@ import {
     CardContent,
     Chip,
     Radio,
-    FormControlLabel,
     Alert,
     CircularProgress,
     Stack,
     Divider,
     IconButton,
     TablePagination,
-    RadioGroup
+    RadioGroup,
+    InputAdornment
 } from '@mui/material';
 import {
     Security as SecurityIcon,
     Close as CloseIcon,
-    Badge as RoleIcon
+    Badge as RoleIcon,
+    Search as SearchIcon
 } from '@mui/icons-material';
 import { useUsers } from '../hooks/useUsers';
 import { RoleService } from '../../../shared/services';
@@ -47,6 +49,7 @@ export function UserRoles({ open, onClose, user, onSuccess }: UserRolesProps) {
     const [selectedRoleId, setSelectedRoleId] = useState<string>('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     // Paginação
     const [page, setPage] = useState(0);
@@ -57,18 +60,20 @@ export function UserRoles({ open, onClose, user, onSuccess }: UserRolesProps) {
     useEffect(() => {
         if (open && user) {
             setSelectedRoleId(user.roleId || '');
-            loadRoles(1, rowsPerPage);
+            setSearchTerm('');
+            loadRoles(1, rowsPerPage, '');
         }
     }, [open, user, rowsPerPage]);
 
-    const loadRoles = async (pageNumber: number, limit: number) => {
+    const loadRoles = async (pageNumber: number, limit: number, search: string) => {
         setLoading(true);
         setError(null);
 
         try {
             const response = await RoleService.getRoles({
                 page: pageNumber,
-                limit
+                limit,
+                search: search || undefined
             });
 
             setRoles(response.items || []);
@@ -83,14 +88,18 @@ export function UserRoles({ open, onClose, user, onSuccess }: UserRolesProps) {
         }
     };
 
+    const handleSearch = () => {
+        loadRoles(1, rowsPerPage, searchTerm);
+    };
+
     const handlePageChange = (_event: unknown, newPage: number) => {
-        loadRoles(newPage + 1, rowsPerPage);
+        loadRoles(newPage + 1, rowsPerPage, searchTerm);
     };
 
     const handleRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const newLimit = parseInt(event.target.value, 10);
         setRowsPerPage(newLimit);
-        loadRoles(1, newLimit);
+        loadRoles(1, newLimit, searchTerm);
     };
 
     const handleRoleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -180,7 +189,7 @@ export function UserRoles({ open, onClose, user, onSuccess }: UserRolesProps) {
                                     icon={<SecurityIcon />}
                                 />
                             ) : (
-                                <Typography color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                                <Typography color="text.secondary" sx={{ fontStyle: 'italic', fontSize: '0.875rem' }}>
                                     Nenhum perfil atribuído
                                 </Typography>
                             )}
@@ -190,45 +199,78 @@ export function UserRoles({ open, onClose, user, onSuccess }: UserRolesProps) {
 
                         {/* Listagem de roles paginada */}
                         <Box>
-                            <Typography variant="subtitle1" gutterBottom>
-                                Selecionar Novo Perfil
-                            </Typography>
+                            <Box sx={{ mb: 2 }}>
+                                <TextField
+                                    fullWidth
+                                    size="small"
+                                    placeholder="Buscar perfis por nome..."
+                                    value={searchTerm}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+                                    onKeyPress={(e: React.KeyboardEvent) => {
+                                        if (e.key === 'Enter') handleSearch();
+                                    }}
+                                    InputProps={{
+                                        startAdornment: (
+                                            <InputAdornment position="start">
+                                                <SearchIcon fontSize="small" />
+                                            </InputAdornment>
+                                        ),
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                <Button size="small" onClick={handleSearch} disabled={isLoading}>
+                                                    Buscar
+                                                </Button>
+                                            </InputAdornment>
+                                        )
+                                    }}
+                                />
+                            </Box>
 
                             <RadioGroup value={selectedRoleId} onChange={handleRoleChange}>
-                                <Stack spacing={1}>
+                                <Stack spacing={1.5}>
                                     {roles.map((role) => (
                                         <Card
                                             key={role.id}
                                             variant="outlined"
+                                            onClick={() => setSelectedRoleId(role.id)}
                                             sx={{
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s ease-in-out',
                                                 borderColor: selectedRoleId === role.id ? 'primary.main' : 'divider',
-                                                bgcolor: selectedRoleId === role.id ? 'action.hover' : 'background.paper'
+                                                bgcolor: selectedRoleId === role.id ? 'primary.50' : 'background.paper',
+                                                boxShadow: selectedRoleId === role.id ? '0 0 0 1px #1976d2' : 'none',
+                                                '&:hover': {
+                                                    borderColor: 'primary.light',
+                                                    bgcolor: selectedRoleId === role.id ? 'primary.50' : 'grey.50',
+                                                    transform: 'translateY(-2px)'
+                                                }
                                             }}
                                         >
-                                            <CardContent sx={{ p: '8px 16px !important' }}>
-                                                <FormControlLabel
-                                                    value={role.id}
-                                                    control={<Radio size="small" />}
-                                                    sx={{ width: '100%', margin: 0 }}
-                                                    label={
-                                                        <Box sx={{ ml: 1 }}>
-                                                            <Typography variant="subtitle2">
-                                                                {role.name}
+                                            <CardContent sx={{ p: '12px 16px !important' }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                                                    <Radio
+                                                        size="small"
+                                                        value={role.id}
+                                                        checked={selectedRoleId === role.id}
+                                                        sx={{ p: 0, mt: 0.5 }}
+                                                    />
+                                                    <Box sx={{ flex: 1 }}>
+                                                        <Typography variant="subtitle2" color={selectedRoleId === role.id ? 'primary.main' : 'text.primary'}>
+                                                            {role.name}
+                                                        </Typography>
+                                                        {role.description && (
+                                                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                                                                {role.description}
                                                             </Typography>
-                                                            {role.description && (
-                                                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                                                                    {role.description}
-                                                                </Typography>
-                                                            )}
-                                                        </Box>
-                                                    }
-                                                />
+                                                        )}
+                                                    </Box>
+                                                </Box>
                                             </CardContent>
                                         </Card>
                                     ))}
 
                                     {roles.length === 0 && !isLoading && (
-                                        <Typography color="text.secondary" sx={{ fontStyle: 'italic', textAlign: 'center', p: 2 }}>
+                                        <Typography color="text.secondary" sx={{ fontStyle: 'italic', textAlign: 'center', p: 4 }}>
                                             Nenhum perfil disponível
                                         </Typography>
                                     )}

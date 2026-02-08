@@ -5,7 +5,7 @@ export const API_BASE_URL = config.api.baseUrl;
 
 export const API_ENDPOINTS = {
   // Auth
-  LOGIN: '/auth/login',
+  LOGIN: '/auth/login-access-control',
   REFRESH: '/auth/refresh',
   LOGOUT: '/auth/logout',
   VALIDATE: '/auth/validate',

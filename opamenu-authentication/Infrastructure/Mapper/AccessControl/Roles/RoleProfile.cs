@@ -23,7 +23,8 @@ namespace Authenticator.API.Infrastructure.Mapper.AccessControl.Roles
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow))
                 .ForMember(dest => dest.RoleAccessGroups, opt => opt.Ignore())
-                .ForMember(dest => dest.RolePermissions, opt => opt.Ignore());
+                .ForMember(dest => dest.RolePermissions, opt => opt.Ignore())
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
             // Entity -> DTO
             CreateMap<RoleEntity, RoleDTO>()

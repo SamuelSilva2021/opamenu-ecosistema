@@ -65,6 +65,46 @@ public class AuthController : ControllerBase
                 .Fail(new ErrorDTO { Message = "Erro interno do servidor" }).WithCode(500).Build();
         }
     }
+    /// <summary>
+    /// Autentica um usuário e retorna o token JWT
+    /// </summary>
+    /// <param name="request">Dados de login</param>
+    /// <returns>Token JWT e informações do usuário</returns>
+    [HttpPost("login-access-control")]
+    [AllowAnonymous]
+    [SwaggerResponse(200, "Login realizado com sucesso", typeof(ResponseDTO<LoginResponse>))]
+    [SwaggerResponse(400, "Dados de entrada inválidos", typeof(ResponseDTO<LoginResponse>))]
+    [SwaggerResponse(401, "Credenciais inválidas", typeof(ResponseDTO<LoginResponse>))]
+    [SwaggerResponse(500, "Erro interno do servidor", typeof(ResponseDTO<LoginResponse>))]
+    [ProducesResponseType(typeof(ResponseDTO<LoginResponse>), 200)]
+    [ProducesResponseType(typeof(ResponseDTO<LoginResponse>), 400)]
+    [ProducesResponseType(typeof(ResponseDTO<LoginResponse>), 401)]
+    public async Task<ActionResult<ResponseDTO<LoginResponse>>> LoginAccessControl([FromBody] LoginRequest request)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return ResponseBuilder<LoginResponse>
+                    .Fail(new ErrorDTO { Message = "Dados inválidos", Details = errors }).WithCode(400).Build();
+            }
+
+            var result = await _authenticationService.LoginAsync(request.UsernameOrEmail, request.Password);
+
+            if (!result.Succeeded)
+                return Unauthorized(result);
+
+            _logger.LogInformation("Login realizado com sucesso para usuário: {Username}", request.UsernameOrEmail);
+            return ResponseBuilder<LoginResponse>.Ok(result.Data!).Build();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro durante o login");
+            return ResponseBuilder<LoginResponse>
+                .Fail(new ErrorDTO { Message = "Erro interno do servidor" }).WithCode(500).Build();
+        }
+    }
 
     /// <summary>
     /// Renova o token de acesso usando o refresh token

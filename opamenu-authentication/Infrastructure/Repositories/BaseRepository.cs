@@ -12,8 +12,8 @@ namespace Authenticator.API.Infrastructure.Repositories
     public class BaseRepository<T>(IDbContextProvider dbContextProvider) : IBaseRepository<T>
         where T : class
     {
-        private readonly DbContext _context = dbContextProvider.GetContext<T>();
-        private readonly DbSet<T> _dbSet = dbContextProvider.GetDbSet<T>();
+        protected readonly DbContext _context = dbContextProvider.GetContext<T>();
+        protected readonly DbSet<T> _dbSet = dbContextProvider.GetDbSet<T>();
 
         /// <summary>
         /// Adiciona uma nova entidade ao banco de dados
@@ -383,6 +383,25 @@ namespace Authenticator.API.Infrastructure.Repositories
 
             return await query
                 .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Obtém uma página de entidades que satisfaçam a condição especificada e inclui propriedades de navegação customizadas
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <param name="pageNumber"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="include"></param>
+        /// <returns></returns>
+        public async Task<IEnumerable<T>> GetPagedAsync(Expression<Func<T, bool>> predicate, int pageNumber, int pageSize, Func<IQueryable<T>, IQueryable<T>> include)
+        {
+            var query = include(_dbSet.AsQueryable());
+
+            return await query
+                .Where(predicate)
+                .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
         }

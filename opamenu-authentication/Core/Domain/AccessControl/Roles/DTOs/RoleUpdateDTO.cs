@@ -38,7 +38,7 @@ namespace Authenticator.API.Core.Domain.AccessControl.Roles.DTOs
         /// <summary>
         /// Permissões a serem sincronizadas com o role
         /// </summary>
-        public List<SimplifiedPermissionDTO>? Permissions { get; set; } = new List<SimplifiedPermissionDTO>();
+        public List<SimplifiedPermissionDTO>? Permissions { get; set; } = [];
 
         /// <summary>
         /// IDs dos grupos de acesso a serem sincronizados com o role

@@ -125,6 +125,15 @@ namespace Authenticator.API.Core.Application.Interfaces
         /// <returns></returns>
         Task<IEnumerable<T>> GetPagedAsync(int page, int pageSize, Func<IQueryable<T>, IQueryable<T>> include);
         /// <summary>
+        /// Obtém uma página de entidades que correspondem ao predicado e incluem propriedades de navegação especificadas por meio de uma função de inclusão.
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <param name="pageNumber"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="include"></param>
+        /// <returns></returns>
+        Task<IEnumerable<T>> GetPagedAsync(Expression<Func<T, bool>> predicate, int pageNumber, int pageSize, Func<IQueryable<T>, IQueryable<T>> include);
+        /// <summary>
         /// Obtém uma página de entidades que correspondem ao predicado e incluem propriedades de navegação especificadas.
         /// </summary>
         /// <typeparam name="TKey"></typeparam>

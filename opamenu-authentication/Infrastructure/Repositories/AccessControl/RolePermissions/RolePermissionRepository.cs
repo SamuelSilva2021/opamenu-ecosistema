@@ -21,10 +21,9 @@ namespace Authenticator.API.Infrastructure.Repositories.AccessControl.RolePermis
         {
             try
             {
-                return await GetAllAsync(
-                    filter: rp => rp.RoleId == roleId,
-                    include: query => query.Include(rp => rp.Role)
-                );
+                return await _dbSet.AsNoTracking()
+                    .Where(rp => rp.RoleId == roleId)
+                    .ToListAsync();
             }
             catch (Exception ex)
             {
@@ -37,11 +36,8 @@ namespace Authenticator.API.Infrastructure.Repositories.AccessControl.RolePermis
         {
             try
             {
-                var relations = await GetAllAsync(
-                    filter: rp => rp.RoleId == roleId && rp.ModuleKey == moduleKey && rp.IsActive,
-                    include: query => query.Include(rp => rp.Role)
-                );
-                return relations.FirstOrDefault();
+                return await _dbSet.AsNoTracking()
+                    .FirstOrDefaultAsync(rp => rp.RoleId == roleId && rp.ModuleKey == moduleKey && rp.IsActive);
             }
             catch (Exception ex)
             {

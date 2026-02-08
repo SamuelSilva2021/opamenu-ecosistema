@@ -183,13 +183,13 @@ namespace Authenticator.API.UserEntry.AccessControl.Roles
         #region PUT
 
         /// <summary>
-        /// Atualiza um role
+        /// Atualiza um role rota privada apenas para o projeto access control.
         /// </summary>
         /// <param name="id">ID do role</param>
         /// <param name="dto">Dados para atualização</param>
         /// <returns>Role atualizado</returns>
         [HttpPut("{id:guid}")]
-        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
+        [Authorize(Roles = "SUPER_ADMIN")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
