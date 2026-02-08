@@ -17,6 +17,7 @@ interface PaymentMethodSelectorProps {
   subtotal?: number;
   discount?: number;
   totalPrice?: number;
+  availableMethods?: string[];
 }
 
 const paymentMethods: PaymentMethod[] = [
@@ -53,9 +54,19 @@ const PaymentMethodSelector = ({
   error,
   subtotal,
   discount,
-  totalPrice
+  totalPrice,
+  availableMethods
 }: PaymentMethodSelectorProps) => {
   const [validationError, setValidationError] = useState<string>('');
+
+  const filteredPaymentMethods = availableMethods
+    ? paymentMethods.filter(method => {
+      if (method.id === 'pix') return availableMethods.includes('PIX');
+      if (method.id === 'dinheiro') return availableMethods.includes('Dinheiro');
+      if (method.id === 'cartao') return availableMethods.includes('Crédito') || availableMethods.includes('Débito');
+      return true;
+    })
+    : paymentMethods;
 
   const handleNext = () => {
     if (!selectedMethod) {
@@ -130,12 +141,12 @@ const PaymentMethodSelector = ({
             <h3 className="font-semibold text-lg">Escolha como deseja pagar</h3>
 
             <RadioGroup value={selectedMethod} onValueChange={handleMethodChange}>
-              {paymentMethods.map((method) => (
+              {filteredPaymentMethods.map((method) => (
                 <div
                   key={method.id}
                   className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-all hover:bg-muted/50 ${selectedMethod === method.id
-                      ? 'border-opamenu-green bg-opamenu-green/5'
-                      : 'border-border'
+                    ? 'border-opamenu-green bg-opamenu-green/5'
+                    : 'border-border'
                     }`}
                 >
                   <RadioGroupItem value={method.id} id={method.id} className="sr-only" />

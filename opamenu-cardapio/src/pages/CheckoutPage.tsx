@@ -236,6 +236,7 @@ const CheckoutPage = ({ onBackToMenu, tenant }: CheckoutPageProps) => {
                 subtotal={subtotal}
                 discount={discount}
                 totalPrice={totalPrice}
+                availableMethods={tenant?.paymentMethods}
               />
             </AccordionContent>
           </AccordionItem>
