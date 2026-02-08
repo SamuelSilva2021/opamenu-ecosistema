@@ -107,11 +107,12 @@ export function EmployeeForm({
     }, [initialData, form, open]);
 
     const handleSubmit = (values: z.infer<typeof formSchema>) => {
-        const { confirmPassword, isActive, ...data } = values;
+        const { isActive, ...data } = values;
 
         // Na edição, não enviamos a senha se estiver vazia
         if (initialData && !data.password) {
             delete data.password;
+            delete data.confirmPassword;
         }
 
         onSubmit({

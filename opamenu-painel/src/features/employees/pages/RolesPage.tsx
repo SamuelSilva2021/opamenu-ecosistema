@@ -6,7 +6,9 @@ import {
     MoreHorizontal,
     Edit,
     Trash2,
-    ShieldCheck
+    ShieldCheck,
+    Eye,
+    Copy
 } from "lucide-react";
 import { employeesService } from "../employees.service";
 import {
@@ -21,7 +23,6 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -47,6 +48,7 @@ const RolesPage = () => {
     const [page] = useState(1);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+    const [isReadOnly, setIsReadOnly] = useState(false);
     const [roleToDelete, setRoleToDelete] = useState<Role | null>(null);
 
     const { toast } = useToast();
@@ -76,13 +78,28 @@ const RolesPage = () => {
         }
     });
 
-    const handleEdit = (role: Role) => {
+    const handleEdit = (role: Role, readOnly = false) => {
         setSelectedRole(role);
+        setIsReadOnly(readOnly);
+        setIsFormOpen(true);
+    };
+
+    const handleDuplicate = (role: Role) => {
+        // Para duplicar, passamos os dados mas sem o ID e com nome modificado
+        const duplicatedRole = {
+            ...role,
+            id: "", // Limpamos o ID para ser um novo registro
+            name: `${role.name} (Cópia)`,
+            isDefault: false, // Uma cópia não deve ser o padrão automaticamente
+        };
+        setSelectedRole(duplicatedRole as Role);
+        setIsReadOnly(false);
         setIsFormOpen(true);
     };
 
     const handleCreate = () => {
         setSelectedRole(null);
+        setIsReadOnly(false);
         setIsFormOpen(true);
     };
 
@@ -176,9 +193,14 @@ const RolesPage = () => {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
-                                                <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                                                <DropdownMenuItem onClick={() => handleEdit(role, true)}>
+                                                    <Eye className="mr-2 h-4 w-4" /> Visualizar
+                                                </DropdownMenuItem>
                                                 <DropdownMenuItem onClick={() => handleEdit(role)}>
                                                     <Edit className="mr-2 h-4 w-4" /> Editar
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleDuplicate(role)}>
+                                                    <Copy className="mr-2 h-4 w-4" /> Duplicar
                                                 </DropdownMenuItem>
                                                 <DropdownMenuSeparator />
                                                 <DropdownMenuItem
@@ -202,6 +224,7 @@ const RolesPage = () => {
                     open={isFormOpen}
                     onOpenChange={setIsFormOpen}
                     role={selectedRole}
+                    readOnly={isReadOnly}
                 />
             )}
 
