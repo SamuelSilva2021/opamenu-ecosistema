@@ -18,6 +18,7 @@ interface PaymentMethodSelectorProps {
   discount?: number;
   totalPrice?: number;
   availableMethods?: string[];
+  hasPixIntegration?: boolean;
 }
 
 const paymentMethods: PaymentMethod[] = [
@@ -55,7 +56,8 @@ const PaymentMethodSelector = ({
   subtotal,
   discount,
   totalPrice,
-  availableMethods
+  availableMethods,
+  hasPixIntegration = false
 }: PaymentMethodSelectorProps) => {
   const [validationError, setValidationError] = useState<string>('');
 
@@ -158,7 +160,9 @@ const PaymentMethodSelector = ({
                       <Label htmlFor={method.id} className="cursor-pointer">
                         <div className="font-medium text-base">{method.name}</div>
                         <div className="text-sm text-muted-foreground">
-                          {method.description}
+                          {method.id === 'pix' && !hasPixIntegration
+                            ? 'Pagamento via pix na entrega/retirada'
+                            : method.description}
                         </div>
                       </Label>
                     </div>
@@ -177,10 +181,13 @@ const PaymentMethodSelector = ({
             <div className="p-4 rounded-lg bg-muted/30">
               {selectedMethod === 'pix' && (
                 <div className="space-y-2">
-                  <h4 className="font-medium text-opamenu-green">Pagamento via PIX</h4>
+                  <h4 className="font-medium text-opamenu-green">
+                    {hasPixIntegration ? "Pagamento via PIX" : "Pagamento via PIX na entrega/retirada"}
+                  </h4>
                   <p className="text-sm text-muted-foreground">
-                    Após a confirmação do pedido, você receberá um QR Code para pagamento.
-                    O pagamento é processado instantaneamente.
+                    {hasPixIntegration
+                      ? "Após a confirmação do pedido, você receberá um QR Code para pagamento. O pagamento é processado instantaneamente."
+                      : "O pagamento será feito via PIX no momento da entrega ou retirada do pedido."}
                   </p>
                 </div>
               )}
@@ -223,7 +230,11 @@ const PaymentMethodSelector = ({
               disabled={isProcessing || !selectedMethod}
               className="flex items-center gap-2 bg-opamenu-green hover:bg-opamenu-green/90"
             >
-              {isProcessing ? 'Processando...' : selectedMethod === 'pix' ? 'Pagar com PIX' : 'Finalizar Pedido'}
+              {isProcessing
+                ? 'Processando...'
+                : (selectedMethod === 'pix' && hasPixIntegration)
+                  ? 'Pagar com PIX'
+                  : 'Finalizar Pedido'}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </div>

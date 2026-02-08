@@ -38,6 +38,11 @@ const mapTenantBusiness = (dto: TenantBusinessResponseDto): TenantBusinessInfo =
     pixKey = paymentMethodsData.pixKey;
   }
 
+  // Prioritize top-level pixKey from DTO if available (from BankDetails)
+  if (dto.pixKey) {
+    pixKey = dto.pixKey;
+  }
+
   return {
     id: dto.id,
     name: dto.name,
