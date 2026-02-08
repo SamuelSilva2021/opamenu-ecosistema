@@ -137,39 +137,42 @@ const CheckoutForm = ({
 
   return (
     <div className="max-w-2xl mx-auto p-0 md:p-1">
-      <Card className="border-0 shadow-none md:border md:shadow-sm rounded-none md:rounded-xl">
-        <CardContent className="p-4 md:p-6 space-y-6">
+      <Card className="border-0 shadow-none md:border md:shadow-sm rounded-[2.5rem] bg-background/50 backdrop-blur-sm overflow-hidden">
+        <CardContent className="p-6 md:p-8 space-y-10">
           {error && (
-            <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+            <div className="p-5 rounded-2xl bg-destructive/10 text-destructive text-xs font-black uppercase tracking-widest border border-destructive/20 animate-pulse">
               {error}
             </div>
           )}
 
           {/* Informações do Cliente */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg">Informações de Contato</h3>
+          <div className="space-y-6">
+            <h3 className="font-black text-2xl uppercase italic tracking-tighter text-foreground flex items-center gap-3">
+              <div className="bg-primary/10 p-2 rounded-xl">
+                <User className="h-6 w-6 text-primary" />
+              </div>
+              Quem vai comer?
+            </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="customerName" className="flex items-center gap-2">
-                  <User className="h-4 w-4" />
+                <Label htmlFor="customerName" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 ml-1">
                   Nome Completo *
                 </Label>
                 <Input
                   id="customerName"
                   value={checkoutData.customerName}
                   onChange={(e) => onDataChange({ customerName: e.target.value })}
-                  placeholder="Seu nome completo"
-                  className={`border-gray-300 ${validationErrors.customerName ? 'border-destructive' : ''}`}
+                  placeholder="Seu nome aqui"
+                  className={`h-14 rounded-2xl border-2 border-border focus:border-primary font-bold text-lg px-6 ${validationErrors.customerName ? 'border-destructive' : ''}`}
                 />
                 {validationErrors.customerName && (
-                  <p className="text-sm text-destructive">{validationErrors.customerName}</p>
+                  <p className="text-[10px] font-black uppercase text-destructive tracking-widest ml-4 mt-1">{validationErrors.customerName}</p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="customerPhone" className="flex items-center gap-2">
-                  <Phone className="h-4 w-4" />
+                <Label htmlFor="customerPhone" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 ml-1">
                   Telefone *
                 </Label>
                 <Input
@@ -178,17 +181,16 @@ const CheckoutForm = ({
                   onChange={handlePhoneChange}
                   placeholder="(11) 99999-9999"
                   maxLength={15}
-                  className={`border-gray-300 ${validationErrors.customerPhone ? 'border-destructive' : ''}`}
+                  className={`h-14 rounded-2xl border-2 border-border focus:border-primary font-bold text-lg px-6 ${validationErrors.customerPhone ? 'border-destructive' : ''}`}
                 />
                 {validationErrors.customerPhone && (
-                  <p className="text-sm text-destructive">{validationErrors.customerPhone}</p>
+                  <p className="text-[10px] font-black uppercase text-destructive tracking-widest ml-4 mt-1">{validationErrors.customerPhone}</p>
                 )}
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="customerEmail" className="flex items-center gap-2">
-                <Mail className="h-4 w-4" />
+              <Label htmlFor="customerEmail" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 ml-1">
                 E-mail (opcional)
               </Label>
               <Input
@@ -197,59 +199,86 @@ const CheckoutForm = ({
                 value={checkoutData.customerEmail || ''}
                 onChange={(e) => onDataChange({ customerEmail: e.target.value })}
                 placeholder="seu@email.com"
-                className={`border-gray-300 ${validationErrors.customerEmail ? 'border-destructive' : ''}`}
+                className={`h-14 rounded-2xl border-2 border-border focus:border-primary font-bold px-6 ${validationErrors.customerEmail ? 'border-destructive' : ''}`}
               />
               {validationErrors.customerEmail && (
-                <p className="text-sm text-destructive">{validationErrors.customerEmail}</p>
+                <p className="text-[10px] font-black uppercase text-destructive tracking-widest ml-4 mt-1">{validationErrors.customerEmail}</p>
               )}
             </div>
           </div>
 
           {/* Tipo de Entrega */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg">Tipo de Pedido</h3>
+          <div className="space-y-6">
+            <h3 className="font-black text-2xl uppercase italic tracking-tighter text-foreground flex items-center gap-3">
+              <div className="bg-primary/10 p-2 rounded-xl">
+                <Truck className="h-6 w-6 text-primary" />
+              </div>
+              Como quer receber?
+            </h3>
             <RadioGroup
               value={checkoutData.isDelivery ? 'delivery' : 'pickup'}
               onValueChange={(value) => onDataChange({ isDelivery: value === 'delivery' })}
-              className="grid gap-3"
+              className="grid gap-4"
             >
               <label
                 htmlFor="delivery"
                 className={`
-                  flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all hover:bg-muted/50 gap-3
-                  ${checkoutData.isDelivery ? 'border-opamenu-orange bg-opamenu-orange/5' : 'border-border'}  
+                  flex items-center p-6 rounded-[2rem] border-2 cursor-pointer transition-all duration-300 gap-4
+                  ${checkoutData.isDelivery
+                    ? 'border-primary bg-primary/5 shadow-lg shadow-primary/10 scale-[1.02]'
+                    : 'border-border/50 bg-white hover:border-primary/30'}  
                 `}
               >
                 <RadioGroupItem value="delivery" id="delivery" className="sr-only" />
                 <div className="flex flex-1 items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Truck className={`h-5 w-5 ${checkoutData.isDelivery ? 'text-opamenu-orange' : 'text-muted-foreground'}`} />
-                    <span className="font-medium">Entrega em domicílio</span>
+                  <div className="flex items-center gap-4">
+                    <div className={`p-3 rounded-2xl ${checkoutData.isDelivery ? 'bg-primary text-white shadow-lg' : 'bg-muted text-muted-foreground'}`}>
+                      <Truck className="h-6 w-6" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-black uppercase tracking-tight text-lg leading-none">Entrega</span>
+                      <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">Em domicílio</span>
+                    </div>
                   </div>
-                  <span className="text-sm font-medium text-muted-foreground">Taxa: R$ 5,00</span>
+                  <div className="text-right">
+                    <span className="text-sm font-black text-primary uppercase tracking-tighter block">R$ 5,00</span>
+                  </div>
                 </div>
                 {checkoutData.isDelivery && (
-                  <Check className="h-5 w-5 text-opamenu-orange" />
+                  <div className="bg-primary rounded-full p-1 text-white animate-in zoom-in">
+                    <Check className="h-4 w-4 stroke-[4]" />
+                  </div>
                 )}
               </label>
 
               <label
                 htmlFor="pickup"
                 className={`
-                  flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all hover:bg-muted/50 gap-3
-                  ${!checkoutData.isDelivery ? 'border-opamenu-green bg-opamenu-green/5' : 'border-border'}
+                  flex items-center p-6 rounded-[2rem] border-2 cursor-pointer transition-all duration-300 gap-4
+                  ${!checkoutData.isDelivery
+                    ? 'border-accent bg-accent/5 shadow-lg shadow-accent/10 scale-[1.02]'
+                    : 'border-border/50 bg-white hover:border-accent/30'}
                 `}
               >
                 <RadioGroupItem value="pickup" id="pickup" className="sr-only" />
                 <div className="flex flex-1 items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Store className={`h-5 w-5 ${!checkoutData.isDelivery ? 'text-opamenu-green' : 'text-muted-foreground'}`} />
-                    <span className="font-medium">Retirada no local</span>
+                  <div className="flex items-center gap-4">
+                    <div className={`p-3 rounded-2xl ${!checkoutData.isDelivery ? 'bg-accent text-accent-foreground shadow-lg' : 'bg-muted text-muted-foreground'}`}>
+                      <Store className="h-6 w-6" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-black uppercase tracking-tight text-lg leading-none">Retirada</span>
+                      <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">No local</span>
+                    </div>
                   </div>
-                  <span className="text-sm font-medium text-muted-foreground">Grátis</span>
+                  <div className="text-right">
+                    <span className="text-sm font-black text-accent uppercase tracking-tighter block">GRÁTIS</span>
+                  </div>
                 </div>
                 {!checkoutData.isDelivery && (
-                  <Check className="h-5 w-5 text-opamenu-green" />
+                  <div className="bg-accent rounded-full p-1 text-accent-foreground animate-in zoom-in">
+                    <Check className="h-4 w-4 stroke-[4]" />
+                  </div>
                 )}
               </label>
             </RadioGroup>
@@ -257,16 +286,18 @@ const CheckoutForm = ({
 
           {/* Endereço de Entrega */}
           {checkoutData.isDelivery && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-opamenu-orange" />
-                <h3 className="font-semibold text-lg">Endereço de Entrega</h3>
+            <div className="space-y-6 pt-4 animate-in slide-in-from-top duration-500">
+              <div className="flex items-center gap-3">
+                <div className="bg-primary/10 p-2 rounded-xl">
+                  <MapPin className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="font-black text-2xl uppercase italic tracking-tighter text-foreground">Endereço</h3>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {/* CEP */}
                 <div className="space-y-2">
-                  <Label htmlFor="zipCode">CEP *</Label>
+                  <Label htmlFor="zipCode" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 ml-1">CEP *</Label>
                   <div className="relative">
                     <Input
                       id="zipCode"
@@ -274,109 +305,109 @@ const CheckoutForm = ({
                       onChange={handleCepChange}
                       placeholder="00000-000"
                       maxLength={9}
-                      className={`border-gray-300 ${validationErrors.zipCode ? 'border-destructive pr-10' : 'pr-10'}`}
+                      className={`h-14 rounded-2xl border-2 border-border focus:border-primary font-bold px-6 pr-14 ${validationErrors.zipCode ? 'border-destructive' : ''}`}
                     />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    <div className="absolute right-5 top-1/2 -translate-y-1/2 text-primary/40">
                       {isLoadingCep ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <Loader2 className="h-5 w-5 animate-spin" />
                       ) : (
-                        <Search className="h-4 w-4" />
+                        <Search className="h-5 w-5" />
                       )}
                     </div>
                   </div>
                   {validationErrors.zipCode && (
-                    <p className="text-sm text-destructive">{validationErrors.zipCode}</p>
+                    <p className="text-[10px] font-black uppercase text-destructive tracking-widest ml-4 mt-1">{validationErrors.zipCode}</p>
                   )}
                 </div>
 
                 {/* Rua */}
                 <div className="space-y-2">
-                  <Label htmlFor="street">Rua *</Label>
+                  <Label htmlFor="street" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 ml-1">Rua *</Label>
                   <Input
                     id="street"
                     value={checkoutData.street || ''}
                     onChange={(e) => updateFullAddress({ street: e.target.value })}
-                    placeholder="Nome da rua"
-                    className={`border-gray-300 ${validationErrors.street ? 'border-destructive' : ''}`}
+                    placeholder="Nome da sua rua"
+                    className={`h-14 rounded-2xl border-2 border-border focus:border-primary font-bold px-6 ${validationErrors.street ? 'border-destructive' : ''}`}
                     disabled={isLoadingCep}
                   />
                   {validationErrors.street && (
-                    <p className="text-sm text-destructive">{validationErrors.street}</p>
+                    <p className="text-[10px] font-black uppercase text-destructive tracking-widest ml-4 mt-1">{validationErrors.street}</p>
                   )}
                 </div>
 
                 {/* Número e Complemento */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="number">Número *</Label>
+                    <Label htmlFor="number" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 ml-1">Número *</Label>
                     <Input
                       id="number"
                       value={checkoutData.number || ''}
                       onChange={(e) => updateFullAddress({ number: e.target.value })}
-                      placeholder="123"
-                      className={`border-gray-300 ${validationErrors.number ? 'border-destructive' : ''}`}
+                      placeholder="Nº"
+                      className={`h-14 rounded-2xl border-2 border-border focus:border-primary font-bold px-6 ${validationErrors.number ? 'border-destructive' : ''}`}
                     />
                     {validationErrors.number && (
-                      <p className="text-sm text-destructive">{validationErrors.number}</p>
+                      <p className="text-[10px] font-black uppercase text-destructive tracking-widest ml-4 mt-1">{validationErrors.number}</p>
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="complement">Complemento</Label>
+                    <Label htmlFor="complement" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 ml-1">Complemento</Label>
                     <Input
                       id="complement"
                       value={checkoutData.complement || ''}
                       onChange={(e) => updateFullAddress({ complement: e.target.value })}
-                      placeholder="Apto 101"
-                      className="border-gray-300"
+                      placeholder="Apto/Bloco"
+                      className="h-14 rounded-2xl border-2 border-border focus:border-primary font-bold px-6"
                     />
                   </div>
                 </div>
 
                 {/* Bairro, Cidade e UF */}
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="neighborhood">Bairro *</Label>
+                    <Label htmlFor="neighborhood" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 ml-1">Bairro *</Label>
                     <Input
                       id="neighborhood"
                       value={checkoutData.neighborhood || ''}
                       onChange={(e) => updateFullAddress({ neighborhood: e.target.value })}
                       placeholder="Bairro"
-                      className={`border-gray-300 ${validationErrors.neighborhood ? 'border-destructive' : ''}`}
+                      className={`h-14 rounded-2xl border-2 border-border focus:border-primary font-bold px-6 ${validationErrors.neighborhood ? 'border-destructive' : ''}`}
                       disabled={isLoadingCep}
                     />
                     {validationErrors.neighborhood && (
-                      <p className="text-sm text-destructive">{validationErrors.neighborhood}</p>
+                      <p className="text-[10px] font-black uppercase text-destructive tracking-widest ml-4 mt-1">{validationErrors.neighborhood}</p>
                     )}
                   </div>
 
-                  <div className="grid grid-cols-[1fr,80px] gap-4">
+                  <div className="grid grid-cols-[1fr,100px] gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="city">Cidade *</Label>
+                      <Label htmlFor="city" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 ml-1">Cidade *</Label>
                       <Input
                         id="city"
                         value={checkoutData.city || ''}
                         onChange={(e) => updateFullAddress({ city: e.target.value })}
                         placeholder="Cidade"
-                        className={`border-gray-300 ${validationErrors.city ? 'border-destructive' : ''}`}
+                        className={`h-14 rounded-2xl border-2 border-border focus:border-primary font-bold px-6 ${validationErrors.city ? 'border-destructive' : ''}`}
                         disabled={isLoadingCep}
                       />
                       {validationErrors.city && (
-                        <p className="text-sm text-destructive">{validationErrors.city}</p>
+                        <p className="text-[10px] font-black uppercase text-destructive tracking-widest ml-4 mt-1">{validationErrors.city}</p>
                       )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="state">UF *</Label>
+                      <Label htmlFor="state" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 ml-1">UF *</Label>
                       <Input
                         id="state"
                         value={checkoutData.state || ''}
                         onChange={(e) => updateFullAddress({ state: e.target.value })}
                         placeholder="UF"
                         maxLength={2}
-                        className={`border-gray-300 ${validationErrors.state ? 'border-destructive' : ''}`}
+                        className={`h-14 rounded-2xl border-2 border-border focus:border-primary font-bold px-6 ${validationErrors.state ? 'border-destructive' : ''}`}
                         disabled={isLoadingCep}
                       />
                       {validationErrors.state && (
-                        <p className="text-sm text-destructive">{validationErrors.state}</p>
+                        <p className="text-[10px] font-black uppercase text-destructive tracking-widest ml-4 mt-1">{validationErrors.state}</p>
                       )}
                     </div>
                   </div>
@@ -386,39 +417,48 @@ const CheckoutForm = ({
           )}
 
           {/* Observações */}
-          <div className="space-y-2">
-            <Label htmlFor="notes" className="flex items-center gap-2">
+          <div className="space-y-3">
+            <Label htmlFor="notes" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 ml-1 flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
-              Observações (opcional)
+              Alguma nota especial?
             </Label>
             <Textarea
               id="notes"
               value={checkoutData.notes || ''}
               onChange={(e) => onDataChange({ notes: e.target.value })}
-              placeholder="Observações especiais, ponto de referência, etc."
+              placeholder="Ex: Ponto de referência, tirar cebola, etc."
               rows={3}
-              className="border-gray-300"
+              className="rounded-2xl border-2 border-border focus:border-primary font-medium p-6 min-h-[120px]"
             />
           </div>
 
           {/* Botões de Navegação */}
-          <div className="flex justify-between pt-4">
+          <div className="flex flex-col sm:flex-row justify-between gap-4 pt-10">
             <Button
               variant="outline"
               onClick={onBack}
-              className="flex items-center gap-2"
+              className="h-16 rounded-2xl font-black uppercase italic tracking-widest gap-3 order-2 sm:order-1 flex items-center shadow-sm hover:bg-muted"
             >
-              <ArrowLeft className="h-4 w-4" />
-              Voltar ao Início
+              <ArrowLeft className="h-5 w-5 stroke-[3]" />
+              Voltar
             </Button>
 
             <Button
               onClick={handleSubmit}
               disabled={isProcessing}
-              className="flex items-center gap-2 bg-opamenu-orange hover:bg-opamenu-orange/90"
+              className="h-16 rounded-2xl font-black uppercase italic tracking-widest gap-3 px-12 order-1 sm:order-2 bg-primary hover:bg-primary-hover text-white shadow-xl shadow-primary/20 flex items-center"
             >
-              {isProcessing ? 'Processando...' : 'Continuar'}
-              <ArrowRight className="h-4 w-4" />
+              {isProcessing ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  AGUARDE...
+                </>
+              ) : (
+                <>
+                  CONTINUAR
+                  <ArrowRight className="h-5 w-5 stroke-[3]" />
+                </>
+              )}
             </Button>
           </div>
         </CardContent>

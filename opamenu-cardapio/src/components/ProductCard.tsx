@@ -50,101 +50,105 @@ const ProductCard = ({
 
   return (
     <Card
-      className="group hover:shadow-lg transition-all duration-300 hover:scale-[1.02] bg-card border-border overflow-hidden animate-fade-in-up cursor-pointer"
+      className="group hover:shadow-2xl transition-all duration-300 hover:scale-[1.01] bg-white border border-border/50 overflow-hidden animate-fade-in-up cursor-pointer rounded-3xl"
       onClick={() => onProductClick(product.id)}
     >
-
-      <div className="aspect-[4/3] overflow-hidden bg-white p-2 relative flex items-center justify-center">
-        {product.imageUrl ? (
-          <img
-            src={getFullImageUrl(product.imageUrl) || ''}
-            alt={product.name}
-            loading="lazy"
-            decodings="async"
-            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-opamenu-green/20">
-            <div className="text-center text-muted-foreground">
-              <div className="text-4xl mb-2">🍽️</div>
-              <p className="text-sm">Imagem não disponível</p>
+      <div className="flex flex-col h-full">
+        {/* Image Section */}
+        <div className="aspect-[4/3] overflow-hidden bg-white relative flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          {product.imageUrl ? (
+            <img
+              src={getFullImageUrl(product.imageUrl) || ''}
+              alt={product.name}
+              loading="lazy"
+              decoding="async"
+              className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500 ease-out"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-muted/30 rounded-2xl">
+              <div className="text-center text-muted-foreground/40">
+                <div className="text-5xl mb-2 opacity-50">🍔</div>
+                <p className="text-xs font-black uppercase tracking-tighter">Imagem em breve</p>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
 
-      <CardContent className="p-4">
-        <div className="mb-3">
-          <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors">
-            {product.name}
-          </h3>
-          <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-            {product.description}
-          </p>
+          {/* Badge for Indisponível */}
+          {!product.isActive && (
+            <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] flex items-center justify-center z-10">
+              <Badge variant="destructive" className="font-black uppercase tracking-widest px-4 py-1 text-xs">
+                Esgotado
+              </Badge>
+            </div>
+          )}
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <span className="text-2xl font-bold text-primary">
-              {formatPrice(product.price)}
-            </span>
+        {/* Content Section */}
+        <CardContent className="p-5 flex-1 flex flex-col justify-between">
+          <div className="space-y-1.5 mb-4">
+            <h3 className="font-black text-xl text-foreground group-hover:text-primary transition-colors leading-tight uppercase italic tracking-tighter">
+              {product.name}
+            </h3>
+            <p className="text-xs text-text-secondary font-medium line-clamp-2 leading-relaxed opacity-80">
+              {product.description || "O sabor que você já conhece com a qualidade que você confia."}
+            </p>
           </div>
 
-          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-            {cartQuantity > 0 && (
-              <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between mt-auto">
+            <div className="flex flex-col">
+              <span className="text-xs font-black text-primary/40 uppercase tracking-widest">A partir de</span>
+              <span className="text-2xl font-black text-primary tracking-tighter">
+                {formatPrice(product.price)}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+              {cartQuantity > 0 ? (
+                <div className="flex items-center bg-muted p-1 rounded-full border border-border/50">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRemoveFromCart(product.id);
+                    }}
+                    className="h-8 w-8 rounded-full hover:bg-white text-foreground"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <span className="w-8 text-center font-black text-sm">
+                    {cartQuantity}
+                  </span>
+                  <Button
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAddToCart(product.id);
+                    }}
+                    className="h-8 w-8 rounded-full bg-primary hover:bg-primary-hover text-white shadow-md shadow-primary/20"
+                    disabled={!product.isActive}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
                 <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRemoveFromCart(product.id);
-                  }}
-                  className="h-8 w-8 p-0 hover:bg-destructive/10 hover:border-destructive"
-                >
-                  <Minus className="h-4 w-4" />
-                </Button>
-                <span className="w-8 text-center font-medium">
-                  {cartQuantity}
-                </span>
-                <Button
-                  size="sm"
+                  size="icon"
+                  className="h-12 w-12 rounded-2xl bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg shadow-accent/20 group-hover:scale-110 transition-transform"
                   onClick={(e) => {
                     e.stopPropagation();
                     onAddToCart(product.id);
                   }}
-                  className="h-8 w-8 p-0 bg-primary hover:bg-primary/90 text-white"
                   disabled={!product.isActive}
                 >
-                  <Plus className="h-4 w-4" />
+                  <Plus className="h-6 w-6 stroke-[3]" />
                 </Button>
-              </div>
-            )}
-
-            {cartQuantity === 0 && product.isActive && (
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-8 w-8 p-0 text-primary hover:bg-primary/10"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAddToCart(product.id);
-                }}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            )}
+              )}
+            </div>
           </div>
-        </div>
-
-        {!product.isActive && (
-          <div className="mt-2">
-            <Badge variant="secondary" className="text-xs">
-              Indisponível
-            </Badge>
-          </div>
-        )}
-      </CardContent>
+        </CardContent>
+      </div>
     </Card>
   );
 };

@@ -216,19 +216,19 @@ const ProductModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleModalChange}>
-      <DialogContent className="max-w-4xl h-[95vh] w-[95vw] sm:w-full flex flex-col p-0 overflow-hidden">
-        <div className="flex flex-col h-full">
-          <DialogHeader className="shrink-0 p-4 pb-2">
-            <DialogTitle className="text-lg sm:text-xl pr-8">
+      <DialogContent className="max-w-4xl h-[95vh] w-[95vw] sm:w-full flex flex-col p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl">
+        <div className="flex flex-col h-full bg-background">
+          <DialogHeader className="shrink-0 p-6 pb-2">
+            <DialogTitle className="text-2xl sm:text-3xl font-black uppercase italic tracking-tighter text-foreground pr-8">
               {product.name}
             </DialogTitle>
           </DialogHeader>
 
-          <div className="flex-1 min-h-0 overflow-hidden p-4 pt-2">
-            <div className="h-full flex flex-col lg:grid lg:grid-cols-2 lg:gap-6">
+          <div className="flex-1 min-h-0 overflow-hidden p-6 pt-2">
+            <div className="h-full flex flex-col lg:grid lg:grid-cols-2 lg:gap-8">
 
               <div className="shrink-0 lg:shrink">
-                <div className="aspect-[16/9] lg:aspect-square overflow-hidden rounded-lg bg-white mb-4 lg:mb-0 flex items-center justify-center p-4 border">
+                <div className="aspect-[4/3] lg:aspect-square overflow-hidden rounded-3xl bg-white mb-4 lg:mb-0 flex items-center justify-center p-6 shadow-inner border border-border/50">
                   {product.imageUrl ? (
                     <img
                       src={getFullImageUrl(product.imageUrl) || ''}
@@ -236,48 +236,52 @@ const ProductModal = ({
                       className="w-full h-full object-contain"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-opamenu-orange/20 to-opamenu-green/20 rounded-md">
-                      <div className="text-center text-muted-foreground">
-                        <div className="text-4xl lg:text-6xl mb-2 lg:mb-4">🍽️</div>
-                        <p className="text-sm lg:text-base">Imagem não disponível</p>
+                    <div className="w-full h-full flex items-center justify-center bg-muted/20 rounded-2xl">
+                      <div className="text-center text-muted-foreground/30">
+                        <div className="text-6xl lg:text-8xl mb-4">🍔</div>
+                        <p className="text-xs font-black uppercase tracking-widest leading-none">Apetitoso por natureza</p>
                       </div>
                     </div>
                   )}
                 </div>
 
                 <div className="block lg:hidden mb-4">
-                  <h3 className="text-lg font-semibold text-foreground mb-1">{product.name}</h3>
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="text-xs font-black text-primary/50 uppercase tracking-widest">Preço Individual</span>
+                    <p className="text-2xl font-black text-primary tracking-tighter">
+                      {formatPrice(product.price)}
+                    </p>
+                  </div>
                   {product.description && (
-                    <p className="text-sm text-muted-foreground mb-2">{product.description}</p>
+                    <p className="text-sm font-medium text-text-secondary leading-relaxed opacity-80">{product.description}</p>
                   )}
-                  <p className="text-xl font-bold text-opamenu-orange">
-                    {formatPrice(product.price)}
-                  </p>
                 </div>
               </div>
 
               <div className="flex-1 min-h-0 flex flex-col">
 
-                <div className="hidden lg:block mb-4 shrink-0">
-                  <h3 className="text-xl font-semibold text-foreground mb-2">{product.name}</h3>
+                <div className="hidden lg:block mb-6 shrink-0 border-b pb-6">
                   {product.description && (
-                    <p className="text-base text-muted-foreground mb-3">{product.description}</p>
+                    <p className="text-lg font-medium text-text-secondary leading-relaxed mb-4">{product.description}</p>
                   )}
-                  <p className="text-2xl font-bold text-opamenu-orange">
-                    {formatPrice(product.price)}
-                  </p>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-black text-primary/50 uppercase tracking-widest">Base</span>
+                    <p className="text-3xl font-black text-primary tracking-tighter">
+                      {formatPrice(product.price)}
+                    </p>
+                  </div>
                 </div>
 
                 <div
                   ref={scrollContainerRef}
-                  className="flex-1 min-h-0"
+                  className="flex-1 min-h-0 scroll-smooth"
                   style={{
                     maxHeight: 'calc(100vh - 400px)',
                     overflowY: 'auto',
                     overflowX: 'hidden'
                   }}
                 >
-                  <div className="space-y-6 pb-6 pr-2">
+                  <div className="space-y-8 pb-8 pr-2">
                     {product.addonGroups.length > 0 ? (
                       product.addonGroups.map((group) => (
                         <div
@@ -285,49 +289,49 @@ const ProductModal = ({
                           ref={(el) => {
                             groupRefs.current[group.id] = el;
                           }}
-                          className={`space-y-4 p-4 rounded-lg border transition-all duration-300 ${!isRequiredGroupValid(group) && group.isRequired
-                            ? 'bg-red-50/50 border-red-200 shadow-md'
-                            : 'bg-background/50'
+                          className={`space-y-5 p-6 rounded-[2rem] border-2 transition-all duration-500 ${!isRequiredGroupValid(group) && group.isRequired
+                            ? 'bg-primary/5 border-primary shadow-lg shadow-primary/5'
+                            : 'bg-white border-border/50 shadow-sm'
                             }`}
                         >
-                          <div className="flex flex-col gap-2">
-                            <h4 className="text-sm lg:text-base font-semibold text-foreground flex items-center gap-2">
-                              {group.name}
-                              {!isRequiredGroupValid(group) && group.isRequired && (
-                                <span className="text-red-500 text-lg animate-bounce">⚠️</span>
-                              )}
-                            </h4>
-                            <div className="flex gap-2 flex-wrap">
+                          <div className="flex flex-col gap-3">
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-lg lg:text-xl font-black uppercase italic tracking-tighter text-foreground flex items-center gap-2">
+                                {group.name}
+                                {!isRequiredGroupValid(group) && group.isRequired && (
+                                  <span className="text-primary text-xl animate-bounce">!</span>
+                                )}
+                              </h4>
                               {group.isRequired && (
                                 <Badge
-                                  variant={!isRequiredGroupValid(group) ? "destructive" : "secondary"}
-                                  className={`text-xs ${!isRequiredGroupValid(group)
-                                    ? "bg-red-500 text-white"
-                                    : ""
+                                  className={`font-black uppercase tracking-widest text-[10px] px-3 ${!isRequiredGroupValid(group)
+                                    ? "bg-primary text-white shadow-md shadow-primary/20"
+                                    : "bg-muted text-foreground"
                                     }`}
                                 >
                                   Obrigatório
                                 </Badge>
                               )}
-                              <Badge variant="outline" className="text-xs">
-                                {group.type === AddonGroupType.Single ? 'Escolha 1' : 'Múltiplas opções'}
-                              </Badge>
                             </div>
+
+                            <p className="text-xs font-bold text-text-secondary/60 bg-muted/40 w-fit px-3 py-1 rounded-full">
+                              {group.type === AddonGroupType.Single ? 'Escolha 1 deliciosa opção' : `Escolha até ${group.maxSelections || 'várias'} opções`}
+                            </p>
                           </div>
 
                           {group.description && (
-                            <p className="text-xs lg:text-sm text-muted-foreground bg-muted/30 p-2 rounded">
+                            <p className="text-xs font-medium text-text-secondary/70 italic border-l-2 border-primary/20 pl-3">
                               {group.description}
                             </p>
                           )}
 
-                          <div className="space-y-3">
+                          <div className="grid grid-cols-1 gap-3">
                             {group.addons.filter(addon => addon.isActive).map((addon) => (
                               <div
                                 key={addon.id}
-                                className={`flex items-center justify-between p-3 border rounded-lg transition-all duration-200 gap-3 cursor-pointer ${isAddonSelected(addon.id)
-                                  ? 'bg-opamenu-orange/5 border-opamenu-orange/50 shadow-sm'
-                                  : 'bg-background hover:bg-muted/50 border-border'
+                                className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all duration-300 gap-4 cursor-pointer ${isAddonSelected(addon.id)
+                                  ? 'bg-accent/10 border-accent shadow-md'
+                                  : 'bg-white border-border hover:border-primary/50'
                                   }`}
                                 onClick={() => {
                                   if (group.type === AddonGroupType.Single) {
@@ -336,51 +340,51 @@ const ProductModal = ({
                                 }}
                               >
                                 <div className="flex-1 min-w-0">
-                                  <h5 className="text-sm lg:text-base font-medium text-foreground">{addon.name}</h5>
+                                  <h5 className="text-sm lg:text-base font-black uppercase tracking-tight text-foreground">{addon.name}</h5>
                                   {addon.description && (
-                                    <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+                                    <p className="text-xs font-medium text-text-secondary/60 line-clamp-2 mt-0.5">
                                       {addon.description}
                                     </p>
                                   )}
                                 </div>
 
-                                <div className="flex items-center gap-3 shrink-0">
-                                  <span className="text-sm font-semibold text-opamenu-orange whitespace-nowrap">
+                                <div className="flex items-center gap-4 shrink-0">
+                                  <span className="text-sm font-black text-primary whitespace-nowrap">
                                     + {formatPrice(addon.price)}
                                   </span>
 
                                   {group.type === AddonGroupType.Single ? (
                                     <div className={`
-                                    w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-200
+                                    w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-500
                                     ${isAddonSelected(addon.id)
-                                        ? 'border-opamenu-orange bg-opamenu-orange'
-                                        : 'border-muted-foreground/30 bg-transparent'}
+                                        ? 'border-accent bg-accent shadow-md shadow-accent/20'
+                                        : 'border-border bg-transparent'}
                                   `}>
                                       {isAddonSelected(addon.id) && (
-                                        <div className="w-2.5 h-2.5 rounded-full bg-white" />
+                                        <div className="w-2.5 h-2.5 rounded-full bg-accent-foreground" />
                                       )}
                                     </div>
                                   ) : (
                                     <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
                                       <Button
                                         variant="outline"
-                                        size="sm"
+                                        size="icon"
                                         onClick={() => handleAddonChange(addon, group, Math.max(0, getAddonQuantity(addon.id) - 1))}
                                         disabled={getAddonQuantity(addon.id) === 0}
-                                        className="h-8 w-8 p-0 touch-manipulation rounded-full"
+                                        className="h-9 w-9 p-0 touch-manipulation rounded-xl border-2 hover:bg-muted font-black"
                                       >
-                                        <Minus className="h-3 w-3" />
+                                        <Minus className="h-4 w-4" />
                                       </Button>
-                                      <span className="w-6 text-center text-sm font-medium">
+                                      <span className="w-6 text-center text-sm font-black">
                                         {getAddonQuantity(addon.id)}
                                       </span>
                                       <Button
                                         variant="outline"
-                                        size="sm"
+                                        size="icon"
                                         onClick={() => handleAddonChange(addon, group, getAddonQuantity(addon.id) + 1)}
-                                        className="h-8 w-8 p-0 hover:bg-opamenu-orange/10 hover:border-opamenu-orange touch-manipulation rounded-full"
+                                        className="h-9 w-9 p-0 hover:bg-accent/10 hover:border-accent touch-manipulation rounded-xl border-2 font-black transition-all"
                                       >
-                                        <Plus className="h-3 w-3" />
+                                        <Plus className="h-4 w-4" />
                                       </Button>
                                     </div>
                                   )}
@@ -391,10 +395,10 @@ const ProductModal = ({
                         </div>
                       ))
                     ) : (
-                      <div className="text-center text-muted-foreground py-8">
-                        <div className="text-4xl mb-4">🍽️</div>
-                        <p className="text-sm lg:text-base">Nenhum adicional disponível</p>
-                        <p className="text-xs lg:text-sm mt-2 opacity-70">Este produto não possui opções de personalização</p>
+                      <div className="text-center text-muted-foreground py-12 bg-white rounded-[2rem] border-2 border-dashed border-border/50">
+                        <div className="text-6xl mb-4 opacity-20 text-primary">🍟</div>
+                        <p className="text-lg font-black uppercase tracking-tighter opacity-50">Sem extras</p>
+                        <p className="text-xs font-bold mt-2 opacity-40">Este item já é perfeito como está!</p>
                       </div>
                     )}
                   </div>
@@ -403,42 +407,49 @@ const ProductModal = ({
             </div>
           </div>
 
-          {/* Footer com controles - sempre visível */}
-          <div className="shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center justify-between pt-4 border-t gap-4 mt-4 p-4">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 order-2 sm:order-1">
-              <span className="text-sm text-muted-foreground">Quantidade:</span>
-              <div className="flex items-center gap-2 justify-center sm:justify-start">
+          {/* Footer controls - BK Style Sticky Footer */}
+          <div className="shrink-0 bg-white border-t p-6 pb-10 sm:pb-6 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] rounded-t-[3rem]">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+              <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+                <span className="text-xs font-black uppercase tracking-widest text-primary/40">Fome do tamanho de:</span>
+                <div className="flex items-center bg-muted p-1 rounded-2xl border-2 border-border/50">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    disabled={quantity <= 1}
+                    className="h-12 w-12 p-0 touch-manipulation hover:bg-white rounded-xl"
+                  >
+                    <Minus className="h-5 w-5" />
+                  </Button>
+                  <span className="w-10 text-center font-black text-xl tracking-tighter">{quantity}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="h-12 w-12 p-0 touch-manipulation hover:bg-white rounded-xl"
+                  >
+                    <Plus className="h-5 w-5" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+                <div className="flex flex-col items-center sm:items-end order-2 sm:order-1">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary opacity-50">Total do Item</span>
+                  <span className="text-2xl font-black tracking-tighter leading-none">{formatPrice(totalPrice)}</span>
+                </div>
+
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  disabled={quantity <= 1}
-                  className="h-9 w-9 p-0 touch-manipulation"
+                  onClick={handleAddToCart}
+                  className={`px-10 h-16 rounded-[1.5rem] w-full sm:w-auto order-1 sm:order-2 font-black uppercase italic tracking-wider text-lg shadow-2xl transition-all duration-500 scale-100 hover:scale-105 active:scale-95 ${canAddToCart
+                    ? "bg-primary hover:bg-primary-hover text-white shadow-primary/30"
+                    : "bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/30"
+                    }`}
                 >
-                  <Minus className="h-4 w-4" />
-                </Button>
-                <span className="w-8 text-center font-medium text-sm lg:text-base">{quantity}</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="h-9 w-9 p-0 touch-manipulation"
-                >
-                  <Plus className="h-4 w-4" />
+                  {canAddToCart ? (confirmLabel || "Adicionar") : "Escolha os extras"}
                 </Button>
               </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 order-1 sm:order-2">
-              <Button
-                onClick={handleAddToCart}
-                className={`px-6 sm:px-8 w-full sm:w-auto h-11 sm:h-10 touch-manipulation text-sm sm:text-base transition-all duration-300 ${canAddToCart
-                  ? "bg-opamenu-orange hover:bg-opamenu-orange/90 text-white"
-                  : "bg-amber-500 hover:bg-amber-600 text-white"
-                  }`}
-              >
-                {canAddToCart ? `${confirmLabel} ${formatPrice(totalPrice)}` : `${formatPrice(totalPrice)}`}
-              </Button>
             </div>
           </div>
         </div>

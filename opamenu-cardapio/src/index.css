@@ -9,76 +9,76 @@ All colors MUST be HSL for proper theming.
 
 @layer base {
   :root {
-    /* Base colors - Modern food delivery theme */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 20%;
+    /* Base colors - Burger King inspired palette */
+    --background: 35 30% 96%;        /* #f5ebdc - Creme/Bun */
+    --foreground: 25 30% 12%;        /* #2e2620 - Marrom Escuro/Charcoal */
 
-    /* Opamenu brand colors - Nova paleta Teal/Esmeralda */
-    --opamenu-orange: 174 70% 40%;     /* #1EB3A5 - Teal/Esmeralda - Fresco e moderno */
-    --opamenu-orange-light: 174 70% 50%; /* #2BC4B6 - Variação clara */
-    --opamenu-orange-dark: 174 70% 30%;   /* #15857A - Hover/Active */
+    /* Opamenu brand colors - Novo Laranja Flame */
+    --opamenu-orange: 11 80% 45%;     /* #cc370b - Laranja-Vermelho Intenso */
+    --opamenu-orange-light: 11 80% 55%; /* #e34c1a - Laranja mais vibrante */
+    --opamenu-orange-dark: 11 80% 35%;   /* #a12b09 - Sombra quente */
     
-    --opamenu-green: 101 47% 51%;      /* #6BBE45 - Verde secundário (Mantido) */
-    --opamenu-green-light: 101 57% 61%; /* #85D266 - Variação clara */  
-    --opamenu-green-dark: 101 47% 43%;   /* #58A23A - Escuro */
+    --opamenu-green: 151 55% 41%;      /* #2f8e5f - Verde Alface */
+    --opamenu-green-light: 151 55% 51%; /* #3bb377 - Verde claro */  
+    --opamenu-green-dark: 151 55% 31%;   /* #236a47 - Verde escuro */
 
     /* Neutral colors */
-    --neutral-light: 0 0% 90%;        /* #E6E6E6 */
-    --neutral-dark: 0 0% 20%;         /* #333333 */
-    --neutral-medium: 0 0% 40%;       /* #666666 */
+    --neutral-light: 35 20% 90%;      /* Creme acinzentado */
+    --neutral-dark: 25 20% 15%;       /* Marrom quase preto */
+    --neutral-medium: 25 10% 40%;     /* Cinza terroso */
 
     /* Card and surfaces */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 20%;
-    --card-hover: 0 0% 98%;
+    --card-foreground: 25 30% 15%;
+    --card-hover: 35 30% 98%;
 
-    /* Interactive elements - Teal como primário */
-    --primary: 174 70% 40%;            /* #1EB3A5 */
+    /* Interactive elements - Laranja Primário */
+    --primary: 11 80% 45%;            /* Flame */
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 174 70% 30%;      /* #15857A */
+    --primary-hover: 11 80% 35%;
 
-    /* Secondary - Verde */
-    --secondary: 101 47% 51%;         /* #6BBE45 */
+    /* Secondary - Verde Alface */
+    --secondary: 151 55% 41%;         
     --secondary-foreground: 0 0% 100%;
-    --secondary-hover: 101 47% 43%;   /* #58A23A */
+    --secondary-hover: 151 55% 31%;
 
-    /* Accent - Usar o Teal claro */
-    --accent: 174 70% 50%;             /* #2BC4B6 */
-    --accent-foreground: 0 0% 100%;
-    --accent-light: 20 92% 96%;
+    /* Accent - Amarelo Queijo */
+    --accent: 42 90% 55%;             /* #f5b924 */
+    --accent-foreground: 25 30% 15%;
+    --accent-light: 42 90% 95%;
 
     /* Text colors */
-    --muted: 0 0% 90%;                /* #E6E6E6 */
-    --muted-foreground: 0 0% 40%;     /* #666666 */
-    --text-secondary: 0 0% 40%;       /* #666666 */
+    --muted: 35 20% 92%;
+    --muted-foreground: 25 10% 40%;
+    --text-secondary: 25 10% 45%;
 
     /* Border and inputs */
-    --border: 0 0% 90%;               /* #E6E6E6 */
-    --input: 0 0% 98%;
-    --input-border: 0 0% 85%;
-    --ring: 174 70% 40%;               /* #1EB3A5 */
+    --border: 35 20% 88%;
+    --input: 0 0% 100%;
+    --input-border: 35 20% 85%;
+    --ring: 11 80% 45%;
 
     /* Feedback states */
-    --destructive: 354 70% 54%;       /* #E63946 */
+    --destructive: 0 84% 44%;
     --destructive-foreground: 0 0% 100%;
-    --success: 101 47% 51%;           /* #6BBE45 - Verde como sucesso */
-    --warning: 45 94% 64%;            /* #F9C74F */
+    --success: 151 55% 41%;
+    --warning: 38 92% 50%;
 
     /* Layout */
-    --radius: 12px;
-    --radius-sm: 8px;
-    --radius-lg: 16px;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --radius-lg: 20px;
 
-    /* Gradients - Nova paleta */
+    /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--opamenu-orange)), hsl(var(--opamenu-orange-light)));
-    --gradient-accent: linear-gradient(135deg, hsl(var(--opamenu-green)), hsl(var(--opamenu-green-light)));
+    --gradient-accent: linear-gradient(135deg, hsl(var(--accent)), hsl(42 90% 65%));
     --gradient-card: linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)));
 
-    /* Shadows - Com tom laranja */
-    --shadow-sm: 0 2px 4px -1px hsl(var(--opamenu-orange) / 0.1);
-    --shadow-md: 0 4px 6px -1px hsl(var(--opamenu-orange) / 0.1), 0 2px 4px -1px hsl(var(--opamenu-orange) / 0.06);
-    --shadow-lg: 0 10px 15px -3px hsl(var(--opamenu-orange) / 0.1), 0 4px 6px -2px hsl(var(--opamenu-orange) / 0.05); 
-    --shadow-cart: 0 20px 25px -5px hsl(var(--foreground) / 0.1), 0 10px 10px -5px hsl(var(--foreground) / 0.04);
+    /* Shadows - Tons terrosos para profundidade */
+    --shadow-sm: 0 2px 4px -1px hsl(25 30% 15% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(25 30% 15% / 0.1), 0 2px 4px -1px hsl(25 30% 15% / 0.06);
+    --shadow-lg: 0 10px 15px -3px hsl(25 30% 15% / 0.1), 0 4px 6px -2px hsl(25 30% 15% / 0.05); 
+    --shadow-cart: 0 20px 25px -5px hsl(25 30% 15% / 0.15), 0 10px 10px -5px hsl(25 30% 15% / 0.1);
 
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

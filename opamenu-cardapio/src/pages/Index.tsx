@@ -232,42 +232,50 @@ const StorefrontContent = () => {
             )}
           </div>
 
-          <div className="hidden lg:flex gap-4">
+          <div className="hidden lg:flex gap-4 items-center">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="shrink-0 gap-2 h-12 bg-white border-gray-200">
-                  Lista de categorias
-                  <ChevronDown className="h-4 w-4 text-gray-500" />
+                <Button variant="outline" className="shrink-0 gap-3 h-14 bg-white border-border rounded-2xl font-black uppercase tracking-widest text-xs px-6 hover:border-primary transition-all">
+                  Categorias
+                  <ChevronDown className="h-4 w-4 text-primary" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56 bg-white z-50 shadow-lg border border-gray-200">
-                <DropdownMenuItem onClick={() => setSelectedCategory("all")}>
-                  Todas as categorias
+              <DropdownMenuContent align="start" className="w-64 bg-white z-50 shadow-2xl border border-border rounded-2xl p-2">
+                <DropdownMenuItem
+                  onClick={() => setSelectedCategory("all")}
+                  className="rounded-xl font-bold p-3 focus:bg-primary/5 focus:text-primary cursor-pointer"
+                >
+                  Tudo o que tem de bom
                 </DropdownMenuItem>
                 {categoryOptions.map(cat => (
-                  <DropdownMenuItem key={cat.id} onClick={() => setSelectedCategory(cat.id)}>
-                    {cat.name} ({cat.count})
+                  <DropdownMenuItem
+                    key={cat.id}
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className="rounded-xl font-bold p-3 focus:bg-primary/5 focus:text-primary cursor-pointer flex justify-between items-center"
+                  >
+                    {cat.name}
+                    <span className="text-[10px] bg-muted px-2 py-0.5 rounded-full opacity-60">{cat.count}</span>
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
 
             <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 text-primary h-5 w-5 opacity-60" />
               <Input
                 type="text"
-                placeholder="Busque por um produto..."
+                placeholder="O que você vai comer hoje?"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 pr-12 h-12 bg-white border-gray-200 focus:border-primary focus:ring-primary/20 transition-all text-base"
+                className="pl-14 pr-12 h-14 bg-white border-border rounded-2xl focus:border-primary focus:ring-primary/10 transition-all text-lg font-bold placeholder:text-muted-foreground/50"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute right-5 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
                 >
                   <span className="sr-only">Limpar busca</span>
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
@@ -275,29 +283,29 @@ const StorefrontContent = () => {
             </div>
           </div>
 
-          {/* Mobile Category Navigation */}
-          <div className="lg:hidden">
-            <div className="flex overflow-x-auto gap-3 pb-2 -mx-4 px-4 scrollbar-hide">
+          {/* Mobile Category Navigation - Sticky */}
+          <div className="lg:hidden sticky top-0 z-40 -mx-4 px-4 bg-background/95 backdrop-blur-md py-4 border-b border-border/50">
+            <div className="flex overflow-x-auto gap-3 scrollbar-hide">
               <button
                 onClick={() => setSelectedCategory("all")}
                 className={`
-                  whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors
+                  whitespace-nowrap px-6 py-2.5 rounded-full text-sm font-black uppercase tracking-wider transition-all duration-300
                   ${selectedCategory === "all"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-white text-gray-600 border border-gray-200"}
+                    ? "bg-primary text-white shadow-lg shadow-primary/20 scale-105"
+                    : "bg-white text-foreground border border-border hover:border-primary/50"}
                 `}
               >
-                Destaques
+                Tudo
               </button>
               {categoryOptions.map(cat => (
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
                   className={`
-                    whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors
+                    whitespace-nowrap px-6 py-2.5 rounded-full text-sm font-black uppercase tracking-wider transition-all duration-300
                     ${selectedCategory === cat.id
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-white text-gray-600 border border-gray-200"}
+                      ? "bg-primary text-white shadow-lg shadow-primary/20 scale-105"
+                      : "bg-white text-foreground border border-border hover:border-primary/50"}
                   `}
                 >
                   {cat.name}

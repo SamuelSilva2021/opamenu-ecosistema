@@ -23,9 +23,9 @@ interface TenantHeaderProps {
 
 const TenantHeader = ({ tenant, customer, onLoginClick, onLogoutClick, onEditProfileClick, onOrdersClick }: TenantHeaderProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [status, setStatus] = useState<{ isOpen: boolean; text: string; nextTime?: string }>({ 
-    isOpen: false, 
-    text: "Verificando..." 
+  const [status, setStatus] = useState<{ isOpen: boolean; text: string; nextTime?: string }>({
+    isOpen: false,
+    text: "Verificando..."
   });
 
   useEffect(() => {
@@ -49,10 +49,10 @@ const TenantHeader = ({ tenant, customer, onLoginClick, onLogoutClick, onEditPro
 
         const start = todayHours.open;
         const end = todayHours.close;
-        
+
         if (!start || !end) {
-           setStatus({ isOpen: false, text: "Horário indisponível" });
-           return;
+          setStatus({ isOpen: false, text: "Horário indisponível" });
+          return;
         }
 
         const [startH, startM] = start.split(':').map(Number);
@@ -70,15 +70,15 @@ const TenantHeader = ({ tenant, customer, onLoginClick, onLogoutClick, onEditPro
         }
 
         const currentTime = new Date();
-        
+
         if (currentTime >= startTime && currentTime <= endTime) {
           setStatus({ isOpen: true, text: `Aberto • Fecha às ${end}` });
         } else {
-            if (currentTime < startTime) {
-                 setStatus({ isOpen: false, text: `Fechado • Abre às ${start}` });
-            } else {
-                 setStatus({ isOpen: false, text: "Fechado agora" });
-            }
+          if (currentTime < startTime) {
+            setStatus({ isOpen: false, text: `Fechado • Abre às ${start}` });
+          } else {
+            setStatus({ isOpen: false, text: "Fechado agora" });
+          }
         }
       } catch (e) {
         console.error("Error parsing opening hours", e);
@@ -96,7 +96,7 @@ const TenantHeader = ({ tenant, customer, onLoginClick, onLogoutClick, onEditPro
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center gap-2 font-medium hover:text-white/80 transition-colors p-0 h-auto hover:bg-transparent text-white">
-              <User className="w-4 h-4" /> 
+              <User className="w-4 h-4" />
               <span className="max-w-[100px] truncate">{customer.name.split(' ')[0]}</span>
             </Button>
           </DropdownMenuTrigger>
@@ -118,7 +118,7 @@ const TenantHeader = ({ tenant, customer, onLoginClick, onLogoutClick, onEditPro
     }
 
     return (
-      <button 
+      <button
         onClick={onLoginClick}
         className="flex items-center gap-2 font-medium hover:text-white/80 transition-colors"
       >
@@ -129,83 +129,155 @@ const TenantHeader = ({ tenant, customer, onLoginClick, onLogoutClick, onEditPro
 
   return (
     <div className="w-full font-sans">
-      {/* Top Menu (Orange Bar) - Visible only on Desktop (lg and up) */}
-      <div className="hidden lg:block bg-primary text-white py-3 px-4 shadow-md">
-        <div className="container mx-auto flex items-center justify-center gap-8">
-          <a href="#" className="flex items-center gap-2 font-medium bg-white text-primary px-6 py-1.5 rounded-full shadow-sm hover:bg-gray-100 transition-colors">
-            <Home className="w-4 h-4" /> Início
-          </a>
-          <a href="#" className="flex items-center gap-2 font-medium hover:text-white/80 transition-colors">
-            <Percent className="w-4 h-4" /> Promoções
-          </a>
-          {customer && (
-            <a 
-              href="#" 
-              onClick={(e) => {
-                e.preventDefault();
-                onOrdersClick?.();
-              }}
-              className="flex items-center gap-2 font-medium hover:text-white/80 transition-colors"
-            >
-              <ShoppingBag className="w-4 h-4" /> Pedidos
+      {/* Top Menu (Desktop Bar) */}
+      <div className="hidden lg:block bg-primary text-white py-4 px-4 shadow-lg">
+        <div className="container mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-8">
+            <a href="#" className="flex items-center gap-2 font-black text-xl tracking-tighter uppercase italic">
+              {tenant.name}
             </a>
-          )}
-          
+            <div className="flex items-center gap-6">
+              <a href="#" className="flex items-center gap-2 font-bold hover:text-white/80 transition-colors">
+                <Home className="w-4 h-4" /> Início
+              </a>
+              <a href="#" className="flex items-center gap-2 font-bold hover:text-white/80 transition-colors">
+                <Percent className="w-4 h-4" /> Ofertas
+              </a>
+              {customer && (
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onOrdersClick?.();
+                  }}
+                  className="flex items-center gap-2 font-bold hover:text-white/80 transition-colors"
+                >
+                  <ShoppingBag className="w-4 h-4" /> Meus Pedidos
+                </a>
+              )}
+            </div>
+          </div>
+
           <UserMenu />
         </div>
       </div>
 
-      {/* Mobile Decorative Header (Orange Bar) - Visible only on Mobile (below lg) */}
-      <div className="lg:hidden bg-primary h-24 w-full"></div>
+      {/* Mobile Header Hero Section */}
+      <div className="lg:hidden relative">
+        <div className="bg-primary h-32 w-full rounded-b-[2.5rem] shadow-inner relative overflow-hidden">
+          {/* Subtle pattern or gradient overlay */}
+          <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--opamenu-orange-light)_0%,_transparent_70%)]"></div>
+        </div>
 
-      {/* Tenant Info Section */}
-      <div className="bg-white border-b pb-8 pt-4 -mt-4 rounded-t-[2rem] relative z-10 lg:mt-0 lg:rounded-none">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center md:items-start gap-6">
-          {/* Logo - Overlapping with negative margin */}
-          <div className="relative shrink-0 -mt-16 lg:-mt-12 z-20">
+        <div className="px-4 -mt-16 relative z-20">
+          <div className="bg-white rounded-3xl p-5 shadow-xl border border-border/50">
+            <div className="flex items-start gap-4">
+              {/* Logo */}
+              <div className="shrink-0">
+                {tenant.logoUrl ? (
+                  <img
+                    src={tenant.logoUrl}
+                    alt={tenant.name}
+                    className="w-24 h-24 rounded-2xl object-cover shadow-md border-4 border-white bg-white"
+                  />
+                ) : (
+                  <div className="w-24 h-24 rounded-2xl bg-muted flex items-center justify-center text-primary font-black text-3xl shadow-md border-4 border-white">
+                    {tenant.name.substring(0, 1)}
+                  </div>
+                )}
+              </div>
+
+              {/* Quick Info */}
+              <div className="flex-1 min-w-0 pt-1">
+                <h1 className="text-2xl font-black text-foreground leading-tight tracking-tight truncate mb-1">
+                  {tenant.name}
+                </h1>
+
+                <div className="flex flex-col gap-1.5">
+                  <div className={`flex items-center gap-1.5 text-xs font-bold px-2 py-0.5 rounded-full w-fit ${status.isOpen ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>{status.text}</span>
+                  </div>
+
+                  <div className="flex items-center gap-1 text-sm text-text-secondary font-medium truncate">
+                    <MapPin className="w-3.5 h-3.5 shrink-0" />
+                    <span className="truncate">
+                      {tenant.addressNeighborhood || "Bairro não informado"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-border/50 flex items-center justify-between">
+              <Button
+                variant="ghost"
+                className="p-0 h-auto text-primary font-bold hover:bg-transparent flex items-center gap-1.5"
+                onClick={() => setIsModalOpen(true)}
+              >
+                <Settings className="w-4 h-4" />
+                Ver detalhes da loja
+              </Button>
+
+              {!customer && (
+                <Button
+                  size="sm"
+                  className="rounded-full font-bold bg-accent text-accent-foreground hover:bg-accent/90"
+                  onClick={onLoginClick}
+                >
+                  Entrar
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop Info (Old layout kept for desktop but refined) */}
+      <div className="hidden lg:block bg-white border-b py-8 relative z-10">
+        <div className="container mx-auto px-4 flex items-center gap-8">
+          <div className="relative shrink-0">
             {tenant.logoUrl ? (
-              <img 
-                src={tenant.logoUrl} 
-                alt={tenant.name} 
-                className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover shadow-lg border-4 border-white bg-white"
+              <img
+                src={tenant.logoUrl}
+                alt={tenant.name}
+                className="w-40 h-40 rounded-3xl object-cover shadow-2xl border-4 border-white bg-white"
               />
             ) : (
-              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 font-bold text-3xl shadow-lg border-4 border-white">
+              <div className="w-40 h-40 rounded-3xl bg-muted flex items-center justify-center text-primary font-black text-5xl shadow-2xl border-4 border-white">
                 {tenant.name.substring(0, 1)}
               </div>
             )}
           </div>
 
-          {/* Info */}
-          <div className="flex-1 text-center md:text-left space-y-3 pt-2">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
+          <div className="flex-1 space-y-4">
+            <h1 className="text-5xl font-black text-foreground tracking-tighter uppercase italic">
               {tenant.name}
             </h1>
-            
-            <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-sm md:text-base text-gray-600 flex-wrap justify-center md:justify-start">
-              {/* Status */}
-              <div className={`flex items-center gap-1 font-semibold ${status.isOpen ? 'text-green-600' : 'text-red-600'}`}>
-                 <Clock className="w-4 h-4" />
-                 <span>{status.text}</span>
-              </div>
-              
-              <span className="hidden md:inline text-gray-300">|</span>
 
-              <div className="flex items-center gap-1">
-                <MapPin className="w-4 h-4" />
+            <div className="flex items-center gap-6 text-base font-bold text-text-secondary">
+              <div className={`flex items-center gap-2 ${status.isOpen ? 'text-green-600' : 'text-red-600'}`}>
+                <Clock className="w-5 h-5" />
+                <span>{status.text}</span>
+              </div>
+
+              <span className="text-border">|</span>
+
+              <div className="flex items-center gap-2">
+                <MapPin className="w-5 h-5" />
                 <span>
-                    {[
-                        tenant.addressNeighborhood, 
-                        tenant.addressCity
-                    ].filter(Boolean).join(' - ') || "Localização não informada"}
+                  {[
+                    tenant.addressNeighborhood,
+                    tenant.addressCity
+                  ].filter(Boolean).join(' - ') || "Localização não informada"}
                 </span>
               </div>
 
-              <span className="hidden md:inline text-gray-300">|</span>
+              <span className="text-border">|</span>
 
-              <Button 
-                variant="link" 
-                className="p-0 h-auto text-gray-600 font-semibold hover:text-primary"
+              <Button
+                variant="link"
+                className="p-0 h-auto text-primary font-black uppercase tracking-widest text-xs hover:text-primary-hover"
                 onClick={() => setIsModalOpen(true)}
               >
                 Mais informações
@@ -215,10 +287,10 @@ const TenantHeader = ({ tenant, customer, onLoginClick, onLogoutClick, onEditPro
         </div>
       </div>
 
-      <TenantInfoModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        tenant={tenant} 
+      <TenantInfoModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        tenant={tenant}
       />
     </div>
   );
