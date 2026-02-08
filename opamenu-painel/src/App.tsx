@@ -15,6 +15,7 @@ import PlanPage from '@/features/subscription/pages/PlanPage'
 import { Toaster } from "@/components/ui/toaster"
 import OrdersPage from './features/orders/pages/OrdersPage'
 import { POSPage } from '@/features/pos/pages/POSPage'
+import EmployeesPage from '@/features/employees/pages/EmployeesPage'
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
           <Route path="coupons" element={<CouponsPage />} />
           <Route path="orders" element={<OrdersPage />} />
           <Route path="customers" element={<CustomersPage />} />
+          <Route path="employees" element={<EmployeesPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="subscription" element={<PlanPage />} />
           {/* Adicionar outras rotas filhas aqui, ex: /dashboard/menu, /dashboard/orders */}

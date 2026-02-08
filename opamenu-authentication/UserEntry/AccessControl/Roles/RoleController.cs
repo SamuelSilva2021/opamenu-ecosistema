@@ -138,7 +138,6 @@ namespace Authenticator.API.UserEntry.AccessControl.Roles
         /// Atribui permissões a um role
         /// </summary>
         /// <param name="roleId">ID do role</param>
-        /// <param name="permissionIds">Lista de IDs das permissões</param>
         /// <returns>Resultado da operação</returns>
         [HttpPost("{roleId:guid}/permissions")]
         [Authorize(Roles = "ADMIN,SUPER_ADMIN")]

@@ -48,7 +48,7 @@ const routes = [
     icon: Monitor,
     href: "/dashboard/pos",
     variant: "ghost",
-    module: "ORDER",
+    module: "PDV",
   },
   {
     title: "Grupos de Adicionais",
@@ -98,6 +98,13 @@ const routes = [
     href: "/dashboard/customers",
     variant: "ghost",
     module: "CUSTOMER",
+  },
+  {
+    title: "Colaboradores",
+    icon: Users,
+    href: "/dashboard/employees",
+    variant: "ghost",
+    module: "USER_ACCOUNT",
   },
   {
     title: "Relatórios",
