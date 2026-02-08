@@ -5,6 +5,8 @@ import type {
     CreateEmployeeRequest,
     UpdateEmployeeRequest,
     RolesApiResponse,
+    Role,
+    Module
 } from "./types";
 
 export const employeesService = {
@@ -53,12 +55,37 @@ export const employeesService = {
         const searchParams = new URLSearchParams({
             page: page.toString(),
             limit: limit.toString(),
-            ...(search && { search }),
+            ...(search && { name: search }), // Changed 'search' to 'name' to match backend
         });
 
         const response = await apiAuth.get<ApiResponse<RolesApiResponse>>(
             `/roles-painel?${searchParams}`
         );
+        return response.data;
+    },
+
+    getRoleById: async (id: string): Promise<ApiResponse<Role>> => {
+        const response = await apiAuth.get<ApiResponse<Role>>(`/roles-painel/${id}`);
+        return response.data;
+    },
+
+    createRole: async (data: any): Promise<ApiResponse<Role>> => {
+        const response = await apiAuth.post<ApiResponse<Role>>("/roles-painel", data);
+        return response.data;
+    },
+
+    updateRole: async (id: string, data: any): Promise<ApiResponse<Role>> => {
+        const response = await apiAuth.put<ApiResponse<Role>>(`/roles-painel/${id}`, data);
+        return response.data;
+    },
+
+    deleteRole: async (id: string): Promise<ApiResponse<boolean>> => {
+        const response = await apiAuth.delete<ApiResponse<boolean>>(`/roles-painel/${id}`);
+        return response.data;
+    },
+
+    getAvailableModules: async (): Promise<ApiResponse<Module[]>> => {
+        const response = await apiAuth.get<ApiResponse<Module[]>>("/roles-painel/modules");
         return response.data;
     },
 };

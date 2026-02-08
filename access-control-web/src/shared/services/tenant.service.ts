@@ -38,9 +38,10 @@ export class TenantService {
     const searchParams = new URLSearchParams(queryParams);
 
     const url = `${API_ENDPOINTS.TENANTS}?${searchParams}`;
-    const response = await httpClient.get<RawTenantResponse | PaginatedResponse<TenantSummary> | ApiResponse<PaginatedResponse<TenantSummary>>>(url);
+    const response = await httpClient.get<any>(url);
 
-    if ('items' in response && Array.isArray(response.items)) {
+    // Se a resposta tiver a estrutura direta (items, page, limit, total)
+    if (response && 'items' in response && Array.isArray(response.items)) {
       return {
         data: response.items,
         totalCount: response.total || 0,
@@ -52,10 +53,25 @@ export class TenantService {
       };
     }
 
-    if ('succeeded' in response && 'data' in response) {
+    // Se a resposta for um ApiResponse<any> (succeeded, data: { items, page, ... })
+    if (response && 'succeeded' in response && 'data' in response) {
       if (response.succeeded === false) {
         throw new Error('Falha ao buscar tenants');
       }
+
+      const paginatedData = response.data;
+      if (paginatedData && 'items' in paginatedData && Array.isArray(paginatedData.items)) {
+        return {
+          data: paginatedData.items,
+          totalCount: paginatedData.total || 0,
+          pageNumber: paginatedData.page || page,
+          pageSize: paginatedData.limit || limit,
+          totalPages: paginatedData.totalPages || 0,
+          hasPreviousPage: (paginatedData.page || page) > 1,
+          hasNextPage: (paginatedData.page || page) < (paginatedData.totalPages || 0)
+        };
+      }
+
       return response.data;
     }
 

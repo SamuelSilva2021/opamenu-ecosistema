@@ -374,7 +374,7 @@ public class AuthenticationService(
                 }).FirstOrDefault()
             };
 
-            _cache.Set(cacheKey, userInfo, TimeSpan.FromMinutes(15));
+            _cache.Set(cacheKey, userInfo, TimeSpan.FromMinutes(1));
 
             return ResponseBuilder<UserInfo>.Ok(userInfo).Build();
         }

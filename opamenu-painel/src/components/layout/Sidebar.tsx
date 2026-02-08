@@ -17,7 +17,9 @@ import {
   FolderTree,
   Ticket,
   CreditCard,
-  Monitor
+  Monitor,
+  ChevronDown,
+  ChevronRight
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -49,6 +51,24 @@ const routes = [
     href: "/dashboard/pos",
     variant: "ghost",
     module: "PDV",
+  },
+  {
+    title: "Acessos",
+    icon: Users,
+    variant: "ghost",
+    module: "ACCESS_CONTROL", // General module for checking parent visibility
+    children: [
+      {
+        title: "Colaboradores",
+        href: "/dashboard/employees",
+        module: "USER_ACCOUNT",
+      },
+      {
+        title: "Perfis",
+        href: "/dashboard/roles",
+        module: "ROLE",
+      },
+    ],
   },
   {
     title: "Grupos de Adicionais",
@@ -98,13 +118,6 @@ const routes = [
     href: "/dashboard/customers",
     variant: "ghost",
     module: "CUSTOMER",
-  },
-  {
-    title: "Colaboradores",
-    icon: Users,
-    href: "/dashboard/employees",
-    variant: "ghost",
-    module: "USER_ACCOUNT",
   },
   {
     title: "Relatórios",
@@ -167,59 +180,105 @@ function SidebarContent({ isCollapsed }: { isCollapsed?: boolean }) {
       </div>
       <ScrollArea className="flex-1 py-4">
         <nav className="grid gap-1 px-2">
-          {filteredRoutes.map((route) => (
-            <TooltipProvider key={route.href} delayDuration={0}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  {/* @ts-ignore - comingSoon property */}
-                  {route.comingSoon ? (
-                    <div
-                      className={cn(
-                        "flex flex-row items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap opacity-50 cursor-not-allowed text-zinc-400",
-                        isCollapsed && "justify-center px-2"
-                      )}
-                    >
-                      <div className="items-center justify-center shrink-0 grid grid-cols-12 w-full">
-                        <route.icon className={cn("h-5 w-5 col-span-2")} />
-                        {!isCollapsed && (
-                          <div className="col-span-10 flex items-center justify-between gap-2">
-                            <span>{route.title}</span>
-                            <Badge variant="secondary" className="text-[10px] px-1 py-0 h-5">Em breve</Badge>
-                          </div>
-                        )}
+          {filteredRoutes.map((route) => {
+            const hasChildren = route.children && route.children.length > 0;
+            const [isExpanded, setIsExpanded] = useState(false);
+
+            if (hasChildren && !isCollapsed) {
+              return (
+                <div key={route.title} className="flex flex-col gap-1">
+                  <button
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    className={cn(
+                      "flex flex-row items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap text-zinc-400 hover:text-white hover:bg-zinc-800/50",
+                    )}
+                  >
+                    <div className="items-center justify-center shrink-0 grid grid-cols-12 w-full">
+                      <route.icon className={cn("h-5 w-5 col-span-2")} />
+                      <span className="inline-block col-span-8">{route.title}</span>
+                      <div className="col-span-2 flex justify-end">
+                        {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                       </div>
                     </div>
-                  ) : (
-                    <NavLink
-                      to={route.href}
-                      end={route.href === "/dashboard"}
-                      className={({ isActive }) =>
-                        cn(
-                          "flex flex-row items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap",
-                          isActive
-                            ? "bg-primary text-primary-foreground shadow-md"
-                            : "text-zinc-400 hover:text-white hover:bg-zinc-800/50",
-                          isCollapsed && "justify-center px-2"
-                        )
-                      }
-                    >
-                      <div className="items-center justify-center shrink-0 grid grid-cols-12 w-full">
-                        <route.icon className={cn("h-5 w-5 col-span-2")} />
-                        {!isCollapsed && <span className="inline-block col-span-10">{route.title}</span>}
-                      </div>
-                    </NavLink>
+                  </button>
+                  {isExpanded && (
+                    <div className="flex flex-col gap-1 ml-9 border-l border-zinc-800 pl-2 mb-2">
+                      {route.children?.map((child) => (
+                        <NavLink
+                          key={child.href}
+                          to={child.href}
+                          className={({ isActive }) =>
+                            cn(
+                              "flex flex-row items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium transition-all duration-200 whitespace-nowrap",
+                              isActive
+                                ? "bg-primary text-primary-foreground shadow-md"
+                                : "text-zinc-400 hover:text-white hover:bg-zinc-800/50"
+                            )
+                          }
+                        >
+                          {child.title}
+                        </NavLink>
+                      ))}
+                    </div>
                   )}
-                </TooltipTrigger>
-                {isCollapsed && (
-                  <TooltipContent side="right" className="flex items-center gap-4 bg-zinc-900 text-white border-zinc-800">
-                    {route.title}
-                    {/* @ts-ignore */}
-                    {route.comingSoon && <span className="text-xs text-zinc-500">(Em breve)</span>}
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            </TooltipProvider>
-          ))}
+                </div>
+              );
+            }
+
+            return (
+              <TooltipProvider key={route.href || route.title} delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    {/* @ts-ignore - comingSoon property */}
+                    {route.comingSoon ? (
+                      <div
+                        className={cn(
+                          "flex flex-row items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap opacity-50 cursor-not-allowed text-zinc-400",
+                          isCollapsed && "justify-center px-2"
+                        )}
+                      >
+                        <div className="items-center justify-center shrink-0 grid grid-cols-12 w-full">
+                          <route.icon className={cn("h-5 w-5 col-span-2")} />
+                          {!isCollapsed && (
+                            <div className="col-span-10 flex items-center justify-between gap-2">
+                              <span>{route.title}</span>
+                              <Badge variant="secondary" className="text-[10px] px-1 py-0 h-5">Em breve</Badge>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <NavLink
+                        to={route.href!}
+                        end={route.href === "/dashboard"}
+                        className={({ isActive }) =>
+                          cn(
+                            "flex flex-row items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap",
+                            isActive
+                              ? "bg-primary text-primary-foreground shadow-md"
+                              : "text-zinc-400 hover:text-white hover:bg-zinc-800/50",
+                            isCollapsed && "justify-center px-2"
+                          )
+                        }
+                      >
+                        <div className="items-center justify-center shrink-0 grid grid-cols-12 w-full">
+                          <route.icon className={cn("h-5 w-5 col-span-2")} />
+                          {!isCollapsed && <span className="inline-block col-span-10">{route.title}</span>}
+                        </div>
+                      </NavLink>
+                    )}
+                  </TooltipTrigger>
+                  {isCollapsed && (
+                    <TooltipContent side="right" className="flex items-center gap-4 bg-zinc-900 text-white border-zinc-800">
+                      {route.title}
+                      {/* @ts-ignore */}
+                      {route.comingSoon && <span className="text-xs text-zinc-500">(Em breve)</span>}
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
+            );
+          })}
         </nav>
       </ScrollArea>
       <div className="p-4 border-t border-zinc-800">

@@ -41,5 +41,56 @@ namespace Authenticator.API.UserEntry.AccessControl.Roles
             var response = await _roleService.GetRoleByIdAsync(id);
             return BuildResponse(response);
         }
+
+        /// <summary>
+        /// Cria um novo role para o tenant atual
+        /// </summary>
+        [HttpPost]
+        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<ResponseDTO<RoleDTO>>> Create([FromBody] RoleCreateDTO dto)
+        {
+            var response = await _roleService.AddRoleAsync(dto);
+            return BuildResponse(response);
+        }
+
+        /// <summary>
+        /// Atualiza um role (restrito ao tenant)
+        /// </summary>
+        [HttpPut("{id:guid}")]
+        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<ResponseDTO<RoleDTO>>> Update([FromRoute] Guid id, [FromBody] RoleUpdateDTO dto)
+        {
+            var response = await _roleService.UpdateRoleAsync(id, dto);
+            return BuildResponse(response);
+        }
+
+        /// <summary>
+        /// Exclui um role (restrito ao tenant)
+        /// </summary>
+        [HttpDelete("{id:guid}")]
+        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<ResponseDTO<bool>>> Delete([FromRoute] Guid id)
+        {
+            var response = await _roleService.DeleteRoleAsync(id);
+            return BuildResponse(response);
+        }
+
+        /// <summary>
+        /// Lista módulos disponíveis para atribuição de permissões
+        /// </summary>
+        [HttpGet("modules")]
+        [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<ResponseDTO<IEnumerable<SimplifiedModuleDTO>>>> GetModules()
+        {
+            var response = await _roleService.GetAvailableModulesAsync();
+            return BuildResponse(response);
+        }
     }
 }

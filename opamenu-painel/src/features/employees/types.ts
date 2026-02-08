@@ -36,11 +36,26 @@ export interface UpdateEmployeeRequest {
     status?: string;
 }
 
+export interface Permission {
+    module: string;
+    actions: string[];
+}
+
 export interface Role {
     id: string;
     name: string;
     description?: string;
+    code?: string;
     isDefault: boolean;
+    isActive: boolean;
+    permissions: Permission[];
+}
+
+export interface Module {
+    key: string;
+    name: string;
+    description: string;
+    availableActions: string[];
 }
 
 export interface RolesApiResponse {
@@ -48,4 +63,17 @@ export interface RolesApiResponse {
     total: number;
     page: number;
     limit: number;
+}
+
+export interface CreateRoleRequest {
+    name: string;
+    description?: string;
+    permissions: Permission[];
+}
+
+export interface UpdateRoleRequest {
+    name: string;
+    description?: string;
+    permissions: Permission[];
+    isActive?: boolean;
 }
