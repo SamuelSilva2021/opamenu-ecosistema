@@ -70,5 +70,10 @@ export const posService = {
 
         const response = await api.post("/orders", payload);
         return response.data;
+    },
+
+    getNextOrderNumber: async () => {
+        const response = await api.get("/orders/next-number");
+        return response.data;
     }
 };

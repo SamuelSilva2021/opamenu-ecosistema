@@ -11,22 +11,32 @@ namespace OpaMenu.Infrastructure.Anotations
     /// </summary>
     public class MapPermission: Attribute
     {
+        public List<string> Modules { get; set; } = new List<string>();
+
         /// <summary>
-        /// Módulo ao qual a permissão pertence.
+        /// Módulo principal (para compatibilidade). Retorna o primeiro da lista.
         /// </summary>
-        public string Modulo { get; set; }
-        /// <summary>
-        /// Operação específica dentro do módulo.
-        /// </summary>
+        public string Modulo 
+        { 
+            get => Modules.FirstOrDefault();
+            set 
+            {
+                if (Modules.Count == 0) Modules.Add(value);
+                else Modules[0] = value;
+            }
+        }
+
         public string Operation { get; set; }
-        /// <summary>
-        /// Construtor que inicializa a permissão com o módulo e a operação.
-        /// </summary>
-        /// <param name="modulo"></param>
-        /// <param name="operation"></param>
+
         public MapPermission(string modulo, string operation)
         {
-            Modulo = modulo;
+            Modules.Add(modulo);
+            Operation = operation;
+        }
+
+        public MapPermission(string[] modules, string operation)
+        {
+            Modules.AddRange(modules);
             Operation = operation;
         }
     }

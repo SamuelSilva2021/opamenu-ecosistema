@@ -56,9 +56,15 @@ namespace OpaMenu.Infrastructure.Filters
                 return;
             }
 
-            var requiredModule = mapAttr.Modulo?.Trim();
+            var requiredModules = mapAttr.Modules.Where(m => !string.IsNullOrWhiteSpace(m)).ToList();
             var requiredOperation = mapAttr.Operation?.Trim();
-            if (string.IsNullOrWhiteSpace(requiredModule))
+            
+            if (requiredModules.Count == 0 && !string.IsNullOrWhiteSpace(mapAttr.Modulo))
+            {
+                requiredModules.Add(mapAttr.Modulo.Trim());
+            }
+
+            if (requiredModules.Count == 0)
             {
                 await next();
                 return;
@@ -70,9 +76,10 @@ namespace OpaMenu.Infrastructure.Filters
                 .ToList();
 
             var hasPermission = permissions.Any(p =>
-                string.Equals(p, requiredModule, StringComparison.OrdinalIgnoreCase) ||
-                (!string.IsNullOrEmpty(requiredOperation) &&
-                 string.Equals(p, $"{requiredModule}:{requiredOperation}", StringComparison.OrdinalIgnoreCase)));
+                requiredModules.Any(reqMod => 
+                    string.Equals(p, reqMod, StringComparison.OrdinalIgnoreCase) ||
+                    (!string.IsNullOrEmpty(requiredOperation) &&
+                     string.Equals(p, $"{reqMod}:{requiredOperation}", StringComparison.OrdinalIgnoreCase))));
 
             if (!hasPermission)
             {
@@ -145,15 +152,16 @@ namespace OpaMenu.Infrastructure.Filters
 
                         // 5. Verificar se possui a permissão necessária na lista carregada
                         hasPermission = userPermissions.Any(p =>
-                            string.Equals(p, requiredModule, StringComparison.OrdinalIgnoreCase) ||
-                            (!string.IsNullOrEmpty(requiredOperation) &&
-                             string.Equals(p, $"{requiredModule}:{requiredOperation}", StringComparison.OrdinalIgnoreCase)));
+                            requiredModules.Any(reqMod =>
+                                string.Equals(p, reqMod, StringComparison.OrdinalIgnoreCase) ||
+                                (!string.IsNullOrEmpty(requiredOperation) &&
+                                 string.Equals(p, $"{reqMod}:{requiredOperation}", StringComparison.OrdinalIgnoreCase))));
 
                         if (hasPermission)
                         {
                             _logger.LogInformation(
-                                "Permissão confirmada via Cache/Banco para usuário {UserId} no módulo {Module} operação {Operation}",
-                                userId, requiredModule, requiredOperation);
+                                "Permissão confirmada via Cache/Banco para usuário {UserId} nos módulos {Modules} operação {Operation}",
+                                userId, string.Join(",", requiredModules), requiredOperation);
                         }
                     }
                     catch (Exception ex)
@@ -177,9 +185,9 @@ namespace OpaMenu.Infrastructure.Filters
                 if (isAdminRole)
                 {
                     _logger.LogInformation(
-                        "Acesso permitido (fallback por role) para usuário {UserId} no módulo {Module} operação {Operation}",
+                        "Acesso permitido (fallback por role) para usuário {UserId} nos módulos {Modules} operação {Operation}",
                         _currentUserService.UserId,
-                        requiredModule,
+                        string.Join(",", requiredModules),
                         requiredOperation);
                     await next();
                     return;
@@ -189,9 +197,9 @@ namespace OpaMenu.Infrastructure.Filters
             if (!hasPermission)
             {
                 _logger.LogWarning(
-                    "Acesso negado para usuário {UserId} no módulo {Module} operação {Operation}",
+                    "Acesso negado para usuário {UserId} nos módulos {Modules} operação {Operation}",
                     _currentUserService.UserId,
-                    requiredModule,
+                    string.Join(",", requiredModules),
                     requiredOperation);
                 context.Result = new ObjectResult(new { message = "Acesso negado" })
                 {
@@ -201,9 +209,9 @@ namespace OpaMenu.Infrastructure.Filters
             }
 
             _logger.LogInformation(
-                "Acesso permitido para usuário {UserId} no módulo {Module} operação {Operation}",
+                "Acesso permitido para usuário {UserId} nos módulos {Modules} operação {Operation}",
                 _currentUserService.UserId,
-                requiredModule,
+                string.Join(",", requiredModules),
                 requiredOperation);
 
             await next();

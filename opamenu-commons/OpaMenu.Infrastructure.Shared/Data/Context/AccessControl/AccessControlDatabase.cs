@@ -220,7 +220,15 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context.AccessControl
                 entity.Property(e => e.Id).HasColumnName("id");
                 entity.Property(e => e.RoleId).HasColumnName("role_id");
                 entity.Property(e => e.ModuleKey).HasColumnName("module_key").HasMaxLength(100).IsRequired();
-                entity.Property(e => e.Actions).HasColumnName("actions").HasColumnType("jsonb");
+                
+                // Converter para deserializar o JSON automaticamente
+                entity.Property(e => e.Actions)
+                    .HasColumnName("actions")
+                    .HasColumnType("jsonb")
+                    .HasConversion(
+                        v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions)null),
+                        v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions)null) ?? new List<string>());
+                
                 entity.Property(e => e.IsActive).HasColumnName("is_active");
             });
 

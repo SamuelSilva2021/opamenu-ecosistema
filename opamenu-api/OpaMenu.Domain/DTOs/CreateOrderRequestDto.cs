@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
+using System.Text.Json.Serialization;
 
 namespace OpaMenu.Domain.DTOs
 {
@@ -21,6 +22,7 @@ namespace OpaMenu.Domain.DTOs
 
         public bool IsDelivery { get; set; }
 
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public EOrderType OrderType { get; set; } = EOrderType.Delivery;
 
         public Guid? TableId { get; set; }

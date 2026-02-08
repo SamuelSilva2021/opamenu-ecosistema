@@ -35,7 +35,7 @@ public class ProductsController(
     /// Get all products with optional filters
     /// </summary>
     [HttpGet]
-    [MapPermission(MODULE_PRODUCT, OPERATION_SELECT)]
+    [MapPermission([MODULE_PRODUCT, MODULE_PDV], OPERATION_SELECT)]
     public async Task<ActionResult<ApiResponse<IEnumerable<ProductDto>>>> GetProducts([FromQuery] ProductSearchRequest request)
     {
         var serviceResponse = request switch
@@ -52,7 +52,7 @@ public class ProductsController(
     /// Get products for public menu (only active products and categories)
     /// </summary>
     [HttpGet("menu")]
-    [MapPermission(MODULE_PRODUCT, OPERATION_SELECT)]
+    [MapPermission([MODULE_PRODUCT, MODULE_PDV], OPERATION_SELECT)]
     public async Task<ActionResult<ApiResponse<IEnumerable<ProductDto>>>> GetProductsForMenu()
     {
         var serviceResponse = await _productService.GetProductsForMenuAsync();
@@ -63,7 +63,7 @@ public class ProductsController(
     /// Get products by category
     /// </summary>
     [HttpGet("by-category/{categoryId}")]
-    [MapPermission(MODULE_PRODUCT, OPERATION_SELECT)]
+    [MapPermission([MODULE_PRODUCT, MODULE_PDV], OPERATION_SELECT)]
     public async Task<ActionResult<ApiResponse<IEnumerable<ProductDto>>>> GetProductsByCategory(Guid categoryId)
     {
         var serviceResponse = await _productService.GetProductsByCategoryAsync(categoryId);
@@ -75,7 +75,7 @@ public class ProductsController(
     /// Get specific product by ID
     /// </summary>
     [HttpGet("{id}")]
-    [MapPermission(MODULE_PRODUCT, OPERATION_SELECT)]
+    [MapPermission([MODULE_PRODUCT, MODULE_PDV], OPERATION_SELECT)]
     public async Task<ActionResult<ApiResponse<ProductDto>>> GetProduct(Guid id)
     {
         var serviceResponse = await _productService.GetProductByIdAsync(id);
@@ -159,7 +159,7 @@ public class ProductsController(
     /// Obter todos os produtos com seus grupos de adicionais
     /// </summary>
     [HttpGet("with-aditionals")]
-    [MapPermission(MODULE_PRODUCT, OPERATION_SELECT)]
+    [MapPermission([MODULE_PRODUCT, MODULE_PDV], OPERATION_SELECT)]
     public async Task<ActionResult<IEnumerable<ProductWithAditionalsResponseDto>>> GetAllProductsWithAditionals()
     {
         var serviceResponse = await _productAditionalGroupService.GetAllProductsWithAditionalsAsync();
@@ -170,7 +170,7 @@ public class ProductsController(
     /// Obter produtos que usam um grupo de adicionais especÃ­fico
     /// </summary>
     [HttpGet("aditional-groups/{aditionalGroupId:int}/products")]
-    [MapPermission(MODULE_PRODUCT, OPERATION_SELECT)]
+    [MapPermission([MODULE_PRODUCT, MODULE_PDV], OPERATION_SELECT)]
     public async Task<ActionResult<ApiResponse<IEnumerable<ProductDto>>>> GetProductsWithAditionalGroup(Guid aditionalGroupId)
     {
         var products = await _productAditionalGroupService.GetProductsWithAditionalGroupAsync(aditionalGroupId);

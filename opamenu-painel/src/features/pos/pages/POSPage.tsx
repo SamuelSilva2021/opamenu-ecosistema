@@ -4,7 +4,7 @@ import { CartSidebar } from "../components/CartSidebar";
 
 export function POSPage() {
   return (
-    <PermissionGate module="POS" operation="READ" fallback={
+    <PermissionGate module="PDV" operation="READ" fallback={
       <div className="flex h-[400px] items-center justify-center">
         <p className="text-muted-foreground">Você não tem permissão para acessar o PDV.</p>
       </div>

@@ -32,7 +32,7 @@ public class CategoriesController : FoodBaseController
     /// Obter todas as categorias ordenadas por DisplayOrder
     /// </summary>
     [HttpGet]
-    [MapPermission(MODULE_CATEGORY, OPERATION_SELECT)]
+    [MapPermission(new[] { MODULE_CATEGORY, MODULE_PDV }, OPERATION_SELECT)]
     public async Task<ActionResult<ResponseDTO<IEnumerable<CategoryResponseDto>>>> GetCategories()
     {
         var response = await _categoryService.GetAllCategoriesAsync();
@@ -43,7 +43,7 @@ public class CategoriesController : FoodBaseController
     /// Obter apenas categorias ativas
     /// </summary>
     [HttpGet("active")]
-    [MapPermission(MODULE_CATEGORY, OPERATION_SELECT)]
+    [MapPermission(new[] { MODULE_CATEGORY, MODULE_PDV }, OPERATION_SELECT)]
     public async Task<ActionResult<ResponseDTO<IEnumerable<CategoryResponseDto>>>> GetActiveCategories()
     {
         var response = await _categoryService.GetActiveCategoriesAsync();
@@ -54,7 +54,7 @@ public class CategoriesController : FoodBaseController
     /// Obter categoria por ID
     /// </summary>
     [HttpGet("{id}")]
-    [MapPermission(MODULE_CATEGORY, OPERATION_SELECT)]
+    [MapPermission(new[] { MODULE_CATEGORY, MODULE_PDV }, OPERATION_SELECT)]
     public async Task<ActionResult<ResponseDTO<CategoryResponseDto>>> GetCategory(Guid id)
     {
         var response = await _categoryService.GetCategoryByIdAsync(id);

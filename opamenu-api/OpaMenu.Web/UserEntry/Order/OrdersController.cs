@@ -21,10 +21,10 @@ public class OrdersController(IOrderService orderService, ILogger<OrdersControll
     private readonly ILogger<OrdersController> _logger = logger;
 
     /// <summary>
-    /// ObtÃ©m todos os pedidos (com paginaÃ§Ã£o opcional)
+    /// Obtém uma lista de pedidos, com suporte para paginação e filtragem por data
     /// </summary>
     [HttpGet]
-    [MapPermission(ORDER, OPERATION_SELECT)]
+    [MapPermission([ORDER, MODULE_PDV], OPERATION_SELECT)]
     public async Task<ActionResult<ApiResponse<IEnumerable<OrderResponseDto>>>> GetOrders([FromQuery] int? page = null, [FromQuery] int? pageSize = null, [FromQuery] DateTime? date = null)
     {
         if (page.HasValue && pageSize.HasValue)
@@ -38,10 +38,21 @@ public class OrdersController(IOrderService orderService, ILogger<OrdersControll
     }
 
     /// <summary>
-    /// ObtÃ©m um pedido especÃ­fico por ID
+    /// Obtém o próximo número de pedido disponível
+    /// </summary>
+    [HttpGet("next-number")]
+    [MapPermission([ORDER, MODULE_PDV], OPERATION_SELECT)]
+    public async Task<ActionResult<ApiResponse<int>>> GetNextOrderNumber()
+    {
+        var result = await _orderService.GetNextOrderNumberAsync();
+        return BuildResponse(result);
+    }
+
+    /// <summary>
+    /// Obtém um pedido por ID
     /// </summary>
     [HttpGet("{id}")]
-    [MapPermission(ORDER, OPERATION_SELECT)]
+    [MapPermission([ORDER, MODULE_PDV], OPERATION_SELECT)]
     public async Task<ActionResult<ApiResponse<OrderResponseDto>>> GetOrder(Guid id)
     {
         var result = await _orderService.GetOrderByIdAsync(id);
@@ -52,7 +63,7 @@ public class OrdersController(IOrderService orderService, ILogger<OrdersControll
     /// Cria um novo pedido
     /// </summary>
     [HttpPost]
-    [MapPermission(ORDER, OPERATION_INSERT)]
+    [MapPermission([ORDER, MODULE_PDV], OPERATION_INSERT)]
     public async Task<ActionResult<ApiResponse<OrderResponseDto>>> CreateOrder(CreateOrderRequestDto request)
     {
         var result = await _orderService.CreateOrderDeliveryAsync(request);

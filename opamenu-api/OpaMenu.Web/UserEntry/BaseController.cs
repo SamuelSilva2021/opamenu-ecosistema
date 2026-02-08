@@ -201,6 +201,7 @@ namespace OpaMenu.Web.UserEntry
         public const string MODULE_SETTINGS = "SETTINGS";
         public const string MODULE_FILES = "FILES";
         public const string MODULE_PAYMENT = "PAYMENT";
+        public const string MODULE_PDV = "PDV";
         #endregion
     }
 }

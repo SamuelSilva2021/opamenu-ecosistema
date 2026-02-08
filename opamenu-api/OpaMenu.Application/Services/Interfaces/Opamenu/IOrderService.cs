@@ -68,6 +68,10 @@ namespace OpaMenu.Application.Services.Interfaces.Opamenu
         /// Fecha a conta da mesa (solicita fechamento)
         /// </summary>
         Task<ResponseDTO<OrderResponseDto>> CloseTableAccountAsync(Guid tableId);
+        /// <summary>
+        /// Obtém o próximo número de pedido disponível
+        /// </summary>
+        Task<ResponseDTO<int>> GetNextOrderNumberAsync();
     }
 }
 

@@ -349,9 +349,9 @@ namespace Authenticator.API.Core.Application.Implementation.MultiTenant
                 var adminGroup = new AccessGroupEntity
                 {
                     Id = Guid.NewGuid(),
-                    Name = $"Administradores - {createdTenant.Name}",
-                    Code = $"GRP_ADMIN_{createdTenant.Slug.ToUpper().Replace("-", "_")}", 
-                    Description = "Grupo de administradores do tenant com acesso total aos módulos contratados",
+                    Name = $"Grupo - {createdTenant.Name}",
+                    Code = $"GRP_{createdTenant.Slug.ToUpper().Replace("-", "_")}", 
+                    Description = $"Grupo de acessos do cliente {createdTenant.Name}",
                     TenantId = createdTenant.Id,
                     GroupTypeId = tenantGroupType.Id,
                     IsActive = true,
@@ -393,7 +393,7 @@ namespace Authenticator.API.Core.Application.Implementation.MultiTenant
 
         private RegisterTenantResponseDTO GenerateSuccessResponseAsync(TenantEntity createdTenant, UserAccountDTO userAdmin, CreateTenantDTO tenantDto)
         {
-            var accessToken = _jwtTokenService.GenerateAccessToken(userAdmin, createdTenant, new List<string> { "Admin" });
+            var accessToken = _jwtTokenService.GenerateAccessToken(userAdmin, createdTenant, ["Admin"]);
             var refreshToken = _jwtTokenService.GenerateRefreshToken();
             var expiresIn = _jwtTokenService.GetTokenExpirationTime();
 
@@ -423,7 +423,6 @@ namespace Authenticator.API.Core.Application.Implementation.MultiTenant
         }
         private async Task<string> GenerateUniqueSlugAsync(string companyName)
         {
-            // Remover caracteres especiais e normalizar
             var slug = Regex.Replace(companyName.ToLower(), @"[^a-z0-9\s-]", "")
                            .Trim()
                            .Replace(' ', '_')

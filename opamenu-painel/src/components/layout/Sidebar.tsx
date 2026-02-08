@@ -53,24 +53,6 @@ const routes = [
     module: "PDV",
   },
   {
-    title: "Acessos",
-    icon: Users,
-    variant: "ghost",
-    module: "ACCESS_CONTROL", // General module for checking parent visibility
-    children: [
-      {
-        title: "Colaboradores",
-        href: "/dashboard/employees",
-        module: "USER_ACCOUNT",
-      },
-      {
-        title: "Perfis",
-        href: "/dashboard/roles",
-        module: "ROLE",
-      },
-    ],
-  },
-  {
     title: "Grupos de Adicionais",
     icon: Tags,
     href: "/dashboard/aditional-groups",
@@ -133,6 +115,24 @@ const routes = [
     href: "/dashboard/subscription",
     variant: "ghost",
     module: "SUBSCRIPTION",
+  },
+    {
+    title: "Acessos",
+    icon: Users,
+    variant: "ghost",
+    module: "ACCESS_CONTROL", // General module for checking parent visibility
+    children: [
+      {
+        title: "Colaboradores",
+        href: "/dashboard/employees",
+        module: "USER_ACCOUNT",
+      },
+      {
+        title: "Perfis",
+        href: "/dashboard/roles",
+        module: "ROLE",
+      },
+    ],
   },
   {
     title: "Configurações",

@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OpaMenu.Application.DTOs;
 using OpaMenu.Application.Services.Interfaces.Opamenu;
@@ -32,7 +33,8 @@ public class OrderService(
     ITenantRepository tenantRepository,
     ITableRepository tableRepository,
     ILoyaltyService loyaltyService,
-    IMapper mapper
+    IMapper mapper,
+    OpaMenu.Infrastructure.Shared.Data.Context.Opamenu.OpamenuDbContext context
     ) : IOrderService
 {
     private readonly IOrderRepository _orderRepository = orderRepository;
@@ -48,6 +50,7 @@ public class OrderService(
     private readonly ILoyaltyService _loyaltyService = loyaltyService;
     private readonly ILogger<OrderService> _logger = logger;
     private readonly IMapper _mapper = mapper;
+    private readonly OpaMenu.Infrastructure.Shared.Data.Context.Opamenu.OpamenuDbContext _context = context;
 
     /// <summary>
     /// ObtÃ©m todos os pedidos
@@ -276,91 +279,103 @@ public class OrderService(
             order.DeliveryFee = orderType == EOrderType.Delivery ? (requestDto.DeliveryFee ?? 0.0m) : 0.0m;
             
             // Iniciar transação para garantir atomicidade entre atualização do cupom e criação do pedido
-            using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeAsyncFlowOption.Enabled))
+            // Usando ExecutionStrategy para suportar retries configurados no EF Core
+            var strategy = _context.Database.CreateExecutionStrategy();
+            
+            return await strategy.ExecuteAsync(async () =>
             {
-                // Processar cupom
-                if (!string.IsNullOrEmpty(requestDto.CouponCode))
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    var coupon = await _couponRepository.GetByCodeAsync(requestDto.CouponCode, tenantId);
-                    if (coupon != null && coupon.IsActive)
+                    // Processar cupom
+                    if (!string.IsNullOrEmpty(requestDto.CouponCode))
                     {
-                        // Validar regras do cupom
-                        var now = DateTime.UtcNow;
-                        bool isValid = true;
-                        
-                        if (coupon.StartDate.HasValue && coupon.StartDate > now) isValid = false;
-                        if (coupon.ExpirationDate.HasValue && coupon.ExpirationDate < now) isValid = false;
-                        if (coupon.UsageLimit.HasValue && coupon.UsageCount >= coupon.UsageLimit) isValid = false;
-                        if (coupon.MinOrderValue.HasValue && order.Subtotal < coupon.MinOrderValue) isValid = false;
-
-                        if (isValid)
+                        var coupon = await _couponRepository.GetByCodeAsync(requestDto.CouponCode, tenantId);
+                        if (coupon != null && coupon.IsActive)
                         {
-                            decimal discount = 0;
-                            if (coupon.DiscountType == EDiscountType.Porcentagem)
-                            {
-                                discount = order.Subtotal * (coupon.DiscountValue / 100);
-                                if (coupon.MaxDiscountValue.HasValue && discount > coupon.MaxDiscountValue.Value)
-                                {
-                                    discount = coupon.MaxDiscountValue.Value;
-                                }
-                            }
-                            else
-                            {
-                                discount = coupon.DiscountValue;
-                            }
-
-                            // Garantir que o desconto não seja maior que o subtotal
-                            if (discount > order.Subtotal) discount = order.Subtotal;
-
-                            order.DiscountAmount = discount;
-                            order.CouponCode = coupon.Code;
+                            // Validar regras do cupom
+                            var now = DateTime.UtcNow;
+                            bool isValid = true;
                             
-                            // Atualizar uso do cupom
-                            coupon.UsageCount++;
-                            await _couponRepository.UpdateAsync(coupon);
+                            if (coupon.StartDate.HasValue && coupon.StartDate > now) isValid = false;
+                            if (coupon.ExpirationDate.HasValue && coupon.ExpirationDate < now) isValid = false;
+                            if (coupon.UsageLimit.HasValue && coupon.UsageCount >= coupon.UsageLimit) isValid = false;
+                            if (coupon.MinOrderValue.HasValue && order.Subtotal < coupon.MinOrderValue) isValid = false;
+
+                            if (isValid)
+                            {
+                                decimal discount = 0;
+                                if (coupon.DiscountType == EDiscountType.Porcentagem)
+                                {
+                                    discount = order.Subtotal * (coupon.DiscountValue / 100);
+                                    if (coupon.MaxDiscountValue.HasValue && discount > coupon.MaxDiscountValue.Value)
+                                    {
+                                        discount = coupon.MaxDiscountValue.Value;
+                                    }
+                                }
+                                else
+                                {
+                                    discount = coupon.DiscountValue;
+                                }
+
+                                // Garantir que o desconto não seja maior que o subtotal
+                                if (discount > order.Subtotal) discount = order.Subtotal;
+
+                                order.DiscountAmount = discount;
+                                order.CouponCode = coupon.Code;
+                                
+                                // Atualizar uso do cupom
+                                coupon.UsageCount++;
+                                await _couponRepository.UpdateAsync(coupon);
+                            }
                         }
                     }
+
+                    order.Total = order.Subtotal + order.DeliveryFee - order.DiscountAmount;
+                    if (order.Total < 0) order.Total = 0;
+
+                    // Definir número do pedido (sequencial diário)
+                    var lastOrderNumber = await _orderRepository.GetLastOrderNumberAsync(tenantId, DateTime.UtcNow);
+                    order.OrderNumber = (lastOrderNumber ?? 0) + 1;
+
+                    var createdOrder = await _orderRepository.AddAsync(order);
+                    var orderDto = _mapper.Map<OrderResponseDto>(createdOrder);
+
+                    _logger.LogInformation("Pedido {OrderId} criado com sucesso", createdOrder.Id);
+
+                    // Commit da transação
+                    await transaction.CommitAsync();
+
+                    // Processar pontos de fidelidade (fora da transação principal para não bloquear, mas idealmente deveria ser resiliente)
+                    try
+                    {
+                        await _loyaltyService.ProcessOrderPointsAsync(createdOrder.Id, tenantId);
+                    }
+                    catch (Exception loyaltyEx)
+                    {
+                        _logger.LogWarning(loyaltyEx, "Erro ao processar pontos de fidelidade para o pedido {OrderId}", createdOrder.Id);
+                        // Não falhar o pedido se o programa de fidelidade falhar
+                    }
+                    
+                    // Enviar notificação de novo pedido para administradores
+                    try
+                    {
+                        await _notificationService.NotifyNewOrderAsync(orderDto);
+                    }
+                    catch (Exception notificationEx)
+                    {
+                        _logger.LogWarning(notificationEx, "Erro ao enviar notificação de novo pedido {OrderId}", createdOrder.Id);
+                        // Não retornar erro para o cliente se apenas a notificação falhar, pois o pedido foi criado
+                    }
+
+                    return StaticResponseBuilder<OrderResponseDto>.BuildOk(orderDto);
                 }
-
-                order.Total = order.Subtotal + order.DeliveryFee - order.DiscountAmount;
-                if (order.Total < 0) order.Total = 0;
-
-                // Definir número do pedido (sequencial diário)
-                var lastOrderNumber = await _orderRepository.GetLastOrderNumberAsync(tenantId, DateTime.UtcNow);
-                order.OrderNumber = (lastOrderNumber ?? 0) + 1;
-
-                var createdOrder = await _orderRepository.AddAsync(order);
-                var orderDto = _mapper.Map<OrderResponseDto>(createdOrder);
-
-                _logger.LogInformation("Pedido {OrderId} criado com sucesso", createdOrder.Id);
-
-                // Commit da transação
-                scope.Complete();
-
-                // Processar pontos de fidelidade (fora da transação principal para não bloquear, mas idealmente deveria ser resiliente)
-                try
+                catch (Exception)
                 {
-                    await _loyaltyService.ProcessOrderPointsAsync(createdOrder.Id, tenantId);
+                    await transaction.RollbackAsync();
+                    throw;
                 }
-                catch (Exception loyaltyEx)
-                {
-                    _logger.LogWarning(loyaltyEx, "Erro ao processar pontos de fidelidade para o pedido {OrderId}", createdOrder.Id);
-                    // Não falhar o pedido se o programa de fidelidade falhar
-                }
-                
-                // Enviar notificação de novo pedido para administradores
-                try
-                {
-                    await _notificationService.NotifyNewOrderAsync(orderDto);
-                }
-                catch (Exception notificationEx)
-                {
-                    _logger.LogWarning(notificationEx, "Erro ao enviar notificação de novo pedido {OrderId}", createdOrder.Id);
-                    // Não retornar erro para o cliente se apenas a notificação falhar, pois o pedido foi criado
-                }
-
-                return StaticResponseBuilder<OrderResponseDto>.BuildOk(orderDto);
-            }
+            });
         }
         catch (Exception ex)
         {
@@ -1195,6 +1210,25 @@ public class OrderService(
         }
 
     }
+
+    public async Task<ResponseDTO<int>> GetNextOrderNumberAsync()
+    {
+        try
+        {
+            var tenantId = _currentUserService.GetTenantGuid();
+            if (!tenantId.HasValue)
+                return StaticResponseBuilder<int>.BuildError("Estabelecimento não identificado.");
+
+            var lastOrderNumber = await _orderRepository.GetLastOrderNumberAsync(tenantId.Value, DateTime.UtcNow);
+            return StaticResponseBuilder<int>.BuildOk((lastOrderNumber ?? 0) + 1);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao obter próximo número de pedido");
+            return StaticResponseBuilder<int>.BuildError("Erro interno do servidor");
+        }
+    }
+
     private async Task<TenantCustomerEntity> CreateTenantCustomer(Guid tenantId, Guid customerId)
     {
         try
