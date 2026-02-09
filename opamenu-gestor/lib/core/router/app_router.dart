@@ -11,6 +11,9 @@ import '../../features/tables/presentation/pages/tables_page.dart';
 import '../../features/products/presentation/pages/catalog_page.dart';
 import 'package:opamenu_gestor/core/presentation/providers/permissions_provider.dart';
 import 'package:opamenu_gestor/core/presentation/pages/placeholder_page.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opamenu_gestor/features/auth/presentation/providers/auth_notifier.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 part 'app_router.g.dart';
 
@@ -19,32 +22,45 @@ final shellNavigatorKey = GlobalKey<NavigatorState>();
 
 @riverpod
 GoRouter goRouter(Ref ref) {
-  final permissionsAsync = ref.watch(permissionsProvider);
-
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/login',
-    redirect: (context, state) {
-      final permissions = permissionsAsync.value ?? [];
+    refreshListenable: _RiverpodListenable(ref, authProvider),
+    redirect: (context, state) async {
+      final authState = ref.read(authProvider);
+      final permissionsAsync = ref.read(permissionsProvider);
       final path = state.uri.path;
+      final isLoggingIn = path == '/login';
 
-      // Allow login access
-      if (path == '/login') return null;
+      if (authState.isLoading) return null;
 
-      // Check if user has permission for the module
-      final requiredModule = _routePermissions.entries
-          .where((e) => path.startsWith(e.key))
-          .map((e) => e.value)
-          .firstOrNull;
+      const storage = FlutterSecureStorage();
+      final token = await storage.read(key: 'access_token');
+      final isAuthenticated = token != null;
 
-      if (requiredModule != null) {
-        final hasAccess = permissions.any((p) => p.module == requiredModule);
-        if (!hasAccess && permissions.isNotEmpty) {
-          return '/dashboard';
-        }
+      if (!isAuthenticated) {
+        return isLoggingIn ? null : '/login';
       }
 
-      return null;
+      if (isLoggingIn) return '/pos';
+
+      return permissionsAsync.maybeWhen(
+        data: (permissions) {
+          final requiredModule = _routePermissions.entries
+              .where((e) => path.startsWith(e.key))
+              .map((e) => e.value)
+              .firstOrNull;
+
+          if (requiredModule != null) {
+            final hasAccess = permissions.any((p) => p.module == requiredModule);
+            if (!hasAccess && permissions.isNotEmpty) {
+              return '/dashboard';
+            }
+          }
+          return null;
+        },
+        orElse: () => null,
+      );
     },
     routes: [
       GoRoute(
@@ -121,6 +137,13 @@ GoRouter goRouter(Ref ref) {
       ),
     ],
   );
+}
+
+/// Helper class to convert a Riverpod provider into a Listenable for GoRouter
+class _RiverpodListenable extends ChangeNotifier {
+  _RiverpodListenable(Ref ref, ProviderListenable locator) {
+    ref.listen(locator, (_, __) => notifyListeners());
+  }
 }
 
 const _routePermissions = {

@@ -48,8 +48,6 @@ class AuthNotifier extends _$AuthNotifier {
           },
           (userInfo) async {
             final permissions = _flattenPermissions(userInfo);
-            print('Permissões mapeadas: $permissions');
-            
             await _storage.write(
               key: 'user_permissions', 
               value: jsonEncode(permissions),
