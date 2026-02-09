@@ -36,20 +36,24 @@ class TablesPage extends ConsumerWidget {
                     color: AppColors.textPrimary,
                   ),
                 ),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => const TableFormDialog(),
-                    );
-                  },
-                  icon: const Icon(Icons.add),
-                  label: const Text('Nova Mesa'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(0, 48),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                PermissionGate(
+                  module: 'TABLE',
+                  operation: 'CREATE',
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => const TableFormDialog(),
+                      );
+                    },
+                    icon: const Icon(Icons.add),
+                    label: const Text('Nova Mesa'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(0, 48),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    ),
                   ),
                 ),
               ],
@@ -130,29 +134,37 @@ class TablesPage extends ConsumerWidget {
                                       child: Row(
                                         mainAxisAlignment: MainAxisAlignment.end,
                                         children: [
-                                          IconButton(
-                                            icon: const Icon(Icons.restaurant_menu, color: Colors.purple),
-                                            tooltip: 'Pedidos',
-                                            onPressed: () async {
-                                              // Set Active Table
-                                              ref.read(activeTableProvider.notifier).setTableId(table.id);
-                                              
-                                              // Check active order
-                                              final order = await ref.read(tablesControllerProvider.notifier).checkActiveOrder(table.id);
-                                              ref.read(activeOrderProvider.notifier).setOrder(order);
-                                              
-                                              // Clear cart
-                                              ref.read(cartProvider.notifier).clearCart();
-                                              
-                                              if (context.mounted) {
-                                                context.go('/pos');
-                                              }
-                                            },
+                                          PermissionGate(
+                                            module: 'POS',
+                                            operation: 'ACCESS',
+                                            child: IconButton(
+                                              icon: const Icon(Icons.restaurant_menu, color: Colors.purple),
+                                              tooltip: 'Pedidos',
+                                              onPressed: () async {
+                                                // Set Active Table
+                                                ref.read(activeTableProvider.notifier).setTableId(table.id);
+                                                
+                                                // Check active order
+                                                final order = await ref.read(tablesControllerProvider.notifier).checkActiveOrder(table.id);
+                                                ref.read(activeOrderProvider.notifier).setOrder(order);
+                                                
+                                                // Clear cart
+                                                ref.read(cartProvider.notifier).clearCart();
+                                                
+                                                if (context.mounted) {
+                                                  context.go('/pos');
+                                                }
+                                              },
+                                            ),
                                           ),
-                                          IconButton(
-                                            icon: const Icon(Icons.qr_code, color: Colors.blue),
-                                            tooltip: 'Gerar QR Code',
-                                            onPressed: () => _showQrCode(context, ref, table.id, table.name),
+                                          PermissionGate(
+                                            module: 'TABLE',
+                                            operation: 'UPDATE',
+                                            child: IconButton(
+                                              icon: const Icon(Icons.qr_code, color: Colors.blue),
+                                              tooltip: 'Gerar QR Code',
+                                              onPressed: () => _showQrCode(context, ref, table.id, table.name),
+                                            ),
                                           ),
                                           PermissionGate(
                                             module: 'TABLE',

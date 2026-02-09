@@ -41,7 +41,7 @@ final class PrinterServiceProvider
   }
 }
 
-String _$printerServiceHash() => r'459cabc9650666bd9be9f3032fe842008e4354cc';
+String _$printerServiceHash() => r'60283bb678495b968e4e8e594a68ba082aa8d3ec';
 
 abstract class _$PrinterService extends $Notifier<void> {
   void build();

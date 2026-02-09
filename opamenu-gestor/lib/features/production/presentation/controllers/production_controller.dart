@@ -15,11 +15,15 @@ class ProductionOrders extends _$ProductionOrders {
   Future<List<OrderResponseDto>> _fetchProductionOrders() async {
     final repository = ref.read(ordersRepositoryProvider);
     
-    // Fetch preparing orders (Pending orders move to preparing when accepted)
-    final orders = await repository.getOrdersByStatus(OrderStatus.preparing.index);
+    // Fetch active orders (Pending, Preparing, Ready)
+    final pending = await repository.getOrdersByStatus(OrderStatus.pending.index);
+    final preparing = await repository.getOrdersByStatus(OrderStatus.preparing.index);
+    final ready = await repository.getOrdersByStatus(OrderStatus.ready.index);
     
-    orders.sort((a, b) => a.createdAt.compareTo(b.createdAt));
-    return orders;
+    final allOrders = [...pending, ...preparing, ...ready];
+    allOrders.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    
+    return allOrders;
   }
 
   Future<void> refresh() async {
@@ -31,7 +35,9 @@ class ProductionOrders extends _$ProductionOrders {
     final repository = ref.read(ordersRepositoryProvider);
     OrderStatus nextStatus;
 
-    if (order.status == OrderStatus.preparing) {
+    if (order.status == OrderStatus.pending) {
+      nextStatus = OrderStatus.preparing;
+    } else if (order.status == OrderStatus.preparing) {
       nextStatus = OrderStatus.ready;
     } else if (order.status == OrderStatus.ready && order.isDelivery) {
       nextStatus = OrderStatus.outForDelivery;

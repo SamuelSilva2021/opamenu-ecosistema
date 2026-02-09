@@ -8,6 +8,7 @@ import '../../../../core/services/printer_service.dart';
 import '../../../../core/utils/receipt_generator.dart';
 import 'package:esc_pos_utils_plus/esc_pos_utils.dart' as esc;
 import '../controllers/production_controller.dart';
+import '../../../../features/settings/presentation/providers/settings_notifier.dart';
 
 class ProductionCard extends ConsumerWidget {
   final OrderResponseDto order;
@@ -22,8 +23,6 @@ class ProductionCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final waitingTime = DateTime.now().difference(order.createdAt);
-    final isLongWaiting = waitingTime.inMinutes > 15;
 
     return Card(
       elevation: 4,
@@ -51,6 +50,10 @@ class ProductionCard extends ConsumerWidget {
                       tooltip: 'Imprimir Pedido',
                       onPressed: () async {
                         try {
+                          // Get Printer Settings
+                          final settings = await ref.read(settingsProvider.future);
+                          final printerIp = settings['kitchen'] ?? '192.168.1.100';
+
                           final profile = await esc.CapabilityProfile.load();
                           final bytes = await ReceiptGenerator.generateOrderReceipt(
                             order: order,
@@ -61,7 +64,7 @@ class ProductionCard extends ConsumerWidget {
                           final printerService = ref.read(printerServiceProvider.notifier);
                           final device = PrinterDeviceInfo(
                             name: 'Impressora Cozinha',
-                            address: '192.168.1.100',
+                            address: printerIp,
                             type: PrinterConnectionType.network,
                           );
 
@@ -86,20 +89,7 @@ class ProductionCard extends ConsumerWidget {
                     ),
                   ],
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: isLongWaiting ? Colors.red.withOpacity(0.1) : Colors.green.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    '${waitingTime.inMinutes} min',
-                    style: TextStyle(
-                      color: isLongWaiting ? Colors.red : Colors.green,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+                _OrderTimer(createdAt: order.createdAt),
               ],
             ),
             const SizedBox(height: 8),
@@ -185,23 +175,78 @@ class ProductionCard extends ConsumerWidget {
 
   Color _getButtonColor(OrderStatus status) {
     switch (status) {
-      case OrderStatus.preparing:
-        return Colors.green;
-      case OrderStatus.ready:
-        return AppColors.primary;
-      case OrderStatus.outForDelivery:
+      case OrderStatus.pending:
         return Colors.orange;
+      case OrderStatus.preparing:
+        return Colors.blue;
+      case OrderStatus.ready:
+        return Colors.green;
+      case OrderStatus.outForDelivery:
+        return Colors.purple;
       default:
         return AppColors.primary;
     }
   }
 
   String _getButtonText(OrderStatus status, bool isDelivery) {
+    if (status == OrderStatus.pending) return 'INICIAR PREPARO';
     if (status == OrderStatus.preparing) return 'PRONTO';
     if (status == OrderStatus.ready) {
       return isDelivery ? 'SAIU P/ ENTREGA' : 'ENTREGUE';
     }
     if (status == OrderStatus.outForDelivery) return 'ENTREGUE';
     return 'PRÓXIMO';
+  }
+}
+
+class _OrderTimer extends StatefulWidget {
+  final DateTime createdAt;
+
+  const _OrderTimer({required this.createdAt});
+
+  @override
+  State<_OrderTimer> createState() => _OrderTimerState();
+}
+
+class _OrderTimerState extends State<_OrderTimer> {
+  late Duration _waitingTime;
+  late bool _isLongWaiting;
+  
+  @override
+  void initState() {
+    super.initState();
+    _updateTime();
+    // Update every minute
+    Future.doWhile(() async {
+      if (!mounted) return false;
+      await Future.delayed(const Duration(seconds: 60));
+      if (mounted) {
+        setState(() => _updateTime());
+      }
+      return mounted;
+    });
+  }
+
+  void _updateTime() {
+    _waitingTime = DateTime.now().difference(widget.createdAt);
+    _isLongWaiting = _waitingTime.inMinutes > 15;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: _isLongWaiting ? Colors.red.withOpacity(0.1) : Colors.green.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        '${_waitingTime.inMinutes} min',
+        style: TextStyle(
+          color: _isLongWaiting ? Colors.red : Colors.green,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
   }
 }

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:opamenu_gestor/core/presentation/layouts/main_layout.dart';
+import 'package:opamenu_gestor/core/presentation/pages/placeholder_page.dart';
+import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/pos/presentation/pages/pos_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
@@ -11,7 +13,7 @@ import '../../features/tables/presentation/pages/tables_page.dart';
 import '../../features/products/presentation/pages/catalog_page.dart';
 import '../../features/production/presentation/pages/production_page.dart';
 import 'package:opamenu_gestor/core/presentation/providers/permissions_provider.dart';
-import 'package:opamenu_gestor/core/presentation/pages/placeholder_page.dart';
+import '../../features/users/presentation/pages/users_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opamenu_gestor/features/auth/presentation/providers/auth_notifier.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -130,7 +132,7 @@ GoRouter goRouter(Ref ref) {
           GoRoute(
             path: '/users',
             pageBuilder: (context, state) => const NoTransitionPage(
-              child: PlaceholderPage(title: 'Usuários'),
+              child: UsersPage(),
             ),
           ),
           GoRoute(

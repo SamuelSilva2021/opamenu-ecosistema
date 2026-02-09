@@ -6,6 +6,8 @@ import '../../domain/models/order_response_dto.dart';
 import '../../domain/models/order_item_response_dto.dart';
 import 'order_receipt_dialog.dart';
 
+import 'package:opamenu_gestor/core/presentation/widgets/permission_gate.dart';
+
 class OrderDetails extends StatelessWidget {
   final OrderResponseDto order;
 
@@ -136,26 +138,30 @@ class OrderDetails extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   height: 56,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => OrderReceiptDialog(order: order),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  child: PermissionGate(
+                    module: 'ORDER',
+                    operation: 'PRINT',
+                    child: ElevatedButton(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => OrderReceiptDialog(order: order),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
                       ),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      'Imprimir Recibo',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                      child: const Text(
+                        'Imprimir Recibo',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
