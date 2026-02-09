@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/network/api_client.dart';
 import '../../domain/models/create_order_request_dto.dart';
 import '../../domain/models/order_response_dto.dart';
+import '../../domain/models/update_order_status_request_dto.dart';
 import '../models/paged_response_model.dart';
 import 'dart:developer' as developer;
 
@@ -110,6 +111,39 @@ class OrdersRemoteDataSource {
       return OrderResponseDto.fromJson(response.data);
     } catch (e, stack) {
       developer.log('Error adding items to order', error: e, stackTrace: stack, name: 'OrdersRemoteDataSource');
+      rethrow;
+    }
+  }
+
+  Future<List<OrderResponseDto>> getOrdersByStatus(int status) async {
+    try {
+      final response = await _dio.get('/api/orders/status/$status');
+      
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data is Map ? response.data['data'] : response.data;
+        return data.map((e) => OrderResponseDto.fromJson(e)).toList();
+      }
+      throw Exception('Failed to load orders by status');
+    } catch (e, stack) {
+      developer.log('Error loading orders by status', error: e, stackTrace: stack, name: 'OrdersRemoteDataSource');
+      rethrow;
+    }
+  }
+
+  Future<OrderResponseDto> updateOrderStatus(String orderId, UpdateOrderStatusRequestDto dto) async {
+    try {
+      final response = await _dio.put(
+        '/api/orders/$orderId/status',
+        data: dto.toJson(),
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data is Map ? response.data['data'] : response.data;
+        return OrderResponseDto.fromJson(data);
+      }
+      throw Exception('Failed to update order status');
+    } catch (e, stack) {
+      developer.log('Error updating order status', error: e, stackTrace: stack, name: 'OrdersRemoteDataSource');
       rethrow;
     }
   }

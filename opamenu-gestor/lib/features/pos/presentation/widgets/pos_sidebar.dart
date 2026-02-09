@@ -15,10 +15,11 @@ class PosSidebar extends ConsumerWidget {
     if (location.startsWith('/orders')) return 2;
     if (location.startsWith('/tables')) return 3;
     if (location.startsWith('/products')) return 4;
-    if (location.startsWith('/notifications')) return 5;
-    if (location.startsWith('/users')) return 6;
-    if (location.startsWith('/messages')) return 7;
-    if (location.startsWith('/settings')) return 8;
+    if (location.startsWith('/production')) return 5;
+    if (location.startsWith('/notifications')) return 6;
+    if (location.startsWith('/users')) return 7;
+    if (location.startsWith('/messages')) return 8;
+    if (location.startsWith('/settings')) return 9;
     return -1;
   }
 
@@ -44,15 +45,18 @@ class PosSidebar extends ConsumerWidget {
         context.go('/products');
         break;
       case 5:
-        context.go('/notifications');
+        context.go('/production');
         break;
       case 6:
-        context.go('/users');
+        context.go('/notifications');
         break;
       case 7:
-        context.go('/messages');
+        context.go('/users');
         break;
       case 8:
+        context.go('/messages');
+        break;
+      case 9:
         context.go('/settings');
         break;
     }
@@ -158,6 +162,15 @@ class PosSidebar extends ConsumerWidget {
                       onTap: () => _navigateTo(context, 4),
                     ),
                   ),
+                  PermissionGate(
+                    module: 'ORDER',
+                    child: _SidebarItem(
+                      icon: Icons.restaurant_menu_rounded,
+                      label: 'Cozinha',
+                      isSelected: currentIndex == 5,
+                      onTap: () => _navigateTo(context, 5),
+                    ),
+                  ),
                   
                   const SizedBox(height: 24),
                   const Padding(
@@ -176,31 +189,31 @@ class PosSidebar extends ConsumerWidget {
                   _SidebarItem(
                     icon: Icons.notifications_rounded,
                     label: 'Notificações',
-                    isSelected: currentIndex == 5,
-                    onTap: () => _navigateTo(context, 5),
+                    isSelected: currentIndex == 6,
+                    onTap: () => _navigateTo(context, 6),
                   ),
                   PermissionGate(
                     module: 'USER',
                     child: _SidebarItem(
                       icon: Icons.people_rounded,
                       label: 'Usuários',
-                      isSelected: currentIndex == 6,
-                      onTap: () => _navigateTo(context, 6),
+                      isSelected: currentIndex == 7,
+                      onTap: () => _navigateTo(context, 7),
                     ),
                   ),
                   _SidebarItem(
                     icon: Icons.chat_bubble_rounded,
                     label: 'Mensagens',
-                    isSelected: currentIndex == 7,
-                    onTap: () => _navigateTo(context, 7),
+                    isSelected: currentIndex == 8,
+                    onTap: () => _navigateTo(context, 8),
                   ),
                   PermissionGate(
                     module: 'SETTINGS',
                     child: _SidebarItem(
                       icon: Icons.settings_rounded,
                       label: 'Configurações',
-                      isSelected: currentIndex == 8,
-                      onTap: () => _navigateTo(context, 8),
+                      isSelected: currentIndex == 9,
+                      onTap: () => _navigateTo(context, 9),
                     ),
                   ),
                 ],

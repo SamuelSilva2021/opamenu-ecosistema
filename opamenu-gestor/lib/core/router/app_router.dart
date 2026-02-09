@@ -9,6 +9,7 @@ import '../../features/pos/presentation/pages/checkout_page.dart';
 import '../../features/pos/presentation/pages/orders_page.dart';
 import '../../features/tables/presentation/pages/tables_page.dart';
 import '../../features/products/presentation/pages/catalog_page.dart';
+import '../../features/production/presentation/pages/production_page.dart';
 import 'package:opamenu_gestor/core/presentation/providers/permissions_provider.dart';
 import 'package:opamenu_gestor/core/presentation/pages/placeholder_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -115,6 +116,12 @@ GoRouter goRouter(Ref ref) {
             ),
           ),
           GoRoute(
+            path: '/production',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: ProductionPage(),
+            ),
+          ),
+          GoRoute(
             path: '/notifications',
             pageBuilder: (context, state) => const NoTransitionPage(
               child: PlaceholderPage(title: 'Notificações'),
@@ -156,6 +163,7 @@ const _routePermissions = {
   '/orders': 'ORDER',
   '/tables': 'TABLE',
   '/products': 'PRODUCT',
+  '/production': 'ORDER',
   '/users': 'USER',
   '/settings': 'SETTINGS',
 };

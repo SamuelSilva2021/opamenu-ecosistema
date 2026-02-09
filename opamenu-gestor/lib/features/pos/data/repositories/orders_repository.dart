@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/models/create_order_request_dto.dart';
 import '../../domain/models/order_response_dto.dart';
+import '../../domain/models/update_order_status_request_dto.dart';
 import '../datasources/orders_remote_datasource.dart';
 import '../models/paged_response_model.dart';
 
@@ -26,5 +27,14 @@ class OrdersRepository {
 
   Future<OrderResponseDto> addItemsToOrder(String orderId, List<CreateOrderItemRequestDto> items) async {
     return await _datasource.addItemsToOrder(orderId, items);
+  }
+
+  Future<List<OrderResponseDto>> getOrdersByStatus(int status) async {
+    return await _datasource.getOrdersByStatus(status);
+  }
+
+  Future<OrderResponseDto> updateOrderStatus(String orderId, int status) async {
+    final dto = UpdateOrderStatusRequestDto(status: status);
+    return await _datasource.updateOrderStatus(orderId, dto);
   }
 }
