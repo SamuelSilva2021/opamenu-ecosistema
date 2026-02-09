@@ -32,6 +32,18 @@ Dio dio(Ref ref) {
     };
   }
 
+  // Add auth token interceptor
+  dio.interceptors.add(InterceptorsWrapper(
+    onRequest: (options, handler) async {
+      const storage = FlutterSecureStorage();
+      final token = await storage.read(key: 'access_token');
+      if (token != null) {
+        options.headers['Authorization'] = 'Bearer $token';
+      }
+      return handler.next(options);
+    },
+  ));
+
   dio.interceptors.add(LogInterceptor(
     requestBody: true,
     responseBody: true,

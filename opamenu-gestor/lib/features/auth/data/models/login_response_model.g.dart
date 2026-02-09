@@ -18,4 +18,5 @@ LoginResponseModel _$LoginResponseModelFromJson(Map<String, dynamic> json) =>
           ?.map((e) => e as String)
           .toList(),
       requiresPayment: json['requiresPayment'] as bool,
+      redirectToPlanSelection: json['redirectToPlanSelection'] as bool?,
     );

@@ -5,6 +5,7 @@ import '../../../../core/network/api_client.dart';
 import '../models/api_response_model.dart';
 import '../models/login_request_model.dart';
 import '../models/login_response_model.dart';
+import '../models/user_info_model.dart';
 
 part 'auth_remote_datasource.g.dart';
 
@@ -41,6 +42,41 @@ class AuthRemoteDataSource {
           final apiResponse = ApiResponseModel<LoginResponseModel>.fromJson(
             e.response!.data,
             (json) => LoginResponseModel.fromJson(json as Map<String, dynamic>),
+          );
+          throw Exception(apiResponse.errors?.first.message ?? e.message);
+        } catch (_) {
+          throw Exception(e.message);
+        }
+      }
+      throw Exception(e.message);
+    }
+  }
+
+  Future<UserInfoModel> getUserInfo({String? token}) async {
+    try {
+      final response = await _dio.get(
+        '/api/auth/me',
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+
+      final apiResponse = ApiResponseModel<UserInfoModel>.fromJson(
+        response.data,
+        (json) => UserInfoModel.fromJson(json as Map<String, dynamic>),
+      );
+
+      if (apiResponse.succeeded && apiResponse.data != null) {
+        return apiResponse.data!;
+      } else {
+        throw Exception(apiResponse.errors?.first.message ?? 'Unknown error');
+      }
+    } on DioException catch (e) {
+      if (e.response?.data != null) {
+        try {
+          final apiResponse = ApiResponseModel<UserInfoModel>.fromJson(
+            e.response!.data,
+            (json) => UserInfoModel.fromJson(json as Map<String, dynamic>),
           );
           throw Exception(apiResponse.errors?.first.message ?? e.message);
         } catch (_) {
