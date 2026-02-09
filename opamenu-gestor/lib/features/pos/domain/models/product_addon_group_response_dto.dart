@@ -6,9 +6,11 @@ part 'product_addon_group_response_dto.g.dart';
 
 @JsonSerializable()
 class ProductAddonGroupResponseDto {
-  final int id;
-  final int productId;
-  final int addonGroupId;
+  final String id;
+  final String productId;
+  @JsonKey(name: 'AditionalGroupId')
+  final String addonGroupId;
+  @JsonKey(name: 'AditionalGroup')
   final AddonGroupResponseDto addonGroup;
   final int displayOrder;
   final bool isRequired;

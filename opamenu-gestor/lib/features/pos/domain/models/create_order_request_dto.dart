@@ -29,7 +29,7 @@ class CreateOrderRequestDto {
   final List<CreateOrderItemRequestDto> items;
 
   @JsonKey(name: 'tableId')
-  final int? tableId;
+  final String? tableId;
 
   @JsonKey(name: 'orderType')
   final int orderType;
@@ -56,7 +56,7 @@ class CreateOrderRequestDto {
 @JsonSerializable()
 class CreateOrderItemRequestDto {
   @JsonKey(name: 'productId')
-  final int productId;
+  final String productId;
 
   @JsonKey(name: 'quantity')
   final int quantity;
@@ -64,7 +64,7 @@ class CreateOrderItemRequestDto {
   @JsonKey(name: 'notes')
   final String? notes;
 
-  @JsonKey(name: 'addons')
+  @JsonKey(name: 'Aditionals')
   final List<CreateOrderItemAddonRequestDto> addons;
 
   CreateOrderItemRequestDto({
@@ -82,8 +82,8 @@ class CreateOrderItemRequestDto {
 
 @JsonSerializable()
 class CreateOrderItemAddonRequestDto {
-  @JsonKey(name: 'addonId')
-  final int addonId;
+  @JsonKey(name: 'AditionalId')
+  final String addonId;
 
   @JsonKey(name: 'quantity')
   final int quantity;

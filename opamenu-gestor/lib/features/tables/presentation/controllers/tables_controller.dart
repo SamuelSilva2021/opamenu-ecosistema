@@ -47,32 +47,32 @@ class TablesController extends _$TablesController {
     ref.invalidateSelf();
   }
 
-  Future<void> updateTable(int id, String name, int capacity, bool isActive) async {
+  Future<void> updateTable(String id, String name, int capacity, bool isActive) async {
     final repository = ref.read(tablesRepositoryProvider);
     final dto = UpdateTableRequestDto(name: name, capacity: capacity, isActive: isActive);
     await repository.updateTable(id, dto);
     ref.invalidateSelf();
   }
 
-  Future<void> deleteTable(int id) async {
+  Future<void> deleteTable(String id) async {
     final repository = ref.read(tablesRepositoryProvider);
     await repository.deleteTable(id);
     ref.invalidateSelf();
   }
 
-  Future<String> generateQrCode(int id) async {
+  Future<String> generateQrCode(String id) async {
     final repository = ref.read(tablesRepositoryProvider);
     final qrCodeUrl = await repository.generateQrCode(id);
     ref.invalidateSelf();
     return qrCodeUrl;
   }
 
-  Future<OrderResponseDto?> checkActiveOrder(int id) async {
+  Future<OrderResponseDto?> checkActiveOrder(String id) async {
     final repository = ref.read(tablesRepositoryProvider);
     return repository.getActiveOrder(id);
   }
 
-  Future<OrderResponseDto> closeAccount(int id) async {
+  Future<OrderResponseDto> closeAccount(String id) async {
     final repository = ref.read(tablesRepositoryProvider);
     return repository.closeAccount(id);
   }

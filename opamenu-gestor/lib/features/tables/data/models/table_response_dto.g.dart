@@ -8,7 +8,7 @@ part of 'table_response_dto.dart';
 
 TableResponseDto _$TableResponseDtoFromJson(Map<String, dynamic> json) =>
     TableResponseDto(
-      id: (json['id'] as num).toInt(),
+      id: json['id'] as String,
       name: json['name'] as String,
       capacity: (json['capacity'] as num).toInt(),
       isActive: json['isActive'] as bool,

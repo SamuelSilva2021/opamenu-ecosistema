@@ -64,7 +64,8 @@ abstract class _$ActiveOrder extends $Notifier<OrderResponseDto?> {
 @ProviderFor(ActiveTable)
 final activeTableProvider = ActiveTableProvider._();
 
-final class ActiveTableProvider extends $NotifierProvider<ActiveTable, int?> {
+final class ActiveTableProvider
+    extends $NotifierProvider<ActiveTable, String?> {
   ActiveTableProvider._()
     : super(
         from: null,
@@ -84,27 +85,27 @@ final class ActiveTableProvider extends $NotifierProvider<ActiveTable, int?> {
   ActiveTable create() => ActiveTable();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(int? value) {
+  Override overrideWithValue(String? value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<int?>(value),
+      providerOverride: $SyncValueProvider<String?>(value),
     );
   }
 }
 
-String _$activeTableHash() => r'4f94c3c134abc048c4bf174bdce31ba7c4bae1aa';
+String _$activeTableHash() => r'6f8a24e6b8d6b60c6cbc1cbec4ff30c89f95039f';
 
-abstract class _$ActiveTable extends $Notifier<int?> {
-  int? build();
+abstract class _$ActiveTable extends $Notifier<String?> {
+  String? build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<int?, int?>;
+    final ref = this.ref as $Ref<String?, String?>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<int?, int?>,
-              int?,
+              AnyNotifier<String?, String?>,
+              String?,
               Object?,
               Object?
             >;

@@ -6,19 +6,19 @@ part 'product_model.g.dart';
 
 @JsonSerializable()
 class ProductModel {
-  final int id;
+  final String id;
   final String name;
   final double price;
   final String? description;
   final String? imageUrl;
-  final int? categoryId;
+  final String? categoryId;
   final String? categoryName;
   final bool? isActive;
   final int? displayOrder;
   final DateTime? createdAt;
   final DateTime? updatedAt;
   
-  @JsonKey(defaultValue: [])
+  @JsonKey(name: 'AditionalGroups', defaultValue: [])
   final List<ProductAddonGroupResponseDto> addonGroups;
 
   const ProductModel({

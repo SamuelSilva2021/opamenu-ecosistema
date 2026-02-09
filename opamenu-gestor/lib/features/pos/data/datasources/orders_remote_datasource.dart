@@ -98,19 +98,15 @@ class OrdersRemoteDataSource {
     }
   }
 
-  Future<OrderResponseDto> addItemsToOrder(int orderId, List<CreateOrderItemRequestDto> items) async {
+  Future<OrderResponseDto> addItemsToOrder(String orderId, List<CreateOrderItemRequestDto> items) async {
     try {
       final response = await _dio.post(
         '/api/orders/$orderId/items',
         data: items.map((e) => e.toJson()).toList(),
       );
-      // Backend returns ResponseDTO<OrderResponseDto>
-      // The wrapper logic might be inconsistent in this datasource.
-      // Assuming standard API wrapper: { "succeeded": true, "data": { ... } }
       if (response.data is Map<String, dynamic> && response.data['data'] != null) {
          return OrderResponseDto.fromJson(response.data['data']);
       }
-      // Fallback if no wrapper
       return OrderResponseDto.fromJson(response.data);
     } catch (e, stack) {
       developer.log('Error adding items to order', error: e, stackTrace: stack, name: 'OrdersRemoteDataSource');

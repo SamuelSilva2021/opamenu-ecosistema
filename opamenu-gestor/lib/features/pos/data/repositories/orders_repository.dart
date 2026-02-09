@@ -24,7 +24,7 @@ class OrdersRepository {
     return await _datasource.createOrder(order);
   }
 
-  Future<OrderResponseDto> addItemsToOrder(int orderId, List<CreateOrderItemRequestDto> items) async {
+  Future<OrderResponseDto> addItemsToOrder(String orderId, List<CreateOrderItemRequestDto> items) async {
     return await _datasource.addItemsToOrder(orderId, items);
   }
 }

@@ -9,8 +9,8 @@ part of 'order_item_response_dto.dart';
 OrderItemResponseDto _$OrderItemResponseDtoFromJson(
   Map<String, dynamic> json,
 ) => OrderItemResponseDto(
-  id: (json['id'] as num).toInt(),
-  productId: (json['productId'] as num).toInt(),
+  id: json['id'] as String,
+  productId: json['productId'] as String,
   productName: json['productName'] as String,
   unitPrice: (json['unitPrice'] as num).toDouble(),
   quantity: (json['quantity'] as num).toInt(),

@@ -6,11 +6,11 @@ import '../../data/models/update_table_request_dto.dart';
 
 abstract class ITablesRepository {
   Future<PagedResponseModel<List<TableResponseDto>>> getTables({int page = 1, int pageSize = 10});
-  Future<TableResponseDto> getTable(int id);
+  Future<TableResponseDto> getTable(String id);
   Future<TableResponseDto> createTable(CreateTableRequestDto dto);
-  Future<TableResponseDto> updateTable(int id, UpdateTableRequestDto dto);
-  Future<bool> deleteTable(int id);
-  Future<String> generateQrCode(int id);
-  Future<OrderResponseDto?> getActiveOrder(int id);
-  Future<OrderResponseDto> closeAccount(int id);
+  Future<TableResponseDto> updateTable(String id, UpdateTableRequestDto dto);
+  Future<bool> deleteTable(String id);
+  Future<String> generateQrCode(String id);
+  Future<OrderResponseDto?> getActiveOrder(String id);
+  Future<OrderResponseDto> closeAccount(String id);
 }

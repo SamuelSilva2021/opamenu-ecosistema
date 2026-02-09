@@ -21,7 +21,7 @@ CreateOrderRequestDto _$CreateOrderRequestDtoFromJson(
   items: (json['items'] as List<dynamic>)
       .map((e) => CreateOrderItemRequestDto.fromJson(e as Map<String, dynamic>))
       .toList(),
-  tableId: (json['tableId'] as num?)?.toInt(),
+  tableId: json['tableId'] as String?,
   orderType: (json['orderType'] as num?)?.toInt() ?? 0,
 );
 
@@ -43,11 +43,11 @@ Map<String, dynamic> _$CreateOrderRequestDtoToJson(
 CreateOrderItemRequestDto _$CreateOrderItemRequestDtoFromJson(
   Map<String, dynamic> json,
 ) => CreateOrderItemRequestDto(
-  productId: (json['productId'] as num).toInt(),
+  productId: json['productId'] as String,
   quantity: (json['quantity'] as num).toInt(),
   notes: json['notes'] as String?,
   addons:
-      (json['addons'] as List<dynamic>?)
+      (json['Aditionals'] as List<dynamic>?)
           ?.map(
             (e) => CreateOrderItemAddonRequestDto.fromJson(
               e as Map<String, dynamic>,
@@ -63,20 +63,20 @@ Map<String, dynamic> _$CreateOrderItemRequestDtoToJson(
   'productId': instance.productId,
   'quantity': instance.quantity,
   'notes': instance.notes,
-  'addons': instance.addons,
+  'Aditionals': instance.addons,
 };
 
 CreateOrderItemAddonRequestDto _$CreateOrderItemAddonRequestDtoFromJson(
   Map<String, dynamic> json,
 ) => CreateOrderItemAddonRequestDto(
-  addonId: (json['addonId'] as num).toInt(),
+  addonId: json['AditionalId'] as String,
   quantity: (json['quantity'] as num).toInt(),
 );
 
 Map<String, dynamic> _$CreateOrderItemAddonRequestDtoToJson(
   CreateOrderItemAddonRequestDto instance,
 ) => <String, dynamic>{
-  'addonId': instance.addonId,
+  'AditionalId': instance.addonId,
   'quantity': instance.quantity,
 };
 

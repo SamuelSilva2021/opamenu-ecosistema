@@ -33,7 +33,7 @@ class OrdersController extends _$OrdersController {
     return order;
   }
 
-  Future<OrderResponseDto> addItemsToOrder(int orderId, List<CreateOrderItemRequestDto> items) async {
+  Future<OrderResponseDto> addItemsToOrder(String orderId, List<CreateOrderItemRequestDto> items) async {
     final repository = ref.read(ordersRepositoryProvider);
     final order = await repository.addItemsToOrder(orderId, items);
     try {
@@ -69,7 +69,7 @@ int totalOrdersCount(Ref ref) {
 @riverpod
 class SelectedOrderId extends _$SelectedOrderId {
   @override
-  int? build() => null;
+  String? build() => null;
   
-  void select(int? id) => state = id;
+  void select(String? id) => state = id;
 }

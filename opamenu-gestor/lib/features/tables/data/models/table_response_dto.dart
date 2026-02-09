@@ -4,7 +4,7 @@ part 'table_response_dto.g.dart';
 
 @JsonSerializable()
 class TableResponseDto {
-  final int id;
+  final String id;
   final String name;
   final int capacity;
   final bool isActive;

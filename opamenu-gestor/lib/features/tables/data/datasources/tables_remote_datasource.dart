@@ -48,7 +48,7 @@ class TablesRemoteDataSource {
     }
   }
 
-  Future<TableResponseDto> getTable(int id) async {
+  Future<TableResponseDto> getTable(String id) async {
     try {
       final response = await _dio.get('/api/tables/$id');
       return TableResponseDto.fromJson(response.data);
@@ -69,7 +69,7 @@ class TablesRemoteDataSource {
     }
   }
 
-  Future<TableResponseDto> updateTable(int id, UpdateTableRequestDto dto) async {
+  Future<TableResponseDto> updateTable(String id, UpdateTableRequestDto dto) async {
     try {
       final response = await _dio.put(
         '/api/tables/$id',
@@ -81,7 +81,7 @@ class TablesRemoteDataSource {
     }
   }
 
-  Future<bool> deleteTable(int id) async {
+  Future<bool> deleteTable(String id) async {
     try {
       final response = await _dio.delete('/api/tables/$id');
       return response.data as bool;
@@ -90,7 +90,7 @@ class TablesRemoteDataSource {
     }
   }
 
-  Future<String> generateQrCode(int id) async {
+  Future<String> generateQrCode(String id) async {
     try {
       final response = await _dio.post('/api/tables/$id/qrcode');
       return response.data as String;
@@ -99,7 +99,7 @@ class TablesRemoteDataSource {
     }
   }
 
-  Future<OrderResponseDto?> getActiveOrder(int id) async {
+  Future<OrderResponseDto?> getActiveOrder(String id) async {
     try {
       final response = await _dio.get('/api/tables/$id/order');
       if (response.data is Map<String, dynamic> && response.data['data'] != null) {
@@ -114,7 +114,7 @@ class TablesRemoteDataSource {
     }
   }
 
-  Future<OrderResponseDto> closeAccount(int id) async {
+  Future<OrderResponseDto> closeAccount(String id) async {
     try {
       final response = await _dio.post('/api/tables/$id/close');
       if (response.data is Map<String, dynamic> && response.data['data'] != null) {

@@ -231,7 +231,7 @@ class TablesPage extends ConsumerWidget {
     );
   }
 
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref, int id) async {
+  Future<void> _confirmDelete(BuildContext context, WidgetRef ref, String id) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -255,7 +255,7 @@ class TablesPage extends ConsumerWidget {
     }
   }
 
-  Future<void> _showQrCode(BuildContext context, WidgetRef ref, int id, String tableName) async {
+  Future<void> _showQrCode(BuildContext context, WidgetRef ref, String id, String tableName) async {
     try {
       // First, get the QR code URL (or string data) from the controller
       final qrData = await ref.read(tablesControllerProvider.notifier).generateQrCode(id);

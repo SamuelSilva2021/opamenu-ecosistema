@@ -15,8 +15,8 @@ class ActiveOrder extends _$ActiveOrder {
 @Riverpod(keepAlive: true)
 class ActiveTable extends _$ActiveTable {
   @override
-  int? build() => null;
+  String? build() => null;
 
-  void setTableId(int? id) => state = id;
+  void setTableId(String? id) => state = id;
   void clear() => state = null;
 }

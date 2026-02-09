@@ -10,7 +10,7 @@ part 'checkout_provider.g.dart';
 
 class CheckoutState {
   final DeliveryType deliveryType;
-  final int? tableId;
+  final String? tableId;
   final String customerName;
   final String customerPhone;
   final String? customerEmail;
@@ -37,7 +37,7 @@ class CheckoutState {
 
   CheckoutState copyWith({
     DeliveryType? deliveryType,
-    int? tableId,
+    String? tableId,
     String? customerName,
     String? customerPhone,
     String? customerEmail,
@@ -80,7 +80,7 @@ class Checkout extends _$Checkout {
     state = state.copyWith(deliveryType: type);
   }
 
-  void setTableId(int? tableId) {
+  void setTableId(String? tableId) {
     state = state.copyWith(tableId: tableId);
   }
 

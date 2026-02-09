@@ -37,7 +37,7 @@ final class OrdersControllerProvider
   OrdersController create() => OrdersController();
 }
 
-String _$ordersControllerHash() => r'd21bbe0e666372bb7ea74b2f3d8f8e106e782fc3';
+String _$ordersControllerHash() => r'ed18386939bc84c315ac3c4b32f44da6453b1d74';
 
 abstract class _$OrdersController
     extends $AsyncNotifier<PagedResponseModel<List<OrderResponseDto>>> {
@@ -162,7 +162,7 @@ String _$totalOrdersCountHash() => r'53fab7f4fb9ac3d32757e98152f24965b609a709';
 final selectedOrderIdProvider = SelectedOrderIdProvider._();
 
 final class SelectedOrderIdProvider
-    extends $NotifierProvider<SelectedOrderId, int?> {
+    extends $NotifierProvider<SelectedOrderId, String?> {
   SelectedOrderIdProvider._()
     : super(
         from: null,
@@ -182,27 +182,27 @@ final class SelectedOrderIdProvider
   SelectedOrderId create() => SelectedOrderId();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(int? value) {
+  Override overrideWithValue(String? value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<int?>(value),
+      providerOverride: $SyncValueProvider<String?>(value),
     );
   }
 }
 
-String _$selectedOrderIdHash() => r'a5863c147c712280addcfb5e9aa150f522591a70';
+String _$selectedOrderIdHash() => r'5d30b266a1f9b4adf85f1bd9c6e683984999d148';
 
-abstract class _$SelectedOrderId extends $Notifier<int?> {
-  int? build();
+abstract class _$SelectedOrderId extends $Notifier<String?> {
+  String? build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<int?, int?>;
+    final ref = this.ref as $Ref<String?, String?>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<int?, int?>,
-              int?,
+              AnyNotifier<String?, String?>,
+              String?,
               Object?,
               Object?
             >;

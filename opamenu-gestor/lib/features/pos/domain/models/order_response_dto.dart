@@ -6,7 +6,7 @@ part 'order_response_dto.g.dart';
 
 @JsonSerializable()
 class OrderResponseDto {
-  final int id;
+  final String id;
   final String customerName;
   final String customerPhone;
   final String? customerEmail;

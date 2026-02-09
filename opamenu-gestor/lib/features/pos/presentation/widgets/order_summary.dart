@@ -13,7 +13,7 @@ import '../providers/cart_notifier.dart';
 class OrderSummary extends ConsumerWidget {
   const OrderSummary({super.key});
 
-  Future<void> _submitTableOrder(BuildContext context, WidgetRef ref, int tableId, List<CartItemModel> cartItems) async {
+  Future<void> _submitTableOrder(BuildContext context, WidgetRef ref, String tableId, List<CartItemModel> cartItems) async {
     if (cartItems.isEmpty) return;
 
     final activeOrder = ref.read(activeOrderProvider);
@@ -58,7 +58,7 @@ class OrderSummary extends ConsumerWidget {
     }
   }
 
-  Future<void> _closeAccount(BuildContext context, WidgetRef ref, int tableId) async {
+  Future<void> _closeAccount(BuildContext context, WidgetRef ref, String tableId) async {
     try {
       final order = await ref.read(tablesControllerProvider.notifier).closeAccount(tableId);
       if (context.mounted) {

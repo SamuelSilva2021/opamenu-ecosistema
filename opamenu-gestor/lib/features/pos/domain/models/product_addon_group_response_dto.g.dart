@@ -9,11 +9,11 @@ part of 'product_addon_group_response_dto.dart';
 ProductAddonGroupResponseDto _$ProductAddonGroupResponseDtoFromJson(
   Map<String, dynamic> json,
 ) => ProductAddonGroupResponseDto(
-  id: (json['id'] as num).toInt(),
-  productId: (json['productId'] as num).toInt(),
-  addonGroupId: (json['addonGroupId'] as num).toInt(),
+  id: json['id'] as String,
+  productId: json['productId'] as String,
+  addonGroupId: json['AditionalGroupId'] as String,
   addonGroup: AddonGroupResponseDto.fromJson(
-    json['addonGroup'] as Map<String, dynamic>,
+    json['AditionalGroup'] as Map<String, dynamic>,
   ),
   displayOrder: (json['displayOrder'] as num).toInt(),
   isRequired: json['isRequired'] as bool,
@@ -26,8 +26,8 @@ Map<String, dynamic> _$ProductAddonGroupResponseDtoToJson(
 ) => <String, dynamic>{
   'id': instance.id,
   'productId': instance.productId,
-  'addonGroupId': instance.addonGroupId,
-  'addonGroup': instance.addonGroup,
+  'AditionalGroupId': instance.addonGroupId,
+  'AditionalGroup': instance.addonGroup,
   'displayOrder': instance.displayOrder,
   'isRequired': instance.isRequired,
   'minSelectionsOverride': instance.minSelectionsOverride,

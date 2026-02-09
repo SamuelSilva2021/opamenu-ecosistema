@@ -5,8 +5,8 @@ part 'order_item_response_dto.g.dart';
 
 @JsonSerializable()
 class OrderItemResponseDto {
-  final int id;
-  final int productId;
+  final String id;
+  final String productId;
   final String productName;
   final double unitPrice;
   final int quantity;

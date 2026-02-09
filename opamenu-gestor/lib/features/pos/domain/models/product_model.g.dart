@@ -7,12 +7,12 @@ part of 'product_model.dart';
 // **************************************************************************
 
 ProductModel _$ProductModelFromJson(Map<String, dynamic> json) => ProductModel(
-  id: (json['id'] as num).toInt(),
+  id: json['id'] as String,
   name: json['name'] as String,
   price: (json['price'] as num).toDouble(),
   description: json['description'] as String?,
   imageUrl: json['imageUrl'] as String?,
-  categoryId: (json['categoryId'] as num?)?.toInt(),
+  categoryId: json['categoryId'] as String?,
   categoryName: json['categoryName'] as String?,
   isActive: json['isActive'] as bool?,
   displayOrder: (json['displayOrder'] as num?)?.toInt(),
@@ -23,7 +23,7 @@ ProductModel _$ProductModelFromJson(Map<String, dynamic> json) => ProductModel(
       ? null
       : DateTime.parse(json['updatedAt'] as String),
   addonGroups:
-      (json['addonGroups'] as List<dynamic>?)
+      (json['AditionalGroups'] as List<dynamic>?)
           ?.map(
             (e) => ProductAddonGroupResponseDto.fromJson(
               e as Map<String, dynamic>,
@@ -46,5 +46,5 @@ Map<String, dynamic> _$ProductModelToJson(ProductModel instance) =>
       'displayOrder': instance.displayOrder,
       'createdAt': instance.createdAt?.toIso8601String(),
       'updatedAt': instance.updatedAt?.toIso8601String(),
-      'addonGroups': instance.addonGroups,
+      'AditionalGroups': instance.addonGroups,
     };

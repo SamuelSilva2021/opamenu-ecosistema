@@ -25,7 +25,7 @@ class TablesRepositoryImpl implements ITablesRepository {
   }
 
   @override
-  Future<TableResponseDto> getTable(int id) {
+  Future<TableResponseDto> getTable(String id) {
     return _dataSource.getTable(id);
   }
 
@@ -35,27 +35,27 @@ class TablesRepositoryImpl implements ITablesRepository {
   }
 
   @override
-  Future<TableResponseDto> updateTable(int id, UpdateTableRequestDto dto) {
+  Future<TableResponseDto> updateTable(String id, UpdateTableRequestDto dto) {
     return _dataSource.updateTable(id, dto);
   }
 
   @override
-  Future<bool> deleteTable(int id) {
+  Future<bool> deleteTable(String id) {
     return _dataSource.deleteTable(id);
   }
 
   @override
-  Future<String> generateQrCode(int id) {
+  Future<String> generateQrCode(String id) {
     return _dataSource.generateQrCode(id);
   }
 
   @override
-  Future<OrderResponseDto?> getActiveOrder(int id) {
+  Future<OrderResponseDto?> getActiveOrder(String id) {
     return _dataSource.getActiveOrder(id);
   }
 
   @override
-  Future<OrderResponseDto> closeAccount(int id) {
+  Future<OrderResponseDto> closeAccount(String id) {
     return _dataSource.closeAccount(id);
   }
 }

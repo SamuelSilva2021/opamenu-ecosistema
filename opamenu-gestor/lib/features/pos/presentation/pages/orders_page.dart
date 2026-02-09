@@ -16,11 +16,7 @@ class OrdersPage extends ConsumerWidget {
     final currentPage = ref.watch(ordersPaginationProvider);
     final totalPages = (totalOrders / 10).ceil(); // PageSize = 10
 
-    // Encontrar o pedido selecionado na lista atual
-    final selectedOrder = ordersAsync.value?.data?.cast<OrderResponseDto?>().firstWhere(
-      (o) => o?.id == selectedOrderId,
-      orElse: () => null,
-    );
+    final selectedOrder = ordersAsync.value?.data?.where((o) => o.id == selectedOrderId).firstOrNull;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,

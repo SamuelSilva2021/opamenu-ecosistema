@@ -89,7 +89,7 @@ final class TablesControllerProvider
   TablesController create() => TablesController();
 }
 
-String _$tablesControllerHash() => r'f6c85cff1033104acbeb3e43bc692a7464127266';
+String _$tablesControllerHash() => r'6f175d88d06df798f2bf1bf5792befb132f76dc5';
 
 abstract class _$TablesController
     extends $AsyncNotifier<PagedResponseModel<List<TableResponseDto>>> {

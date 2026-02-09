@@ -5,7 +5,7 @@ part 'addon_group_response_dto.g.dart';
 
 @JsonSerializable()
 class AddonGroupResponseDto {
-  final int id;
+  final String id;
   final String name;
   final String? description;
   final int minSelections;

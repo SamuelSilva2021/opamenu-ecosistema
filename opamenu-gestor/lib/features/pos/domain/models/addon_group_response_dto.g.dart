@@ -9,7 +9,7 @@ part of 'addon_group_response_dto.dart';
 AddonGroupResponseDto _$AddonGroupResponseDtoFromJson(
   Map<String, dynamic> json,
 ) => AddonGroupResponseDto(
-  id: (json['id'] as num).toInt(),
+  id: json['id'] as String,
   name: json['name'] as String,
   description: json['description'] as String?,
   minSelections: (json['minSelections'] as num).toInt(),
