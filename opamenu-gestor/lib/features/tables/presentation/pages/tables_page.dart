@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:opamenu_gestor/core/presentation/widgets/permission_gate.dart';
 import 'package:opamenu_gestor/features/pos/presentation/providers/active_order_provider.dart';
 import 'package:opamenu_gestor/features/pos/presentation/providers/cart_notifier.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -153,20 +154,28 @@ class TablesPage extends ConsumerWidget {
                                             tooltip: 'Gerar QR Code',
                                             onPressed: () => _showQrCode(context, ref, table.id, table.name),
                                           ),
-                                          IconButton(
-                                            icon: const Icon(Icons.edit, color: Colors.orange),
-                                            tooltip: 'Editar',
-                                            onPressed: () {
-                                              showDialog(
-                                                context: context,
-                                                builder: (context) => TableFormDialog(table: table),
-                                              );
-                                            },
+                                          PermissionGate(
+                                            module: 'TABLES',
+                                            operation: 'UPDATE',
+                                            child: IconButton(
+                                              icon: const Icon(Icons.edit, color: Colors.orange),
+                                              tooltip: 'Editar',
+                                              onPressed: () {
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (context) => TableFormDialog(table: table),
+                                                );
+                                              },
+                                            ),
                                           ),
-                                          IconButton(
-                                            icon: const Icon(Icons.delete, color: Colors.red),
-                                            tooltip: 'Excluir',
-                                            onPressed: () => _confirmDelete(context, ref, table.id),
+                                          PermissionGate(
+                                            module: 'TABLES',
+                                            operation: 'DELETE',
+                                            child: IconButton(
+                                              icon: const Icon(Icons.delete, color: Colors.red),
+                                              tooltip: 'Excluir',
+                                              onPressed: () => _confirmDelete(context, ref, table.id),
+                                            ),
                                           ),
                                         ],
                                       ),

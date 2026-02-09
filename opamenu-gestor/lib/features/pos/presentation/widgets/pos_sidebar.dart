@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/theme/app_colors.dart';
+import 'package:opamenu_gestor/core/presentation/widgets/permission_gate.dart';
+import 'package:opamenu_gestor/core/theme/app_colors.dart';
 
 class PosSidebar extends StatelessWidget {
   const PosSidebar({super.key});
@@ -110,35 +111,50 @@ class PosSidebar extends StatelessWidget {
                       ),
                     ),
                   ),
-                  _SidebarItem(
-                    icon: Icons.dashboard_rounded,
-                    label: 'Dashboard',
-                    isSelected: currentIndex == 0,
-                    onTap: () => _navigateTo(context, 0),
+                  PermissionGate(
+                    module: 'DASHBOARD',
+                    child: _SidebarItem(
+                      icon: Icons.dashboard_rounded,
+                      label: 'Dashboard',
+                      isSelected: currentIndex == 0,
+                      onTap: () => _navigateTo(context, 0),
+                    ),
                   ),
-                  _SidebarItem(
-                    icon: Icons.point_of_sale_rounded,
-                    label: 'Checkout',
-                    isSelected: currentIndex == 1,
-                    onTap: () => _navigateTo(context, 1),
+                  PermissionGate(
+                    module: 'POS',
+                    child: _SidebarItem(
+                      icon: Icons.point_of_sale_rounded,
+                      label: 'Checkout',
+                      isSelected: currentIndex == 1,
+                      onTap: () => _navigateTo(context, 1),
+                    ),
                   ),
-                  _SidebarItem(
-                    icon: Icons.receipt_long_rounded,
-                    label: 'Pedidos',
-                    isSelected: currentIndex == 2,
-                    onTap: () => _navigateTo(context, 2),
+                  PermissionGate(
+                    module: 'ORDERS',
+                    child: _SidebarItem(
+                      icon: Icons.receipt_long_rounded,
+                      label: 'Pedidos',
+                      isSelected: currentIndex == 2,
+                      onTap: () => _navigateTo(context, 2),
+                    ),
                   ),
-                  _SidebarItem(
-                    icon: Icons.table_restaurant_rounded,
-                    label: 'Mesas',
-                    isSelected: currentIndex == 3,
-                    onTap: () => _navigateTo(context, 3),
+                  PermissionGate(
+                    module: 'TABLES',
+                    child: _SidebarItem(
+                      icon: Icons.table_restaurant_rounded,
+                      label: 'Mesas',
+                      isSelected: currentIndex == 3,
+                      onTap: () => _navigateTo(context, 3),
+                    ),
                   ),
-                  _SidebarItem(
-                    icon: Icons.inventory_2_rounded,
-                    label: 'Produtos',
-                    isSelected: currentIndex == 4,
-                    onTap: () => _navigateTo(context, 4),
+                  PermissionGate(
+                    module: 'PRODUCTS',
+                    child: _SidebarItem(
+                      icon: Icons.inventory_2_rounded,
+                      label: 'Produtos',
+                      isSelected: currentIndex == 4,
+                      onTap: () => _navigateTo(context, 4),
+                    ),
                   ),
                   
                   const SizedBox(height: 24),
@@ -161,11 +177,14 @@ class PosSidebar extends StatelessWidget {
                     isSelected: currentIndex == 5,
                     onTap: () => _navigateTo(context, 5),
                   ),
-                  _SidebarItem(
-                    icon: Icons.people_rounded,
-                    label: 'Usuários',
-                    isSelected: currentIndex == 6,
-                    onTap: () => _navigateTo(context, 6),
+                  PermissionGate(
+                    module: 'USERS',
+                    child: _SidebarItem(
+                      icon: Icons.people_rounded,
+                      label: 'Usuários',
+                      isSelected: currentIndex == 6,
+                      onTap: () => _navigateTo(context, 6),
+                    ),
                   ),
                   _SidebarItem(
                     icon: Icons.chat_bubble_rounded,
@@ -173,11 +192,14 @@ class PosSidebar extends StatelessWidget {
                     isSelected: currentIndex == 7,
                     onTap: () => _navigateTo(context, 7),
                   ),
-                  _SidebarItem(
-                    icon: Icons.settings_rounded,
-                    label: 'Configurações',
-                    isSelected: currentIndex == 8,
-                    onTap: () => _navigateTo(context, 8),
+                  PermissionGate(
+                    module: 'SETTINGS',
+                    child: _SidebarItem(
+                      icon: Icons.settings_rounded,
+                      label: 'Configurações',
+                      isSelected: currentIndex == 8,
+                      onTap: () => _navigateTo(context, 8),
+                    ),
                   ),
                 ],
               ),

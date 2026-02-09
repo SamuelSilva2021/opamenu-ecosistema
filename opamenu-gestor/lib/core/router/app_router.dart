@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../core/presentation/layouts/main_layout.dart';
+import 'package:opamenu_gestor/core/presentation/layouts/main_layout.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/pos/presentation/pages/pos_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/pos/presentation/pages/checkout_page.dart';
 import '../../features/pos/presentation/pages/orders_page.dart';
 import '../../features/tables/presentation/pages/tables_page.dart';
-import '../presentation/pages/placeholder_page.dart';
+import '../../features/products/presentation/pages/catalog_page.dart';
+import 'package:opamenu_gestor/core/presentation/providers/permissions_provider.dart';
+import 'package:opamenu_gestor/core/presentation/pages/placeholder_page.dart';
 
 part 'app_router.g.dart';
 
@@ -17,9 +19,33 @@ final shellNavigatorKey = GlobalKey<NavigatorState>();
 
 @riverpod
 GoRouter goRouter(Ref ref) {
+  final permissionsAsync = ref.watch(permissionsProvider);
+
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/login',
+    redirect: (context, state) {
+      final permissions = permissionsAsync.value ?? [];
+      final path = state.uri.path;
+
+      // Allow login access
+      if (path == '/login') return null;
+
+      // Check if user has permission for the module
+      final requiredModule = _routePermissions.entries
+          .where((e) => path.startsWith(e.key))
+          .map((e) => e.value)
+          .firstOrNull;
+
+      if (requiredModule != null) {
+        final hasAccess = permissions.any((p) => p.module == requiredModule);
+        if (!hasAccess && permissions.isNotEmpty) {
+          return '/dashboard';
+        }
+      }
+
+      return null;
+    },
     routes: [
       GoRoute(
         path: '/login',
@@ -64,7 +90,7 @@ GoRouter goRouter(Ref ref) {
           GoRoute(
             path: '/products',
             pageBuilder: (context, state) => const NoTransitionPage(
-              child: PlaceholderPage(title: 'Produtos'),
+              child: CatalogPage(),
             ),
           ),
           GoRoute(
@@ -96,3 +122,13 @@ GoRouter goRouter(Ref ref) {
     ],
   );
 }
+
+const _routePermissions = {
+  '/dashboard': 'DASHBOARD',
+  '/pos': 'POS',
+  '/orders': 'ORDERS',
+  '/tables': 'TABLES',
+  '/products': 'PRODUCTS',
+  '/users': 'USERS',
+  '/settings': 'SETTINGS',
+};

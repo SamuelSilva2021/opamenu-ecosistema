@@ -14,5 +14,8 @@ LoginResponseModel _$LoginResponseModelFromJson(Map<String, dynamic> json) =>
       expiresIn: (json['expiresIn'] as num).toInt(),
       tenantStatus: json['tenantStatus'] as String?,
       subscriptionStatus: json['subscriptionStatus'] as String?,
+      permissions: (json['permissions'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
       requiresPayment: json['requiresPayment'] as bool,
     );

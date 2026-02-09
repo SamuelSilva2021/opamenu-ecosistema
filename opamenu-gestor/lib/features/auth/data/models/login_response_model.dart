@@ -11,7 +11,9 @@ class LoginResponseModel {
   final int expiresIn;
   final String? tenantStatus;
   final String? subscriptionStatus;
+  final List<String>? permissions;
   final bool requiresPayment;
+  final bool? redirectToPlanSelection;
 
   const LoginResponseModel({
     required this.accessToken,
@@ -20,7 +22,9 @@ class LoginResponseModel {
     required this.expiresIn,
     this.tenantStatus,
     this.subscriptionStatus,
+    this.permissions,
     required this.requiresPayment,
+    this.redirectToPlanSelection,
   });
 
   factory LoginResponseModel.fromJson(Map<String, dynamic> json) =>

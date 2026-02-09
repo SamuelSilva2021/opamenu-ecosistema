@@ -8,7 +8,7 @@ class EnvConfig {
       if (defaultTargetPlatform == TargetPlatform.android) {
         return 'https://10.0.2.2:7019/';
       }
-      return 'https://localhost:7019/';
+      return 'https://127.0.0.1:7019/';
     }
   }
 
@@ -19,7 +19,7 @@ class EnvConfig {
       if (defaultTargetPlatform == TargetPlatform.android) {
         return 'https://10.0.2.2:7243';
       }
-      return 'https://localhost:7243';
+      return 'https://127.0.0.1:7243';
     }
   }
 }
