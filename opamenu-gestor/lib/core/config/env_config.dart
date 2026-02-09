@@ -6,9 +6,9 @@ class EnvConfig {
       return 'https://auth.opamenu.com.br';
     } else {
       if (defaultTargetPlatform == TargetPlatform.android) {
-        return 'https://10.0.2.2:7019';
+        return 'https://10.0.2.2:7019/';
       }
-      return 'https://localhost:7019';
+      return 'https://localhost:7019/';
     }
   }
 
