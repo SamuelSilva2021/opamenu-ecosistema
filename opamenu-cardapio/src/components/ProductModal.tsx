@@ -227,8 +227,8 @@ const ProductModal = ({
           <div className="flex-1 min-h-0 overflow-hidden p-6 pt-2">
             <div className="h-full flex flex-col lg:grid lg:grid-cols-2 lg:gap-8">
 
-              <div className="shrink-0 lg:shrink">
-                <div className="aspect-[4/3] lg:aspect-square overflow-hidden rounded-3xl bg-white mb-4 lg:mb-0 flex items-center justify-center p-6 shadow-inner border border-border/50">
+              <div className="shrink-0 lg:shrink flex flex-col">
+                <div className="h-32 sm:h-48 lg:h-auto lg:aspect-square overflow-hidden rounded-3xl bg-white mb-3 lg:mb-0 flex items-center justify-center p-4 shadow-inner border border-border/50">
                   {product.imageUrl ? (
                     <img
                       src={getFullImageUrl(product.imageUrl) || ''}
@@ -238,22 +238,22 @@ const ProductModal = ({
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-muted/20 rounded-2xl">
                       <div className="text-center text-muted-foreground/30">
-                        <div className="text-6xl lg:text-8xl mb-4">🍔</div>
-                        <p className="text-xs font-black uppercase tracking-widest leading-none">Apetitoso por natureza</p>
+                        <div className="text-4xl lg:text-8xl mb-2 lg:mb-4">🍔</div>
+                        <p className="text-[10px] sm:text-xs font-black uppercase tracking-widest leading-none">Apetitoso por natureza</p>
                       </div>
                     </div>
                   )}
                 </div>
 
-                <div className="block lg:hidden mb-4">
-                  <div className="flex items-baseline gap-2 mb-2">
-                    <span className="text-xs font-black text-primary/50 uppercase tracking-widest">Preço Individual</span>
-                    <p className="text-2xl font-black text-primary tracking-tighter">
+                <div className="block lg:hidden mb-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] font-black text-primary/50 uppercase tracking-widest">Preço Individual</span>
+                    <p className="text-xl font-black text-primary tracking-tighter">
                       {formatPrice(product.price)}
                     </p>
                   </div>
                   {product.description && (
-                    <p className="text-sm font-medium text-text-secondary leading-relaxed opacity-80">{product.description}</p>
+                    <p className="text-[11px] sm:text-xs font-medium text-text-secondary leading-tight opacity-80 line-clamp-2">{product.description}</p>
                   )}
                 </div>
               </div>
@@ -274,14 +274,9 @@ const ProductModal = ({
 
                 <div
                   ref={scrollContainerRef}
-                  className="flex-1 min-h-0 scroll-smooth"
-                  style={{
-                    maxHeight: 'calc(100vh - 400px)',
-                    overflowY: 'auto',
-                    overflowX: 'hidden'
-                  }}
+                  className="flex-1 min-h-0 scroll-smooth overflow-y-auto overflow-x-hidden pr-1"
                 >
-                  <div className="space-y-8 pb-8 pr-2">
+                  <div className="space-y-4 pb-4">
                     {product.addonGroups.length > 0 ? (
                       product.addonGroups.map((group) => (
                         <div
@@ -289,14 +284,14 @@ const ProductModal = ({
                           ref={(el) => {
                             groupRefs.current[group.id] = el;
                           }}
-                          className={`space-y-5 p-6 rounded-[2rem] border-2 transition-all duration-500 ${!isRequiredGroupValid(group) && group.isRequired
+                          className={`space-y-4 p-4 rounded-[1.5rem] border-2 transition-all duration-500 ${!isRequiredGroupValid(group) && group.isRequired
                             ? 'bg-primary/5 border-primary shadow-lg shadow-primary/5'
                             : 'bg-white border-border/50 shadow-sm'
                             }`}
                         >
-                          <div className="flex flex-col gap-3">
+                          <div className="flex flex-col gap-2">
                             <div className="flex items-center justify-between">
-                              <h4 className="text-lg lg:text-xl font-black uppercase italic tracking-tighter text-foreground flex items-center gap-2">
+                              <h4 className="text-base lg:text-xl font-black uppercase italic tracking-tighter text-foreground flex items-center gap-2">
                                 {group.name}
                                 {!isRequiredGroupValid(group) && group.isRequired && (
                                   <span className="text-primary text-xl animate-bounce">!</span>
@@ -304,8 +299,8 @@ const ProductModal = ({
                               </h4>
                               {group.isRequired && (
                                 <Badge
-                                  className={`font-black uppercase tracking-widest text-[10px] px-3 ${!isRequiredGroupValid(group)
-                                    ? "bg-primary text-white shadow-md shadow-primary/20"
+                                  className={`font-black uppercase tracking-widest text-[9px] px-2 h-5 ${!isRequiredGroupValid(group)
+                                    ? "bg-primary text-white"
                                     : "bg-muted text-foreground"
                                     }`}
                                 >
@@ -314,23 +309,23 @@ const ProductModal = ({
                               )}
                             </div>
 
-                            <p className="text-xs font-bold text-text-secondary/60 bg-muted/40 w-fit px-3 py-1 rounded-full">
-                              {group.type === AddonGroupType.Single ? 'Escolha 1 deliciosa opção' : `Escolha até ${group.maxSelections || 'várias'} opções`}
+                            <p className="text-[10px] font-bold text-text-secondary/60 bg-muted/40 w-fit px-2 py-0.5 rounded-full">
+                              {group.type === AddonGroupType.Single ? 'Escolha 1' : `Max ${group.maxSelections || '∞'}`}
                             </p>
                           </div>
 
                           {group.description && (
-                            <p className="text-xs font-medium text-text-secondary/70 italic border-l-2 border-primary/20 pl-3">
+                            <p className="text-[11px] font-medium text-text-secondary/70 italic border-l-2 border-primary/20 pl-3">
                               {group.description}
                             </p>
                           )}
 
-                          <div className="grid grid-cols-1 gap-3">
+                          <div className="grid grid-cols-1 gap-2">
                             {group.addons.filter(addon => addon.isActive).map((addon) => (
                               <div
                                 key={addon.id}
-                                className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all duration-300 gap-4 cursor-pointer ${isAddonSelected(addon.id)
-                                  ? 'bg-accent/10 border-accent shadow-md'
+                                className={`flex items-center justify-between p-3 rounded-xl border-2 transition-all duration-300 gap-3 cursor-pointer ${isAddonSelected(addon.id)
+                                  ? 'bg-accent/10 border-accent'
                                   : 'bg-white border-border hover:border-primary/50'
                                   }`}
                                 onClick={() => {
@@ -340,51 +335,51 @@ const ProductModal = ({
                                 }}
                               >
                                 <div className="flex-1 min-w-0">
-                                  <h5 className="text-sm lg:text-base font-black uppercase tracking-tight text-foreground">{addon.name}</h5>
+                                  <h5 className="text-xs sm:text-sm font-black uppercase tracking-tight text-foreground">{addon.name}</h5>
                                   {addon.description && (
-                                    <p className="text-xs font-medium text-text-secondary/60 line-clamp-2 mt-0.5">
+                                    <p className="text-[10px] font-medium text-text-secondary/60 line-clamp-1">
                                       {addon.description}
                                     </p>
                                   )}
                                 </div>
 
-                                <div className="flex items-center gap-4 shrink-0">
-                                  <span className="text-sm font-black text-primary whitespace-nowrap">
+                                <div className="flex items-center gap-3 shrink-0">
+                                  <span className="text-xs font-black text-primary whitespace-nowrap">
                                     + {formatPrice(addon.price)}
                                   </span>
 
                                   {group.type === AddonGroupType.Single ? (
                                     <div className={`
-                                    w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-500
+                                    w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-500
                                     ${isAddonSelected(addon.id)
-                                        ? 'border-accent bg-accent shadow-md shadow-accent/20'
+                                        ? 'border-accent bg-accent'
                                         : 'border-border bg-transparent'}
                                   `}>
                                       {isAddonSelected(addon.id) && (
-                                        <div className="w-2.5 h-2.5 rounded-full bg-accent-foreground" />
+                                        <div className="w-2 h-2 rounded-full bg-accent-foreground" />
                                       )}
                                     </div>
                                   ) : (
-                                    <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+                                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                                       <Button
                                         variant="outline"
                                         size="icon"
                                         onClick={() => handleAddonChange(addon, group, Math.max(0, getAddonQuantity(addon.id) - 1))}
                                         disabled={getAddonQuantity(addon.id) === 0}
-                                        className="h-9 w-9 p-0 touch-manipulation rounded-xl border-2 hover:bg-muted font-black"
+                                        className="h-8 w-8 p-0 touch-manipulation rounded-lg border-2 font-black"
                                       >
-                                        <Minus className="h-4 w-4" />
+                                        <Minus className="h-3 w-3" />
                                       </Button>
-                                      <span className="w-6 text-center text-sm font-black">
+                                      <span className="w-4 text-center text-xs font-black text-foreground">
                                         {getAddonQuantity(addon.id)}
                                       </span>
                                       <Button
                                         variant="outline"
                                         size="icon"
                                         onClick={() => handleAddonChange(addon, group, getAddonQuantity(addon.id) + 1)}
-                                        className="h-9 w-9 p-0 hover:bg-accent/10 hover:border-accent touch-manipulation rounded-xl border-2 font-black transition-all"
+                                        className="h-8 w-8 p-0 hover:bg-accent/10 hover:border-accent touch-manipulation rounded-lg border-2 font-black transition-all"
                                       >
-                                        <Plus className="h-4 w-4" />
+                                        <Plus className="h-3 w-3" />
                                       </Button>
                                     </div>
                                   )}
@@ -395,10 +390,10 @@ const ProductModal = ({
                         </div>
                       ))
                     ) : (
-                      <div className="text-center text-muted-foreground py-12 bg-white rounded-[2rem] border-2 border-dashed border-border/50">
-                        <div className="text-6xl mb-4 opacity-20 text-primary">🍟</div>
-                        <p className="text-lg font-black uppercase tracking-tighter opacity-50">Sem extras</p>
-                        <p className="text-xs font-bold mt-2 opacity-40">Este item já é perfeito como está!</p>
+                      <div className="text-center text-muted-foreground py-8 bg-white rounded-[2rem] border-2 border-dashed border-border/50">
+                        <div className="text-4xl mb-3 opacity-20 text-primary">🍟</div>
+                        <p className="text-base font-black uppercase tracking-tighter opacity-50">Sem extras</p>
+                        <p className="text-[10px] font-bold mt-1 opacity-40">Este item já é perfeito como está!</p>
                       </div>
                     )}
                   </div>
@@ -408,48 +403,47 @@ const ProductModal = ({
           </div>
 
           {/* Footer controls - BK Style Sticky Footer */}
-          <div className="shrink-0 bg-white border-t p-6 pb-10 sm:pb-6 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] rounded-t-[3rem]">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-              <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-                <span className="text-xs font-black uppercase tracking-widest text-primary/40">Fome do tamanho de:</span>
-                <div className="flex items-center bg-muted p-1 rounded-2xl border-2 border-border/50">
+          <div className="shrink-0 bg-white border-t p-4 sm:p-6 pb-6 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] rounded-t-[2.5rem]">
+            <div className="flex flex-col gap-4">
+              {/* Info Row: Quantity and Total price */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center bg-muted p-1 rounded-2xl border-2 border-border/50 h-12">
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                     disabled={quantity <= 1}
-                    className="h-12 w-12 p-0 touch-manipulation hover:bg-white rounded-xl"
+                    className="h-10 w-10 p-0 touch-manipulation hover:bg-white rounded-xl"
                   >
-                    <Minus className="h-5 w-5" />
+                    <Minus className="h-4 w-4" />
                   </Button>
-                  <span className="w-10 text-center font-black text-xl tracking-tighter">{quantity}</span>
+                  <span className="w-8 text-center font-black text-lg tracking-tighter">{quantity}</span>
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => setQuantity(quantity + 1)}
-                    className="h-12 w-12 p-0 touch-manipulation hover:bg-white rounded-xl"
+                    className="h-10 w-10 p-0 touch-manipulation hover:bg-white rounded-xl"
                   >
-                    <Plus className="h-5 w-5" />
+                    <Plus className="h-4 w-4" />
                   </Button>
                 </div>
-              </div>
 
-              <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-                <div className="flex flex-col items-center sm:items-end order-2 sm:order-1">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary opacity-50">Total do Item</span>
-                  <span className="text-2xl font-black tracking-tighter leading-none">{formatPrice(totalPrice)}</span>
+                <div className="flex flex-col items-end">
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary opacity-50 leading-none mb-1">Total do Item</span>
+                  <span className="text-xl font-black tracking-tighter leading-none">{formatPrice(totalPrice)}</span>
                 </div>
-
-                <Button
-                  onClick={handleAddToCart}
-                  className={`px-10 h-16 rounded-[1.5rem] w-full sm:w-auto order-1 sm:order-2 font-black uppercase italic tracking-wider text-lg shadow-2xl transition-all duration-500 scale-100 hover:scale-105 active:scale-95 ${canAddToCart
-                    ? "bg-primary hover:bg-primary-hover text-white shadow-primary/30"
-                    : "bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/30"
-                    }`}
-                >
-                  {canAddToCart ? (confirmLabel || "Adicionar") : "Escolha os extras"}
-                </Button>
               </div>
+
+              {/* Action Button */}
+              <Button
+                onClick={handleAddToCart}
+                className={`h-14 sm:h-16 rounded-[1.5rem] w-full font-black uppercase italic tracking-wider text-base sm:text-lg shadow-2xl transition-all duration-500 scale-100 active:scale-95 ${canAddToCart
+                  ? "bg-primary hover:bg-primary-hover text-white shadow-primary/30"
+                  : "bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/30"
+                  }`}
+              >
+                {canAddToCart ? (confirmLabel || "Adicionar") : "Escolha os obrigatórios"}
+              </Button>
             </div>
           </div>
         </div>
