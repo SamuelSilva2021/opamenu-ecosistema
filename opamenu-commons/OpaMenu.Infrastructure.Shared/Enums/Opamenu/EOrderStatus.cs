@@ -9,7 +9,6 @@ namespace OpaMenu.Infrastructure.Shared.Enums.Opamenu
     public enum EOrderStatus
     {
         Pending,
-        Confirmed,
         Preparing,
         Ready,
         OutForDelivery,
@@ -23,7 +22,6 @@ namespace OpaMenu.Infrastructure.Shared.Enums.Opamenu
             status switch
             {
                 EOrderStatus.Pending => "Pendente",
-                EOrderStatus.Confirmed => "Confirmado",
                 EOrderStatus.Preparing => "Preparando",
                 EOrderStatus.Ready => "Pronto",
                 EOrderStatus.OutForDelivery => "Saiu para Entrega",

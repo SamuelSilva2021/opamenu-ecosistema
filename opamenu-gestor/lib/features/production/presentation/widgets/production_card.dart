@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../pos/domain/models/order_response_dto.dart';
 import '../../../pos/domain/enums/order_status.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/services/printer_service.dart';
+import '../../../../core/utils/receipt_generator.dart';
+import 'package:esc_pos_utils_plus/esc_pos_utils.dart' as esc;
+import '../controllers/production_controller.dart';
 
-class ProductionCard extends StatelessWidget {
+class ProductionCard extends ConsumerWidget {
   final OrderResponseDto order;
   final VoidCallback onNextStatus;
 
@@ -15,7 +20,7 @@ class ProductionCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final waitingTime = DateTime.now().difference(order.createdAt);
     final isLongWaiting = waitingTime.inMinutes > 15;
@@ -32,9 +37,54 @@ class ProductionCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '#${order.queuePosition}',
-                  style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                Row(
+                  children: [
+                    Text(
+                      '#${order.queuePosition}',
+                      style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: const Icon(Icons.print, size: 20, color: Colors.grey),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      tooltip: 'Imprimir Pedido',
+                      onPressed: () async {
+                        try {
+                          final profile = await esc.CapabilityProfile.load();
+                          final bytes = await ReceiptGenerator.generateOrderReceipt(
+                            order: order,
+                            paperSize: PaperSize.mm80,
+                            profile: profile,
+                          );
+
+                          final printerService = ref.read(printerServiceProvider.notifier);
+                          final device = PrinterDeviceInfo(
+                            name: 'Impressora Cozinha',
+                            address: '192.168.1.100',
+                            type: PrinterConnectionType.network,
+                          );
+
+                          final success = await printerService.printReceipt(device, bytes);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(success ? 'Cupom impresso!' : 'Erro na impressora'),
+                                backgroundColor: success ? Colors.green : Colors.red,
+                                duration: const Duration(seconds: 1),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Erro: $e'), backgroundColor: Colors.red),
+                            );
+                          }
+                        }
+                      },
+                    ),
+                  ],
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -65,26 +115,46 @@ class ProductionCard extends StatelessWidget {
                 itemCount: order.items.length,
                 itemBuilder: (context, index) {
                   final item = order.items[index];
+                  final isItemReady = item.status == OrderStatus.ready.index;
+
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('${item.quantity}x ', style: const TextStyle(fontWeight: FontWeight.bold)),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(item.productName),
-                              if (item.notes != null && item.notes!.isNotEmpty)
-                                Text(
-                                  item.notes!,
-                                  style: const TextStyle(fontSize: 12, color: Colors.red, fontStyle: FontStyle.italic),
-                                ),
-                            ],
+                    child: InkWell(
+                      onTap: () {
+                        final nextStatus = isItemReady ? OrderStatus.preparing : OrderStatus.ready;
+                        ref.read(productionOrdersProvider.notifier).updateItemStatus(item.id, nextStatus);
+                      },
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            isItemReady ? Icons.check_circle : Icons.radio_button_unchecked,
+                            color: isItemReady ? Colors.green : Colors.grey,
+                            size: 20,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 8),
+                          Text('${item.quantity}x ', style: const TextStyle(fontWeight: FontWeight.bold)),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.productName,
+                                  style: TextStyle(
+                                    decoration: isItemReady ? TextDecoration.lineThrough : null,
+                                    color: isItemReady ? Colors.grey : null,
+                                  ),
+                                ),
+                                if (item.notes != null && item.notes!.isNotEmpty)
+                                  Text(
+                                    item.notes!,
+                                    style: const TextStyle(fontSize: 12, color: Colors.red, fontStyle: FontStyle.italic),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },
@@ -96,13 +166,13 @@ class ProductionCard extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: onNextStatus,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: order.status == OrderStatus.confirmed ? AppColors.primary : Colors.green,
+                  backgroundColor: _getButtonColor(order.status),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
                 child: Text(
-                  order.status == OrderStatus.confirmed ? 'COMEÇAR' : 'PRONTO',
+                  _getButtonText(order.status, order.isDelivery),
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
@@ -111,5 +181,27 @@ class ProductionCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Color _getButtonColor(OrderStatus status) {
+    switch (status) {
+      case OrderStatus.preparing:
+        return Colors.green;
+      case OrderStatus.ready:
+        return AppColors.primary;
+      case OrderStatus.outForDelivery:
+        return Colors.orange;
+      default:
+        return AppColors.primary;
+    }
+  }
+
+  String _getButtonText(OrderStatus status, bool isDelivery) {
+    if (status == OrderStatus.preparing) return 'PRONTO';
+    if (status == OrderStatus.ready) {
+      return isDelivery ? 'SAIU P/ ENTREGA' : 'ENTREGUE';
+    }
+    if (status == OrderStatus.outForDelivery) return 'ENTREGUE';
+    return 'PRÓXIMO';
   }
 }

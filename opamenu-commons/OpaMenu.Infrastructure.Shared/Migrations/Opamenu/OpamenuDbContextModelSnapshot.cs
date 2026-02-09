@@ -716,6 +716,10 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .HasColumnType("integer")
                         .HasColumnName("quantity");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
                     b.Property<decimal>("Subtotal")
                         .HasPrecision(10, 2)
                         .HasColumnType("decimal(10,2)")

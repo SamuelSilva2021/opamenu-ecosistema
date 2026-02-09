@@ -202,10 +202,6 @@ class OrderDetails extends StatelessWidget {
         color = Colors.orange;
         text = 'Pendente';
         break;
-      case OrderStatus.confirmed:
-        color = Colors.blue;
-        text = 'Confirmado';
-        break;
       case OrderStatus.preparing:
         color = Colors.purple;
         text = 'Preparando';

@@ -66,11 +66,10 @@ Map<String, dynamic> _$OrderResponseDtoToJson(
 
 const _$OrderStatusEnumMap = {
   OrderStatus.pending: 0,
-  OrderStatus.confirmed: 1,
-  OrderStatus.preparing: 2,
-  OrderStatus.ready: 3,
-  OrderStatus.outForDelivery: 4,
-  OrderStatus.delivered: 5,
-  OrderStatus.cancelled: 6,
-  OrderStatus.rejected: 7,
+  OrderStatus.preparing: 1,
+  OrderStatus.ready: 2,
+  OrderStatus.outForDelivery: 3,
+  OrderStatus.delivered: 4,
+  OrderStatus.cancelled: 5,
+  OrderStatus.rejected: 6,
 };

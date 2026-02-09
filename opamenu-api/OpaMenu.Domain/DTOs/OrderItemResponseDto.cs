@@ -15,6 +15,7 @@ namespace OpaMenu.Domain.DTOs
         public decimal Subtotal { get; set; }
         public string? Notes { get; set; }
         public string? ImageUrl { get; set; }
+        public int Status { get; set; }
         public List<OrderItemAditionalResponseDto> Aditionals { get; set; } = new();
     }
 }

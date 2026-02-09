@@ -731,7 +731,7 @@ public class OrderService(
             if (order.Status != EOrderStatus.Pending)
                 return StaticResponseBuilder<OrderResponseDto>.BuildError("Apenas pedidos pendentes podem ser aceitos");
 
-            order.Status = EOrderStatus.Confirmed;
+            order.Status = EOrderStatus.Preparing;
             order.EstimatedPreparationMinutes = estimatedPreparationMinutes;
             order.EstimatedDeliveryTime = DateTime.UtcNow.AddMinutes(estimatedPreparationMinutes + (order.IsDelivery ? 30 : 0));
             order.UpdatedAt = DateTime.UtcNow;
@@ -772,8 +772,8 @@ public class OrderService(
             var order = await _orderRepository.GetByIdWithIncludesAsync(id, o => o.Rejection!);
             if (order == null)
                 return StaticResponseBuilder<OrderResponseDto>.BuildNotFound(null!);
-            if (order.Status != EOrderStatus.Pending && order.Status != EOrderStatus.Confirmed)
-                return StaticResponseBuilder<OrderResponseDto>.BuildError("Apenas pedidos pendentes ou confirmados podem ser rejeitados");
+            if (order.Status != EOrderStatus.Pending && order.Status != EOrderStatus.Preparing)
+                return StaticResponseBuilder<OrderResponseDto>.BuildError("Apenas pedidos pendentes ou em preparo podem ser rejeitados");
 
             order.Status = EOrderStatus.Rejected;
             order.UpdatedAt = DateTime.UtcNow;
@@ -1161,12 +1161,11 @@ public class OrderService(
     {
         return currentStatus switch
         {
-            EOrderStatus.Pending => newStatus is EOrderStatus.Confirmed or EOrderStatus.Cancelled or EOrderStatus.Rejected,
-            EOrderStatus.Confirmed => newStatus is EOrderStatus.Preparing or EOrderStatus.Pending or EOrderStatus.Cancelled or EOrderStatus.Rejected,
-            EOrderStatus.Preparing => newStatus is EOrderStatus.Ready or EOrderStatus.Confirmed or EOrderStatus.Cancelled,
-            EOrderStatus.Ready => newStatus is EOrderStatus.Preparing or EOrderStatus.OutForDelivery or EOrderStatus.Delivered or EOrderStatus.Cancelled,
+            EOrderStatus.Pending => newStatus is EOrderStatus.Preparing or EOrderStatus.Cancelled or EOrderStatus.Rejected,
+            EOrderStatus.Preparing => newStatus is EOrderStatus.Ready or EOrderStatus.Cancelled,
+            EOrderStatus.Ready => newStatus is EOrderStatus.OutForDelivery or EOrderStatus.Delivered or EOrderStatus.Cancelled,
             EOrderStatus.OutForDelivery => newStatus is EOrderStatus.Delivered or EOrderStatus.Cancelled,
-            EOrderStatus.Delivered => newStatus is EOrderStatus.Ready, // Status final
+            EOrderStatus.Delivered => false, // Status final
             EOrderStatus.Cancelled => false, // Status final
             EOrderStatus.Rejected => false, // Status final
             _ => false
@@ -1272,5 +1271,44 @@ public class OrderService(
         
     }
     #endregion
+
+    /// <summary>
+    /// Atualiza o status de um item de pedido
+    /// </summary>
+    public async Task<ResponseDTO<OrderResponseDto>> UpdateOrderItemStatusAsync(Guid orderItemId, EOrderStatus status)
+    {
+        try
+        {
+            var orderItem = await _context.Set<OrderItemEntity>()
+                .Include(oi => oi.Order)
+                .ThenInclude(o => o.Items)
+                .FirstOrDefaultAsync(oi => oi.Id == orderItemId);
+
+            if (orderItem == null)
+                return StaticResponseBuilder<OrderResponseDto>.BuildError("Item de pedido não encontrado");
+
+            var tenantGuid = _currentUserService.GetTenantGuid();
+            if (orderItem.Order.TenantId != tenantGuid)
+                return StaticResponseBuilder<OrderResponseDto>.BuildError("Acesso negado");
+
+            orderItem.Status = status;
+            orderItem.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            var order = await _orderRepository.GetByIdWithIncludesAsync(orderItem.OrderId,
+                o => o.Items,
+                o => o.StatusHistory);
+
+            var orderDto = _mapper.Map<OrderResponseDto>(order);
+
+            return StaticResponseBuilder<OrderResponseDto>.BuildOk(orderDto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao atualizar status do item de pedido {OrderItemId}", orderItemId);
+            return StaticResponseBuilder<OrderResponseDto>.BuildError("Erro interno do servidor");
+        }
+    }
 }
 

@@ -347,13 +347,12 @@ public class NotificationService : INotificationService
     }
 
     /// <summary>
-    /// ObtÃ©m mensagem amigÃ¡vel para o status do pedido
+    /// Obtém mensagem amigável para o status do pedido
     /// </summary>
     private static string GetStatusMessage(EOrderStatus status) => status switch
     {
-        EOrderStatus.Pending => "Aguardando confirmaÃ§Ã£o",
-        EOrderStatus.Confirmed => "Pedido confirmado",
-        EOrderStatus.Preparing => "Em preparaÃ§Ã£o",
+        EOrderStatus.Pending => "Aguardando confirmação",
+        EOrderStatus.Preparing => "Em preparação",
         EOrderStatus.Ready => "Pronto para retirada",
         EOrderStatus.OutForDelivery => "Saiu para entrega",
         EOrderStatus.Delivered => "Entregue",

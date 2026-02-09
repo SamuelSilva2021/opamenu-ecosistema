@@ -13,6 +13,7 @@ class OrderItemResponseDto {
   final double subtotal;
   final String? notes;
   final String? imageUrl;
+  final int status;
   final List<OrderItemAddonResponseDto> addons;
 
   OrderItemResponseDto({
@@ -24,6 +25,7 @@ class OrderItemResponseDto {
     required this.subtotal,
     this.notes,
     this.imageUrl,
+    this.status = 0,
     this.addons = const [],
   });
 

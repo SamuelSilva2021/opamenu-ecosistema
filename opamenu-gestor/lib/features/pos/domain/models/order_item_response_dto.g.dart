@@ -17,6 +17,7 @@ OrderItemResponseDto _$OrderItemResponseDtoFromJson(
   subtotal: (json['subtotal'] as num).toDouble(),
   notes: json['notes'] as String?,
   imageUrl: json['imageUrl'] as String?,
+  status: (json['status'] as num?)?.toInt() ?? 0,
   addons:
       (json['addons'] as List<dynamic>?)
           ?.map(
@@ -38,5 +39,6 @@ Map<String, dynamic> _$OrderItemResponseDtoToJson(
   'subtotal': instance.subtotal,
   'notes': instance.notes,
   'imageUrl': instance.imageUrl,
+  'status': instance.status,
   'addons': instance.addons,
 };

@@ -15,13 +15,11 @@ class ProductionOrders extends _$ProductionOrders {
   Future<List<OrderResponseDto>> _fetchProductionOrders() async {
     final repository = ref.read(ordersRepositoryProvider);
     
-    // Fetch both confirmed and preparing orders
-    final confirmed = await repository.getOrdersByStatus(OrderStatus.confirmed.index);
-    final preparing = await repository.getOrdersByStatus(OrderStatus.preparing.index);
+    // Fetch preparing orders (Pending orders move to preparing when accepted)
+    final orders = await repository.getOrdersByStatus(OrderStatus.preparing.index);
     
-    final all = [...confirmed, ...preparing];
-    all.sort((a, b) => a.createdAt.compareTo(b.createdAt));
-    return all;
+    orders.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    return orders;
   }
 
   Future<void> refresh() async {
@@ -33,15 +31,23 @@ class ProductionOrders extends _$ProductionOrders {
     final repository = ref.read(ordersRepositoryProvider);
     OrderStatus nextStatus;
 
-    if (order.status == OrderStatus.confirmed) {
-      nextStatus = OrderStatus.preparing;
-    } else if (order.status == OrderStatus.preparing) {
+    if (order.status == OrderStatus.preparing) {
       nextStatus = OrderStatus.ready;
+    } else if (order.status == OrderStatus.ready && order.isDelivery) {
+      nextStatus = OrderStatus.outForDelivery;
+    } else if (order.status == OrderStatus.outForDelivery || (order.status == OrderStatus.ready && !order.isDelivery)) {
+      nextStatus = OrderStatus.delivered;
     } else {
       return;
     }
 
     await repository.updateOrderStatus(order.id, nextStatus.index);
+    await refresh();
+  }
+
+  Future<void> updateItemStatus(String orderItemId, OrderStatus status) async {
+    final repository = ref.read(ordersRepositoryProvider);
+    await repository.updateOrderItemStatus(orderItemId, status.index);
     await refresh();
   }
 }

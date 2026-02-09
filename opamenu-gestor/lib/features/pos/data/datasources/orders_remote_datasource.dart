@@ -147,4 +147,22 @@ class OrdersRemoteDataSource {
       rethrow;
     }
   }
+
+  Future<OrderResponseDto> updateOrderItemStatus(String orderItemId, UpdateOrderStatusRequestDto dto) async {
+    try {
+      final response = await _dio.put(
+        '/api/orders/items/$orderItemId/status',
+        data: dto.toJson(),
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data is Map ? response.data['data'] : response.data;
+        return OrderResponseDto.fromJson(data);
+      }
+      throw Exception('Failed to update order item status');
+    } catch (e, stack) {
+      developer.log('Error updating order item status', error: e, stackTrace: stack, name: 'OrdersRemoteDataSource');
+      rethrow;
+    }
+  }
 }

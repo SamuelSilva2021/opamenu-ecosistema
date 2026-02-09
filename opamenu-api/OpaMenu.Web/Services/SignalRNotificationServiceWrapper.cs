@@ -301,9 +301,8 @@ public class SignalRNotificationServiceWrapper : INotificationService
 
     private static string GetStatusMessage(EOrderStatus status) => status switch
     {
-        EOrderStatus.Pending => "Aguardando confirmaÃ§Ã£o",
-        EOrderStatus.Confirmed => "Pedido confirmado",
-        EOrderStatus.Preparing => "Em preparaÃ§Ã£o",
+        EOrderStatus.Pending => "Aguardando confirmação",
+        EOrderStatus.Preparing => "Em preparação",
         EOrderStatus.Ready => "Pronto para retirada",
         EOrderStatus.OutForDelivery => "Saiu para entrega",
         EOrderStatus.Delivered => "Entregue",

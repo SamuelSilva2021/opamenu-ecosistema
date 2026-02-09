@@ -50,6 +50,8 @@ dependencies:
   intl: ^0.20.2
   qr_flutter: ^4.1.0
   fl_chart: ^0.70.1
+  esc_pos_utils_plus: ^2.0.1+6
+  flutter_pos_printer_platform: ^1.4.2
 
 dev_dependencies:
   flutter_test:
@@ -64,6 +66,10 @@ dev_dependencies:
   build_runner: ^2.7.1
   riverpod_generator: ^4.0.0+1
   json_serializable: ^6.11.2
+
+dependency_overrides:
+  flutter_star_prnt:
+    path: packages/flutter_star_prnt
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

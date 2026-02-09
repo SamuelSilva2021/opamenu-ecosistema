@@ -4,26 +4,22 @@ enum OrderStatus {
   @JsonValue(0)
   pending,
   @JsonValue(1)
-  confirmed,
-  @JsonValue(2)
   preparing,
-  @JsonValue(3)
+  @JsonValue(2)
   ready,
-  @JsonValue(4)
+  @JsonValue(3)
   outForDelivery,
-  @JsonValue(5)
+  @JsonValue(4)
   delivered,
-  @JsonValue(6)
+  @JsonValue(5)
   cancelled,
-  @JsonValue(7)
+  @JsonValue(6)
   rejected;
 
   String get label {
     switch (this) {
       case OrderStatus.pending:
         return 'Pendente';
-      case OrderStatus.confirmed:
-        return 'Confirmado';
       case OrderStatus.preparing:
         return 'Em Preparo';
       case OrderStatus.ready:

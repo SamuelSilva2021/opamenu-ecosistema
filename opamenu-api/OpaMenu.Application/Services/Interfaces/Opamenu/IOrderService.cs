@@ -72,6 +72,11 @@ namespace OpaMenu.Application.Services.Interfaces.Opamenu
         /// Obtém o próximo número de pedido disponível
         /// </summary>
         Task<ResponseDTO<int>> GetNextOrderNumberAsync();
+
+        /// <summary>
+        /// Atualiza o status de um item de pedido
+        /// </summary>
+        Task<ResponseDTO<OrderResponseDto>> UpdateOrderItemStatusAsync(Guid orderItemId, EOrderStatus status);
     }
 }
 

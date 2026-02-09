@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OpaMenu.Infrastructure.Shared.Entities.Opamenu;
@@ -29,6 +30,9 @@ public class OrderItemEntity : BaseEntity
     [MaxLength(500)]
     [Column("notes")]
     public string? Notes { get; set; }
+
+    [Column("status")]
+    public EOrderStatus Status { get; set; } = EOrderStatus.Pending;
 
     public virtual OrderEntity Order { get; set; } = null!;
     public virtual ProductEntity Product { get; set; } = null!;

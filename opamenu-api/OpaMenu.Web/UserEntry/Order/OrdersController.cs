@@ -207,4 +207,15 @@ public class OrdersController(IOrderService orderService, ILogger<OrdersControll
         var result = await _orderService.UpdateOrderAsync(id, request);
         return BuildResponse(result);
     }
+
+    /// <summary>
+    /// Atualiza o status de um item de pedido
+    /// </summary>
+    [HttpPut("items/{orderItemId}/status")]
+    [MapPermission(ORDER, OPERATION_UPDATE)]
+    public async Task<ActionResult<ApiResponse<OrderResponseDto>>> UpdateOrderItemStatus(Guid orderItemId, [FromBody] UpdatEOrderStatusRequestDto request)
+    {
+        var result = await _orderService.UpdateOrderItemStatusAsync(orderItemId, request.Status);
+        return BuildResponse(result);
+    }
 }

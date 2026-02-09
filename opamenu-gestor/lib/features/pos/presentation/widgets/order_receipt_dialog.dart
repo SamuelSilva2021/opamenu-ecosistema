@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/models/order_response_dto.dart';
 import '../../domain/models/order_item_response_dto.dart';
+import '../../../../core/services/printer_service.dart';
+import '../../../../core/utils/receipt_generator.dart';
+import 'package:esc_pos_utils_plus/esc_pos_utils.dart' as esc;
 
-class OrderReceiptDialog extends StatelessWidget {
+class OrderReceiptDialog extends ConsumerWidget {
   final OrderResponseDto order;
 
   const OrderReceiptDialog({Key? key, required this.order}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final currencyFormat = NumberFormat.currency(symbol: 'R\$', locale: 'pt_BR');
+    final printerService = ref.read(printerServiceProvider.notifier);
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -98,9 +103,46 @@ class OrderReceiptDialog extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
               child: ElevatedButton(
-                onPressed: () {
-                  // Implement print logic or close for now
-                  Navigator.of(context).pop();
+                onPressed: () async {
+                  try {
+                    // Show loading
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Preparando impressão...')),
+                    );
+
+                    final profile = await esc.CapabilityProfile.load();
+                    final bytes = await ReceiptGenerator.generateOrderReceipt(
+                      order: order,
+                      paperSize: PaperSize.mm80, // PaperSize enum from printer_service.dart
+                      profile: profile,
+                    );
+
+                    // Mock device for testing (Network printer)
+                    // TODO: Move this to a settings page
+                    final device = PrinterDeviceInfo(
+                      name: 'Impressora Cozinha',
+                      address: '192.168.1.100', // Typical local IP
+                      type: PrinterConnectionType.network,
+                    );
+
+                    final success = await printerService.printReceipt(device, bytes);
+
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(success ? 'Cupom enviado para a impressora!' : 'Erro ao conectar na impressora. Verifique a rede.'),
+                          backgroundColor: success ? Colors.green : Colors.red,
+                        ),
+                      );
+                      if (success) Navigator.of(context).pop();
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Erro: $e'), backgroundColor: Colors.red),
+                      );
+                    }
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,

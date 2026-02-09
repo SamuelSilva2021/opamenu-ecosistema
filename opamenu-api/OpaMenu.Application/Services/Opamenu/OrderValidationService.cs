@@ -165,9 +165,9 @@ public class OrderValidationService(
                 return ApiResponse<bool>.BadRequest("Motivo da rejeiÃ§Ã£o Ã© obrigatÃ³rio.");
             }
 
-            if (order.Status != EOrderStatus.Pending && order.Status != EOrderStatus.Confirmed)
+            if (order.Status != EOrderStatus.Pending && order.Status != EOrderStatus.Preparing)
             {
-                return ApiResponse<bool>.BadRequest("Apenas pedidos pendentes ou confirmados podem ser rejeitados.");
+                return ApiResponse<bool>.BadRequest("Apenas pedidos pendentes ou em preparo podem ser rejeitados.");
             }
 
             return ApiResponse<bool>.SuccessResponse(true, "Pedido pode ser rejeitado.");
@@ -306,9 +306,8 @@ public class OrderValidationService(
     {
         return currentStatus switch
         {
-            EOrderStatus.Pending => newStatus is EOrderStatus.Confirmed or EOrderStatus.Rejected or EOrderStatus.Cancelled,
-            EOrderStatus.Confirmed => newStatus is EOrderStatus.Preparing or EOrderStatus.Rejected or EOrderStatus.Cancelled,
-            EOrderStatus.Preparing => newStatus is EOrderStatus.Ready or EOrderStatus.Cancelled,
+            EOrderStatus.Pending => newStatus is EOrderStatus.Preparing or EOrderStatus.Rejected or EOrderStatus.Cancelled,
+            EOrderStatus.Preparing => newStatus is EOrderStatus.Ready or EOrderStatus.Rejected or EOrderStatus.Cancelled,
             EOrderStatus.Ready => newStatus is EOrderStatus.OutForDelivery or EOrderStatus.Delivered or EOrderStatus.Cancelled,
             EOrderStatus.OutForDelivery => newStatus is EOrderStatus.Delivered or EOrderStatus.Cancelled,
             EOrderStatus.Delivered => false, // Status final
