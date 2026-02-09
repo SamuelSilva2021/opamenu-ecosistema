@@ -284,8 +284,8 @@ const StorefrontContent = () => {
           </div>
 
           {/* Mobile Category Navigation - Sticky */}
-          <div className="lg:hidden sticky top-0 z-40 -mx-4 px-4 bg-background/95 backdrop-blur-md py-4 border-b border-border/50">
-            <div className="flex overflow-x-auto gap-3 scrollbar-hide">
+          <div className="lg:hidden sticky top-0 z-40 -mx-4 px-4 bg-background/95 backdrop-blur-md py-4 border-b border-border/50 transition-all duration-500">
+            <div className="flex overflow-x-auto gap-3 scrollbar-hide scroll-smooth py-1">
               <button
                 onClick={() => setSelectedCategory("all")}
                 className={`
