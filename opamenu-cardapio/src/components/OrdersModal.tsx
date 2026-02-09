@@ -286,406 +286,442 @@ export function OrdersModal({ isOpen, onClose }: OrdersModalProps) {
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto bg-white p-0 gap-0">
-          <DialogHeader className="p-6 pb-2 border-b sticky top-0 bg-white z-10">
-            <DialogTitle className="flex items-center gap-2 text-xl font-bold">
-              <ShoppingBag className="h-5 w-5 text-primary" />
-              Meus Pedidos
-            </DialogTitle>
-          </DialogHeader>
+        <DialogContent className="max-w-xl h-[95vh] w-[95vw] sm:w-full flex flex-col p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl">
+          <div className="flex flex-col h-full bg-background">
+            <DialogHeader className="shrink-0 p-8 pb-4 bg-white border-b border-border/50">
+              <DialogTitle className="flex items-center gap-3 text-2xl font-black uppercase italic tracking-tighter text-foreground">
+                <div className="bg-primary/10 p-2 rounded-xl">
+                  <ShoppingBag className="h-6 w-6 text-primary stroke-[2.5]" />
+                </div>
+                Meus Pedidos
+              </DialogTitle>
+              <DialogDescription className="text-xs font-bold text-text-secondary/60 uppercase tracking-widest mt-1">
+                Acompanhe o status das suas delícias
+              </DialogDescription>
+            </DialogHeader>
 
-          <div className="p-6 space-y-4">
-            {loading ? (
-              <div className="flex flex-col items-center justify-center py-12 gap-4">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <p className="text-gray-500">Carregando seus pedidos...</p>
-              </div>
-            ) : error ? (
-              <div className="text-center py-8">
-                <p className="text-red-500 mb-4">{error}</p>
-                <Button onClick={() => onClose()} variant="outline">Fechar</Button>
-              </div>
-            ) : orders.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
-                <ShoppingBag className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <p>Você ainda não fez nenhum pedido.</p>
-                <Button
-                  variant="link"
-                  className="mt-2 text-primary"
-                  onClick={onClose}
-                >
-                  Começar a comprar
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {orders.map((order) => (
-                  <div
-                    key={order.id}
-                    className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide bg-gray-50/50">
+              {loading ? (
+                <div className="flex flex-col items-center justify-center py-20 gap-4">
+                  <div className="relative">
+                    <Loader2 className="h-12 w-12 animate-spin text-primary opacity-20" />
+                    <ShoppingBag className="h-6 w-6 text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                  </div>
+                  <p className="text-xs font-black uppercase tracking-widest text-primary/40">Buscando seus pedidos...</p>
+                </div>
+              ) : error ? (
+                <div className="text-center py-12 bg-white rounded-[2rem] border-2 border-dashed border-red-100 p-8">
+                  <XCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
+                  <p className="text-sm font-bold text-red-500 uppercase tracking-tight mb-4">{error}</p>
+                  <Button onClick={() => onClose()} variant="outline" className="rounded-xl font-bold uppercase tracking-widest text-xs px-8">Fechar</Button>
+                </div>
+              ) : orders.length === 0 ? (
+                <div className="text-center py-20 bg-white rounded-[2.5rem] border-2 border-dashed border-border p-10 flex flex-col items-center">
+                  <div className="bg-muted/50 p-6 rounded-full mb-6">
+                    <ShoppingBag className="h-16 w-16 text-muted-foreground opacity-30" />
+                  </div>
+                  <h3 className="text-xl font-black uppercase italic tracking-tighter text-foreground mb-2">Fome acumulada!</h3>
+                  <p className="text-sm font-medium text-text-secondary/60 mb-8 max-w-[200px]">Você ainda não fez nenhum pedido conosco.</p>
+                  <Button
+                    onClick={onClose}
+                    className="h-14 px-10 bg-primary hover:bg-primary-hover text-white rounded-2xl font-black uppercase italic tracking-wider shadow-xl shadow-primary/20 transform transition-all active:scale-95"
                   >
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-4">
-                          <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${order.status === OrderStatus.Pending ? 'bg-yellow-100 text-yellow-800' :
-                              order.status === OrderStatus.Confirmed ? 'bg-blue-100 text-blue-800' :
-                                order.status === OrderStatus.OutForDelivery ? 'bg-orange-100 text-orange-800' :
-                                  order.status === OrderStatus.Delivered ? 'bg-green-100 text-green-800' :
-                                    order.status === OrderStatus.Cancelled ? 'bg-red-100 text-red-800' :
-                                      'bg-gray-100 text-gray-800'
-                            }`}>
-                            {getOrderStatusText(order.status)}
-                          </span>
-                          <div className="flex items-center gap-2">
-                            <p className="font-bold text-lg text-primary">
-                              {formatPrice(order.total)}
+                    Começar a comprar
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-6 pb-12">
+                  {orders.map((order) => (
+                    <div
+                      key={order.id}
+                      className="group bg-white rounded-[2.5rem] border border-border/50 shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden"
+                    >
+                      {/* Card Header: Status & Price */}
+                      <div className="p-6 pb-0">
+                        <div className="flex justify-between items-start mb-6">
+                          <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className={`
+                                 text-[10px] font-black uppercase tracking-[0.1em] px-4 py-1.5 rounded-full border-2 transition-all duration-500
+                                 ${order.status === OrderStatus.Pending ? 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20 shadow-sm shadow-yellow-500/10' :
+                                  order.status === OrderStatus.Confirmed ? 'bg-blue-500/10 text-blue-600 border-blue-500/20 shadow-sm shadow-blue-500/10' :
+                                    order.status === OrderStatus.OutForDelivery ? 'bg-orange-500/10 text-orange-600 border-orange-500/20 animate-pulse border-orange-500/20 shadow-sm shadow-orange-500/10' :
+                                      order.status === OrderStatus.Delivered ? 'bg-green-500/10 text-green-600 border-green-500/20 shadow-sm shadow-green-500/10' :
+                                        order.status === OrderStatus.Cancelled ? 'bg-red-500/10 text-red-600 border-red-500/20' :
+                                          'bg-gray-100 text-gray-500 border-gray-200'}
+                               `}>
+                                {getOrderStatusText(order.status)}
+                              </span>
+                              {order.status === OrderStatus.Delivered && (
+                                <div className="bg-green-500 text-white rounded-full p-1 border-2 border-white shadow-sm">
+                                  <Check className="h-3 w-3 stroke-[3]" />
+                                </div>
+                              )}
+                            </div>
+                            <p className="text-[10px] font-bold text-text-secondary/40 flex items-center gap-1.5 uppercase tracking-widest pl-1">
+                              <Calendar className="h-3 w-3" />
+                              {formatDate(order.createdAt)}
                             </p>
-                            {order.status === OrderStatus.Pending && (
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                                    <MoreVertical className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="bg-white">
-                                  <DropdownMenuLabel>Ações do Pedido</DropdownMenuLabel>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem onClick={() => openPaymentDialog(order)}>
-                                    <CreditCard className="mr-2 h-4 w-4" />
-                                    Alterar Pagamento
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => openDeliveryDialog(order)}>
-                                    <Truck className="mr-2 h-4 w-4" />
-                                    Entrega/Retirada
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem
-                                    className="text-red-600 focus:text-red-600"
-                                    onClick={() => openCancelDialog(order)}
-                                  >
-                                    <XCircle className="mr-2 h-4 w-4" />
-                                    Cancelar Pedido
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            )}
+                          </div>
+
+                          <div className="flex flex-col items-end gap-1">
+                            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/30 leading-none">Total</span>
+                            <div className="flex items-center gap-2">
+                              <p className="text-2xl font-black text-foreground tracking-tighter leading-none">
+                                {formatPrice(order.total)}
+                              </p>
+                              {order.status === OrderStatus.Pending && (
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-10 w-10 text-muted-foreground hover:bg-muted rounded-full">
+                                      <MoreVertical className="h-5 w-5" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" className="bg-white rounded-2xl border-border shadow-2xl p-2 min-w-[180px]">
+                                    <DropdownMenuLabel className="font-black uppercase tracking-widest text-[10px] opacity-40 px-3 py-2">Ações</DropdownMenuLabel>
+                                    <DropdownMenuItem onClick={() => openPaymentDialog(order)} className="rounded-xl font-bold p-3 focus:bg-primary/5 focus:text-primary cursor-pointer">
+                                      <CreditCard className="mr-3 h-4 w-4" />
+                                      Pagamento
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => openDeliveryDialog(order)} className="rounded-xl font-bold p-3 focus:bg-primary/5 focus:text-primary cursor-pointer">
+                                      <Truck className="mr-3 h-4 w-4" />
+                                      Entrega/Retirada
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator className="my-1 bg-border/50" />
+                                    <DropdownMenuItem
+                                      className="rounded-xl font-bold p-3 text-red-600 focus:bg-red-50 focus:text-red-700 cursor-pointer"
+                                      onClick={() => openCancelDialog(order)}
+                                    >
+                                      <XCircle className="mr-3 h-4 w-4" />
+                                      Cancelar
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              )}
+                            </div>
                           </div>
                         </div>
 
-                        {/* Status Stepper */}
+                        {/* Status Tracking Visualizer */}
                         {order.status !== OrderStatus.Cancelled && (
-                          <div className="flex items-center mb-4 px-2">
-                            <div className="flex flex-col items-center flex-1">
-                              <div className={`h-2 w-2 rounded-full mb-1 ${order.status !== OrderStatus.Pending ? 'bg-green-500' : 'bg-gray-300 animate-pulse'}`} />
-                              <span className="text-[10px] text-gray-500">Realizado</span>
-                            </div>
-                            <div className={`h-0.5 flex-1 mx-1 ${order.status !== OrderStatus.Pending ? 'bg-green-500' : 'bg-gray-200'}`} />
-                            <div className="flex flex-col items-center flex-1">
-                              <div className={`h-2 w-2 rounded-full mb-1 ${[OrderStatus.Preparing, OrderStatus.Ready, OrderStatus.OutForDelivery, OrderStatus.Delivered].includes(order.status) ? 'bg-green-500' :
-                                  order.status === OrderStatus.Confirmed ? 'bg-blue-500 animate-pulse' : 'bg-gray-300'
-                                }`} />
-                              <span className="text-[10px] text-gray-500">Preparo</span>
-                            </div>
-                            <div className={`h-0.5 flex-1 mx-1 ${[OrderStatus.Preparing, OrderStatus.Ready, OrderStatus.OutForDelivery, OrderStatus.Delivered].includes(order.status) ? 'bg-green-500' : 'bg-gray-200'}`} />
-                            <div className="flex flex-col items-center flex-1">
-                              <div className={`h-2 w-2 rounded-full mb-1 ${order.status === OrderStatus.Delivered ? 'bg-green-500' :
-                                  [OrderStatus.Ready, OrderStatus.OutForDelivery].includes(order.status) ? 'bg-orange-500 animate-pulse' : 'bg-gray-300'
-                                }`} />
-                              <span className="text-[10px] text-gray-500">Entrega</span>
-                            </div>
-                            <div className={`h-0.5 flex-1 mx-1 ${order.status === OrderStatus.Delivered ? 'bg-green-500' : 'bg-gray-200'}`} />
-                            <div className="flex flex-col items-center flex-1">
-                              <div className={`h-2 w-2 rounded-full mb-1 ${order.status === OrderStatus.Delivered ? 'bg-green-500' : 'bg-gray-300'}`} />
-                              <span className="text-[10px] text-gray-500">Finalizado</span>
+                          <div className="relative flex items-center mb-8 px-4 h-12">
+                            {/* Connection Lines Background */}
+                            <div className="absolute left-10 right-10 top-1/2 -translate-y-1/2 h-1 bg-muted rounded-full" />
+
+                            {/* Active Line Progress */}
+                            <div
+                              className="absolute left-10 top-1/2 -translate-y-1/2 h-1 bg-green-500 rounded-full transition-all duration-1000 ease-out z-[1]"
+                              style={{
+                                width: order.status === OrderStatus.Delivered ? 'calc(100% - 80px)' :
+                                  [OrderStatus.Ready, OrderStatus.OutForDelivery].includes(order.status) ? '66%' :
+                                    [OrderStatus.Preparing, OrderStatus.Confirmed].includes(order.status) ? '33%' : '0%'
+                              }}
+                            />
+
+                            {/* Stepper Points */}
+                            <div className="relative z-[2] flex justify-between w-full">
+                              {[
+                                { id: 'realizado', label: 'Realizado', active: true, done: order.status !== OrderStatus.Pending },
+                                { id: 'preparo', label: 'Preparo', active: order.status !== OrderStatus.Pending, done: [OrderStatus.Preparing, OrderStatus.Ready, OrderStatus.OutForDelivery, OrderStatus.Delivered].includes(order.status) },
+                                { id: 'entrega', label: 'Entrega', active: [OrderStatus.Ready, OrderStatus.OutForDelivery, OrderStatus.Delivered].includes(order.status), done: order.status === OrderStatus.Delivered },
+                                { id: 'finalizado', label: 'Finalizado', active: order.status === OrderStatus.Delivered, done: order.status === OrderStatus.Delivered }
+                              ].map((step, idx) => (
+                                <div key={step.id} className="flex flex-col items-center group/step">
+                                  <div className={`
+                                    w-5 h-5 rounded-full border-4 flex items-center justify-center transition-all duration-500
+                                    ${step.done ? 'bg-green-500 border-green-200' :
+                                      step.active ? 'bg-white border-primary shadow-lg shadow-primary/20 scale-110' : 'bg-muted border-white'}
+                                  `}>
+                                    {step.done && <Check className="h-4 w-4 text-white p-0.5" />}
+                                  </div>
+                                  <span className={`text-[9px] font-black uppercase tracking-tighter mt-2 transition-colors ${step.active ? 'text-foreground' : 'text-muted-foreground/40'}`}>
+                                    {step.label}
+                                  </span>
+                                </div>
+                              ))}
                             </div>
                           </div>
                         )}
+                      </div>
 
-                        <p className="text-xs text-gray-500 flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {formatDate(order.createdAt)}
-                        </p>
+                      {/* Card Details Body */}
+                      <div className="px-6 pb-6 space-y-4">
+                        <div className="bg-muted/30 rounded-[1.5rem] p-5 space-y-4">
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2 mb-1">
+                              <div className="w-1.5 h-3 bg-primary rounded-full" />
+                              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 leading-none">Itens do Pedido</span>
+                            </div>
+                            <ul className="space-y-3">
+                              {order.items.map((item, idx) => (
+                                <li key={idx} className="flex items-center justify-between group/item">
+                                  <div className="flex items-center gap-3">
+                                    <span className="bg-white border border-border/50 text-xs font-black min-w-8 h-8 flex items-center justify-center rounded-lg shadow-sm">
+                                      {item.quantity}x
+                                    </span>
+                                    <span className="text-sm font-bold text-foreground group-hover/item:text-primary transition-colors">
+                                      {item.productName}
+                                    </span>
+                                  </div>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+
+                          {order.deliveryAddress && (
+                            <div className="pt-4 border-t border-border/10">
+                              <div className="flex items-center gap-2 mb-2">
+                                <MapPin className="h-3.5 w-3.5 text-primary stroke-[2.5]" />
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 leading-none">Endereço de Entrega</span>
+                              </div>
+                              <p className="text-xs font-medium text-text-secondary leading-relaxed pl-5 opacity-80">
+                                {order.deliveryAddress}
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-
-                    <div className="border-t pt-3 mt-3">
-                      <p className="text-sm font-medium text-gray-700 mb-2">Itens:</p>
-                      <ul className="text-sm text-gray-600 space-y-1">
-                        {order.items.map((item, idx) => (
-                          <li key={idx} className="flex justify-between">
-                            <span>{item.quantity}x {item.productName}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    {order.deliveryAddress && (
-                      <div className="border-t pt-3 mt-3 flex items-start gap-2 text-sm text-gray-500">
-                        <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
-                        <span>{order.deliveryAddress}</span>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>
 
       <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-[2.5rem] p-8 border-none shadow-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Cancelar Pedido #{actionOrder?.id}</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja cancelar este pedido? Esta ação não pode ser desfeita.
+            <AlertDialogTitle className="text-2xl font-black uppercase italic tracking-tighter text-foreground">
+              Cancelar Pedido?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm font-medium text-text-secondary/60 leading-relaxed">
+              Tem certeza que deseja cancelar o pedido #{actionOrder?.id}? Esta ação não pode ser desfeita e seu estômago pode ficar triste. 😢
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="py-4">
-            <Label htmlFor="reason" className="mb-2 block">Motivo do Cancelamento</Label>
+          <div className="py-6 space-y-3">
+            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 ml-1">Motivo do Cancelamento</Label>
             <Textarea
-              id="reason"
               placeholder="Ex: Mudei de ideia, demorou muito..."
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
+              className="min-h-[100px] rounded-2xl border-2 border-border/50 bg-gray-50/50 focus:bg-white focus:border-red-500 transition-all p-5 font-bold"
             />
           </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={actionLoading}>Voltar</AlertDialogCancel>
+          <AlertDialogFooter className="gap-3 sm:gap-0">
+            <AlertDialogCancel disabled={actionLoading} className="h-14 rounded-2xl font-black uppercase italic tracking-widest text-xs border-2">
+              Voltar
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={(e) => { e.preventDefault(); handleCancel(); }}
               disabled={!cancelReason.trim() || actionLoading}
-              className="bg-red-600 hover:bg-red-700"
+              className="h-14 bg-red-500 hover:bg-red-600 text-white rounded-2xl font-black uppercase italic tracking-wider shadow-xl shadow-red-500/20"
             >
               {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Confirmar Cancelamento
+              Confirmar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
       <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Alterar Forma de Pagamento</DialogTitle>
-            <DialogDescription>
-              Selecione a nova forma de pagamento para o pedido #{actionOrder?.id}.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <RadioGroup value={selectedPaymentMethod} onValueChange={setSelectedPaymentMethod} className="space-y-3">
-              <label
-                htmlFor="credit"
-                className={`flex items-center gap-3 border p-3 rounded-lg transition-colors cursor-pointer ${selectedPaymentMethod === "0" ? 'border-opamenu-orange bg-opamenu-orange/5' : 'border-border hover:bg-gray-50'
-                  }`}
-              >
-                <RadioGroupItem value="0" id="credit" className="sr-only" />
-                <CreditCard className={`h-5 w-5 ${selectedPaymentMethod === "0" ? 'text-opamenu-orange' : 'text-muted-foreground'}`} />
-                <div className="flex-1 font-medium text-base">Cartão de Crédito</div>
-                {selectedPaymentMethod === "0" && <Check className="h-5 w-5 text-opamenu-orange" />}
-              </label>
+        <DialogContent className="max-w-md rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
+          <div className="bg-white p-8">
+            <DialogHeader className="p-0 mb-8">
+              <DialogTitle className="text-2xl font-black uppercase italic tracking-tighter text-foreground">
+                Pagamento
+              </DialogTitle>
+              <DialogDescription className="text-sm font-bold text-text-secondary/60 uppercase tracking-widest mt-1">
+                Como deseja pagar pelo pedido #{actionOrder?.id}?
+              </DialogDescription>
+            </DialogHeader>
 
-              <label
-                htmlFor="debit"
-                className={`flex items-center gap-3 border p-3 rounded-lg transition-colors cursor-pointer ${selectedPaymentMethod === "1" ? 'border-opamenu-orange bg-opamenu-orange/5' : 'border-border hover:bg-gray-50'
-                  }`}
-              >
-                <RadioGroupItem value="1" id="debit" className="sr-only" />
-                <CreditCard className={`h-5 w-5 ${selectedPaymentMethod === "1" ? 'text-opamenu-orange' : 'text-muted-foreground'}`} />
-                <div className="flex-1 font-medium text-base">Cartão de Débito</div>
-                {selectedPaymentMethod === "1" && <Check className="h-5 w-5 text-opamenu-orange" />}
-              </label>
+            <div className="space-y-3">
+              <RadioGroup value={selectedPaymentMethod} onValueChange={setSelectedPaymentMethod} className="space-y-3">
+                {[
+                  { id: "0", label: "Cartão de Crédito", icon: CreditCard },
+                  { id: "1", label: "Cartão de Débito", icon: CreditCard },
+                  { id: "2", label: "Pix", icon: Smartphone },
+                  { id: "3", label: "Dinheiro", icon: Banknote },
+                ].map((method) => (
+                  <label
+                    key={method.id}
+                    htmlFor={method.id}
+                    className={`
+                      flex items-center gap-4 p-5 rounded-2xl border-2 transition-all duration-300 cursor-pointer
+                      ${selectedPaymentMethod === method.id
+                        ? 'border-primary bg-primary/5 shadow-md shadow-primary/5'
+                        : 'border-border/50 hover:border-primary/30 hover:bg-gray-50'}
+                    `}
+                  >
+                    <RadioGroupItem value={method.id} id={method.id} className="sr-only" />
+                    <div className={`p-2 rounded-xl ${selectedPaymentMethod === method.id ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}>
+                      <method.icon className="h-5 w-5 stroke-[2.5]" />
+                    </div>
+                    <div className="flex-1 font-black uppercase italic tracking-tight text-base">{method.label}</div>
+                    {selectedPaymentMethod === method.id && (
+                      <div className="bg-primary text-white rounded-full p-1">
+                        <Check className="h-3 w-3 stroke-[3]" />
+                      </div>
+                    )}
+                  </label>
+                ))}
+              </RadioGroup>
+            </div>
 
-              <label
-                htmlFor="pix"
-                className={`flex items-center gap-3 border p-3 rounded-lg transition-colors cursor-pointer ${selectedPaymentMethod === "2" ? 'border-opamenu-orange bg-opamenu-orange/5' : 'border-border hover:bg-gray-50'
-                  }`}
+            <div className="grid grid-cols-2 gap-4 mt-10">
+              <Button
+                variant="ghost"
+                onClick={() => setShowPaymentDialog(false)}
+                disabled={actionLoading}
+                className="h-14 rounded-2xl font-black uppercase italic tracking-widest text-xs"
               >
-                <RadioGroupItem value="2" id="pix" className="sr-only" />
-                <Smartphone className={`h-5 w-5 ${selectedPaymentMethod === "2" ? 'text-opamenu-orange' : 'text-muted-foreground'}`} />
-                <div className="flex-1 font-medium text-base">Pix</div>
-                {selectedPaymentMethod === "2" && <Check className="h-5 w-5 text-opamenu-orange" />}
-              </label>
-
-              <label
-                htmlFor="cash"
-                className={`flex items-center gap-3 border p-3 rounded-lg transition-colors cursor-pointer ${selectedPaymentMethod === "3" ? 'border-opamenu-orange bg-opamenu-orange/5' : 'border-border hover:bg-gray-50'
-                  }`}
+                Voltar
+              </Button>
+              <Button
+                onClick={handleUpdatePayment}
+                disabled={actionLoading}
+                className="h-14 bg-primary hover:bg-primary-hover text-white rounded-2xl font-black uppercase italic tracking-wider shadow-xl shadow-primary/20"
               >
-                <RadioGroupItem value="3" id="cash" className="sr-only" />
-                <Banknote className={`h-5 w-5 ${selectedPaymentMethod === "3" ? 'text-opamenu-orange' : 'text-muted-foreground'}`} />
-                <div className="flex-1 font-medium text-base">Dinheiro</div>
-                {selectedPaymentMethod === "3" && <Check className="h-5 w-5 text-opamenu-orange" />}
-              </label>
-            </RadioGroup>
+                {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : "Salvar"}
+              </Button>
+            </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowPaymentDialog(false)} disabled={actionLoading}>
-              Cancelar
-            </Button>
-            <Button onClick={handleUpdatePayment} disabled={actionLoading}>
-              {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Salvar Alteração
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <Dialog open={showDeliveryDialog} onOpenChange={setShowDeliveryDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Alterar Tipo de Entrega</DialogTitle>
-            <DialogDescription>
-              Escolha entre Entrega ou Retirada.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4 space-y-4">
-            <RadioGroup
-              value={deliveryType}
-              onValueChange={(v) => setDeliveryType(v as "delivery" | "pickup")}
-              className="flex gap-4"
-            >
-              <label
-                htmlFor="delivery"
-                className={`flex-1 flex items-center gap-3 border p-3 rounded-lg transition-colors cursor-pointer ${deliveryType === "delivery" ? 'border-opamenu-orange bg-opamenu-orange/5' : 'border-border hover:bg-gray-50'
-                  }`}
+        <DialogContent className="max-w-md rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
+          <div className="bg-white p-8 max-h-[90vh] overflow-y-auto scrollbar-hide">
+            <DialogHeader className="p-0 mb-8">
+              <DialogTitle className="text-2xl font-black uppercase italic tracking-tighter text-foreground">
+                Entrega
+              </DialogTitle>
+              <DialogDescription className="text-sm font-bold text-text-secondary/60 uppercase tracking-widest mt-1">
+                {deliveryType === "delivery" ? "Onde entregaremos o pedido #" : "Retirada do pedido #"} {actionOrder?.id}?
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6">
+              <RadioGroup
+                value={deliveryType}
+                onValueChange={(v) => setDeliveryType(v as "delivery" | "pickup")}
+                className="grid grid-cols-2 gap-3"
               >
-                <RadioGroupItem value="delivery" id="delivery" className="sr-only" />
-                <div className="flex items-center gap-2 flex-1">
-                  <Truck className={`h-5 w-5 ${deliveryType === "delivery" ? 'text-opamenu-orange' : 'text-muted-foreground'}`} />
-                  <span className="font-medium text-base">Entrega</span>
-                </div>
-                {deliveryType === "delivery" && <Check className="h-5 w-5 text-opamenu-orange" />}
-              </label>
+                <label
+                  htmlFor="delivery"
+                  className={`flex flex-col items-center justify-center gap-3 border-2 p-5 rounded-3xl transition-all duration-300 cursor-pointer ${deliveryType === "delivery" ? 'border-primary bg-primary/5' : 'border-border/50 hover:bg-gray-50'
+                    }`}
+                >
+                  <RadioGroupItem value="delivery" id="delivery" className="sr-only" />
+                  <div className={`p-3 rounded-2xl ${deliveryType === "delivery" ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}>
+                    <Truck className="h-6 w-6 stroke-[2.5]" />
+                  </div>
+                  <span className="font-black uppercase italic tracking-tighter text-sm">Entrega</span>
+                </label>
 
-              <label
-                htmlFor="pickup"
-                className={`flex-1 flex items-center gap-3 border p-3 rounded-lg transition-colors cursor-pointer ${deliveryType === "pickup" ? 'border-opamenu-green bg-opamenu-green/5' : 'border-border hover:bg-gray-50'
-                  }`}
-              >
-                <RadioGroupItem value="pickup" id="pickup" className="sr-only" />
-                <div className="flex items-center gap-2 flex-1">
-                  <Store className={`h-5 w-5 ${deliveryType === "pickup" ? 'text-opamenu-green' : 'text-muted-foreground'}`} />
-                  <span className="font-medium text-base">Retirada</span>
-                </div>
-                {deliveryType === "pickup" && <Check className="h-5 w-5 text-opamenu-green" />}
-              </label>
-            </RadioGroup>
+                <label
+                  htmlFor="pickup"
+                  className={`flex flex-col items-center justify-center gap-3 border-2 p-5 rounded-3xl transition-all duration-300 cursor-pointer ${deliveryType === "pickup" ? 'border-primary bg-primary/5' : 'border-border/50 hover:bg-gray-50'
+                    }`}
+                >
+                  <RadioGroupItem value="pickup" id="pickup" className="sr-only" />
+                  <div className={`p-3 rounded-2xl ${deliveryType === "pickup" ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}>
+                    <Store className="h-6 w-6 stroke-[2.5]" />
+                  </div>
+                  <span className="font-black uppercase italic tracking-tighter text-sm">Retirada</span>
+                </label>
+              </RadioGroup>
 
-            {deliveryType === "delivery" && (
-              <div className="space-y-4 pt-2">
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-primary" />
-                  <h4 className="font-semibold text-sm">Endereço de Entrega</h4>
-                </div>
-
-                {/* CEP */}
-                <div className="space-y-2">
-                  <Label htmlFor="zipCode">CEP</Label>
-                  <div className="relative">
-                    <Input
-                      id="zipCode"
-                      value={addressForm.zipCode}
-                      onChange={handleCepChange}
-                      placeholder="00000-000"
-                      maxLength={9}
-                      className={validationErrors.zipCode ? 'border-destructive pr-10' : 'pr-10'}
-                    />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                      {isLoadingCep ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Search className="h-4 w-4" />
-                      )}
+              {deliveryType === "delivery" && (
+                <div className="space-y-5 pt-2 animate-in fade-in slide-in-from-top-4 duration-500">
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 ml-1">CEP</Label>
+                    <div className="relative">
+                      <Input
+                        value={addressForm.zipCode}
+                        onChange={handleCepChange}
+                        placeholder="00000-000"
+                        className="h-14 rounded-2xl border-2 border-border/50 bg-gray-50/50 focus:bg-white focus:border-primary transition-all px-5 font-bold"
+                      />
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">
+                        {isLoadingCep ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                      </div>
                     </div>
                   </div>
-                  {validationErrors.zipCode && (
-                    <p className="text-xs text-destructive">{validationErrors.zipCode}</p>
-                  )}
-                </div>
 
-                {/* Rua e Número */}
-                <div className="grid grid-cols-[1fr_80px] gap-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="street">Rua</Label>
-                    <Input
-                      id="street"
-                      value={addressForm.street}
-                      onChange={(e) => handleAddressChange('street', e.target.value)}
-                      placeholder="Nome da rua"
-                      disabled={isLoadingCep}
-                    />
+                  <div className="grid grid-cols-[1fr_100px] gap-3">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 ml-1">Rua</Label>
+                      <Input
+                        value={addressForm.street}
+                        onChange={(e) => handleAddressChange('street', e.target.value)}
+                        placeholder="Nome da rua"
+                        className="h-14 rounded-2xl border-2 border-border/50 bg-gray-50/50 focus:bg-white focus:border-primary transition-all px-5 font-bold"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 ml-1">Nº</Label>
+                      <Input
+                        value={addressForm.number}
+                        onChange={(e) => handleAddressChange('number', e.target.value)}
+                        placeholder="123"
+                        className="h-14 rounded-2xl border-2 border-border/50 bg-gray-50/50 focus:bg-white focus:border-primary transition-all px-5 font-bold"
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="number">Número</Label>
-                    <Input
-                      id="number"
-                      value={addressForm.number}
-                      onChange={(e) => handleAddressChange('number', e.target.value)}
-                      placeholder="123"
-                      disabled={isLoadingCep}
-                    />
-                  </div>
-                </div>
 
-                {/* Complemento */}
-                <div className="space-y-2">
-                  <Label htmlFor="complement">Complemento (opcional)</Label>
-                  <Input
-                    id="complement"
-                    value={addressForm.complement}
-                    onChange={(e) => handleAddressChange('complement', e.target.value)}
-                    placeholder="Apto 101"
-                    disabled={isLoadingCep}
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 ml-1">Complemento</Label>
+                    <Input
+                      value={addressForm.complement}
+                      onChange={(e) => handleAddressChange('complement', e.target.value)}
+                      placeholder="Apto, Bloco..."
+                      className="h-14 rounded-2xl border-2 border-border/50 bg-gray-50/50 focus:bg-white focus:border-primary transition-all px-5 font-bold"
+                    />
+                  </div>
 
-                {/* Bairro, Cidade, UF */}
-                <div className="grid grid-cols-[1fr_1fr_60px] gap-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="neighborhood">Bairro</Label>
-                    <Input
-                      id="neighborhood"
-                      value={addressForm.neighborhood}
-                      onChange={(e) => handleAddressChange('neighborhood', e.target.value)}
-                      placeholder="Bairro"
-                      disabled={isLoadingCep}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="city">Cidade</Label>
-                    <Input
-                      id="city"
-                      value={addressForm.city}
-                      onChange={(e) => handleAddressChange('city', e.target.value)}
-                      placeholder="Cidade"
-                      disabled={isLoadingCep}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="state">UF</Label>
-                    <Input
-                      id="state"
-                      value={addressForm.state}
-                      onChange={(e) => handleAddressChange('state', e.target.value)}
-                      placeholder="UF"
-                      maxLength={2}
-                      disabled={isLoadingCep}
-                    />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 ml-1">Bairro</Label>
+                      <Input
+                        value={addressForm.neighborhood}
+                        onChange={(e) => handleAddressChange('neighborhood', e.target.value)}
+                        className="h-14 rounded-2xl border-2 border-border/50 bg-gray-50/50 focus:bg-white focus:border-primary transition-all px-5 font-bold"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 ml-1">Cidade</Label>
+                      <Input
+                        value={addressForm.city}
+                        onChange={(e) => handleAddressChange('city', e.target.value)}
+                        className="h-14 rounded-2xl border-2 border-border/50 bg-gray-50/50 focus:bg-white focus:border-primary transition-all px-5 font-bold"
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mt-10 pb-2">
+              <Button
+                variant="ghost"
+                onClick={() => setShowDeliveryDialog(false)}
+                disabled={actionLoading}
+                className="h-14 rounded-2xl font-black uppercase italic tracking-widest text-xs"
+              >
+                Voltar
+              </Button>
+              <Button
+                onClick={handleUpdateDelivery}
+                disabled={actionLoading}
+                className="h-14 bg-primary hover:bg-primary-hover text-white rounded-2xl font-black uppercase italic tracking-wider shadow-xl shadow-primary/20"
+              >
+                {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : "Salvar"}
+              </Button>
+            </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeliveryDialog(false)} disabled={actionLoading}>
-              Cancelar
-            </Button>
-            <Button onClick={handleUpdateDelivery} disabled={actionLoading}>
-              {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Salvar Alteração
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
