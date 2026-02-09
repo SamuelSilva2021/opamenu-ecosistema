@@ -23,7 +23,15 @@ Future<List<PermissionModel>> permissions(Ref ref) async {
 bool hasPermission(Ref ref, String permissionKey) {
   final permissionsAsync = ref.watch(permissionsProvider);
   return permissionsAsync.maybeWhen(
-    data: (permissions) => permissions.any((p) => p.key == permissionKey),
+    data: (permissions) => permissions.any((p) {
+      if (p.key == permissionKey) return true;
+      // If we are checking for a module (no colon in key), 
+      // see if the user has any permission starting with that module
+      if (!permissionKey.contains(':') && p.module == permissionKey) {
+        return true;
+      }
+      return false;
+    }),
     orElse: () => false,
   );
 }

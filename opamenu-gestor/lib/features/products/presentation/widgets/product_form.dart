@@ -1,8 +1,11 @@
 
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:opamenu_gestor/core/theme/app_colors.dart';
 import 'package:opamenu_gestor/features/pos/domain/models/product_model.dart';
+import 'package:opamenu_gestor/features/products/data/datasources/file_remote_datasource.dart';
 import 'package:opamenu_gestor/features/products/presentation/providers/product_notifier.dart';
 import 'package:opamenu_gestor/features/products/presentation/providers/category_notifier.dart';
 import 'package:opamenu_gestor/features/products/presentation/providers/additional_notifier.dart';
@@ -27,6 +30,8 @@ class _ProductFormState extends ConsumerState<ProductForm> {
   String? _selectedCategoryId;
   List<String> _selectedAdditionalGroupIds = [];
   bool _isActive = true;
+  File? _imageFile;
+  bool _isUploading = false;
 
   @override
   void initState() {
@@ -49,24 +54,66 @@ class _ProductFormState extends ConsumerState<ProductForm> {
     super.dispose();
   }
 
-  void _save() {
-    if (_formKey.currentState!.validate()) {
-      final data = {
-        'name': _nameController.text,
-        'description': _descController.text,
-        'price': double.tryParse(_priceController.text) ?? 0.0,
-        'imageUrl': _imageUrlController.text.isEmpty ? null : _imageUrlController.text,
-        'categoryId': _selectedCategoryId,
-        'isActive': _isActive,
-        'AditionalGroupIds': _selectedAdditionalGroupIds,
-      };
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        _imageFile = File(image.path);
+        _imageUrlController.text = ''; // Clear URL if local file is selected
+      });
+    }
+  }
 
-      if (widget.product == null) {
-        ref.read(productProvider.notifier).addProduct(data);
-      } else {
-        ref.read(productProvider.notifier).updateProduct(widget.product!.id, data);
+  Future<void> _save() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() => _isUploading = true);
+      
+      try {
+        String? imageUrl = _imageUrlController.text.trim();
+        if (imageUrl.isEmpty) imageUrl = null;
+
+        if (_imageFile != null) {
+          imageUrl = await ref.read(fileRemoteDataSourceProvider).uploadImage(_imageFile!);
+        }
+
+        final data = {
+          'name': _nameController.text,
+          'description': _descController.text,
+          'price': double.tryParse(_priceController.text) ?? 0.0,
+          'imageUrl': imageUrl,
+          'categoryId': _selectedCategoryId,
+          'isActive': _isActive,
+          'AditionalGroupIds': _selectedAdditionalGroupIds,
+        };
+
+        if (widget.product == null) {
+          await ref.read(productProvider.notifier).addProduct(data);
+        } else {
+          await ref.read(productProvider.notifier).updateProduct(widget.product!.id, data);
+        }
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Produto salvo com sucesso!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context);
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Erro ao salvar produto: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isUploading = false);
       }
-      Navigator.pop(context);
     }
   }
 
@@ -146,34 +193,68 @@ class _ProductFormState extends ConsumerState<ProductForm> {
                 ],
               ),
               const SizedBox(height: 24),
-              _buildSectionTitle('Imagem'),
+              _buildSectionTitle('Imagem do Produto'),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _imageUrlController,
-                onChanged: (v) => setState(() {}),
-                decoration: const InputDecoration(
-                  labelText: 'URL da Imagem',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.link),
-                  helperText: 'Insira a URL direta da imagem (ex: .jpg, .png)',
-                ),
-              ),
-              if (_imageUrlController.text.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: Container(
-                    height: 150,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey[300]!),
-                      borderRadius: BorderRadius.circular(8),
-                      image: DecorationImage(
-                        image: NetworkImage(_imageUrlController.text),
-                        fit: BoxFit.cover,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      children: [
+                        TextFormField(
+                          controller: _imageUrlController,
+                          onChanged: (v) {
+                            if (v.isNotEmpty) setState(() => _imageFile = null);
+                          },
+                          decoration: const InputDecoration(
+                            labelText: 'URL da Imagem',
+                            border: OutlineInputBorder(),
+                            prefixIcon: Icon(Icons.link),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        const Text('OU', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: _isUploading ? null : _pickImage,
+                            icon: const Icon(Icons.image_search),
+                            label: const Text('Selecionar do Dispositivo'),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.all(16),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 24),
+                  Expanded(
+                    child: AspectRatio(
+                      aspectRatio: 1,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          border: Border.all(color: Colors.grey[300]!),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: _imageFile != null
+                            ? Image.file(_imageFile!, fit: BoxFit.cover)
+                            : _imageUrlController.text.isNotEmpty
+                                ? Image.network(
+                                    _imageUrlController.text,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 40, color: Colors.grey),
+                                  )
+                                : const Icon(Icons.add_a_photo_outlined, size: 40, color: Colors.grey),
                       ),
                     ),
                   ),
-                ),
+                ],
+              ),
               const SizedBox(height: 24),
               _buildSectionTitle('Classificação'),
               const SizedBox(height: 16),
@@ -219,7 +300,7 @@ class _ProductFormState extends ConsumerState<ProductForm> {
                           }
                         });
                       },
-                      selectedColor: AppColors.primary.withOpacity(0.2),
+                      selectedColor: AppColors.primary.withValues(alpha: 0.2),
                       checkmarkColor: AppColors.primary,
                     );
                   }).toList(),

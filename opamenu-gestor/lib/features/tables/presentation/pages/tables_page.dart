@@ -155,7 +155,7 @@ class TablesPage extends ConsumerWidget {
                                             onPressed: () => _showQrCode(context, ref, table.id, table.name),
                                           ),
                                           PermissionGate(
-                                            module: 'TABLES',
+                                            module: 'TABLE',
                                             operation: 'UPDATE',
                                             child: IconButton(
                                               icon: const Icon(Icons.edit, color: Colors.orange),
@@ -169,7 +169,7 @@ class TablesPage extends ConsumerWidget {
                                             ),
                                           ),
                                           PermissionGate(
-                                            module: 'TABLES',
+                                            module: 'TABLE',
                                             operation: 'DELETE',
                                             child: IconButton(
                                               icon: const Icon(Icons.delete, color: Colors.red),

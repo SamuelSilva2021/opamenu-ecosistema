@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:opamenu_gestor/core/presentation/widgets/permission_gate.dart';
 import 'package:opamenu_gestor/core/theme/app_colors.dart';
+import 'package:opamenu_gestor/features/auth/presentation/providers/auth_notifier.dart';
 
-class PosSidebar extends StatelessWidget {
+class PosSidebar extends ConsumerWidget {
   const PosSidebar({super.key});
 
   int _getCurrentIndex(String location) {
@@ -57,7 +59,7 @@ class PosSidebar extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final String location = GoRouterState.of(context).uri.toString();
     final int currentIndex = _getCurrentIndex(location);
 
@@ -130,7 +132,7 @@ class PosSidebar extends StatelessWidget {
                     ),
                   ),
                   PermissionGate(
-                    module: 'ORDERS',
+                    module: 'ORDER',
                     child: _SidebarItem(
                       icon: Icons.receipt_long_rounded,
                       label: 'Pedidos',
@@ -139,7 +141,7 @@ class PosSidebar extends StatelessWidget {
                     ),
                   ),
                   PermissionGate(
-                    module: 'TABLES',
+                    module: 'TABLE',
                     child: _SidebarItem(
                       icon: Icons.table_restaurant_rounded,
                       label: 'Mesas',
@@ -148,7 +150,7 @@ class PosSidebar extends StatelessWidget {
                     ),
                   ),
                   PermissionGate(
-                    module: 'PRODUCTS',
+                    module: 'PRODUCT',
                     child: _SidebarItem(
                       icon: Icons.inventory_2_rounded,
                       label: 'Produtos',
@@ -178,7 +180,7 @@ class PosSidebar extends StatelessWidget {
                     onTap: () => _navigateTo(context, 5),
                   ),
                   PermissionGate(
-                    module: 'USERS',
+                    module: 'USER',
                     child: _SidebarItem(
                       icon: Icons.people_rounded,
                       label: 'Usuários',
@@ -243,6 +245,11 @@ class PosSidebar extends StatelessWidget {
                       ),
                     ],
                   ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.logout_rounded, color: Colors.redAccent, size: 20),
+                  onPressed: () => ref.read(authProvider.notifier).logout(),
+                  tooltip: 'Sair',
                 ),
               ],
             ),

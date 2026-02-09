@@ -67,8 +67,9 @@ class AuthNotifier extends _$AuthNotifier {
     for (final group in userInfo.permissions.accessGroups) {
       for (final role in group.roles) {
         for (final module in role.modules) {
+          permissions.add(module.key); // Add the base module key for general access checks
           if (module.operations.isEmpty) {
-            permissions.add(module.key);
+            // No specific operations, module key is enough
           } else {
             for (final op in module.operations) {
               permissions.add('${module.key}:$op');
@@ -81,7 +82,10 @@ class AuthNotifier extends _$AuthNotifier {
   }
 
   Future<void> logout() async {
+    print('Iniciando logout...');
+    state = const AsyncValue.loading();
     await _storage.deleteAll();
+    print('Storage limpo. Finalizando logout.');
     state = const AsyncValue.data(null);
   }
 }

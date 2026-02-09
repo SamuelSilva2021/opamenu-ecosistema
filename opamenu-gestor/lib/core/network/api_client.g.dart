@@ -47,7 +47,7 @@ final class DioProvider extends $FunctionalProvider<Dio, Dio, Dio>
   }
 }
 
-String _$dioHash() => r'e23823b4313d37002b2f72aaea0afe9e8491ea92';
+String _$dioHash() => r'661664a5e50e89b272daea2bfcacff41e201ae24';
 
 @ProviderFor(productsDio)
 final productsDioProvider = ProductsDioProvider._();
@@ -87,4 +87,4 @@ final class ProductsDioProvider extends $FunctionalProvider<Dio, Dio, Dio>
   }
 }
 
-String _$productsDioHash() => r'07cb70dd3898b026a6db656d1e21837ed59f55e3';
+String _$productsDioHash() => r'96e53e8e7f0d9ef80c7c7d4560f615ac10c856ba';

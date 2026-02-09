@@ -31,6 +31,16 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Either<String, LoginResponseModel>> refreshToken(String refreshToken) async {
+    try {
+      final result = await _dataSource.refreshToken(refreshToken);
+      return Right(result);
+    } catch (e) {
+      return Left(e.toString());
+    }
+  }
+
+  @override
   Future<Either<String, UserInfoModel>> getUserInfo({String? token}) async {
     try {
       final result = await _dataSource.getUserInfo(token: token);

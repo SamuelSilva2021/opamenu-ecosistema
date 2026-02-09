@@ -1,8 +1,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:opamenu_gestor/features/products/presentation/widgets/category_list.dart';
+import 'package:opamenu_gestor/features/products/presentation/widgets/additional_list.dart';
+import 'package:opamenu_gestor/features/products/presentation/widgets/product_list.dart';
 import 'package:opamenu_gestor/core/theme/app_colors.dart';
-import 'package:opamenu_gestor/core/presentation/pages/placeholder_page.dart';
 
 class CatalogPage extends StatefulWidget {
   const CatalogPage({super.key});
@@ -52,9 +53,9 @@ class _CatalogPageState extends State<CatalogPage> with SingleTickerProviderStat
       body: TabBarView(
         controller: _tabController,
         children: const [
-          PlaceholderPage(title: 'Gestão de Produtos'),
+          ProductList(),
           CategoryList(),
-          PlaceholderPage(title: 'Gestão de Adicionais'),
+          AdditionalList(),
         ],
       ),
     );

@@ -53,8 +53,13 @@ GoRouter goRouter(Ref ref) {
 
           if (requiredModule != null) {
             final hasAccess = permissions.any((p) => p.module == requiredModule);
-            if (!hasAccess && permissions.isNotEmpty) {
-              return '/dashboard';
+            if (!hasAccess) {
+              for (final entry in _routePermissions.entries) {
+                if (permissions.any((p) => p.module == entry.value)) {
+                  return entry.key;
+                }
+              }
+              return '/login';
             }
           }
           return null;
@@ -139,7 +144,6 @@ GoRouter goRouter(Ref ref) {
   );
 }
 
-/// Helper class to convert a Riverpod provider into a Listenable for GoRouter
 class _RiverpodListenable extends ChangeNotifier {
   _RiverpodListenable(Ref ref, ProviderListenable locator) {
     ref.listen(locator, (_, __) => notifyListeners());
@@ -148,10 +152,10 @@ class _RiverpodListenable extends ChangeNotifier {
 
 const _routePermissions = {
   '/dashboard': 'DASHBOARD',
-  '/pos': 'POS',
-  '/orders': 'ORDERS',
-  '/tables': 'TABLES',
-  '/products': 'PRODUCTS',
-  '/users': 'USERS',
+  '/pos': 'PDV',
+  '/orders': 'ORDER',
+  '/tables': 'TABLE',
+  '/products': 'PRODUCT',
+  '/users': 'USER',
   '/settings': 'SETTINGS',
 };
