@@ -52,4 +52,48 @@ class OrderResponseDto {
       _$OrderResponseDtoFromJson(json);
 
   Map<String, dynamic> toJson() => _$OrderResponseDtoToJson(this);
+
+  OrderResponseDto copyWith({
+    String? id,
+    String? customerName,
+    String? customerPhone,
+    String? customerEmail,
+    String? deliveryAddress,
+    double? subtotal,
+    double? deliveryFee,
+    double? discountAmount,
+    String? couponCode,
+    double? total,
+    OrderStatus? status,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    bool? isDelivery,
+    String? notes,
+    int? estimatedPreparationMinutes,
+    DateTime? estimatedDeliveryTime,
+    int? queuePosition,
+    List<OrderItemResponseDto>? items,
+  }) {
+    return OrderResponseDto(
+      id: id ?? this.id,
+      customerName: customerName ?? this.customerName,
+      customerPhone: customerPhone ?? this.customerPhone,
+      customerEmail: customerEmail ?? this.customerEmail,
+      deliveryAddress: deliveryAddress ?? this.deliveryAddress,
+      subtotal: subtotal ?? this.subtotal,
+      deliveryFee: deliveryFee ?? this.deliveryFee,
+      discountAmount: discountAmount ?? this.discountAmount,
+      couponCode: couponCode ?? this.couponCode,
+      total: total ?? this.total,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isDelivery: isDelivery ?? this.isDelivery,
+      notes: notes ?? this.notes,
+      estimatedPreparationMinutes: estimatedPreparationMinutes ?? this.estimatedPreparationMinutes,
+      estimatedDeliveryTime: estimatedDeliveryTime ?? this.estimatedDeliveryTime,
+      queuePosition: queuePosition ?? this.queuePosition,
+      items: items ?? this.items,
+    );
+  }
 }

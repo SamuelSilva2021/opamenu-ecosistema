@@ -171,6 +171,7 @@ class _ProductFormState extends ConsumerState<ProductForm> {
               ),
               const SizedBox(height: 16),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: TextFormField(
@@ -180,15 +181,29 @@ class _ProductFormState extends ConsumerState<ProductForm> {
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.attach_money),
                       ),
-                      keyboardType: TextInputType.number,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     ),
                   ),
                   const SizedBox(width: 16),
-                  SwitchListTile(
-                    title: const Text('Ativo'),
-                    value: _isActive,
-                    onChanged: (v) => setState(() => _isActive = v),
-                    contentPadding: EdgeInsets.zero,
+                  Container(
+                    height: 56, // Match input height
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('Ativo', style: TextStyle(fontSize: 16)),
+                        const SizedBox(width: 8),
+                        Switch(
+                          value: _isActive,
+                          onChanged: (v) => setState(() => _isActive = v),
+                          activeColor: AppColors.primary,
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -259,19 +274,27 @@ class _ProductFormState extends ConsumerState<ProductForm> {
               _buildSectionTitle('Classificação'),
               const SizedBox(height: 16),
               categoriesAsync.when(
-                data: (categories) => DropdownButtonFormField<String>(
-                  value: _selectedCategoryId,
-                  decoration: const InputDecoration(
-                    labelText: 'Categoria',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.category_outlined),
-                  ),
-                  items: categories.map((c) => DropdownMenuItem(
-                    value: c.id,
-                    child: Text(c.name),
-                  )).toList(),
-                  onChanged: (v) => setState(() => _selectedCategoryId = v),
-                ),
+                data: (categories) {
+                  // Ensure selected value exists in list or is null
+                  final validValue = categories.any((c) => c.id == _selectedCategoryId) 
+                      ? _selectedCategoryId 
+                      : null;
+                      
+                  return DropdownButtonFormField<String>(
+                    value: validValue,
+                    decoration: const InputDecoration(
+                      labelText: 'Categoria',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.category_outlined),
+                    ),
+                    items: categories.map((c) => DropdownMenuItem(
+                      value: c.id,
+                      child: Text(c.name),
+                    )).toList(),
+                    onChanged: (v) => setState(() => _selectedCategoryId = v),
+                    validator: (v) => v == null ? 'Selecione uma categoria' : null,
+                  );
+                },
                 loading: () => const LinearProgressIndicator(),
                 error: (e, _) => Text('Erro ao carregar categorias: $e'),
               ),

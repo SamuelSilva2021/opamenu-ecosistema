@@ -13,7 +13,7 @@ AdditionalModel _$AdditionalModelFromJson(Map<String, dynamic> json) =>
       price: (json['price'] as num).toDouble(),
       description: json['description'] as String?,
       isActive: json['isActive'] as bool? ?? true,
-      additionalGroupId: json['additionalGroupId'] as String,
+      additionalGroupId: json['aditionalGroupId'] as String,
     );
 
 Map<String, dynamic> _$AdditionalModelToJson(AdditionalModel instance) =>
@@ -23,5 +23,5 @@ Map<String, dynamic> _$AdditionalModelToJson(AdditionalModel instance) =>
       'price': instance.price,
       'description': instance.description,
       'isActive': instance.isActive,
-      'additionalGroupId': instance.additionalGroupId,
+      'aditionalGroupId': instance.additionalGroupId,
     };

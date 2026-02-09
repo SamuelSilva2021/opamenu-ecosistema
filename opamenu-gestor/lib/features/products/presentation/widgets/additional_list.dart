@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/additional_notifier.dart';
 import '../../domain/models/additional_group_model.dart';
 import '../../../../core/theme/app_colors.dart';
+import 'package:flutter/services.dart';
+import '../../domain/models/additional_model.dart';
 
 class AdditionalList extends ConsumerWidget {
   const AdditionalList({super.key});
@@ -63,27 +65,62 @@ class AdditionalList extends ConsumerWidget {
                     style: TextStyle(color: Colors.grey[600]),
                   ),
                   children: [
+                    if (group.additionals.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text('Nenhum item cadastrado neste grupo', style: TextStyle(color: Colors.grey[500])),
+                      ),
                     ...group.additionals.map((item) => ListTile(
                           title: Text(item.name),
-                          trailing: Text('R\$ ${item.price.toStringAsFixed(2)}'),
+                          subtitle: item.description != null && item.description!.isNotEmpty ? Text(item.description!) : null,
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'R\$ ${item.price.toStringAsFixed(2)}',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                              ),
+                              const SizedBox(width: 16),
+                              IconButton(
+                                icon: const Icon(Icons.edit, size: 20, color: Colors.orange),
+                                onPressed: () => _showItemDialog(context, ref, group.id, item: item),
+                                tooltip: 'Editar Item',
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete, size: 20, color: Colors.red),
+                                onPressed: () => _confirmDeleteItem(context, ref, item),
+                                tooltip: 'Excluir Item',
+                              ),
+                            ],
+                          ),
                         )),
+                    const Divider(),
                     Padding(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           TextButton.icon(
-                            icon: const Icon(Icons.edit_outlined, size: 18),
-                            label: const Text('Editar'),
-                            onPressed: () => _showGroupDialog(context, ref, group: group),
-                            style: TextButton.styleFrom(foregroundColor: Colors.orange),
+                            onPressed: () => _showItemDialog(context, ref, group.id),
+                            icon: const Icon(Icons.add),
+                            label: const Text('Adicionar Item'),
                           ),
-                          const SizedBox(width: 8),
-                          TextButton.icon(
-                            icon: const Icon(Icons.delete_outline, size: 18),
-                            label: const Text('Excluir'),
-                            onPressed: () => _confirmDelete(context, ref, group),
-                            style: TextButton.styleFrom(foregroundColor: Colors.red),
+                          Row(
+                            children: [
+                              TextButton.icon(
+                                icon: const Icon(Icons.edit_outlined, size: 18),
+                                label: const Text('Editar Grupo'),
+                                onPressed: () => _showGroupDialog(context, ref, group: group),
+                                style: TextButton.styleFrom(foregroundColor: Colors.orange),
+                              ),
+                              const SizedBox(width: 8),
+                              TextButton.icon(
+                                icon: const Icon(Icons.delete_outline, size: 18),
+                                label: const Text('Excluir Grupo'),
+                                onPressed: () => _confirmDelete(context, ref, group),
+                                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -191,6 +228,100 @@ class AdditionalList extends ConsumerWidget {
 
     if (confirmed == true) {
       ref.read(additionalProvider.notifier).deleteGroup(group.id);
+    }
+  }
+
+  Future<void> _showItemDialog(BuildContext context, WidgetRef ref, String groupId, {AdditionalModel? item}) async {
+    final nameController = TextEditingController(text: item?.name);
+    final descController = TextEditingController(text: item?.description);
+    final priceController = TextEditingController(text: item?.price.toString() ?? '0.00');
+
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(item == null ? 'Novo Item Adicional' : 'Editar Item'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(labelText: 'Nome do Item'),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: priceController,
+              decoration: const InputDecoration(
+                labelText: 'Preço (R\$)',
+                prefixText: 'R\$ ',
+              ),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+              ],
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: descController,
+              decoration: const InputDecoration(labelText: 'Descrição (opcional)'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final price = double.tryParse(priceController.text) ?? 0.0;
+              
+              if (item == null) {
+                ref.read(additionalProvider.notifier).addItem(
+                  groupId,
+                  nameController.text,
+                  price,
+                  descController.text,
+                );
+              } else {
+                ref.read(additionalProvider.notifier).updateItem(
+                  item.id,
+                  groupId,
+                  nameController.text,
+                  price,
+                  descController.text,
+                  item.isActive,
+                );
+              }
+              Navigator.pop(context);
+            },
+            child: const Text('Salvar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _confirmDeleteItem(BuildContext context, WidgetRef ref, AdditionalModel item) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Excluir Item'),
+        content: Text('Deseja realmente excluir o item "${item.name}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Excluir', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      ref.read(additionalProvider.notifier).deleteItem(item.id);
     }
   }
 }

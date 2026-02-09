@@ -19,31 +19,53 @@ class AdditionalRemoteDataSource {
   AdditionalRemoteDataSource(this._dio);
 
   Future<List<AdditionalGroupModel>> getAdditionalGroups() async {
-    final response = await _dio.get('/api/additional-groups');
+    final response = await _dio.get('/api/aditionalgroups');
     
     if (response.statusCode == 200) {
-      final apiResponse = ApiResponseModel<List<AdditionalGroupModel>>.fromJson(
-        response.data,
-        (json) {
-          if (json is List) {
-            return json.map((e) => AdditionalGroupModel.fromJson(e as Map<String, dynamic>)).toList();
-          }
-          return [];
-        },
-      );
-
-      if (apiResponse.succeeded && apiResponse.data != null) {
-        return apiResponse.data!;
-      } else {
-        throw Exception(apiResponse.errors?.firstOrNull?.message ?? AppStrings.unknownErrorFromApi);
+      // Check if response is directly a List (new backend behavior)
+      if (response.data is List) {
+        return (response.data as List)
+            .map((e) => AdditionalGroupModel.fromJson(e as Map<String, dynamic>))
+            .toList();
       }
+
+      // Check if response is ApiResponseModel (old behavior or wrapped)
+      if (response.data is Map<String, dynamic>) {
+        try {
+          final apiResponse = ApiResponseModel<List<AdditionalGroupModel>>.fromJson(
+            response.data,
+            (json) {
+              if (json is List) {
+                return json.map((e) => AdditionalGroupModel.fromJson(e as Map<String, dynamic>)).toList();
+              }
+              return [];
+            },
+          );
+
+          if (apiResponse.succeeded && apiResponse.data != null) {
+            return apiResponse.data!;
+          } else {
+            throw Exception(apiResponse.errors?.firstOrNull?.message ?? AppStrings.unknownErrorFromApi);
+          }
+        } catch (_) {
+          // Fallback
+          if (response.data['data'] is List) {
+             return (response.data['data'] as List)
+                .map((e) => AdditionalGroupModel.fromJson(e as Map<String, dynamic>))
+                .toList();
+          }
+          rethrow;
+        }
+      }
+
+      throw Exception('Formato de resposta inesperado');
     } else {
       throw Exception('Failed to load additional groups: ${response.statusCode}');
     }
   }
 
   Future<AdditionalGroupModel> createAdditionalGroup(Map<String, dynamic> data) async {
-    final response = await _dio.post('/api/additional-groups', data: data);
+    final response = await _dio.post('/api/aditionalgroups', data: data);
     
     if (response.statusCode == 200 || response.statusCode == 201) {
       final apiResponse = ApiResponseModel<AdditionalGroupModel>.fromJson(
@@ -62,7 +84,7 @@ class AdditionalRemoteDataSource {
   }
 
   Future<AdditionalGroupModel> updateAdditionalGroup(String id, Map<String, dynamic> data) async {
-    final response = await _dio.put('/api/additional-groups/$id', data: data);
+    final response = await _dio.put('/api/aditionalgroups/$id', data: data);
     
     if (response.statusCode == 200) {
       final apiResponse = ApiResponseModel<AdditionalGroupModel>.fromJson(
@@ -81,10 +103,36 @@ class AdditionalRemoteDataSource {
   }
 
   Future<void> deleteAdditionalGroup(String id) async {
-    final response = await _dio.delete('/api/additional-groups/$id');
+    final response = await _dio.delete('/api/aditionalgroups/$id');
     
     if (response.statusCode != 200 && response.statusCode != 204) {
       throw Exception('Failed to delete additional group: ${response.statusCode}');
+    }
+  }
+
+  // --- ITEMS (Aditionals) ---
+
+  Future<void> createAdditional(Map<String, dynamic> data) async {
+    final response = await _dio.post('/api/aditionals', data: data);
+    
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception('Failed to create additional item: ${response.statusCode}');
+    }
+  }
+
+  Future<void> updateAdditional(String id, Map<String, dynamic> data) async {
+    final response = await _dio.put('/api/aditionals/$id', data: data);
+    
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update additional item: ${response.statusCode}');
+    }
+  }
+
+  Future<void> deleteAdditional(String id) async {
+    final response = await _dio.delete('/api/aditionals/$id');
+    
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      throw Exception('Failed to delete additional item: ${response.statusCode}');
     }
   }
 }

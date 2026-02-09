@@ -22,21 +22,41 @@ class CategoryRemoteDataSource {
     final response = await _dio.get('/api/categories');
     
     if (response.statusCode == 200) {
-      final apiResponse = ApiResponseModel<List<CategoryModel>>.fromJson(
-        response.data,
-        (json) {
-          if (json is List) {
-            return json.map((e) => CategoryModel.fromJson(e as Map<String, dynamic>)).toList();
-          }
-          return [];
-        },
-      );
-
-      if (apiResponse.succeeded && apiResponse.data != null) {
-        return apiResponse.data!;
-      } else {
-        throw Exception(apiResponse.errors?.firstOrNull?.message ?? AppStrings.unknownErrorFromApi);
+      if (response.data is List) {
+        return (response.data as List)
+            .map((e) => CategoryModel.fromJson(e as Map<String, dynamic>))
+            .toList();
       }
+
+      if (response.data is Map<String, dynamic>) {
+        try {
+          final apiResponse = ApiResponseModel<List<CategoryModel>>.fromJson(
+            response.data,
+            (json) {
+              if (json is List) {
+                return json.map((e) => CategoryModel.fromJson(e as Map<String, dynamic>)).toList();
+              }
+              return [];
+            },
+          );
+
+          if (apiResponse.succeeded && apiResponse.data != null) {
+            return apiResponse.data!;
+          } else {
+            throw Exception(apiResponse.errors?.firstOrNull?.message ?? AppStrings.unknownErrorFromApi);
+          }
+        } catch (_) {
+          // Fallback
+          if (response.data['data'] is List) {
+             return (response.data['data'] as List)
+                .map((e) => CategoryModel.fromJson(e as Map<String, dynamic>))
+                .toList();
+          }
+          rethrow;
+        }
+      }
+      
+      throw Exception('Formato de resposta inesperado');
     } else {
       throw Exception('Failed to load categories: ${response.statusCode}');
     }

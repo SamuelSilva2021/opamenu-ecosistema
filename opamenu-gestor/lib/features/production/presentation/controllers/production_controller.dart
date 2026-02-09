@@ -1,3 +1,4 @@
+import 'package:opamenu_gestor/features/pos/domain/models/order_item_response_dto.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../pos/domain/models/order_response_dto.dart';
 import '../../../pos/domain/enums/order_status.dart';
@@ -27,8 +28,14 @@ class ProductionOrders extends _$ProductionOrders {
   }
 
   Future<void> refresh() async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() => _fetchProductionOrders());
+    // Silent refresh to keep UI stable
+    final newData = await AsyncValue.guard(() => _fetchProductionOrders());
+    if (newData.hasValue) {
+      state = newData;
+    } else if (newData.hasError) {
+      // Keep showing old data but maybe log error
+      // state = newData; // Don't replace state with error if we have data
+    }
   }
 
   Future<void> moveNextStatus(OrderResponseDto order) async {
@@ -47,13 +54,60 @@ class ProductionOrders extends _$ProductionOrders {
       return;
     }
 
-    await repository.updateOrderStatus(order.id, nextStatus.index);
-    await refresh();
+    // Optimistic Update
+    final previousState = state;
+    if (state.hasValue) {
+      final currentList = state.value!;
+      final updatedList = currentList.map((o) {
+        if (o.id == order.id) {
+          return o.copyWith(status: nextStatus);
+        }
+        return o;
+      }).toList();
+      
+      // Re-sort based on new status/time if needed or just update
+      // For Kanban columns, changing status automatically moves the card
+      state = AsyncValue.data(updatedList);
+    }
+
+    try {
+      await repository.updateOrderStatus(order.id, nextStatus.index);
+      // Silent refresh to ensure data consistency
+      await refresh();
+    } catch (e) {
+      // Revert on error
+      state = previousState;
+    }
   }
 
   Future<void> updateItemStatus(String orderItemId, OrderStatus status) async {
     final repository = ref.read(ordersRepositoryProvider);
-    await repository.updateOrderItemStatus(orderItemId, status.index);
-    await refresh();
+    
+    // Optimistic Update
+    final previousState = state;
+    if (state.hasValue) {
+      final currentList = state.value!;
+      final updatedList = currentList.map((order) {
+        // Find order containing the item
+        final itemIndex = order.items.indexWhere((i) => i.id == orderItemId);
+        if (itemIndex != -1) {
+          final updatedItems = List<OrderItemResponseDto>.from(order.items);
+          updatedItems[itemIndex] = updatedItems[itemIndex].copyWith(status: status.index);
+          return order.copyWith(items: updatedItems);
+        }
+        return order;
+      }).toList();
+      
+      state = AsyncValue.data(updatedList);
+    }
+
+    try {
+      await repository.updateOrderItemStatus(orderItemId, status.index);
+      // Silent refresh
+      await refresh();
+    } catch (e) {
+      // Revert on error
+      state = previousState;
+    }
   }
 }

@@ -10,6 +10,7 @@ class AdditionalModel {
   final double price;
   final String? description;
   final bool isActive;
+  @JsonKey(name: 'aditionalGroupId')
   final String additionalGroupId;
 
   const AdditionalModel({

@@ -18,7 +18,7 @@ class ProductModel {
   final DateTime? createdAt;
   final DateTime? updatedAt;
   
-  @JsonKey(name: 'AditionalGroups', defaultValue: [])
+  @JsonKey(name: 'aditionalGroups', defaultValue: [])
   final List<ProductAddonGroupResponseDto> addonGroups;
 
   const ProductModel({

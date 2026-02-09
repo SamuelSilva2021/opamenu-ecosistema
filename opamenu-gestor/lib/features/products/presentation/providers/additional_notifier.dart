@@ -55,4 +55,51 @@ class AdditionalNotifier extends _$AdditionalNotifier {
       (_) => ref.invalidateSelf(),
     );
   }
+
+  // --- ITEMS ---
+
+  Future<void> addItem(String groupId, String name, double price, String? description) async {
+    state = const AsyncValue.loading();
+    final repository = ref.read(additionalRepositoryProvider);
+    final result = await repository.createAdditional({
+      'name': name,
+      'price': price,
+      'description': description,
+      'isActive': true,
+      'additionalGroupId': groupId,
+    });
+
+    result.fold(
+      (error) => state = AsyncValue.error(error, StackTrace.current),
+      (_) => ref.invalidateSelf(),
+    );
+  }
+
+  Future<void> updateItem(String id, String groupId, String name, double price, String? description, bool isActive) async {
+    state = const AsyncValue.loading();
+    final repository = ref.read(additionalRepositoryProvider);
+    final result = await repository.updateAdditional(id, {
+      'name': name,
+      'price': price,
+      'description': description,
+      'isActive': isActive,
+      'additionalGroupId': groupId,
+    });
+
+    result.fold(
+      (error) => state = AsyncValue.error(error, StackTrace.current),
+      (_) => ref.invalidateSelf(),
+    );
+  }
+
+  Future<void> deleteItem(String id) async {
+    state = const AsyncValue.loading();
+    final repository = ref.read(additionalRepositoryProvider);
+    final result = await repository.deleteAdditional(id);
+
+    result.fold(
+      (error) => state = AsyncValue.error(error, StackTrace.current),
+      (_) => ref.invalidateSelf(),
+    );
+  }
 }

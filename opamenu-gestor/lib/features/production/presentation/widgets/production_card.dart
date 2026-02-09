@@ -103,56 +103,50 @@ class ProductionCard extends ConsumerWidget {
               overflow: TextOverflow.ellipsis,
             ),
             const Divider(),
-            Expanded(
-              child: ListView.builder(
-                itemCount: order.items.length,
-                itemBuilder: (context, index) {
-                  final item = order.items[index];
-                  final isItemReady = item.status == OrderStatus.ready.index;
+            ...order.items.map((item) {
+              final isItemReady = item.status == OrderStatus.ready.index;
 
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: InkWell(
-                      onTap: () {
-                        final nextStatus = isItemReady ? OrderStatus.preparing : OrderStatus.ready;
-                        ref.read(productionOrdersProvider.notifier).updateItemStatus(item.id, nextStatus);
-                      },
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(
-                            isItemReady ? Icons.check_circle : Icons.radio_button_unchecked,
-                            color: isItemReady ? Colors.green : Colors.grey,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text('${item.quantity}x ', style: const TextStyle(fontWeight: FontWeight.bold)),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item.productName,
-                                  style: TextStyle(
-                                    decoration: isItemReady ? TextDecoration.lineThrough : null,
-                                    color: isItemReady ? Colors.grey : null,
-                                  ),
-                                ),
-                                if (item.notes != null && item.notes!.isNotEmpty)
-                                  Text(
-                                    item.notes!,
-                                    style: const TextStyle(fontSize: 12, color: Colors.red, fontStyle: FontStyle.italic),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ],
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: InkWell(
+                  onTap: () {
+                    final nextStatus = isItemReady ? OrderStatus.preparing : OrderStatus.ready;
+                    ref.read(productionOrdersProvider.notifier).updateItemStatus(item.id, nextStatus);
+                  },
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        isItemReady ? Icons.check_circle : Icons.radio_button_unchecked,
+                        color: isItemReady ? Colors.green : Colors.grey,
+                        size: 20,
                       ),
-                    ),
-                  );
-                },
-              ),
-            ),
+                      const SizedBox(width: 8),
+                      Text('${item.quantity}x ', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item.productName,
+                              style: TextStyle(
+                                decoration: isItemReady ? TextDecoration.lineThrough : null,
+                                color: isItemReady ? Colors.grey : null,
+                              ),
+                            ),
+                            if (item.notes != null && item.notes!.isNotEmpty)
+                              Text(
+                                item.notes!,
+                                style: const TextStyle(fontSize: 12, color: Colors.red, fontStyle: FontStyle.italic),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,

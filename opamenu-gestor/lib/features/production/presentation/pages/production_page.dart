@@ -21,8 +21,7 @@ class _ProductionPageState extends ConsumerState<ProductionPage> {
   @override
   void initState() {
     super.initState();
-    // Auto-refresh every 30 seconds
-    _timer = Timer.periodic(const Duration(seconds: 30), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 15), (timer) {
       ref.read(productionOrdersProvider.notifier).refresh();
     });
   }
@@ -71,18 +70,24 @@ class _ProductionPageState extends ConsumerState<ProductionPage> {
             );
           }
 
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildColumn('Pendente', pending, Colors.orange),
-                const SizedBox(width: 16),
-                _buildColumn('Em Preparo', preparing, Colors.blue),
-                const SizedBox(width: 16),
-                _buildColumn('Pronto', ready, Colors.green),
-              ],
-            ),
+          return Column(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildColumn('Pendente', pending, Colors.orange),
+                      const SizedBox(width: 16),
+                      _buildColumn('Em Preparo', preparing, Colors.blue),
+                      const SizedBox(width: 16),
+                      _buildColumn('Pronto', ready, Colors.green),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),

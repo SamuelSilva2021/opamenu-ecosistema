@@ -16,6 +16,11 @@ abstract class AdditionalRepository {
   Future<Either<String, AdditionalGroupModel>> createAdditionalGroup(Map<String, dynamic> data);
   Future<Either<String, AdditionalGroupModel>> updateAdditionalGroup(String id, Map<String, dynamic> data);
   Future<Either<String, void>> deleteAdditionalGroup(String id);
+
+  // Items
+  Future<Either<String, void>> createAdditional(Map<String, dynamic> data);
+  Future<Either<String, void>> updateAdditional(String id, Map<String, dynamic> data);
+  Future<Either<String, void>> deleteAdditional(String id);
 }
 
 class AdditionalRepositoryImpl implements AdditionalRepository {
@@ -57,6 +62,38 @@ class AdditionalRepositoryImpl implements AdditionalRepository {
   Future<Either<String, void>> deleteAdditionalGroup(String id) async {
     try {
       await _dataSource.deleteAdditionalGroup(id);
+      return const Right(null);
+    } catch (e) {
+      return Left(e.toString());
+    }
+  }
+
+  // --- ITEMS ---
+
+  @override
+  Future<Either<String, void>> createAdditional(Map<String, dynamic> data) async {
+    try {
+      await _dataSource.createAdditional(data);
+      return const Right(null);
+    } catch (e) {
+      return Left(e.toString());
+    }
+  }
+
+  @override
+  Future<Either<String, void>> updateAdditional(String id, Map<String, dynamic> data) async {
+    try {
+      await _dataSource.updateAdditional(id, data);
+      return const Right(null);
+    } catch (e) {
+      return Left(e.toString());
+    }
+  }
+
+  @override
+  Future<Either<String, void>> deleteAdditional(String id) async {
+    try {
+      await _dataSource.deleteAdditional(id);
       return const Right(null);
     } catch (e) {
       return Left(e.toString());

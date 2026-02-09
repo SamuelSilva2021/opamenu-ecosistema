@@ -23,7 +23,7 @@ ProductModel _$ProductModelFromJson(Map<String, dynamic> json) => ProductModel(
       ? null
       : DateTime.parse(json['updatedAt'] as String),
   addonGroups:
-      (json['AditionalGroups'] as List<dynamic>?)
+      (json['aditionalGroups'] as List<dynamic>?)
           ?.map(
             (e) => ProductAddonGroupResponseDto.fromJson(
               e as Map<String, dynamic>,
@@ -46,5 +46,5 @@ Map<String, dynamic> _$ProductModelToJson(ProductModel instance) =>
       'displayOrder': instance.displayOrder,
       'createdAt': instance.createdAt?.toIso8601String(),
       'updatedAt': instance.updatedAt?.toIso8601String(),
-      'AditionalGroups': instance.addonGroups,
+      'aditionalGroups': instance.addonGroups,
     };

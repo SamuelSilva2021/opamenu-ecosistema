@@ -9,10 +9,13 @@ class AdditionalGroupModel {
   final String id;
   final String name;
   final String? description;
+  @JsonKey(name: 'minSelections')
   final int minSelection;
+  @JsonKey(name: 'maxSelections')
   final int maxSelection;
   final bool isRequired;
   final bool isActive;
+  @JsonKey(name: 'aditionals')
   final List<AdditionalModel> additionals;
 
   const AdditionalGroupModel({

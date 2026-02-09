@@ -35,7 +35,7 @@ final class AdditionalNotifierProvider
 }
 
 String _$additionalNotifierHash() =>
-    r'143d86b7610e8c1e54fa2b1f99f8b0db5af6acab';
+    r'0a24d38898d4d335b29c5aeffb69c9ea4571fd42';
 
 abstract class _$AdditionalNotifier
     extends $AsyncNotifier<List<AdditionalGroupModel>> {
