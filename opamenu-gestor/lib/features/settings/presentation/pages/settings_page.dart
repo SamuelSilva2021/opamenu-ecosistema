@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:opamenu_gestor/core/theme/app_colors.dart';
 import '../widgets/printers_tab.dart';
+import '../widgets/restaurant_settings_tab.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -51,7 +52,7 @@ class _SettingsPageState extends State<SettingsPage> with SingleTickerProviderSt
       body: TabBarView(
         controller: _tabController,
         children: const [
-          Center(child: Text('Em breve: Configurações do Restaurante')),
+          RestaurantSettingsTab(),
           PrintersTab(),
           Center(child: Text('Em breve: Configurações de Segurança')),
         ],

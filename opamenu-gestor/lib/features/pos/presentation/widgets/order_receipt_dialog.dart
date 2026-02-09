@@ -7,6 +7,7 @@ import '../../domain/models/order_item_response_dto.dart';
 import '../../../../core/services/printer_service.dart';
 import '../../../../core/utils/receipt_generator.dart';
 import 'package:esc_pos_utils_plus/esc_pos_utils.dart' as esc;
+import '../../../../features/settings/presentation/providers/settings_notifier.dart';
 
 class OrderReceiptDialog extends ConsumerWidget {
   final OrderResponseDto order;
@@ -110,18 +111,23 @@ class OrderReceiptDialog extends ConsumerWidget {
                       const SnackBar(content: Text('Preparando impressão...')),
                     );
 
+                    // Get settings
+                    final settings = await ref.read(settingsProvider.future);
+                    final printerIp = settings['counter'] ?? '192.168.1.200';
+
                     final profile = await esc.CapabilityProfile.load();
                     final bytes = await ReceiptGenerator.generateOrderReceipt(
                       order: order,
-                      paperSize: PaperSize.mm80, // PaperSize enum from printer_service.dart
+                      paperSize: PaperSize.mm80,
                       profile: profile,
+                      restaurantName: settings['name'],
+                      restaurantAddress: settings['address'],
+                      restaurantPhone: settings['phone'],
                     );
 
-                    // Mock device for testing (Network printer)
-                    // TODO: Move this to a settings page
                     final device = PrinterDeviceInfo(
-                      name: 'Impressora Cozinha',
-                      address: '192.168.1.100', // Typical local IP
+                      name: 'Impressora Balcão',
+                      address: printerIp,
                       type: PrinterConnectionType.network,
                     );
 

@@ -8,6 +8,9 @@ class ReceiptGenerator {
     required OrderResponseDto order,
     required PaperSize paperSize,
     required esc.CapabilityProfile profile,
+    String? restaurantName,
+    String? restaurantAddress,
+    String? restaurantPhone,
   }) async {
     final generator = esc.Generator(paperSize.posSize, profile);
     final currencyFormat = NumberFormat.currency(symbol: 'R\$', locale: 'pt_BR');
@@ -15,8 +18,16 @@ class ReceiptGenerator {
     List<int> bytes = [];
 
     // Header
-    bytes += generator.text('OPAMENU',
+    bytes += generator.text(restaurantName ?? 'OPAMENU',
         styles: const esc.PosStyles(align: esc.PosAlign.center, bold: true, height: esc.PosTextSize.size2, width: esc.PosTextSize.size2));
+    
+    if (restaurantAddress != null && restaurantAddress.isNotEmpty) {
+      bytes += generator.text(restaurantAddress, styles: const esc.PosStyles(align: esc.PosAlign.center));
+    }
+    if (restaurantPhone != null && restaurantPhone.isNotEmpty) {
+      bytes += generator.text('Tel: $restaurantPhone', styles: const esc.PosStyles(align: esc.PosAlign.center));
+    }
+    
     bytes += generator.text(order.isDelivery ? 'PEDIDO DELIVERY' : 'PEDIDO LOCAL',
         styles: const esc.PosStyles(align: esc.PosAlign.center, bold: true));
     bytes += generator.hr();

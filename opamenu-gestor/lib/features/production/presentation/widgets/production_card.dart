@@ -59,6 +59,9 @@ class ProductionCard extends ConsumerWidget {
                             order: order,
                             paperSize: PaperSize.mm80,
                             profile: profile,
+                            restaurantName: settings['name'],
+                            restaurantAddress: settings['address'],
+                            restaurantPhone: settings['phone'],
                           );
 
                           final printerService = ref.read(printerServiceProvider.notifier);
