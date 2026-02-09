@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../domain/models/dashboard_summary_dto.dart';
+import '../../domain/models/dashboard_summary_dto.dart';
 import 'package:opamenu_gestor/core/theme/app_colors.dart';
 
 class SalesCharts extends StatelessWidget {
@@ -48,7 +48,7 @@ class SalesCharts extends StatelessWidget {
             offset: const Offset(0, 4),
           ),
         ],
-      ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -122,7 +122,7 @@ class SalesCharts extends StatelessWidget {
             offset: const Offset(0, 4),
           ),
         ],
-      ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

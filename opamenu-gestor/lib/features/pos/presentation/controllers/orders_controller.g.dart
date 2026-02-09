@@ -37,7 +37,7 @@ final class OrdersControllerProvider
   OrdersController create() => OrdersController();
 }
 
-String _$ordersControllerHash() => r'cf7bbad23c321191660c584f665717b7e662229a';
+String _$ordersControllerHash() => r'd21bbe0e666372bb7ea74b2f3d8f8e106e782fc3';
 
 abstract class _$OrdersController
     extends $AsyncNotifier<PagedResponseModel<List<OrderResponseDto>>> {
