@@ -30,10 +30,6 @@ class PermissionGate extends ConsumerWidget {
           return p.module == module;
         });
         
-        if (!hasPermission) {
-           print('PermissionGate: Denied access to module: $module, operation: $operation. Available: ${permissions.map((p) => p.key).join(', ')}');
-        }
-
         if (hasPermission) {
           return child;
         }

@@ -121,7 +121,7 @@ class PosSidebar extends StatelessWidget {
                     ),
                   ),
                   PermissionGate(
-                    module: 'POS',
+                    module: 'PDV',
                     child: _SidebarItem(
                       icon: Icons.point_of_sale_rounded,
                       label: 'Checkout',
