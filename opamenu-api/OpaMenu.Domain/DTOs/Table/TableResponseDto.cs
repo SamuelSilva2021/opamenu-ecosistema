@@ -1,7 +1,7 @@
 namespace OpaMenu.Domain.DTOs.Table;
 
 public record TableResponseDto(
-    int Id,
+    Guid Id,
     string Name,
     int Capacity,
     bool IsActive,

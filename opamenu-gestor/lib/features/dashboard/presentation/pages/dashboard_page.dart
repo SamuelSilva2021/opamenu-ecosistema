@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:opamenu_gestor/core/theme/app_colors.dart';
 import '../providers/dashboard_provider.dart';
 import '../widgets/stat_card.dart';
@@ -20,21 +21,40 @@ class DashboardPage extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Dashboard',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Visão geral do seu negócio hoje',
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 16,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Dashboard',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Visão geral do seu negócio hoje',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+                ElevatedButton.icon(
+                  onPressed: () => ref.invalidate(dashboardSummaryProvider),
+                  icon: const Icon(Icons.sync),
+                  label: const Text('Sincronizar'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 32),
             
@@ -55,17 +75,19 @@ class DashboardPage extends ConsumerWidget {
                   children: [
                     StatCard(
                       title: 'Receita Total',
-                      value: 'R\$ ${summary.totalRevenue.toStringAsFixed(2)}',
+                      value: NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$').format(summary.totalRevenue),
                       growth: summary.totalRevenueGrowth,
                       icon: Icons.attach_money,
                       color: Colors.green,
+                      isCurrency: true,
                     ),
                     StatCard(
                       title: 'Ticket Médio',
-                      value: 'R\$ ${summary.averageTicket.toStringAsFixed(2)}',
+                      value: NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$').format(summary.averageTicket),
                       growth: 0,
                       icon: Icons.analytics,
                       color: Colors.teal,
+                      isCurrency: true,
                     ),
                     StatCard(
                       title: 'Pedidos Hoje',

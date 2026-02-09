@@ -8,15 +8,17 @@ part of 'dashboard_summary_dto.dart';
 
 DashboardSummaryDto _$DashboardSummaryDtoFromJson(Map<String, dynamic> json) =>
     DashboardSummaryDto(
-      totalRevenue: (json['totalRevenue'] as num).toDouble(),
-      totalRevenueGrowth: (json['totalRevenueGrowth'] as num).toDouble(),
-      ordersToday: (json['ordersToday'] as num).toInt(),
-      ordersTodayGrowth: (json['ordersTodayGrowth'] as num).toDouble(),
-      totalOrders: (json['totalOrders'] as num).toInt(),
-      totalOrdersGrowth: (json['totalOrdersGrowth'] as num).toDouble(),
-      averageTicket: (json['averageTicket'] as num).toDouble(),
-      activeCustomers: (json['activeCustomers'] as num).toInt(),
-      activeCustomersGrowth: (json['activeCustomersGrowth'] as num).toDouble(),
+      totalRevenue: JsonParserUtils.toDouble(json['totalRevenue']),
+      totalRevenueGrowth: JsonParserUtils.toDouble(json['totalRevenueGrowth']),
+      ordersToday: JsonParserUtils.toInt(json['ordersToday']),
+      ordersTodayGrowth: JsonParserUtils.toDouble(json['ordersTodayGrowth']),
+      totalOrders: JsonParserUtils.toInt(json['totalOrders']),
+      totalOrdersGrowth: JsonParserUtils.toDouble(json['totalOrdersGrowth']),
+      averageTicket: JsonParserUtils.toDouble(json['averageTicket']),
+      activeCustomers: JsonParserUtils.toInt(json['activeCustomers']),
+      activeCustomersGrowth: JsonParserUtils.toDouble(
+        json['activeCustomersGrowth'],
+      ),
       recentOrders: (json['recentOrders'] as List<dynamic>)
           .map((e) => RecentOrderDto.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -47,7 +49,7 @@ Map<String, dynamic> _$DashboardSummaryDtoToJson(
 
 DailySaleDto _$DailySaleDtoFromJson(Map<String, dynamic> json) => DailySaleDto(
   date: json['date'] as String,
-  total: (json['total'] as num).toDouble(),
+  total: JsonParserUtils.toDouble(json['total']),
 );
 
 Map<String, dynamic> _$DailySaleDtoToJson(DailySaleDto instance) =>
@@ -56,8 +58,8 @@ Map<String, dynamic> _$DailySaleDtoToJson(DailySaleDto instance) =>
 CategorySaleDto _$CategorySaleDtoFromJson(Map<String, dynamic> json) =>
     CategorySaleDto(
       categoryName: json['categoryName'] as String,
-      total: (json['total'] as num).toDouble(),
-      quantity: (json['quantity'] as num).toInt(),
+      total: JsonParserUtils.toDouble(json['total']),
+      quantity: JsonParserUtils.toInt(json['quantity']),
     );
 
 Map<String, dynamic> _$CategorySaleDtoToJson(CategorySaleDto instance) =>

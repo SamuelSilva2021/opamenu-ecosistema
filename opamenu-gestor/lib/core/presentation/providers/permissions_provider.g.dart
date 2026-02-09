@@ -106,7 +106,7 @@ final class HasPermissionProvider extends $FunctionalProvider<bool, bool, bool>
   }
 }
 
-String _$hasPermissionHash() => r'ff591c6a78059fb2cda26190818f7370c110ac02';
+String _$hasPermissionHash() => r'e31be158f9d670785e3c49c8f90d22a1b02ce0f0';
 
 final class HasPermissionFamily extends $Family
     with $FunctionalFamilyOverride<bool, String> {

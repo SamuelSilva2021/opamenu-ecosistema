@@ -1,12 +1,13 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
-using OpaMenu.Domain.DTOs.Table;
-using OpaMenu.Infrastructure.Shared.Entities;
-using OpaMenu.Domain.Interfaces;
-using OpaMenu.Commons.Api.DTOs;
-using OpaMenu.Commons.Api.Commons;
-using OpaMenu.Application.Services.Interfaces.Opamenu;
 using OpaMenu.Application.Services.Interfaces;
+using OpaMenu.Application.Services.Interfaces.Opamenu;
+using OpaMenu.Commons.Api.Commons;
+using OpaMenu.Commons.Api.DTOs;
+using OpaMenu.Domain.DTOs.Customer;
+using OpaMenu.Domain.DTOs.Table;
+using OpaMenu.Domain.Interfaces;
+using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 
 namespace OpaMenu.Application.Services.Opamenu;
@@ -48,12 +49,12 @@ public class TableService : ITableService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao obter mesas paginadas");
+            var response = StaticResponseBuilder<TableResponseDto>.BuildErrorResponse(ex);
             return new PagedResponseDTO<TableResponseDto>
             {
                 Succeeded = false,
-                Code = 500,
-                Errors = new List<ErrorDTO> { new ErrorDTO { Message = "Erro interno do servidor", Code = "ERROR" } }
+                Errors = response.Errors,
+                Code = response.Code
             };
         }
     }

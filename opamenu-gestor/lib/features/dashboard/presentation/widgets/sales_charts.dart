@@ -43,7 +43,7 @@ class SalesCharts extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -66,26 +66,70 @@ class SalesCharts extends StatelessWidget {
               BarChartData(
                 alignment: BarChartAlignment.spaceAround,
                 maxY: _getMaxY(),
-                barTouchData: BarTouchData(enabled: true),
+                barTouchData: BarTouchData(
+                  enabled: true,
+                  touchTooltipData: BarTouchTooltipData(
+                    getTooltipColor: (_) => Colors.blueGrey,
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      return BarTooltipItem(
+                        '${dailySales[group.x].date}\n',
+                        const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        children: [
+                          TextSpan(
+                            text: 'R\$ ${rod.toY.toStringAsFixed(2)}',
+                            style: const TextStyle(color: Colors.yellow, fontSize: 12),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
                 titlesData: FlTitlesData(
                   show: true,
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
+                      reservedSize: 30,
                       getTitlesWidget: (value, meta) {
                         if (value.toInt() < 0 || value.toInt() >= dailySales.length) return const SizedBox();
-                        return Text(
-                          dailySales[value.toInt()].date,
-                          style: const TextStyle(fontSize: 12),
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            dailySales[value.toInt()].date,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                         );
                       },
                     ),
                   ),
-                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 40,
+                      getTitlesWidget: (value, meta) {
+                        if (value == 0) return const SizedBox();
+                        return Text(
+                          'R\$ ${value.toInt()}',
+                          style: TextStyle(fontSize: 10, color: Colors.grey[500]),
+                        );
+                      },
+                    ),
+                  ),
                   topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 ),
-                gridData: const FlGridData(show: false),
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  getDrawingHorizontalLine: (value) => FlLine(
+                    color: Colors.grey.withValues(alpha: 0.1),
+                    strokeWidth: 1,
+                  ),
+                ),
                 borderData: FlBorderData(show: false),
                 barGroups: dailySales.asMap().entries.map((e) {
                   return BarChartGroupData(
@@ -94,8 +138,8 @@ class SalesCharts extends StatelessWidget {
                       BarChartRodData(
                         toY: e.value.total,
                         color: AppColors.primary,
-                        width: 16,
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                        width: 20,
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
                       ),
                     ],
                   );
@@ -117,7 +161,7 @@ class SalesCharts extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -135,49 +179,78 @@ class SalesCharts extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 32),
-          Expanded(
-            child: PieChart(
-              PieChartData(
-                sectionsSpace: 2,
-                centerSpaceRadius: 40,
-                sections: categorySales.asMap().entries.map((e) {
-                  final colors = [Colors.orange, Colors.blue, Colors.green, Colors.purple, Colors.red];
-                  return PieChartSectionData(
-                    color: colors[e.key % colors.length],
-                    value: e.value.total,
-                    title: '${e.value.total.toInt()}',
-                    radius: 50,
-                    titleStyle: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+          if (categorySales.isEmpty)
+            const Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.pie_chart_outline, size: 64, color: Colors.grey),
+                    SizedBox(height: 16),
+                    Text(
+                      'Sem dados para exibir',
+                      style: TextStyle(color: Colors.grey),
                     ),
-                  );
-                }).toList(),
+                  ],
+                ),
+              ),
+            )
+          else ...[
+            Expanded(
+              child: PieChart(
+                PieChartData(
+                  sectionsSpace: 4,
+                  centerSpaceRadius: 50,
+                  sections: categorySales.asMap().entries.map((e) {
+                    final colors = [Colors.orange, Colors.blue, Colors.green, Colors.purple, Colors.red];
+                    return PieChartSectionData(
+                      color: colors[e.key % colors.length],
+                      value: e.value.total,
+                      title: e.value.total > 0 ? '${e.value.total.toInt()}' : '',
+                      radius: 60,
+                      titleStyle: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    );
+                  }).toList(),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          // Legend
-          ...categorySales.asMap().entries.map((e) {
-             final colors = [Colors.orange, Colors.blue, Colors.green, Colors.purple, Colors.red];
-             return Padding(
-               padding: const EdgeInsets.symmetric(vertical: 2),
-               child: Row(
-                 children: [
-                   Container(width: 8, height: 8, color: colors[e.key % colors.length]),
-                   const SizedBox(width: 8),
-                   Expanded(
-                     child: Text(
-                       e.value.categoryName,
-                       style: const TextStyle(fontSize: 12),
-                       overflow: TextOverflow.ellipsis,
-                     ),
-                   ),
-                 ],
-               ),
-             );
-          }),
+            const SizedBox(height: 16),
+            // Legend
+            SizedBox(
+              height: 100,
+              child: SingleChildScrollView(
+                child: Wrap(
+                  spacing: 16,
+                  runSpacing: 8,
+                  children: categorySales.asMap().entries.map((e) {
+                    final colors = [Colors.orange, Colors.blue, Colors.green, Colors.purple, Colors.red];
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: colors[e.key % colors.length],
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          e.value.categoryName,
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

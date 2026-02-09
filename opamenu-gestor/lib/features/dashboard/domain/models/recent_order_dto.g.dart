@@ -8,9 +8,9 @@ part of 'recent_order_dto.dart';
 
 RecentOrderDto _$RecentOrderDtoFromJson(Map<String, dynamic> json) =>
     RecentOrderDto(
-      id: (json['id'] as num).toInt(),
+      id: json['id'] as String,
       customerName: json['customerName'] as String,
-      amount: (json['amount'] as num).toDouble(),
+      amount: JsonParserUtils.toDouble(json['amount']),
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
 

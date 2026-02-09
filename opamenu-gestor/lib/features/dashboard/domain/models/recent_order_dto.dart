@@ -1,12 +1,16 @@
 import 'package:json_annotation/json_annotation.dart';
+import '../../../../core/utils/json_parser_utils.dart';
 
 part 'recent_order_dto.g.dart';
 
 @JsonSerializable()
 class RecentOrderDto {
-  final int id;
+  final String id;
   final String customerName;
+  
+  @JsonKey(fromJson: JsonParserUtils.toDouble)
   final double amount;
+  
   final DateTime createdAt;
 
   RecentOrderDto({

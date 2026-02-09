@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../domain/models/recent_order_dto.dart';
 
 class RecentOrdersTable extends StatelessWidget {
@@ -8,6 +9,9 @@ class RecentOrdersTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+    final dateFormat = DateFormat('dd/MM/yyyy HH:mm', 'pt_BR');
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -24,61 +28,87 @@ class RecentOrdersTable extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Pedidos Recentes',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Pedidos Recentes',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              TextButton(
+                onPressed: () {}, // Link to orders page
+                child: const Text('Ver todos'),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              columnSpacing: 32,
-              horizontalMargin: 0,
-              columns: const [
-                DataColumn(label: Text('ID Pedido')),
-                DataColumn(label: Text('Cliente')),
-                DataColumn(label: Text('Data')),
-                DataColumn(label: Text('Valor')),
-                DataColumn(label: Text('Status')),
-              ],
-              rows: orders.map((order) {
-                return DataRow(
-                  cells: [
-                    DataCell(Text('#${order.id}')),
-                    DataCell(Text(order.customerName)),
-                    DataCell(Text(_formatDate(order.createdAt))),
-                    DataCell(Text('R\$ ${order.amount.toStringAsFixed(2)}')),
-                    DataCell(
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.green.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text(
-                          'Concluído',
-                          style: TextStyle(
-                            color: Colors.green,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
+          if (orders.isEmpty)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 32),
+                child: Text('Nenhum pedido recente encontrado'),
+              ),
+            )
+          else
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width - 350),
+                child: DataTable(
+                  columnSpacing: 24,
+                  horizontalMargin: 0,
+                  columns: const [
+                    DataColumn(label: Text('REF')),
+                    DataColumn(label: Text('CLIENTE')),
+                    DataColumn(label: Text('DATA')),
+                    DataColumn(label: Text('VALOR')),
+                    DataColumn(label: Text('STATUS')),
+                  ],
+                  rows: orders.map((order) {
+                    return DataRow(
+                      cells: [
+                        DataCell(
+                          Text(
+                            order.id.length > 8 ? order.id.substring(0, 8).toUpperCase() : order.id.toUpperCase(),
+                            style: const TextStyle(fontWeight: FontWeight.w500, fontFamily: 'monospace'),
                           ),
                         ),
-                      ),
-                    ),
-                  ],
-                );
-              }).toList(),
+                        DataCell(Text(order.customerName)),
+                        DataCell(Text(dateFormat.format(order.createdAt))),
+                        DataCell(
+                          Text(
+                            currencyFormat.format(order.amount),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        DataCell(
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text(
+                              'Concluído',
+                              style: TextStyle(
+                                color: Colors.green,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
             ),
-          ),
         ],
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
 }

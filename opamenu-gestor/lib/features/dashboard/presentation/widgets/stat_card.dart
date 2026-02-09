@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class StatCard extends StatelessWidget {
   final String title;
@@ -6,6 +7,7 @@ class StatCard extends StatelessWidget {
   final double growth;
   final IconData icon;
   final Color color;
+  final bool isCurrency;
 
   const StatCard({
     super.key,
@@ -14,11 +16,14 @@ class StatCard extends StatelessWidget {
     required this.growth,
     required this.icon,
     required this.color,
+    this.isCurrency = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final isPositive = growth >= 0;
+    final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+    final percentFormat = NumberFormat.decimalPattern('pt_BR');
     
     return Container(
       padding: const EdgeInsets.all(24),
@@ -48,31 +53,32 @@ class StatCard extends StatelessWidget {
                 ),
                 child: Icon(icon, color: color),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: isPositive ? Colors.green.withValues(alpha: 0.1) : Colors.red.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      isPositive ? Icons.arrow_upward : Icons.arrow_downward,
-                      size: 12,
-                      color: isPositive ? Colors.green : Colors.red,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${growth.abs().toStringAsFixed(1)}%',
-                      style: TextStyle(
+              if (growth != 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isPositive ? Colors.green.withValues(alpha: 0.1) : Colors.red.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        isPositive ? Icons.arrow_upward : Icons.arrow_downward,
+                        size: 12,
                         color: isPositive ? Colors.green : Colors.red,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 4),
+                      Text(
+                        '${percentFormat.format(growth.abs())}%',
+                        style: TextStyle(
+                          color: isPositive ? Colors.green : Colors.red,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
             ],
           ),
           const SizedBox(height: 16),
