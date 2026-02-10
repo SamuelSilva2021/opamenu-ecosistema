@@ -267,11 +267,11 @@ class _ProductFormState extends ConsumerState<ProductForm> {
                         ),
                         clipBehavior: Clip.antiAlias,
                         child: _imageFile != null
-                            ? Image.file(_imageFile!, fit: BoxFit.cover)
+                            ? Image.file(_imageFile!, fit: BoxFit.contain)
                             : _imageUrlController.text.isNotEmpty
                                 ? Image.network(
                                     _imageUrlController.text,
-                                    fit: BoxFit.cover,
+                                    fit: BoxFit.contain,
                                     errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 40, color: Colors.grey),
                                   )
                                 : const Icon(Icons.add_a_photo_outlined, size: 40, color: Colors.grey),
