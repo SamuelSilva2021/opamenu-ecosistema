@@ -54,6 +54,7 @@ dependencies:
   flutter_pos_printer_platform: ^1.4.2
   path_provider: ^2.1.5
   image: ^3.3.0
+  signalr_netcore: ^1.4.4
 
 dev_dependencies:
   flutter_test:

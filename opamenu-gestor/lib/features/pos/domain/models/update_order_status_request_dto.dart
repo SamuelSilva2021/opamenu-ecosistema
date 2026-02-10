@@ -6,10 +6,12 @@ part 'update_order_status_request_dto.g.dart';
 class UpdateOrderStatusRequestDto {
   final int status;
   final String? notes;
+  final String? driverId;
 
   UpdateOrderStatusRequestDto({
     required this.status,
     this.notes,
+    this.driverId,
   });
 
   factory UpdateOrderStatusRequestDto.fromJson(Map<String, dynamic> json) =>

@@ -11,8 +11,13 @@ UpdateOrderStatusRequestDto _$UpdateOrderStatusRequestDtoFromJson(
 ) => UpdateOrderStatusRequestDto(
   status: (json['status'] as num).toInt(),
   notes: json['notes'] as String?,
+  driverId: json['driverId'] as String?,
 );
 
 Map<String, dynamic> _$UpdateOrderStatusRequestDtoToJson(
   UpdateOrderStatusRequestDto instance,
-) => <String, dynamic>{'status': instance.status, 'notes': instance.notes};
+) => <String, dynamic>{
+  'status': instance.status,
+  'notes': instance.notes,
+  'driverId': instance.driverId,
+};

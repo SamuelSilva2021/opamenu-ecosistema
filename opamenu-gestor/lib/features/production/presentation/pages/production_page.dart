@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controllers/production_controller.dart';
 import '../widgets/production_card.dart';
+import '../widgets/select_driver_dialog.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../pos/domain/models/order_response_dto.dart';
 import '../../../pos/domain/enums/order_status.dart';
+import '../../../users/domain/models/user_model.dart';
 
 class ProductionPage extends ConsumerStatefulWidget {
   const ProductionPage({super.key});
@@ -28,6 +30,27 @@ class _ProductionPageState extends ConsumerState<ProductionPage> {
   void dispose() {
     _timer?.cancel();
     super.dispose();
+  }
+
+  Future<void> _handleNextStatus(OrderResponseDto order) async {
+    String? driverId;
+
+    // Se o pedido está pronto e é Delivery, precisamos selecionar o entregador
+    if (order.status == OrderStatus.ready && order.isDelivery) {
+      final selectedDriver = await showDialog<UserModel>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const SelectDriverDialog(),
+      );
+
+      // Se o usuário cancelou o modal, não avançamos o status
+      if (selectedDriver == null) return;
+
+      driverId = selectedDriver.id;
+    }
+
+    // Chama o controller com o ID do entregador (se houver)
+    ref.read(productionOrdersProvider.notifier).moveNextStatus(order, driverId: driverId);
   }
 
   @override
@@ -143,7 +166,7 @@ class _ProductionPageState extends ConsumerState<ProductionPage> {
                   final order = orders[index];
                   return ProductionCard(
                     order: order,
-                    onNextStatus: () => ref.read(productionOrdersProvider.notifier).moveNextStatus(order),
+                    onNextStatus: () => _handleNextStatus(order),
                   );
                 },
               ),

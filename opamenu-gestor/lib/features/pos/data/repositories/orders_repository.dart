@@ -33,8 +33,12 @@ class OrdersRepository {
     return await _datasource.getOrdersByStatus(status);
   }
 
-  Future<OrderResponseDto> updateOrderStatus(String orderId, int status) async {
-    final dto = UpdateOrderStatusRequestDto(status: status);
+  Future<OrderResponseDto> updateOrderStatus(String orderId, int status, {String? notes, String? driverId}) async {
+    final dto = UpdateOrderStatusRequestDto(
+      status: status, 
+      notes: notes,
+      driverId: driverId
+    );
     return await _datasource.updateOrderStatus(orderId, dto);
   }
 

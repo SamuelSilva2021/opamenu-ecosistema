@@ -20,8 +20,11 @@ class UsersRemoteDataSource {
   UsersRemoteDataSource(this._dio);
 
   Future<List<UserModel>> getUsers() async {
-    final response = await _dio.get('/api/users');
-    
+    final response = await _dio.get('/api/users/users-tenant');
+    return _parseUserResponse(response);
+  }
+
+  List<UserModel> _parseUserResponse(Response response) {
     if (response.statusCode == 200) {
       if (response.data is List) {
         return (response.data as List)

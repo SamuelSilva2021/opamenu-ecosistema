@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../pos/domain/models/order_response_dto.dart';
 import '../../../pos/domain/enums/order_status.dart';
 import '../../../pos/data/repositories/orders_repository.dart';
+import '../../../../core/presentation/providers/realtime_provider.dart';
 
 part 'production_controller.g.dart';
 
@@ -9,6 +10,21 @@ part 'production_controller.g.dart';
 class ProductionOrders extends _$ProductionOrders {
   @override
   Future<List<OrderResponseDto>> build() async {
+    // Escuta novos pedidos em tempo real via SignalR
+    ref.listen(newOrderStreamProvider, (previous, next) {
+      next.whenData((payload) {
+        // Ao receber novo pedido, recarrega a lista para garantir consistência
+        refresh();
+      });
+    });
+
+    // Escuta mudanças de status feitas por outros terminais/usuários
+    ref.listen(orderStatusStreamProvider, (previous, next) {
+      next.whenData((_) {
+        refresh();
+      });
+    });
+
     return _fetchProductionOrders();
   }
 
@@ -36,7 +52,7 @@ class ProductionOrders extends _$ProductionOrders {
     }
   }
 
-  Future<void> moveNextStatus(OrderResponseDto order) async {
+  Future<void> moveNextStatus(OrderResponseDto order, {String? driverId}) async {
     final repository = ref.read(ordersRepositoryProvider);
     OrderStatus nextStatus;
 
@@ -57,7 +73,7 @@ class ProductionOrders extends _$ProductionOrders {
       // However, to keep it smooth, we just wait for the API call.
       
       // 2. Call API
-      await repository.updateOrderStatus(order.id, nextStatus.index);
+      await repository.updateOrderStatus(order.id, nextStatus.index, driverId: driverId);
       
       // 3. Force UI refresh with new data from server
       state = const AsyncValue.loading(); // Show loading indicator

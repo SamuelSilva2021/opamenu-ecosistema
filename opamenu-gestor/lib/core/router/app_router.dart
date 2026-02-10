@@ -144,7 +144,7 @@ GoRouter goRouter(Ref ref) {
           GoRoute(
             path: '/settings',
             pageBuilder: (context, state) => const NoTransitionPage(
-              child: PlaceholderPage(title: 'Configurações'),
+              child: SettingsPage(),
             ),
           ),
         ],

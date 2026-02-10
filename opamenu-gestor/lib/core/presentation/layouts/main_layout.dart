@@ -1,10 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opamenu_gestor/core/presentation/providers/realtime_provider.dart';
 import 'package:opamenu_gestor/features/pos/presentation/widgets/pos_sidebar.dart';
 
-class MainLayout extends StatelessWidget {
+class MainLayout extends ConsumerStatefulWidget {
   final Widget child;
 
   const MainLayout({super.key, required this.child});
+
+  @override
+  ConsumerState<MainLayout> createState() => _MainLayoutState();
+}
+
+class _MainLayoutState extends ConsumerState<MainLayout> {
+  @override
+  void initState() {
+    super.initState();
+    // Inicializa conexão com SignalR ao entrar no layout principal (área logada)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(signalRServiceProvider).connect();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +48,7 @@ class MainLayout extends StatelessWidget {
           // No desktop, a sidebar é fixa
           if (isDesktop) const PosSidebar(),
           // O conteúdo principal ocupa o resto
-          Expanded(child: child),
+          Expanded(child: widget.child),
         ],
       ),
     );

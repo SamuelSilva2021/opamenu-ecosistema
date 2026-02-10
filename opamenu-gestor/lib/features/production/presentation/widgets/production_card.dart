@@ -25,13 +25,44 @@ class ProductionCard extends ConsumerWidget {
 
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: order.isDelivery 
+            ? const BorderSide(color: Colors.orangeAccent, width: 2)
+            : BorderSide.none,
+      ),
       child: Container(
         width: 300,
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Cabeçalho com Tipo de Pedido
+            if (order.isDelivery)
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                decoration: BoxDecoration(
+                  color: Colors.orangeAccent.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.delivery_dining, size: 16, color: Colors.orangeAccent),
+                    SizedBox(width: 4),
+                    Text(
+                      'DELIVERY',
+                      style: TextStyle(
+                        color: Colors.deepOrange,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -42,6 +73,10 @@ class ProductionCard extends ConsumerWidget {
                       style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(width: 8),
+                    if (!order.isDelivery) ...[
+                      const Icon(Icons.table_restaurant, size: 20, color: Colors.grey),
+                      const SizedBox(width: 4),
+                    ],
                     IconButton(
                       icon: const Icon(Icons.print, size: 20, color: Colors.grey),
                       padding: EdgeInsets.zero,

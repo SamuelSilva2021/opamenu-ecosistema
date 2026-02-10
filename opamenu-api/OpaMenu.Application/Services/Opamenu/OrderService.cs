@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 namespace OpaMenu.Application.Services.Opamenu;
 
 /// <summary>
-/// ImplementaÃ§Ã£o do serviÃ§o de pedidos seguindo princÃ­pios SOLID e Clean Architecture
+/// Implementação do serviço de pedidos 
 /// </summary>
 public class OrderService(
     IOrderRepository orderRepository,
@@ -53,7 +53,7 @@ public class OrderService(
     private readonly OpaMenu.Infrastructure.Shared.Data.Context.Opamenu.OpamenuDbContext _context = context;
 
     /// <summary>
-    /// ObtÃ©m todos os pedidos
+    /// Obtém todos os pedidos, opcionalmente filtrando por data
     /// </summary>
     public async Task<ResponseDTO<IEnumerable<OrderResponseDto>>> GetOrdersAsync(DateTime? date = null)
     {
@@ -637,6 +637,9 @@ public class OrderService(
             var previousStatus = order.Status;
             order.Status = requestDto.Status;
             order.UpdatedAt = DateTime.UtcNow;
+
+            if (requestDto.DriverId.HasValue)
+                order.DriverId = requestDto.DriverId;
 
             // Adicionar histórico de status
             var statusHistory = new OrderStatusHistoryEntity

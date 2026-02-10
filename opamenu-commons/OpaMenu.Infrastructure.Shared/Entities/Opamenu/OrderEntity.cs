@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
@@ -59,6 +59,9 @@ public class OrderEntity : BaseEntity
     public Guid? TableId { get; set; }
 
     public virtual TableEntity? Table { get; set; }
+
+    [Column("driver_id")]
+    public Guid? DriverId { get; set; }
 
     [Column("estimated_preparation_minutes")]
     public int? EstimatedPreparationMinutes { get; set; }
