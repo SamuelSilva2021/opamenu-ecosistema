@@ -33,7 +33,7 @@ final class ProductionOrdersProvider
   ProductionOrders create() => ProductionOrders();
 }
 
-String _$productionOrdersHash() => r'aae81d5c546782f82e3798ac50b587889e2d6dcd';
+String _$productionOrdersHash() => r'64cdb3dff475471d20eb7afa70d76c469c93be1b';
 
 abstract class _$ProductionOrders
     extends $AsyncNotifier<List<OrderResponseDto>> {

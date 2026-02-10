@@ -34,7 +34,6 @@ class ProductionOrders extends _$ProductionOrders {
       state = newData;
     } else if (newData.hasError) {
       // Keep showing old data but maybe log error
-      // state = newData; // Don't replace state with error if we have data
     }
   }
 
@@ -54,60 +53,34 @@ class ProductionOrders extends _$ProductionOrders {
       return;
     }
 
-    // Optimistic Update
-    final previousState = state;
-    if (state.hasValue) {
-      final currentList = state.value!;
-      final updatedList = currentList.map((o) {
-        if (o.id == order.id) {
-          return o.copyWith(status: nextStatus);
-        }
-        return o;
-      }).toList();
-      
-      // Re-sort based on new status/time if needed or just update
-      // For Kanban columns, changing status automatically moves the card
-      state = AsyncValue.data(updatedList);
-    }
-
     try {
+      // 1. Show loading by temporarily invalidating state or setting a loading flag if needed.
+      // However, to keep it smooth, we just wait for the API call.
+      
+      // 2. Call API
       await repository.updateOrderStatus(order.id, nextStatus.index);
-      // Silent refresh to ensure data consistency
-      await refresh();
+      
+      // 3. Force UI refresh with new data from server
+      state = const AsyncValue.loading(); // Show loading indicator
+      state = await AsyncValue.guard(() => _fetchProductionOrders());
     } catch (e) {
-      // Revert on error
-      state = previousState;
+      // Restore old state if error
+      // Log error or show snackbar
+      state = await AsyncValue.guard(() => _fetchProductionOrders()); // Try to restore
     }
   }
 
   Future<void> updateItemStatus(String orderItemId, OrderStatus status) async {
     final repository = ref.read(ordersRepositoryProvider);
     
-    // Optimistic Update
-    final previousState = state;
-    if (state.hasValue) {
-      final currentList = state.value!;
-      final updatedList = currentList.map((order) {
-        // Find order containing the item
-        final itemIndex = order.items.indexWhere((i) => i.id == orderItemId);
-        if (itemIndex != -1) {
-          final updatedItems = List<OrderItemResponseDto>.from(order.items);
-          updatedItems[itemIndex] = updatedItems[itemIndex].copyWith(status: status.index);
-          return order.copyWith(items: updatedItems);
-        }
-        return order;
-      }).toList();
-      
-      state = AsyncValue.data(updatedList);
-    }
-
     try {
       await repository.updateOrderItemStatus(orderItemId, status.index);
-      // Silent refresh
-      await refresh();
+      // Force refresh with loading indicator
+      state = const AsyncValue.loading();
+      state = await AsyncValue.guard(() => _fetchProductionOrders());
     } catch (e) {
-      // Revert on error
-      state = previousState;
+      // Log error
+      state = await AsyncValue.guard(() => _fetchProductionOrders());
     }
   }
 }

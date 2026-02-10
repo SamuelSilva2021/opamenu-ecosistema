@@ -31,6 +31,7 @@ OrderResponseDto _$OrderResponseDtoFromJson(Map<String, dynamic> json) =>
           ? null
           : DateTime.parse(json['estimatedDeliveryTime'] as String),
       queuePosition: (json['queuePosition'] as num).toInt(),
+      orderNumber: (json['orderNumber'] as num?)?.toInt(),
       items:
           (json['items'] as List<dynamic>?)
               ?.map(
@@ -61,6 +62,7 @@ Map<String, dynamic> _$OrderResponseDtoToJson(
   'estimatedPreparationMinutes': instance.estimatedPreparationMinutes,
   'estimatedDeliveryTime': instance.estimatedDeliveryTime?.toIso8601String(),
   'queuePosition': instance.queuePosition,
+  'orderNumber': instance.orderNumber,
   'items': instance.items,
 };
 

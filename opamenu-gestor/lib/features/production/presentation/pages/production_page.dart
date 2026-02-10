@@ -21,9 +21,7 @@ class _ProductionPageState extends ConsumerState<ProductionPage> {
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 15), (timer) {
-      ref.read(productionOrdersProvider.notifier).refresh();
-    });
+    // Auto-refresh removed as per user request
   }
 
   @override

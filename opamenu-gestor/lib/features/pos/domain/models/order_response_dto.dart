@@ -24,6 +24,7 @@ class OrderResponseDto {
   final int? estimatedPreparationMinutes;
   final DateTime? estimatedDeliveryTime;
   final int queuePosition;
+  final int? orderNumber;
   final List<OrderItemResponseDto> items;
 
   OrderResponseDto({
@@ -45,6 +46,7 @@ class OrderResponseDto {
     this.estimatedPreparationMinutes,
     this.estimatedDeliveryTime,
     required this.queuePosition,
+    this.orderNumber,
     this.items = const [],
   });
 
@@ -72,6 +74,7 @@ class OrderResponseDto {
     int? estimatedPreparationMinutes,
     DateTime? estimatedDeliveryTime,
     int? queuePosition,
+    int? orderNumber,
     List<OrderItemResponseDto>? items,
   }) {
     return OrderResponseDto(
@@ -93,6 +96,7 @@ class OrderResponseDto {
       estimatedPreparationMinutes: estimatedPreparationMinutes ?? this.estimatedPreparationMinutes,
       estimatedDeliveryTime: estimatedDeliveryTime ?? this.estimatedDeliveryTime,
       queuePosition: queuePosition ?? this.queuePosition,
+      orderNumber: orderNumber ?? this.orderNumber,
       items: items ?? this.items,
     );
   }

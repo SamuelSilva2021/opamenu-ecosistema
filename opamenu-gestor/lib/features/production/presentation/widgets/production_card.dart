@@ -39,7 +39,7 @@ class ProductionCard extends ConsumerWidget {
                 Row(
                   children: [
                     Text(
-                      '#${order.queuePosition}',
+                      '#${order.orderNumber ?? order.queuePosition}',
                       style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(width: 8),
