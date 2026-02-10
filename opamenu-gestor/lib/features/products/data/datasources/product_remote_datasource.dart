@@ -65,16 +65,42 @@ class ProductRemoteDataSource {
     final response = await _dio.post('/api/products', data: data);
     
     if (response.statusCode == 200 || response.statusCode == 201) {
-      final apiResponse = ApiResponseModel<ProductModel>.fromJson(
-        response.data,
-        (json) => ProductModel.fromJson(json as Map<String, dynamic>),
-      );
+      // Check for direct response (unwrapped)
+      if (response.data is Map<String, dynamic>) {
+        // Try to parse directly first if it looks like a ProductModel (has id and name)
+        final mapData = response.data as Map<String, dynamic>;
+        if (mapData.containsKey('id') && mapData.containsKey('name')) {
+           return ProductModel.fromJson(mapData);
+        }
+        
+        // Also check if wrapped in 'data' field but simple map
+        if (mapData.containsKey('data') && mapData['data'] is Map) {
+           return ProductModel.fromJson(mapData['data']);
+        }
 
-      if (apiResponse.succeeded && apiResponse.data != null) {
-        return apiResponse.data!;
-      } else {
-        throw Exception(apiResponse.errors?.firstOrNull?.message ?? AppStrings.unknownErrorFromApi);
+        // Try parsing as ApiResponseModel (wrapped)
+        try {
+          final apiResponse = ApiResponseModel<ProductModel>.fromJson(
+            response.data,
+            (json) => ProductModel.fromJson(json as Map<String, dynamic>),
+          );
+
+          if (apiResponse.succeeded && apiResponse.data != null) {
+            return apiResponse.data!;
+          } else {
+            throw Exception(apiResponse.errors?.firstOrNull?.message ?? AppStrings.unknownErrorFromApi);
+          }
+        } catch (_) {
+           // If parsing fails, rethrow or fall through
+        }
+        
+        // Fallback: try parsing whatever map we have as ProductModel
+        try {
+           return ProductModel.fromJson(mapData);
+        } catch (_) {}
       }
+      
+      throw Exception('Formato de resposta inesperado ao criar produto');
     } else {
       throw Exception('Failed to create product: ${response.statusCode}');
     }
@@ -84,16 +110,41 @@ class ProductRemoteDataSource {
     final response = await _dio.put('/api/products/$id', data: data);
     
     if (response.statusCode == 200) {
-      final apiResponse = ApiResponseModel<ProductModel>.fromJson(
-        response.data,
-        (json) => ProductModel.fromJson(json as Map<String, dynamic>),
-      );
+      // Check for direct response (unwrapped)
+      if (response.data is Map<String, dynamic>) {
+        final mapData = response.data as Map<String, dynamic>;
+        
+        // Try to parse directly
+        if (mapData.containsKey('id') && mapData.containsKey('name')) {
+           return ProductModel.fromJson(mapData);
+        }
+        
+        if (mapData.containsKey('data') && mapData['data'] is Map) {
+           return ProductModel.fromJson(mapData['data']);
+        }
 
-      if (apiResponse.succeeded && apiResponse.data != null) {
-        return apiResponse.data!;
-      } else {
-        throw Exception(apiResponse.errors?.firstOrNull?.message ?? AppStrings.unknownErrorFromApi);
+        try {
+          final apiResponse = ApiResponseModel<ProductModel>.fromJson(
+            response.data,
+            (json) => ProductModel.fromJson(json as Map<String, dynamic>),
+          );
+
+          if (apiResponse.succeeded && apiResponse.data != null) {
+            return apiResponse.data!;
+          } else {
+            throw Exception(apiResponse.errors?.firstOrNull?.message ?? AppStrings.unknownErrorFromApi);
+          }
+        } catch (_) {
+           // Ignore
+        }
+        
+        // Fallback
+        try {
+           return ProductModel.fromJson(mapData);
+        } catch (_) {}
       }
+
+      throw Exception('Formato de resposta inesperado ao atualizar produto');
     } else {
       throw Exception('Failed to update product: ${response.statusCode}');
     }

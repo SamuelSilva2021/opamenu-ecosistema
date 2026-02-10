@@ -4,13 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:opamenu_gestor/core/theme/app_colors.dart';
+import 'package:opamenu_gestor/core/utils/image_compressor.dart';
 import 'package:opamenu_gestor/features/pos/domain/models/product_model.dart';
 import 'package:opamenu_gestor/features/products/data/datasources/file_remote_datasource.dart';
 import 'package:opamenu_gestor/features/products/presentation/providers/product_notifier.dart';
 import 'package:opamenu_gestor/features/products/presentation/providers/category_notifier.dart';
 import 'package:opamenu_gestor/features/products/presentation/providers/additional_notifier.dart';
-import 'package:opamenu_gestor/features/products/domain/models/additional_group_model.dart';
-import 'package:opamenu_gestor/features/products/domain/models/category_model.dart';
 
 class ProductForm extends ConsumerStatefulWidget {
   final ProductModel? product;
@@ -58,8 +57,13 @@ class _ProductFormState extends ConsumerState<ProductForm> {
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
+      final originalFile = File(image.path);
+      
+      // Comprime a imagem antes de salvar no estado
+      final compressedFile = await ImageCompressor.compressFile(originalFile);
+      
       setState(() {
-        _imageFile = File(image.path);
+        _imageFile = compressedFile ?? originalFile;
         _imageUrlController.text = ''; // Clear URL if local file is selected
       });
     }

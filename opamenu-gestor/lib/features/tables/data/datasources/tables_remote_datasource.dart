@@ -32,17 +32,41 @@ class TablesRemoteDataSource {
         },
       );
 
-      return PagedResponseModel<List<TableResponseDto>>.fromJson(
-        response.data,
-        (json) {
-          if (json is List) {
-            return json
-                .map((e) => TableResponseDto.fromJson(e as Map<String, dynamic>))
-                .toList();
-          }
-          return [];
-        },
-      );
+      if (response.statusCode == 200) {
+        if (response.data is Map<String, dynamic>) {
+          return PagedResponseModel<List<TableResponseDto>>.fromJson(
+            response.data,
+            (json) {
+              if (json is List) {
+                return json
+                    .map((e) => TableResponseDto.fromJson(e as Map<String, dynamic>))
+                    .toList();
+              }
+              return [];
+            },
+          );
+        } else if (response.data is List) {
+          // Fallback for when API returns a direct list instead of PagedResponse
+          final list = (response.data as List)
+              .map((e) => TableResponseDto.fromJson(e as Map<String, dynamic>))
+              .toList();
+
+          return PagedResponseModel<List<TableResponseDto>>(
+            succeeded: true,
+            data: list,
+            errors: null,
+            code: response.statusCode,
+            totalItems: list.length,
+            totalPages: 1,
+            currentPage: page,
+            pageSize: pageSize,
+          );
+        }
+        
+        throw Exception('Unexpected response format');
+      }
+      
+      throw Exception('Failed to load tables: ${response.statusCode}');
     } catch (e) {
       rethrow;
     }

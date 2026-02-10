@@ -23,21 +23,31 @@ class UsersRemoteDataSource {
     final response = await _dio.get('/api/users');
     
     if (response.statusCode == 200) {
-      final apiResponse = ApiResponseModel<List<UserModel>>.fromJson(
-        response.data,
-        (json) {
-          if (json is List) {
-            return json.map((e) => UserModel.fromJson(e as Map<String, dynamic>)).toList();
-          }
-          return [];
-        },
-      );
-
-      if (apiResponse.succeeded && apiResponse.data != null) {
-        return apiResponse.data!;
-      } else {
-        throw Exception(apiResponse.errors?.firstOrNull?.message ?? AppStrings.unknownErrorFromApi);
+      if (response.data is List) {
+        return (response.data as List)
+            .map((e) => UserModel.fromJson(e as Map<String, dynamic>))
+            .toList();
       }
+
+      if (response.data is Map<String, dynamic>) {
+        final apiResponse = ApiResponseModel<List<UserModel>>.fromJson(
+          response.data,
+          (json) {
+            if (json is List) {
+              return json.map((e) => UserModel.fromJson(e as Map<String, dynamic>)).toList();
+            }
+            return [];
+          },
+        );
+
+        if (apiResponse.succeeded && apiResponse.data != null) {
+          return apiResponse.data!;
+        } else {
+          throw Exception(apiResponse.errors?.firstOrNull?.message ?? AppStrings.unknownErrorFromApi);
+        }
+      }
+      
+      throw Exception('Formato de resposta inesperado');
     } else {
       throw Exception('Failed to load users: ${response.statusCode}');
     }
@@ -47,21 +57,31 @@ class UsersRemoteDataSource {
     final response = await _dio.get('/api/roles');
     
     if (response.statusCode == 200) {
-      final apiResponse = ApiResponseModel<List<RoleModel>>.fromJson(
-        response.data,
-        (json) {
-          if (json is List) {
-            return json.map((e) => RoleModel.fromJson(e as Map<String, dynamic>)).toList();
-          }
-          return [];
-        },
-      );
-
-      if (apiResponse.succeeded && apiResponse.data != null) {
-        return apiResponse.data!;
-      } else {
-        throw Exception(apiResponse.errors?.firstOrNull?.message ?? AppStrings.unknownErrorFromApi);
+      if (response.data is List) {
+        return (response.data as List)
+            .map((e) => RoleModel.fromJson(e as Map<String, dynamic>))
+            .toList();
       }
+
+      if (response.data is Map<String, dynamic>) {
+        final apiResponse = ApiResponseModel<List<RoleModel>>.fromJson(
+          response.data,
+          (json) {
+            if (json is List) {
+              return json.map((e) => RoleModel.fromJson(e as Map<String, dynamic>)).toList();
+            }
+            return [];
+          },
+        );
+
+        if (apiResponse.succeeded && apiResponse.data != null) {
+          return apiResponse.data!;
+        } else {
+          throw Exception(apiResponse.errors?.firstOrNull?.message ?? AppStrings.unknownErrorFromApi);
+        }
+      }
+
+      throw Exception('Formato de resposta inesperado');
     } else {
       throw Exception('Failed to load roles: ${response.statusCode}');
     }
