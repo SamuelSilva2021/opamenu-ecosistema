@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using OpaMenu.Infrastructure.Shared.Data.Context.Opamenu;
@@ -11,9 +12,11 @@ using OpaMenu.Infrastructure.Shared.Data.Context.Opamenu;
 namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
 {
     [DbContext(typeof(OpamenuDbContext))]
-    partial class OpamenuDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260210223440_AddCollaboratorEntity")]
+    partial class AddCollaboratorEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -685,13 +688,13 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
 
                     b.HasIndex("CustomerPhone");
 
-                    b.HasIndex("DriverId");
-
                     b.HasIndex("OrderType");
 
                     b.HasIndex("Status");
 
                     b.HasIndex("TableId");
+
+                    b.HasIndex("driver_id");
 
                     b.ToTable("orders", null, t =>
                         {
@@ -1736,15 +1739,14 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.Opamenu.CollaboratorEntity", "Driver")
-                        .WithMany()
-                        .HasForeignKey("DriverId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("OpaMenu.Infrastructure.Shared.Entities.Opamenu.TableEntity", "Table")
                         .WithMany("Orders")
                         .HasForeignKey("TableId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.Opamenu.CollaboratorEntity", "Driver")
+                        .WithMany()
+                        .HasForeignKey("driver_id");
 
                     b.Navigation("Customer");
 

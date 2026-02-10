@@ -63,6 +63,9 @@ public class OrderEntity : BaseEntity
     [Column("driver_id")]
     public Guid? DriverId { get; set; }
 
+    [ForeignKey("driver_id")]
+    public virtual CollaboratorEntity? Driver { get; set; }
+
     [Column("estimated_preparation_minutes")]
     public int? EstimatedPreparationMinutes { get; set; }
     

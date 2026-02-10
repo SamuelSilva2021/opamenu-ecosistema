@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:opamenu_gestor/features/users/presentation/providers/users_notifier.dart';
-import 'package:opamenu_gestor/features/users/domain/models/user_model.dart';
+import 'package:opamenu_gestor/features/collaborators/presentation/providers/collaborators_provider.dart';
+import 'package:opamenu_gestor/features/collaborators/domain/models/collaborator_model.dart';
 
 class SelectDriverDialog extends ConsumerStatefulWidget {
   const SelectDriverDialog({super.key});
@@ -11,54 +11,65 @@ class SelectDriverDialog extends ConsumerStatefulWidget {
 }
 
 class _SelectDriverDialogState extends ConsumerState<SelectDriverDialog> {
-  UserModel? _selectedDriver;
+  CollaboratorModel? _selectedDriver;
 
   @override
   Widget build(BuildContext context) {
-    final usersAsync = ref.watch(usersProvider);
+    final collaboratorsAsync = ref.watch(collaboratorsProvider);
 
     return AlertDialog(
       title: const Text('Selecionar Entregador'),
       content: SizedBox(
         width: 400,
-        child: usersAsync.when(
-          data: (users) {
-            // Filtrar usuários que podem ser entregadores (MVP: Mostra todos ativos)
-            // Futuro: Filtrar por Role "Driver"
-            final activeUsers = users.where((u) => u.isActive).toList();
+        height: 300,
+        child: collaboratorsAsync.when(
+          data: (collaborators) {
+            // Filtrar apenas ativos
+            final activeDrivers = collaborators.where((c) => c.active).toList();
 
-            if (activeUsers.isEmpty) {
+            if (activeDrivers.isEmpty) {
               return const Center(child: Text('Nenhum entregador disponível.'));
             }
 
-            return ListView.builder(
-              shrinkWrap: true,
-              itemCount: activeUsers.length,
+            return ListView.separated(
+              itemCount: activeDrivers.length,
+              separatorBuilder: (context, index) => const Divider(height: 1),
               itemBuilder: (context, index) {
-                final user = activeUsers[index];
-                final isSelected = _selectedDriver?.id == user.id;
+                final driver = activeDrivers[index];
+                final isSelected = _selectedDriver?.id == driver.id;
 
                 return ListTile(
                   leading: CircleAvatar(
-                    child: Text(user.username.substring(0, 1).toUpperCase()),
+                    backgroundColor: driver.type == 1 
+                        ? Colors.blue.withOpacity(0.1)
+                        : Colors.orange.withOpacity(0.1),
+                    child: Icon(
+                      driver.type == 1 ? Icons.badge : Icons.motorcycle,
+                      color: driver.type == 1 ? Colors.blue : Colors.orange,
+                      size: 20,
+                    ),
                   ),
-                  title: Text(user.username),
-                  subtitle: user.phoneNumber != null ? Text(user.phoneNumber!) : null,
+                  title: Text(driver.name),
+                  subtitle: Text(
+                    driver.typeLabel + (driver.phone != null ? ' • ${driver.phone}' : ''),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  ),
                   trailing: isSelected 
                       ? const Icon(Icons.check_circle, color: Colors.green)
                       : null,
                   onTap: () {
                     setState(() {
-                      _selectedDriver = user;
+                      _selectedDriver = driver;
                     });
                   },
                   selected: isSelected,
+                  selectedTileColor: Colors.blue.withOpacity(0.05),
                 );
               },
             );
           },
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, s) => Center(child: Text('Erro ao carregar usuários: $e')),
+          error: (e, s) => Center(child: Text('Erro ao carregar entregadores: $e')),
         ),
       ),
       actions: [

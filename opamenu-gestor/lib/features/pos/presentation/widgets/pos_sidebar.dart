@@ -18,6 +18,7 @@ class PosSidebar extends ConsumerWidget {
     if (location.startsWith('/production')) return 5;
     if (location.startsWith('/notifications')) return 6;
     if (location.startsWith('/users')) return 7;
+    if (location.startsWith('/collaborators')) return 10;
     if (location.startsWith('/messages')) return 8;
     if (location.startsWith('/settings')) return 9;
     return -1;
@@ -58,6 +59,9 @@ class PosSidebar extends ConsumerWidget {
         break;
       case 9:
         context.go('/settings');
+        break;
+      case 10:
+        context.go('/collaborators');
         break;
     }
   }
@@ -193,12 +197,21 @@ class PosSidebar extends ConsumerWidget {
                     onTap: () => _navigateTo(context, 6),
                   ),
                   PermissionGate(
-                    module: 'USER',
+                    module: 'USER_ACCOUNT',
                     child: _SidebarItem(
                       icon: Icons.people_rounded,
                       label: 'Usuários',
                       isSelected: currentIndex == 7,
                       onTap: () => _navigateTo(context, 7),
+                    ),
+                  ),
+                  PermissionGate(
+                    module: 'USER_ACCOUNT', // Usar o mesmo por enquanto, ou criar novo módulo
+                    child: _SidebarItem(
+                      icon: Icons.badge_outlined,
+                      label: 'Colaboradores',
+                      isSelected: currentIndex == 10,
+                      onTap: () => _navigateTo(context, 10),
                     ),
                   ),
                   _SidebarItem(

@@ -31,6 +31,7 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
     public DbSet<LoyaltyProgramEntity> LoyaltyPrograms { get; set; }
     public DbSet<LoyaltyTransactionEntity> LoyaltyTransactions { get; set; }
     public DbSet<CustomerLoyaltyBalanceEntity> CustomerLoyaltyBalances { get; set; }
+    public DbSet<CollaboratorEntity> Collaborators { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -233,6 +234,11 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
                 .HasForeignKey<OrderRejectionEntity>(r => r.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            entity.HasOne(e => e.Driver)
+                .WithMany()
+                .HasForeignKey(e => e.DriverId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             // =========================
             // Indexes
             // =========================
@@ -410,6 +416,22 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
                 .WithMany() // Assumindo que Customer não precisa navegar para Balances por enquanto
                 .HasForeignKey(e => e.CustomerId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Collaborator configuration
+        modelBuilder.Entity<CollaboratorEntity>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Type).HasConversion<string>().IsRequired();
+            entity.Property(e => e.Role).HasMaxLength(50);
+            entity.Property(e => e.Phone).HasMaxLength(20);
+            entity.Property(e => e.Active).IsRequired();
+            entity.Property(e => e.UserAccountId).IsRequired(false);
+
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => e.Type);
+            entity.HasIndex(e => e.UserAccountId);
         });
 
         // Loyalty Transaction configuration

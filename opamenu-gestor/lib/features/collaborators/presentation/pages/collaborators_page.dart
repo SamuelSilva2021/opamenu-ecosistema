@@ -1,18 +1,17 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opamenu_gestor/core/presentation/widgets/permission_gate.dart';
 import 'package:opamenu_gestor/core/theme/app_colors.dart';
-import 'package:opamenu_gestor/features/users/domain/models/user_model.dart';
-import '../providers/users_notifier.dart';
-import '../widgets/user_form_dialog.dart';
+import 'package:opamenu_gestor/features/collaborators/domain/models/collaborator_model.dart';
+import 'package:opamenu_gestor/features/collaborators/presentation/providers/collaborators_provider.dart';
+import 'package:opamenu_gestor/features/collaborators/presentation/widgets/collaborator_form_dialog.dart';
 
-class UsersPage extends ConsumerWidget {
-  const UsersPage({super.key});
+class CollaboratorsPage extends ConsumerWidget {
+  const CollaboratorsPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final usersAsync = ref.watch(usersProvider);
+    final collaboratorsAsync = ref.watch(collaboratorsProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
@@ -25,7 +24,7 @@ class UsersPage extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  'Gestão de Usuários',
+                  'Gestão de Colaboradores',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -33,15 +32,15 @@ class UsersPage extends ConsumerWidget {
                   ),
                 ),
                 PermissionGate(
-                  module: 'USER_ACCOUNT',
+                  module: 'USER_ACCOUNT', // Usando mesma permissão por enquanto
                   operation: 'CREATE',
                   child: ElevatedButton.icon(
                     onPressed: () => showDialog(
                       context: context,
-                      builder: (context) => const UserFormDialog(),
+                      builder: (context) => const CollaboratorFormDialog(),
                     ),
                     icon: const Icon(Icons.person_add),
-                    label: const Text('Novo Usuário'),
+                    label: const Text('Novo Colaborador'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
@@ -65,59 +64,64 @@ class UsersPage extends ConsumerWidget {
                     ),
                   ],
                 ),
-                child: usersAsync.when(
-                  data: (users) {
-                    if (users.isEmpty) {
-                      return const Center(child: Text('Nenhum usuário encontrado'));
+                child: collaboratorsAsync.when(
+                  data: (collaborators) {
+                    if (collaborators.isEmpty) {
+                      return const Center(child: Text('Nenhum colaborador encontrado'));
                     }
                     return ListView.separated(
                       padding: const EdgeInsets.all(16),
-                      itemCount: users.length,
+                      itemCount: collaborators.length,
                       separatorBuilder: (context, index) => const Divider(),
                       itemBuilder: (context, index) {
-                        final user = users[index];
+                        final collaborator = collaborators[index];
                         return ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: AppColors.primary.withOpacity(0.1),
-                            child: Text(
-                              user.username.substring(0, 1).toUpperCase(),
-                              style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+                            backgroundColor: collaborator.type == 1 
+                                ? Colors.blue.withOpacity(0.1)
+                                : Colors.orange.withOpacity(0.1),
+                            child: Icon(
+                              collaborator.type == 1 ? Icons.badge : Icons.motorcycle,
+                              color: collaborator.type == 1 ? Colors.blue : Colors.orange,
                             ),
                           ),
                           title: Text(
-                            user.username,
+                            collaborator.name,
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(user.email),
+                              if (collaborator.phone != null) Text(collaborator.phone!),
+                              if (collaborator.role != null) Text(collaborator.role!),
                               const SizedBox(height: 4),
                               Row(
                                 children: [
-                                  if (user.roles.isNotEmpty)
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: Colors.blue.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: Text(
-                                        user.roles.first.name,
-                                        style: const TextStyle(color: Colors.blue, fontSize: 12),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: (collaborator.type == 1 ? Colors.blue : Colors.orange).withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      collaborator.typeLabel,
+                                      style: TextStyle(
+                                        color: collaborator.type == 1 ? Colors.blue : Colors.orange,
+                                        fontSize: 12,
                                       ),
                                     ),
+                                  ),
                                   const SizedBox(width: 8),
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: (user.isActive ? Colors.green : Colors.red).withOpacity(0.1),
+                                      color: (collaborator.active ? Colors.green : Colors.red).withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
-                                      user.isActive ? 'Ativo' : 'Inativo',
+                                      collaborator.active ? 'Ativo' : 'Inativo',
                                       style: TextStyle(
-                                        color: user.isActive ? Colors.green : Colors.red,
+                                        color: collaborator.active ? Colors.green : Colors.red,
                                         fontSize: 12,
                                       ),
                                     ),
@@ -136,7 +140,7 @@ class UsersPage extends ConsumerWidget {
                                   icon: const Icon(Icons.edit_outlined, color: Colors.orange),
                                   onPressed: () => showDialog(
                                     context: context,
-                                    builder: (context) => UserFormDialog(user: user),
+                                    builder: (context) => CollaboratorFormDialog(collaborator: collaborator),
                                   ),
                                 ),
                               ),
@@ -145,7 +149,7 @@ class UsersPage extends ConsumerWidget {
                                 operation: 'DELETE',
                                 child: IconButton(
                                   icon: const Icon(Icons.delete_outline, color: Colors.red),
-                                  onPressed: () => _confirmDelete(context, ref, user),
+                                  onPressed: () => _confirmDelete(context, ref, collaborator),
                                 ),
                               ),
                             ],
@@ -165,12 +169,12 @@ class UsersPage extends ConsumerWidget {
     );
   }
 
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref, UserModel user) async {
+  Future<void> _confirmDelete(BuildContext context, WidgetRef ref, CollaboratorModel collaborator) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Confirmar exclusão'),
-        content: Text('Deseja realmente excluir o usuário "${user.username}"?'),
+        content: Text('Deseja realmente excluir o colaborador "${collaborator.name}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -185,7 +189,7 @@ class UsersPage extends ConsumerWidget {
     );
 
     if (confirmed == true) {
-      ref.read(usersProvider.notifier).deleteUser(user.id);
+      ref.read(collaboratorsProvider.notifier).deleteCollaborator(collaborator.id);
     }
   }
 }

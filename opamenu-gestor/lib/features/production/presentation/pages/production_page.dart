@@ -8,7 +8,7 @@ import '../widgets/select_driver_dialog.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../pos/domain/models/order_response_dto.dart';
 import '../../../pos/domain/enums/order_status.dart';
-import '../../../users/domain/models/user_model.dart';
+import '../../../collaborators/domain/models/collaborator_model.dart';
 
 class ProductionPage extends ConsumerStatefulWidget {
   const ProductionPage({super.key});
@@ -37,7 +37,7 @@ class _ProductionPageState extends ConsumerState<ProductionPage> {
 
     // Se o pedido está pronto e é Delivery, precisamos selecionar o entregador
     if (order.status == OrderStatus.ready && order.isDelivery) {
-      final selectedDriver = await showDialog<UserModel>(
+      final selectedDriver = await showDialog<CollaboratorModel>(
         context: context,
         barrierDismissible: false,
         builder: (context) => const SelectDriverDialog(),

@@ -14,6 +14,7 @@ import '../../features/products/presentation/pages/catalog_page.dart';
 import '../../features/production/presentation/pages/production_page.dart';
 import 'package:opamenu_gestor/core/presentation/providers/permissions_provider.dart';
 import '../../features/users/presentation/pages/users_page.dart';
+import '../../features/collaborators/presentation/pages/collaborators_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opamenu_gestor/features/auth/presentation/providers/auth_notifier.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -136,6 +137,12 @@ GoRouter goRouter(Ref ref) {
             ),
           ),
           GoRoute(
+            path: '/collaborators',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: CollaboratorsPage(),
+            ),
+          ),
+          GoRoute(
             path: '/messages',
             pageBuilder: (context, state) => const NoTransitionPage(
               child: PlaceholderPage(title: 'Mensagens'),
@@ -166,6 +173,7 @@ const _routePermissions = {
   '/tables': 'TABLE',
   '/products': 'PRODUCT',
   '/production': 'ORDER',
-  '/users': 'USER',
+  '/users': 'USER_ACCOUNT',
+  '/collaborators': 'USER_ACCOUNT', // Usando mesma permissão por enquanto
   '/settings': 'SETTINGS',
 };

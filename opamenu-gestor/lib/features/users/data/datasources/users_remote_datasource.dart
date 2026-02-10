@@ -20,7 +20,8 @@ class UsersRemoteDataSource {
   UsersRemoteDataSource(this._dio);
 
   Future<List<UserModel>> getUsers() async {
-    final response = await _dio.get('/api/users/users-tenant');
+    // Consumindo o endpoint correto para listagem de colaboradores do painel
+    final response = await _dio.get('/api/user-accounts-painel', queryParameters: {'limit': 100});
     return _parseUserResponse(response);
   }
 
@@ -33,6 +34,23 @@ class UsersRemoteDataSource {
       }
 
       if (response.data is Map<String, dynamic>) {
+        final data = response.data as Map<String, dynamic>;
+        
+        if (data.containsKey('data')) {
+           final innerData = data['data'];
+           
+           if (innerData is Map && innerData.containsKey('items')) {
+             final items = innerData['items'];
+             if (items is List) {
+               return items.map((e) => UserModel.fromJson(e as Map<String, dynamic>)).toList();
+             }
+           }
+           
+           if (innerData is List) {
+             return innerData.map((e) => UserModel.fromJson(e as Map<String, dynamic>)).toList();
+           }
+        }
+        
         final apiResponse = ApiResponseModel<List<UserModel>>.fromJson(
           response.data,
           (json) {
@@ -46,6 +64,7 @@ class UsersRemoteDataSource {
         if (apiResponse.succeeded && apiResponse.data != null) {
           return apiResponse.data!;
         } else {
+          if (apiResponse.succeeded) return [];
           throw Exception(apiResponse.errors?.firstOrNull?.message ?? AppStrings.unknownErrorFromApi);
         }
       }
