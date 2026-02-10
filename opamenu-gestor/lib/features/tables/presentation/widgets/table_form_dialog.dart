@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opamenu_gestor/core/presentation/widgets/app_loader.dart';
 import '../../data/models/table_response_dto.dart';
 import '../controllers/tables_controller.dart';
 
@@ -35,6 +36,7 @@ class _TableFormDialogState extends ConsumerState<TableFormDialog> {
 
   Future<void> _save() async {
     if (_formKey.currentState?.validate() ?? false) {
+      LoadingOverlay.show(context, message: 'Salvando mesa...');
       try {
         final name = _nameController.text.trim();
         final capacity = int.parse(_capacityController.text.trim());
@@ -53,6 +55,7 @@ class _TableFormDialogState extends ConsumerState<TableFormDialog> {
         }
 
         if (mounted) {
+          LoadingOverlay.hide(context);
           Navigator.of(context).pop();
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Mesa salva com sucesso!')),
@@ -60,6 +63,7 @@ class _TableFormDialogState extends ConsumerState<TableFormDialog> {
         }
       } catch (e) {
         if (mounted) {
+          LoadingOverlay.hide(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Erro ao salvar mesa: $e'), backgroundColor: Colors.red),
           );

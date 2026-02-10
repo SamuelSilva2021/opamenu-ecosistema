@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opamenu_gestor/core/presentation/widgets/app_loader.dart';
 import '../providers/additional_notifier.dart';
 import '../../domain/models/additional_group_model.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -184,21 +185,37 @@ class AdditionalList extends ConsumerWidget {
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
-            onPressed: () {
-              if (group == null) {
-                ref.read(additionalProvider.notifier).addGroup(
-                  nameController.text,
-                  descController.text,
-                );
-              } else {
-                ref.read(additionalProvider.notifier).updateGroup(
-                  group.copyWith(
-                    name: nameController.text,
-                    description: descController.text,
-                  ),
-                );
+            onPressed: () async {
+              // Show loading
+              LoadingOverlay.show(context, message: 'Salvando grupo...');
+              
+              try {
+                if (group == null) {
+                  await ref.read(additionalProvider.notifier).addGroup(
+                    nameController.text,
+                    descController.text,
+                  );
+                } else {
+                  await ref.read(additionalProvider.notifier).updateGroup(
+                    group.copyWith(
+                      name: nameController.text,
+                      description: descController.text,
+                    ),
+                  );
+                }
+                
+                if (context.mounted) {
+                  LoadingOverlay.hide(context); // Hide loading
+                  Navigator.pop(context); // Close dialog
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  LoadingOverlay.hide(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Erro: $e'), backgroundColor: Colors.red),
+                  );
+                }
               }
-              Navigator.pop(context);
             },
             child: const Text('Salvar'),
           ),
@@ -227,7 +244,18 @@ class AdditionalList extends ConsumerWidget {
     );
 
     if (confirmed == true) {
-      ref.read(additionalProvider.notifier).deleteGroup(group.id);
+      LoadingOverlay.show(context, message: 'Excluindo grupo...');
+      try {
+        await ref.read(additionalProvider.notifier).deleteGroup(group.id);
+        if (context.mounted) LoadingOverlay.hide(context);
+      } catch (e) {
+        if (context.mounted) {
+          LoadingOverlay.hide(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erro ao excluir: $e'), backgroundColor: Colors.red),
+          );
+        }
+      }
     }
   }
 
@@ -321,7 +349,18 @@ class AdditionalList extends ConsumerWidget {
     );
 
     if (confirmed == true) {
-      ref.read(additionalProvider.notifier).deleteItem(item.id);
+      LoadingOverlay.show(context, message: 'Excluindo item...');
+      try {
+        await ref.read(additionalProvider.notifier).deleteItem(item.id);
+        if (context.mounted) LoadingOverlay.hide(context);
+      } catch (e) {
+        if (context.mounted) {
+          LoadingOverlay.hide(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erro ao excluir: $e'), backgroundColor: Colors.red),
+          );
+        }
+      }
     }
   }
 }

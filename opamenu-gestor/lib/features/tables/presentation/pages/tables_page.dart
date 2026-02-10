@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:opamenu_gestor/core/presentation/widgets/app_loader.dart';
 import 'package:opamenu_gestor/core/presentation/widgets/permission_gate.dart';
 import 'package:opamenu_gestor/features/pos/presentation/providers/active_order_provider.dart';
 import 'package:opamenu_gestor/features/pos/presentation/providers/cart_notifier.dart';
@@ -263,16 +264,29 @@ class TablesPage extends ConsumerWidget {
     );
 
     if (confirmed == true) {
-      await ref.read(tablesControllerProvider.notifier).deleteTable(id);
+      LoadingOverlay.show(context, message: 'Excluindo mesa...');
+      try {
+        await ref.read(tablesControllerProvider.notifier).deleteTable(id);
+        if (context.mounted) LoadingOverlay.hide(context);
+      } catch (e) {
+        if (context.mounted) {
+          LoadingOverlay.hide(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erro ao excluir: $e'), backgroundColor: Colors.red),
+          );
+        }
+      }
     }
   }
 
   Future<void> _showQrCode(BuildContext context, WidgetRef ref, String id, String tableName) async {
     try {
+      LoadingOverlay.show(context, message: 'Gerando QR Code...');
       // First, get the QR code URL (or string data) from the controller
       final qrData = await ref.read(tablesControllerProvider.notifier).generateQrCode(id);
       
       if (context.mounted) {
+        LoadingOverlay.hide(context);
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
@@ -299,6 +313,7 @@ class TablesPage extends ConsumerWidget {
       }
     } catch (e) {
       if (context.mounted) {
+        LoadingOverlay.hide(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erro ao gerar QR Code: $e'), backgroundColor: Colors.red),
         );

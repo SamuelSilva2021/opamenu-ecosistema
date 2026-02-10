@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:opamenu_gestor/core/presentation/widgets/app_loader.dart';
 import 'package:opamenu_gestor/core/theme/app_colors.dart';
 import 'package:opamenu_gestor/core/utils/image_compressor.dart';
 import 'package:opamenu_gestor/features/pos/domain/models/product_model.dart';
@@ -30,7 +31,6 @@ class _ProductFormState extends ConsumerState<ProductForm> {
   List<String> _selectedAdditionalGroupIds = [];
   bool _isActive = true;
   File? _imageFile;
-  bool _isUploading = false;
 
   @override
   void initState() {
@@ -71,7 +71,8 @@ class _ProductFormState extends ConsumerState<ProductForm> {
 
   Future<void> _save() async {
     if (_formKey.currentState!.validate()) {
-      setState(() => _isUploading = true);
+      // Show loading overlay
+      LoadingOverlay.show(context, message: 'Salvando produto...');
       
       try {
         String? imageUrl = _imageUrlController.text.trim();
@@ -98,16 +99,23 @@ class _ProductFormState extends ConsumerState<ProductForm> {
         }
 
         if (mounted) {
+          // Hide loading overlay first
+          LoadingOverlay.hide(context);
+          
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Produto salvo com sucesso!'),
               backgroundColor: Colors.green,
             ),
           );
+          // Close the form
           Navigator.pop(context);
         }
       } catch (e) {
         if (mounted) {
+          // Hide loading overlay on error
+          LoadingOverlay.hide(context);
+          
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Erro ao salvar produto: $e'),
@@ -115,8 +123,6 @@ class _ProductFormState extends ConsumerState<ProductForm> {
             ),
           );
         }
-      } finally {
-        if (mounted) setState(() => _isUploading = false);
       }
     }
   }
@@ -238,7 +244,7 @@ class _ProductFormState extends ConsumerState<ProductForm> {
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton.icon(
-                            onPressed: _isUploading ? null : _pickImage,
+                            onPressed: _pickImage,
                             icon: const Icon(Icons.image_search),
                             label: const Text('Selecionar do Dispositivo'),
                             style: OutlinedButton.styleFrom(
