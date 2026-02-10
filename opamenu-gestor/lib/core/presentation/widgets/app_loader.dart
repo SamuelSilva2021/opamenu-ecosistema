@@ -23,12 +23,17 @@ class AppLoader extends StatelessWidget {
 }
 
 class LoadingOverlay {
-  static void show(BuildContext context, {String? message}) {
-    showDialog(
+  static bool _visible = false;
+  static Future<void> show(BuildContext context, {String? message}) async {
+    if (_visible) return;
+    _visible = true;
+    await showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => PopScope(
-        canPop: false,
+      barrierColor: Colors.black54,
+      useRootNavigator: true,
+      builder: (_) => WillPopScope(
+        onWillPop: () async => false,
         child: Center(
           child: Card(
             elevation: 8,
@@ -53,8 +58,10 @@ class LoadingOverlay {
   }
 
   static void hide(BuildContext context) {
-    if (Navigator.canPop(context)) {
-      Navigator.pop(context);
+    final navigator = Navigator.of(context, rootNavigator: true);
+    if (navigator.canPop()) {
+      navigator.pop();
     }
+    _visible = false;
   }
 }
