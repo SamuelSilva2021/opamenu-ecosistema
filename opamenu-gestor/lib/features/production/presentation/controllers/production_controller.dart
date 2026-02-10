@@ -1,4 +1,3 @@
-import 'package:opamenu_gestor/features/pos/domain/models/order_item_response_dto.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../pos/domain/models/order_response_dto.dart';
 import '../../../pos/domain/enums/order_status.dart';

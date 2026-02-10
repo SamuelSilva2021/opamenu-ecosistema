@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import '../../../pos/domain/models/order_response_dto.dart';
 import '../../../pos/domain/enums/order_status.dart';
 import '../../../../core/theme/app_colors.dart';
