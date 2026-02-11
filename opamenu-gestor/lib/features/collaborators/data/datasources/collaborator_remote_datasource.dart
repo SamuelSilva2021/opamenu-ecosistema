@@ -42,6 +42,12 @@ class CollaboratorRemoteDataSource {
 
   List<CollaboratorModel> _parseListResponse(Response response) {
     if (response.statusCode == 200) {
+      if (response.data is List) {
+        return (response.data as List)
+            .map((e) => CollaboratorModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+      }
+
       final apiResponse = ApiResponseModel<List<CollaboratorModel>>.fromJson(
         response.data,
         (json) {

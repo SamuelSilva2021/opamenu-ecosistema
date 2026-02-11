@@ -12,15 +12,18 @@ namespace OpaMenu.Application.Services.Opamenu;
 public class CollaboratorService(
     ICollaboratorRepository repository,
     ITenantContext tenantContext,
+    ICurrentUserService currentUserService,
     ILogger<CollaboratorService> logger) : ICollaboratorService
 {
     private readonly ICollaboratorRepository _repository = repository;
     private readonly ITenantContext _tenantContext = tenantContext;
     private readonly ILogger<CollaboratorService> _logger = logger;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+
 
     public async Task<ResponseDTO<CollaboratorResponseDto>> CreateAsync(CreateCollaboratorRequestDto request)
     {
-        var tenantId = _tenantContext.TenantId;
+        var tenantId = _currentUserService.GetTenantGuid();
         if (tenantId == null || tenantId == Guid.Empty)
             return StaticResponseBuilder<CollaboratorResponseDto>.BuildError("Tenant não identificado");
 
@@ -44,7 +47,7 @@ public class CollaboratorService(
 
     public async Task<ResponseDTO<CollaboratorResponseDto>> UpdateAsync(Guid id, UpdateCollaboratorRequestDto request)
     {
-        var tenantId = _tenantContext.TenantId;
+        var tenantId = _currentUserService.GetTenantGuid();
         if (tenantId == null || tenantId == Guid.Empty)
             return StaticResponseBuilder<CollaboratorResponseDto>.BuildError("Tenant não identificado");
 
@@ -68,7 +71,7 @@ public class CollaboratorService(
 
     public async Task<ResponseDTO<bool>> DeleteAsync(Guid id)
     {
-        var tenantId = _tenantContext.TenantId;
+        var tenantId = _currentUserService.GetTenantGuid();
         if (tenantId == null || tenantId == Guid.Empty)
             return StaticResponseBuilder<bool>.BuildError("Tenant não identificado");
 
@@ -86,7 +89,7 @@ public class CollaboratorService(
 
     public async Task<ResponseDTO<CollaboratorResponseDto>> GetByIdAsync(Guid id)
     {
-        var tenantId = _tenantContext.TenantId;
+        var tenantId = _currentUserService.GetTenantGuid();
         if (tenantId == null || tenantId == Guid.Empty)
             return StaticResponseBuilder<CollaboratorResponseDto>.BuildError("Tenant não identificado");
 
@@ -99,7 +102,8 @@ public class CollaboratorService(
 
     public async Task<ResponseDTO<IEnumerable<CollaboratorResponseDto>>> GetAllAsync()
     {
-        var tenantId = _tenantContext.TenantId;
+        var tenantId = _currentUserService.GetTenantGuid();
+
         if (tenantId == null || tenantId == Guid.Empty)
             return StaticResponseBuilder<IEnumerable<CollaboratorResponseDto>>.BuildError("Tenant não identificado");
 
