@@ -100,17 +100,29 @@ const TenantHeader = ({ tenant, customer, onLoginClick, onLogoutClick, onEditPro
               <span className="max-w-[100px] truncate">{customer.name.split(' ')[0]}</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 bg-white border border-gray-200 shadow-lg z-50">
-            <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer" onClick={onEditProfileClick}>
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Editar Perfil</span>
+          <DropdownMenuContent align="end" className="w-64 bg-white/95 backdrop-blur-xl border-2 border-border/50 shadow-2xl z-50 mt-2 rounded-[2rem] p-2">
+            <DropdownMenuLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground px-4 py-3">
+              Minha Conta
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator className="bg-border/50 mx-2" />
+            <DropdownMenuItem 
+              className="cursor-pointer rounded-xl font-bold p-3 focus:bg-primary/5 focus:text-primary transition-colors gap-3" 
+              onClick={onEditProfileClick}
+            >
+              <div className="bg-primary/10 p-2 rounded-lg">
+                <Settings className="h-4 w-4 stroke-[2.5] text-primary" />
+              </div>
+              <span className="uppercase tracking-tight text-xs">Editar Perfil</span>
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-600" onClick={onLogoutClick}>
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Sair</span>
+            <DropdownMenuSeparator className="bg-border/50 mx-2" />
+            <DropdownMenuItem 
+              className="cursor-pointer text-red-500 focus:text-red-600 focus:bg-red-50 rounded-xl font-bold p-3 transition-colors gap-3" 
+              onClick={onLogoutClick}
+            >
+              <div className="bg-red-100 p-2 rounded-lg">
+                <LogOut className="h-4 w-4 stroke-[2.5]" />
+              </div>
+              <span className="uppercase tracking-tight text-xs">Sair</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

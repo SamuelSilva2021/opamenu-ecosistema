@@ -45,23 +45,37 @@ const BottomNavigation = ({
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className="flex flex-col items-center gap-1 h-auto py-2 text-gray-500 hover:text-primary min-w-[64px]"
+              className="flex flex-col items-center gap-1 h-auto p-0 text-text-secondary hover:text-primary transition-all active:scale-95 min-w-[64px]"
             >
-              <User className="h-6 w-6" />
-              <span className="text-[10px] max-w-[60px] truncate">{customer.name.split(' ')[0]}</span>
+              <User className="h-6 w-6 stroke-[2.5]" />
+              <span className="text-[10px] font-black uppercase tracking-widest max-w-[60px] truncate">
+                {customer.name.split(' ')[0]}
+              </span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" side="top" className="w-56 bg-white border border-gray-200 shadow-lg z-50 mb-2">
-            <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer" onClick={onProfileClick}>
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Editar Perfil</span>
+          <DropdownMenuContent align="end" side="top" className="w-64 bg-white/95 backdrop-blur-xl border-2 border-border/50 shadow-2xl z-50 mb-4 rounded-[2rem] p-2">
+            <DropdownMenuLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground px-4 py-3">
+              Minha Conta
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator className="bg-border/50 mx-2" />
+            <DropdownMenuItem 
+              className="cursor-pointer rounded-xl font-bold p-3 focus:bg-primary/5 focus:text-primary transition-colors gap-3" 
+              onClick={onProfileClick}
+            >
+              <div className="bg-primary/10 p-2 rounded-lg">
+                <Settings className="h-4 w-4 stroke-[2.5] text-primary" />
+              </div>
+              <span className="uppercase tracking-tight text-xs">Editar Perfil</span>
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-600" onClick={onLogoutClick}>
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Sair</span>
+            <DropdownMenuSeparator className="bg-border/50 mx-2" />
+            <DropdownMenuItem 
+              className="cursor-pointer text-red-500 focus:text-red-600 focus:bg-red-50 rounded-xl font-bold p-3 transition-colors gap-3" 
+              onClick={onLogoutClick}
+            >
+              <div className="bg-red-100 p-2 rounded-lg">
+                <LogOut className="h-4 w-4 stroke-[2.5]" />
+              </div>
+              <span className="uppercase tracking-tight text-xs">Sair</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -71,11 +85,11 @@ const BottomNavigation = ({
     return (
       <Button
         variant="ghost"
-        className="flex flex-col items-center gap-1 h-auto py-2 text-gray-500 hover:text-primary min-w-[64px]"
+        className="flex flex-col items-center gap-1 h-auto p-0 text-text-secondary hover:text-primary transition-all active:scale-95 min-w-[64px]"
         onClick={onProfileClick}
       >
-        <User className="h-6 w-6" />
-        <span className="text-[10px]">Perfil</span>
+        <User className="h-6 w-6 stroke-[2.5]" />
+        <span className="text-[10px] font-black uppercase tracking-widest">Perfil</span>
       </Button>
     );
   };
