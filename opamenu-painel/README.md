@@ -1,75 +1,69 @@
-# React + TypeScript + Vite
+# 🍕 Opamenu Painel - Gestão para Restaurantes
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Painel administrativo moderno para gestão de pedidos, cardápio e configurações do ecossistema **Opamenu**. Desenvolvido com **React**, **TypeScript**, **Vite** e **Shadcn/ui**.
 
-Currently, two official plugins are available:
+## 🚀 Funcionalidades Principais
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Gestão de Pedidos em Tempo Real**: Kanban board com atualizações instantâneas via SignalR.
+- **Gerenciamento de Cardápio**:
+  - Produtos, Categorias e Adicionais.
+  - Grupos de Adicionais e Controle de Estoque.
+- **Configurações da Loja**: Horários, Taxas de Entrega, Impressoras Térmicas.
+- **Gestão de Usuários e Permissões**: Controle de acesso granular (RBAC).
+- **Cupons e Fidelidade**: Ferramentas de marketing para retenção de clientes.
 
-## React Compiler
+## 🏗 Arquitetura e Tecnologias
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+- **Framework**: React 18 + Vite
+- **Linguagem**: TypeScript
+- **Estado Global**: Zustand (Auth) + TanStack Query (Server State)
+- **UI Components**: Shadcn/ui + Tailwind CSS
+- **Comunicação Real-time**: @microsoft/signalr
+- **HTTP Client**: Axios
 
-Note: This will impact Vite dev & build performances.
+### 📡 Comunicação em Tempo Real
 
-## Expanding the ESLint configuration
+O painel utiliza uma arquitetura híbrida de WebSocket + Polling para garantir que nenhum pedido seja perdido.
+Para detalhes técnicos da implementação, consulte: [Arquitetura de Tempo Real](./docs/REALTIME_ARCHITECTURE.md).
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🛠 Configuração do Ambiente
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+1. **Pré-requisitos**: Node.js 18+
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+2. **Instalação**:
+   ```bash
+   npm install
+   ```
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+3. **Executar em Desenvolvimento**:
+   ```bash
+   npm run dev
+   ```
+
+4. **Variáveis de Ambiente**:
+   Crie um arquivo `.env` na raiz baseado no `.env.example`:
+   ```env
+   VITE_API_URL=https://seu-backend.com/api
+   ```
+
+## 📦 Estrutura do Projeto
+
+```
+src/
+├── components/     # Componentes Reutilizáveis (UI, Layout, Auth)
+├── features/       # Módulos Funcionais (Orders, Products, Settings)
+│   ├── orders/
+│   ├── products/
+│   └── ...
+├── hooks/          # Custom Hooks (usePermission, useToast)
+├── lib/            # Utilitários e Configurações (Axios, Utils)
+├── services/       # Camada de Integração com API
+│   ├── signalr.service.ts  # Gerenciador de WebSocket
+│   └── ...
+├── store/          # Zustand Stores
+└── layouts/        # Layouts de Página (Dashboard, Auth)
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🤝 Contribuição
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Este projeto faz parte do ecossistema Opamenu. Siga os padrões de código estabelecidos (ESLint + Prettier) e utilize Conventional Commits.

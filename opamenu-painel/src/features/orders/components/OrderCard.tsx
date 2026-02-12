@@ -1,6 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Clock, User } from "lucide-react";
+import { Clock, User, MessageSquare } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { Order } from "../types";
@@ -44,13 +44,24 @@ export function OrderCard({ order }: OrderCardProps) {
         </CardHeader>
         <CardContent className="p-4 pt-2">
           <div className="space-y-2">
-            <div className="text-sm text-muted-foreground line-clamp-2">
+            <div className="text-sm text-muted-foreground line-clamp-3">
               {order.items.map((item) => (
                 <div key={item.id} className="flex justify-between text-xs">
                   <span>{item.quantity}x {item.productName}</span>
                 </div>
               ))}
             </div>
+
+            {order.notes && (
+              <div className="p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-md border border-yellow-100 dark:border-yellow-900/30">
+                <div className="flex items-start gap-1.5">
+                  <MessageSquare className="h-3 w-3 text-yellow-600 dark:text-yellow-500 mt-0.5" />
+                  <p className="text-[11px] leading-tight text-yellow-700 dark:text-yellow-400 italic font-medium">
+                    {order.notes}
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div className="flex justify-between items-center pt-2 border-t mt-2">
               <div className="flex items-center text-xs text-muted-foreground" title={new Date(order.createdAt).toLocaleString()}>

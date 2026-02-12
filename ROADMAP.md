@@ -9,7 +9,7 @@ Este roadmap foca em transformar o OpaMenu em um competidor de elite, priorizand
 
 - [ ] **Otimização de Performance:** Implementar Lazy Loading e compressão de imagens via Cloudinary (já integrado no .NET).
 - [ ] **UX de Checkout "One-Page":** Reduzir campos desnecessários e focar no autopreenchimento de endereço via CEP.
-- [ ] **Feedback em Tempo Real:** Implementar loaders premium e animações de transição entre categorias.
+- [x] **Feedback em Tempo Real:** Implementado notificações instantâneas via SignalR no Painel do Lojista (Novo Pedido e Atualização de Status).
 - [ ] **Validação de Pagamento Pix:** Automatizar a verificação do recebimento via Webhook do provedor de pagamento.
 
 ## 🤖 Fase 2: Automação WhatsApp Engine (Semana 3-4)

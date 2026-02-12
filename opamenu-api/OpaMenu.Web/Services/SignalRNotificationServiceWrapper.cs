@@ -50,11 +50,11 @@ public class SignalRNotificationServiceWrapper : INotificationService
             await _hubContext.Clients.Group("Administrators")
                 .SendAsync("NewOrderReceived", notification);
 
-            _logger.LogInformation("âœ… [WRAPPER] Notificação enviada com sucesso: Pedido #{OrderId}", order.Id);
+            _logger.LogInformation("[WRAPPER] Notificação enviada com sucesso: Pedido #{OrderId}", order.Id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "âŒ [WRAPPER] Erro ao enviar notificação de novo pedido {OrderId}", order.Id);
+            _logger.LogError(ex, "[WRAPPER] Erro ao enviar notificação de novo pedido {OrderId}", order.Id);
         }
     }
 
@@ -177,11 +177,11 @@ public class SignalRNotificationServiceWrapper : INotificationService
             await _hubContext.Clients.Group($"Order_{orderId}")
                 .SendAsync("OrderCompleted", notification);
 
-            _logger.LogInformation("NotificaÃ§Ã£o de pedido concluÃ­do enviada: Pedido #{OrderId}", orderId);
+            _logger.LogInformation("Notificação de pedido concluído enviada: Pedido #{OrderId}", orderId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao enviar notificaÃ§Ã£o de pedido concluÃ­do {OrderId}", orderId);
+            _logger.LogError(ex, "Erro ao enviar notificação de pedido concluí­do {OrderId}", orderId);
         }
     }
 
@@ -194,18 +194,18 @@ public class SignalRNotificationServiceWrapper : INotificationService
                 Type = "MenuUpdated",
                 ChangeType = changeType,
                 ChangedItem = changedItem,
-                Message = $"CardÃ¡pio atualizado: {changeType}",
+                Message = $"Cardápio atualizado: {changeType}",
                 Timestamp = DateTime.UtcNow
             };
 
             await _hubContext.Clients.Group("MenuUpdates")
                 .SendAsync("MenuUpdated", notification);
 
-            _logger.LogInformation("NotificaÃ§Ã£o de atualizaÃ§Ã£o do cardÃ¡pio enviada: {ChangeType}", changeType);
+            _logger.LogInformation("Notificação de atualização do cardápio enviada: {ChangeType}", changeType);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao enviar notificaÃ§Ã£o de atualizaÃ§Ã£o do cardÃ¡pio: {ChangeType}", changeType);
+            _logger.LogError(ex, "Erro ao enviar notificação de atualização do cardápio: {ChangeType}", changeType);
         }
     }
 
@@ -250,12 +250,12 @@ public class SignalRNotificationServiceWrapper : INotificationService
         try
         {
             await _hubContext.Clients.Group(groupName).SendAsync(method, data);
-            _logger.LogInformation("NotificaÃ§Ã£o personalizada enviada para grupo {GroupName}: {Method}", 
+            _logger.LogInformation("Notificação personalizada enviada para grupo {GroupName}: {Method}", 
                 groupName, method);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao enviar notificaÃ§Ã£o para grupo {GroupName}", groupName);
+            _logger.LogError(ex, "Erro ao enviar notificação para grupo {GroupName}", groupName);
         }
     }
 
@@ -264,12 +264,12 @@ public class SignalRNotificationServiceWrapper : INotificationService
         try
         {
             await _hubContext.Clients.Client(connectionId).SendAsync(method, data);
-            _logger.LogInformation("NotificaÃ§Ã£o personalizada enviada para conexÃ£o {ConnectionId}: {Method}", 
+            _logger.LogInformation("Notificação personalizada enviada para conexão {ConnectionId}: {Method}", 
                 connectionId, method);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao enviar notificaÃ§Ã£o para conexÃ£o {ConnectionId}", connectionId);
+            _logger.LogError(ex, "Erro ao enviar notificação para conexão {ConnectionId}", connectionId);
         }
     }
 
@@ -278,11 +278,11 @@ public class SignalRNotificationServiceWrapper : INotificationService
         try
         {
             await _hubContext.Clients.All.SendAsync(method, data);
-            _logger.LogInformation("NotificaÃ§Ã£o broadcast enviada: {Method}", method);
+            _logger.LogInformation("Notificação broadcast enviada: {Method}", method);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao enviar notificaÃ§Ã£o broadcast: {Method}", method);
+            _logger.LogError(ex, "Erro ao enviar notificação broadcast: {Method}", method);
         }
     }
 

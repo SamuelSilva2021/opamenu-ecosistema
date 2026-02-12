@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { format } from "date-fns";
+import { useState, useEffect } from "react";
+import { format, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,7 @@ import { Loader2, RefreshCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { usePermission } from "@/hooks/usePermission";
+import { signalRService } from "@/services/signalr.service";
 
 export default function OrdersPage() {
   const { can } = usePermission();
@@ -27,10 +28,37 @@ export default function OrdersPage() {
 
   const [date, setDate] = useState<Date>(new Date());
 
+  // Listen for real-time updates
+  useEffect(() => {
+    const handleNewOrder = (data: any) => {
+      // Only invalidate if we are looking at today's orders
+      if (isSameDay(date, new Date())) {
+         queryClient.invalidateQueries({ queryKey: ["orders"] });
+         toast({
+           title: "Novo Pedido!",
+           description: `Pedido #${data.orderId || ''} recebido.`,
+           variant: "default",
+         });
+      }
+    };
+
+    const handleStatusChange = (_data: any) => {
+        queryClient.invalidateQueries({ queryKey: ["orders"] });
+    };
+
+    signalRService.on("NewOrderReceived", handleNewOrder);
+    signalRService.on("OrderStatusChanged", handleStatusChange);
+
+    return () => {
+      signalRService.off("NewOrderReceived", handleNewOrder);
+      signalRService.off("OrderStatusChanged", handleStatusChange);
+    };
+  }, [date, queryClient, toast]);
+
   const { data: orders = [], isLoading, isFetching } = useQuery({
     queryKey: ["orders", date],
     queryFn: () => ordersService.getOrders(date),
-    refetchInterval: 30000, // Poll every 30s
+    refetchOnWindowFocus: true,
   });
 
   const updateStatusMutation = useMutation({

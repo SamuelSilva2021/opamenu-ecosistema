@@ -1,15 +1,27 @@
 import { Outlet, Navigate } from "react-router-dom";
 import { UserNav } from "@/components/layout/UserNav";
 import { useAuthStore } from "@/store/auth.store";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sidebar, MobileSidebar } from "@/components/layout/Sidebar";
 import { OpaMenuLogo } from "@/components/common/OpaMenuLogo";
+import { signalRService } from "@/services/signalr.service";
 
 export default function DashboardLayout() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, accessToken } = useAuthStore();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const signalRInitialized = useRef(false);
+
+  useEffect(() => {
+    if (isAuthenticated && accessToken && !signalRInitialized.current) {
+      signalRInitialized.current = true;
+      signalRService.connect(accessToken);
+    }
+
+    // No cleanup - SignalR should persist across the entire app lifecycle
+    // The service is a singleton and will be cleaned up when the app unmounts
+  }, [isAuthenticated, accessToken]);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;

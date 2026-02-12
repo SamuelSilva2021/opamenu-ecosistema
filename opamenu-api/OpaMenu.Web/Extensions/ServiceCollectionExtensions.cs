@@ -191,7 +191,8 @@ public static class ServiceCollectionExtensions
                 {
                     builder.WithOrigins(allowedOrigins)
                            .AllowAnyHeader()
-                           .AllowAnyMethod();
+                           .AllowAnyMethod()
+                           .AllowCredentials(); // SignalR requires credentials for cross-origin connections
                 }
             });
         });
