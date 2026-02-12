@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { ArrowLeft, ArrowRight, CreditCard, Banknote, Smartphone, Check } from "lucide-react";
+import { ArrowLeft, ArrowRight, CreditCard, Banknote, Smartphone, Check, Wallet, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import { PaymentMethod } from "@/types/checkout";
 
 interface PaymentMethodSelectorProps {
@@ -27,21 +26,21 @@ const paymentMethods: PaymentMethod[] = [
     name: 'PIX',
     type: 'pix',
     icon: '💳',
-    description: 'Pagamento instantâneo via PIX'
+    description: 'Pagamento instantâneo'
   },
   {
     id: 'dinheiro',
     name: 'Dinheiro',
     type: 'cash',
     icon: '💵',
-    description: 'Pagamento em dinheiro na entrega/retirada'
+    description: 'Pagamento na entrega'
   },
   {
     id: 'cartao',
     name: 'Cartão',
     type: 'card',
     icon: '💳',
-    description: 'Cartão de crédito ou débito'
+    description: 'Crédito ou Débito'
   }
 ];
 
@@ -93,100 +92,121 @@ const PaymentMethodSelector = ({
   const getMethodIcon = (type: PaymentMethod['type']) => {
     switch (type) {
       case 'pix':
-        return <Smartphone className="h-6 w-6 text-blue-600" />;
+        return <Smartphone className="h-6 w-6" />;
       case 'cash':
-        return <Banknote className="h-6 w-6 text-green-600" />;
+        return <Banknote className="h-6 w-6" />;
       case 'card':
-        return <CreditCard className="h-6 w-6 text-purple-600" />;
+        return <CreditCard className="h-6 w-6" />;
       default:
         return <CreditCard className="h-6 w-6" />;
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-1">
-      <Card className="border-0 shadow-none md:border md:shadow-sm rounded-none md:rounded-xl">
-        <CardContent className="p-4 md:p-6 space-y-6">
+    <div className="max-w-2xl mx-auto p-0 md:p-1">
+      <Card className="border-0 shadow-none md:border md:shadow-sm rounded-[2.5rem] bg-background/50 backdrop-blur-sm overflow-hidden">
+        <CardContent className="p-6 md:p-8 space-y-10">
           {error && (
-            <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+            <div className="p-5 rounded-2xl bg-destructive/10 text-destructive text-xs font-black uppercase tracking-widest border border-destructive/20 animate-pulse">
               {error}
             </div>
           )}
 
           {validationError && (
-            <div className="p-1 rounded-lg bg-destructive/10 text-destructive text-sm">
+            <div className="p-5 rounded-2xl bg-destructive/10 text-destructive text-xs font-black uppercase tracking-widest border border-destructive/20 animate-pulse">
               {validationError}
             </div>
           )}
 
           {(subtotal !== undefined && totalPrice !== undefined) && (
-            <div className="bg-muted/30 p-4 rounded-lg space-y-2">
-              <h3 className="font-semibold text-lg mb-2">Resumo do Pedido</h3>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Subtotal</span>
-                <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(subtotal)}</span>
-              </div>
-              {(discount && discount > 0) ? (
-                <div className="flex justify-between text-sm text-green-600">
-                  <span>Desconto</span>
-                  <span>- {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(discount)}</span>
+            <div className="bg-muted/30 p-6 rounded-[2rem] space-y-4">
+              <h3 className="font-black text-lg uppercase italic tracking-tighter text-foreground flex items-center gap-2">
+                <Wallet className="h-5 w-5 text-primary" />
+                Resumo do Pedido
+              </h3>
+              
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm font-medium">
+                  <span className="text-muted-foreground uppercase tracking-wider text-xs font-bold">Subtotal</span>
+                  <span className="font-mono text-base">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(subtotal)}</span>
                 </div>
-              ) : null}
-              <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2">
-                <span>Total</span>
-                <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPrice)}</span>
+                
+                {(discount && discount > 0) ? (
+                  <div className="flex justify-between text-sm font-medium text-green-600">
+                    <span className="uppercase tracking-wider text-xs font-bold">Desconto</span>
+                    <span className="font-mono text-base">- {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(discount)}</span>
+                  </div>
+                ) : null}
+                
+                <div className="flex justify-between items-end border-t border-border/50 pt-4 mt-2">
+                  <span className="font-black text-xl uppercase italic tracking-tighter">Total</span>
+                  <span className="font-black text-2xl text-primary">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPrice)}</span>
+                </div>
               </div>
             </div>
           )}
 
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg">Escolha como deseja pagar</h3>
+          <div className="space-y-6">
+            <h3 className="font-black text-2xl uppercase italic tracking-tighter text-foreground flex items-center gap-3">
+              <div className="bg-primary/10 p-2 rounded-xl">
+                <CreditCard className="h-6 w-6 text-primary" />
+              </div>
+              Como deseja pagar?
+            </h3>
 
-            <RadioGroup value={selectedMethod} onValueChange={handleMethodChange}>
+            <RadioGroup value={selectedMethod} onValueChange={handleMethodChange} className="grid gap-4">
               {filteredPaymentMethods.map((method) => (
-                <div
+                <label
                   key={method.id}
-                  className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-all hover:bg-muted/50 ${selectedMethod === method.id
-                    ? 'border-opamenu-green bg-opamenu-green/5'
-                    : 'border-border'
-                    }`}
+                  htmlFor={method.id}
+                  className={`
+                    flex items-center p-6 rounded-[2rem] border-2 cursor-pointer transition-all duration-300 gap-4
+                    ${selectedMethod === method.id
+                      ? 'border-primary bg-primary/5 shadow-lg shadow-primary/10 scale-[1.02]'
+                      : 'border-border/50 bg-white hover:border-primary/30'}
+                  `}
                 >
                   <RadioGroupItem value={method.id} id={method.id} className="sr-only" />
 
-                  <div className="flex items-center gap-3 flex-1">
-                    {getMethodIcon(method.type)}
-
-                    <div className="flex-1">
-                      <Label htmlFor={method.id} className="cursor-pointer">
-                        <div className="font-medium text-base">{method.name}</div>
-                        <div className="text-sm text-muted-foreground">
+                  <div className="flex flex-1 items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className={`p-3 rounded-2xl ${selectedMethod === method.id ? 'bg-primary text-white shadow-lg' : 'bg-muted text-muted-foreground'}`}>
+                        {getMethodIcon(method.type)}
+                      </div>
+                      
+                      <div className="flex flex-col">
+                        <span className="font-black uppercase tracking-tight text-lg leading-none">{method.name}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest opacity-60 mt-1">
                           {method.id === 'pix' && !hasPixIntegration
-                            ? 'Pagamento via pix na entrega/retirada'
+                            ? 'Pagar na entrega'
                             : method.description}
-                        </div>
-                      </Label>
+                        </span>
+                      </div>
                     </div>
-
-                    {selectedMethod === method.id && (
-                      <Check className="h-5 w-5 text-opamenu-green" />
-                    )}
                   </div>
-                </div>
+
+                  {selectedMethod === method.id && (
+                    <div className="bg-primary rounded-full p-1 text-white animate-in zoom-in">
+                      <Check className="h-4 w-4 stroke-[4]" />
+                    </div>
+                  )}
+                </label>
               ))}
             </RadioGroup>
           </div>
 
           {/* Informações sobre o método selecionado */}
           {selectedMethod && (
-            <div className="p-4 rounded-lg bg-muted/30">
+            <div className="p-6 rounded-[2rem] bg-muted/30 border border-border/50 animate-in fade-in slide-in-from-bottom-4">
               {selectedMethod === 'pix' && (
                 <div className="space-y-2">
-                  <h4 className="font-medium text-opamenu-green">
-                    {hasPixIntegration ? "Pagamento via PIX" : "Pagamento via PIX na entrega/retirada"}
+                  <h4 className="font-black text-primary uppercase italic tracking-tight flex items-center gap-2">
+                    <Smartphone className="h-4 w-4" />
+                    {hasPixIntegration ? "Pagamento via PIX" : "Pagamento via PIX na entrega"}
                   </h4>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm font-medium text-muted-foreground leading-relaxed">
                     {hasPixIntegration
-                      ? "Após a confirmação do pedido, você receberá um QR Code para pagamento. O pagamento é processado instantaneamente."
+                      ? "Após a confirmação, você receberá um QR Code para pagamento instantâneo."
                       : "O pagamento será feito via PIX no momento da entrega ou retirada do pedido."}
                   </p>
                 </div>
@@ -194,20 +214,24 @@ const PaymentMethodSelector = ({
 
               {selectedMethod === 'dinheiro' && (
                 <div className="space-y-2">
-                  <h4 className="font-medium text-green-600">Pagamento em Dinheiro</h4>
-                  <p className="text-sm text-muted-foreground">
-                    O pagamento será feito na entrega ou retirada do pedido.
-                    Tenha o valor exato ou informe se precisará de troco.
+                  <h4 className="font-black text-primary uppercase italic tracking-tight flex items-center gap-2">
+                    <Banknote className="h-4 w-4" />
+                    Pagamento em Dinheiro
+                  </h4>
+                  <p className="text-sm font-medium text-muted-foreground leading-relaxed">
+                    Separe o valor para o pagamento na entrega. Se precisar de troco, avise o entregador.
                   </p>
                 </div>
               )}
 
               {selectedMethod === 'cartao' && (
                 <div className="space-y-2">
-                  <h4 className="font-medium text-purple-600">Pagamento no Cartão</h4>
-                  <p className="text-sm text-muted-foreground">
-                    O pagamento será processado no cartão de crédito ou débito
-                    na entrega ou retirada do pedido.
+                  <h4 className="font-black text-primary uppercase italic tracking-tight flex items-center gap-2">
+                    <CreditCard className="h-4 w-4" />
+                    Pagamento no Cartão
+                  </h4>
+                  <p className="text-sm font-medium text-muted-foreground leading-relaxed">
+                    Levaremos a maquininha até você. Aceitamos crédito e débito.
                   </p>
                 </div>
               )}
@@ -215,27 +239,32 @@ const PaymentMethodSelector = ({
           )}
 
           {/* Botões de Navegação */}
-          <div className="flex justify-between pt-4">
+          <div className="flex flex-col sm:flex-row justify-between gap-4 pt-4">
             <Button
               variant="outline"
               onClick={onBack}
-              className="flex items-center gap-2"
+              className="h-16 rounded-2xl font-black uppercase italic tracking-widest gap-3 order-2 sm:order-1 flex items-center shadow-sm hover:bg-muted"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-5 w-5 stroke-[3]" />
               Voltar
             </Button>
 
             <Button
               onClick={handleNext}
               disabled={isProcessing || !selectedMethod}
-              className="flex items-center gap-2 bg-opamenu-green hover:bg-opamenu-green/90"
+              className="h-16 rounded-2xl font-black uppercase italic tracking-widest gap-3 px-8 order-1 sm:order-2 bg-primary hover:bg-primary-hover text-white shadow-xl shadow-primary/20 flex items-center"
             >
-              {isProcessing
-                ? 'Processando...'
-                : (selectedMethod === 'pix' && hasPixIntegration)
-                  ? 'Pagar com PIX'
-                  : 'Finalizar Pedido'}
-              <ArrowRight className="h-4 w-4" />
+              {isProcessing ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  PROCESSANDO...
+                </>
+              ) : (
+                <>
+                  {(selectedMethod === 'pix' && hasPixIntegration) ? 'PAGAR COM PIX' : 'FINALIZAR PEDIDO'}
+                  <ArrowRight className="h-5 w-5 stroke-[3]" />
+                </>
+              )}
             </Button>
           </div>
         </CardContent>

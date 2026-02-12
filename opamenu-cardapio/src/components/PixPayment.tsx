@@ -3,13 +3,14 @@ import QRCode from 'qrcode';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Copy, CheckCircle, Clock, RefreshCw, Loader2 } from 'lucide-react';
+import { Copy, CheckCircle, Clock, RefreshCw, Loader2, Smartphone, ArrowLeft, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { orderService } from '@/services/order-service';
 import { OrderStatus } from '@/types/api';
 
 interface PixPaymentProps {
   orderId: string;
+  orderNumber?: string;
   amount: number;
   pixKey?: string;
   merchantName?: string;
@@ -169,19 +170,23 @@ const PixPayment: React.FC<PixPaymentProps> = ({
 
   if (isExpired) {
     return (
-      <Card className="w-full max-w-md mx-auto">
-        <CardContent className="p-1 text-center">
-          <div className="text-6xl mb-4">⏰</div>
-          <h3 className="text-lg font-semibold mb-2">Código PIX Expirado</h3>
-          <p className="text-muted-foreground mb-4">
-            O código PIX expirou. Gere um novo código para continuar com o pagamento.
-          </p>
-          <div className="flex gap-2">
-            <Button onClick={handleRefresh} className="flex-1">
-              <RefreshCw className="h-4 w-4 mr-2" />
+      <Card className="w-full max-w-md mx-auto rounded-[2.5rem] border-0 shadow-none md:border md:shadow-sm">
+        <CardContent className="p-8 text-center space-y-6">
+          <div className="bg-destructive/10 w-24 h-24 rounded-full flex items-center justify-center mx-auto">
+            <Clock className="h-10 w-10 text-destructive" />
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-xl font-black uppercase italic tracking-tight">Código Expirado</h3>
+            <p className="text-muted-foreground">
+              O tempo para pagamento expirou. Gere um novo código para continuar.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 pt-4">
+            <Button onClick={handleRefresh} className="h-14 rounded-2xl font-black uppercase italic tracking-widest bg-primary hover:bg-primary/90 text-white shadow-xl shadow-primary/20">
+              <RefreshCw className="h-5 w-5 mr-2 stroke-[3]" />
               Gerar Novo Código
             </Button>
-            <Button variant="outline" onClick={onCancel} className="flex-1">
+            <Button variant="ghost" onClick={onCancel} className="h-14 rounded-2xl font-black uppercase italic tracking-widest text-muted-foreground">
               Cancelar
             </Button>
           </div>
@@ -191,147 +196,161 @@ const PixPayment: React.FC<PixPaymentProps> = ({
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-6 px-4 pb-8 md:px-6">
-      {/* Header - Full Width */}
-      <Card className="border-none shadow-sm">
-        <CardHeader className="text-center pb-2">
-          <CardTitle className="flex flex-col sm:flex-row items-center justify-center gap-2">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-[#32BCAD] rounded flex items-center justify-center shrink-0">
-                <span className="text-white font-bold text-sm">PIX</span>
-              </div>
-              <span>Pagamento PIX</span>
-            </div>
-          </CardTitle>
-          <div className="flex justify-center sm:justify-between items-center mt-4 gap-4 flex-wrap">
-            <Badge variant="outline" className="text-xs sm:text-sm">
-              Pedido #{orderId}
-            </Badge>
+    <div className="w-full max-w-4xl mx-auto p-0 md:p-1">
+      {/* Header */}
+      <Card className="border-0 shadow-none md:border md:shadow-sm rounded-[2.5rem] bg-background/50 backdrop-blur-sm mb-6">
+        <CardContent className="p-6 md:p-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              {isPolling && (
-                <div className="flex items-center gap-2 text-xs text-primary animate-pulse">
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  Verificando pagamento...
+              <div className="bg-primary/10 p-3 rounded-2xl">
+                <Smartphone className="h-8 w-8 text-primary" />
+              </div>
+              <div>
+                <h2 className="font-black text-2xl uppercase italic tracking-tighter text-foreground">Pagamento PIX</h2>
+                <div className="flex items-center gap-2 mt-1">
+                  <Badge variant="secondary" className="font-bold">
+                    Pedido #{orderNumber || orderId}
+                  </Badge>
+                  {isPolling && (
+                    <span className="flex items-center gap-1 text-xs text-primary font-bold animate-pulse uppercase tracking-wider">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      Aguardando...
+                    </span>
+                  )}
                 </div>
-              )}
-              <div className="flex items-center gap-2 text-sm bg-muted/50 px-3 py-1 rounded-full">
-                <Clock className="h-4 w-4" />
-                <span className={timeLeft < 300 ? 'text-red-500 font-medium' : 'text-muted-foreground font-medium'}>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 bg-muted/50 px-4 py-2 rounded-2xl">
+              <Clock className="h-5 w-5 text-muted-foreground" />
+              <div className="flex flex-col items-end">
+                <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Expira em</span>
+                <span className={`font-mono text-lg font-bold leading-none ${timeLeft < 300 ? 'text-destructive' : 'text-foreground'}`}>
                   {formatTime(timeLeft)}
                 </span>
               </div>
             </div>
           </div>
-        </CardHeader>
+        </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-start">
-        {/* Left Column: Visual Focus (QR Code) */}
-        <Card className="h-full flex flex-col justify-center border-none shadow-sm">
-          <CardContent className="p-6 md:p-8">
-            <div className="text-center space-y-6">
-              <div className="text-3xl sm:text-4xl font-bold text-[#16a34a]">
-                R$ {amount.toFixed(2)}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+        {/* Left Column: QR Code */}
+        <Card className="border-0 shadow-none md:border md:shadow-sm rounded-[2.5rem] overflow-hidden">
+          <CardContent className="p-8 flex flex-col items-center text-center space-y-8">
+            <div className="space-y-2">
+              <span className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Valor a Pagar</span>
+              <div className="text-5xl font-black text-primary tracking-tight">
+                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount)}
               </div>
+            </div>
 
-              {qrCodeUrl && (
-                <div className="flex justify-center">
-                  <div className="p-2 sm:p-4 bg-white rounded-xl border-2 border-gray-100 shadow-sm">
-                    <img
-                      src={qrCodeUrl}
-                      alt="QR Code PIX"
-                      className="w-56 h-56 sm:w-64 sm:h-64"
-                    />
-                  </div>
+            {qrCodeUrl && (
+              <div className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-primary to-primary/50 rounded-[2rem] blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+                <div className="relative p-6 bg-white rounded-[1.8rem] border-2 border-border shadow-sm">
+                  <img
+                    src={qrCodeUrl}
+                    alt="QR Code PIX"
+                    className="w-56 h-56 sm:w-64 sm:h-64 mix-blend-multiply"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2 max-w-xs mx-auto">
+              <p className="text-sm font-medium text-muted-foreground">
+                Abra o app do seu banco e escaneie o código acima para pagar
+              </p>
+              {!qrCodePayload && pixKey && (
+                <div className="pt-4">
+                   <Badge variant="outline" className="py-1 px-3 font-mono text-xs">
+                    Chave: {pixKey}
+                   </Badge>
                 </div>
               )}
-
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground px-4">
-                  Use o app do seu banco para escanear o código
-                </p>
-                {!qrCodePayload && pixKey && (
-                  <div className="flex flex-col items-center justify-center gap-2 text-xs text-muted-foreground">
-                    <span className="font-medium">Chave PIX:</span>
-                    <span className="text-center break-all bg-muted px-2 py-1 rounded select-all">{pixKey}</span>
-                  </div>
-                )}
-              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Right Column: Actions & Instructions */}
+        {/* Right Column: Actions */}
         <div className="space-y-6">
-          {/* Código para Copia e Cola */}
-          <Card className="border-none shadow-sm">
-            <CardContent className="p-6">
+          {/* Copy Paste */}
+          <Card className="border-0 shadow-none md:border md:shadow-sm rounded-[2.5rem]">
+            <CardContent className="p-8 space-y-6">
+              <h3 className="font-black text-lg uppercase italic tracking-tighter text-foreground flex items-center gap-2">
+                <Copy className="h-5 w-5 text-primary" />
+                Pix Copia e Cola
+              </h3>
+              
               <div className="space-y-4">
-                <h4 className="font-medium text-base">Copia e Cola</h4>
-                <div className="space-y-3">
-                  <div className="p-4 bg-muted/50 rounded-lg text-xs font-mono break-all max-h-32 overflow-y-auto border border-border">
-                    {pixCode}
-                  </div>
-                  <Button
-                    size="lg"
-                    onClick={handleCopyCode}
-                    className={`w-full ${copied ? 'bg-green-600 hover:bg-green-700' : ''}`}
-                  >
-                    {copied ? (
-                      <>
-                        <CheckCircle className="h-5 w-5 mr-2" />
-                        Código Copiado!
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-5 w-5 mr-2" />
-                        Copiar Código PIX
-                      </>
-                    )}
-                  </Button>
+                <div className="p-4 bg-muted/30 rounded-2xl border-2 border-border/50 text-xs font-mono break-all max-h-32 overflow-y-auto">
+                  {pixCode}
                 </div>
+                
+                <Button
+                  onClick={handleCopyCode}
+                  className={`w-full h-14 rounded-2xl font-black uppercase italic tracking-widest shadow-lg transition-all
+                    ${copied 
+                      ? 'bg-green-600 hover:bg-green-700 shadow-green-900/20 text-white' 
+                      : 'bg-white border-2 border-primary text-primary hover:bg-primary/5 shadow-primary/10'}
+                  `}
+                >
+                  {copied ? (
+                    <>
+                      <CheckCircle className="h-5 w-5 mr-2 stroke-[3]" />
+                      Copiado!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-5 w-5 mr-2 stroke-[3]" />
+                      Copiar Código
+                    </>
+                  )}
+                </Button>
               </div>
             </CardContent>
           </Card>
 
-          {/* Instruções */}
-          <Card className="bg-blue-50/50 border-blue-100 shadow-none">
-            <CardContent className="p-6">
-              <h4 className="font-medium text-sm mb-3 text-blue-900 flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-600" />
-                Como pagar
-              </h4>
-              <ol className="text-sm space-y-3 text-blue-800">
-                <li className="flex gap-3">
-                  <span className="font-bold text-blue-300">1</span>
-                  Abra o app do seu banco
-                </li>
-                <li className="flex gap-3">
-                  <span className="font-bold text-blue-300">2</span>
-                  Escaneie o QR Code ou cole o código PIX
-                </li>
-                <li className="flex gap-3">
-                  <span className="font-bold text-blue-300">3</span>
-                  Confirme o pagamento e aguarde a confirmação
-                </li>
-              </ol>
-            </CardContent>
-          </Card>
+          {/* Instructions */}
+          <div className="bg-blue-50/50 p-6 rounded-[2rem] border border-blue-100/50 space-y-4">
+            <h4 className="font-black text-sm uppercase tracking-wider text-blue-900 flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-blue-600" />
+              Como pagar?
+            </h4>
+            <ol className="space-y-4">
+              <li className="flex gap-4 items-start">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center">1</span>
+                <span className="text-sm font-medium text-blue-800/80">Abra o aplicativo do seu banco no celular</span>
+              </li>
+              <li className="flex gap-4 items-start">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center">2</span>
+                <span className="text-sm font-medium text-blue-800/80">Escolha a opção <strong>Pagar com Pix</strong> e escaneie o QR Code ou use o Copia e Cola</span>
+              </li>
+              <li className="flex gap-4 items-start">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center">3</span>
+                <span className="text-sm font-medium text-blue-800/80">Confirme os dados e finalize o pagamento</span>
+              </li>
+            </ol>
+          </div>
 
-          {/* Botões */}
-          <div className="flex flex-col sm:flex-row gap-4 pt-2">
-            <Button
-              variant="outline"
-              onClick={onCancel}
-              className="flex-1 order-2 sm:order-1 h-12 text-base"
-            >
-              Voltar
-            </Button>
+          {/* Action Buttons */}
+          <div className="flex flex-col gap-3 pt-2">
             <Button
               onClick={onPaymentConfirmed}
-              className="flex-1 bg-[#16a34a] hover:bg-[#15803d] order-1 sm:order-2 h-12 text-base font-medium shadow-md shadow-green-900/10"
+              className="w-full h-16 rounded-2xl font-black uppercase italic tracking-widest bg-primary hover:bg-primary-hover text-white shadow-xl shadow-primary/20 flex items-center justify-center"
             >
-              Já realizei o pagamento
+              <Check className="h-5 w-5 mr-2 stroke-[3]" />
+              Já paguei
+            </Button>
+            
+            <Button
+              variant="ghost"
+              onClick={onCancel}
+              className="w-full h-14 rounded-2xl font-black uppercase italic tracking-widest text-muted-foreground hover:bg-muted/50"
+            >
+              <ArrowLeft className="h-5 w-5 mr-2 stroke-[3]" />
+              Voltar
             </Button>
           </div>
         </div>

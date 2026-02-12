@@ -129,6 +129,7 @@ const CheckoutPage = ({ onBackToMenu, tenant }: CheckoutPageProps) => {
       <div className="container mx-auto py-0 md:py-6">
         <PixPayment
           orderId={lastOrder.id?.toString() || ''}
+          orderNumber={lastOrder.orderNumber}
           amount={lastOrder.total || 0}
           pixKey={tenant?.pixKey}
           merchantName={tenant?.name}
@@ -148,7 +149,7 @@ const CheckoutPage = ({ onBackToMenu, tenant }: CheckoutPageProps) => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-10">
+      <div className="bg-white/80 backdrop-blur-md border-b sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <Button
@@ -157,9 +158,9 @@ const CheckoutPage = ({ onBackToMenu, tenant }: CheckoutPageProps) => {
               onClick={onBackToMenu}
               className="md:hidden"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-5 w-5 stroke-[3]" />
             </Button>
-            <h1 className="text-xl font-semibold">Finalizar Pedido</h1>
+            <h1 className="text-2xl font-black uppercase italic tracking-tighter">Finalizar Pedido</h1>
           </div>
         </div>
       </div>
@@ -171,27 +172,27 @@ const CheckoutPage = ({ onBackToMenu, tenant }: CheckoutPageProps) => {
           collapsible
           value={activeAccordionItem}
           onValueChange={setActiveAccordionItem}
-          className="max-w-3xl mx-auto space-y-4"
+          className="max-w-3xl mx-auto space-y-6"
         >
           {/* Step 1: Entrega e Identificação */}
-          <AccordionItem value="step-1" className="border rounded-xl bg-card overflow-hidden">
-            <AccordionTrigger className="px-6 py-4 hover:no-underline">
-              <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${currentStep === CheckoutSteps.CUSTOMER_INFO || activeAccordionItem === "step-1"
-                  ? 'bg-primary text-white'
+          <AccordionItem value="step-1" className="border-0 shadow-sm rounded-[2.5rem] bg-card overflow-hidden">
+            <AccordionTrigger className="px-6 py-6 hover:no-underline">
+              <div className="flex items-center gap-4">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-base font-black ${currentStep === CheckoutSteps.CUSTOMER_INFO || activeAccordionItem === "step-1"
+                  ? 'bg-primary text-white shadow-lg shadow-primary/20'
                   : 'bg-muted text-muted-foreground'
                   }`}>
                   1
                 </div>
                 <div className="text-left">
-                  <span className="font-semibold block">Entrega e Identificação</span>
+                  <span className="font-black uppercase italic tracking-tight text-lg block">Entrega e Identificação</span>
                   {checkoutData.customerName && activeAccordionItem !== "step-1" && (
-                    <span className="text-xs text-muted-foreground">{checkoutData.customerName} - {checkoutData.customerPhone}</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{checkoutData.customerName}</span>
                   )}
                 </div>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-0 pb-0 border-t">
+            <AccordionContent className="px-0 pb-0 border-t border-border/50">
               <CheckoutForm
                 checkoutData={checkoutData}
                 onDataChange={updateCheckoutData}
@@ -207,24 +208,24 @@ const CheckoutPage = ({ onBackToMenu, tenant }: CheckoutPageProps) => {
           </AccordionItem>
 
           {/* Step 2: Forma de Pagamento */}
-          <AccordionItem value="step-2" className="border rounded-xl bg-card overflow-hidden" disabled={!checkoutData.customerName || !checkoutData.customerPhone}>
-            <AccordionTrigger className="px-6 py-4 hover:no-underline">
-              <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${activeAccordionItem === "step-2"
-                  ? 'bg-primary text-white'
+          <AccordionItem value="step-2" className="border-0 shadow-sm rounded-[2.5rem] bg-card overflow-hidden" disabled={!checkoutData.customerName || !checkoutData.customerPhone}>
+            <AccordionTrigger className="px-6 py-6 hover:no-underline">
+              <div className="flex items-center gap-4">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-base font-black ${activeAccordionItem === "step-2"
+                  ? 'bg-primary text-white shadow-lg shadow-primary/20'
                   : 'bg-muted text-muted-foreground'
                   }`}>
                   2
                 </div>
                 <div className="text-left">
-                  <span className="font-semibold block">Forma de Pagamento</span>
+                  <span className="font-black uppercase italic tracking-tight text-lg block">Forma de Pagamento</span>
                   {selectedPaymentMethod && activeAccordionItem !== "step-2" && (
-                    <span className="text-xs text-muted-foreground">Método: {selectedPaymentMethod}</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Método: {selectedPaymentMethod}</span>
                   )}
                 </div>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-0 pb-0 border-t">
+            <AccordionContent className="px-0 pb-0 border-t border-border/50">
               <PaymentMethodSelector
                 selectedMethod={selectedPaymentMethod}
                 onMethodChange={setSelectedPaymentMethod}
