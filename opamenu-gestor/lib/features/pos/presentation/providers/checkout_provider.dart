@@ -6,6 +6,8 @@ import '../../data/repositories/customers_repository.dart';
 import '../../data/datasources/viacep_datasource.dart';
 import 'package:flutter/foundation.dart';
 import '../../domain/enums/delivery_type.dart';
+import '../../domain/models/tenant_payment_method_model.dart';
+import '../../data/repositories/tenant_payment_method_repository_impl.dart';
 
 part 'checkout_provider.g.dart';
 
@@ -21,6 +23,8 @@ class CheckoutState {
   final String? errorMessage;
   final bool isSuccess;
   final double deliveryFee;
+  final List<TenantPaymentMethodModel> paymentMethods;
+  final TenantPaymentMethodModel? selectedPaymentMethod;
 
   CheckoutState({
     this.deliveryType = DeliveryType.pickup,
@@ -34,6 +38,8 @@ class CheckoutState {
     this.errorMessage,
     this.isSuccess = false,
     this.deliveryFee = 0.0,
+    this.paymentMethods = const [],
+    this.selectedPaymentMethod,
   });
 
   bool get isDelivery => deliveryType == DeliveryType.delivery;
@@ -50,6 +56,8 @@ class CheckoutState {
     String? errorMessage,
     bool? isSuccess,
     double? deliveryFee,
+    List<TenantPaymentMethodModel>? paymentMethods,
+    TenantPaymentMethodModel? selectedPaymentMethod,
   }) {
     return CheckoutState(
       deliveryType: deliveryType ?? this.deliveryType,
@@ -63,6 +71,8 @@ class CheckoutState {
       errorMessage: errorMessage, //Reset mensagem de erro ao submeter
       isSuccess: isSuccess ?? this.isSuccess,
       deliveryFee: deliveryFee ?? this.deliveryFee,
+      paymentMethods: paymentMethods ?? this.paymentMethods,
+      selectedPaymentMethod: selectedPaymentMethod ?? this.selectedPaymentMethod,
     );
   }
   
@@ -73,12 +83,28 @@ class CheckoutState {
 
 @riverpod
 class Checkout extends _$Checkout {
-  late final ViaCepDatasource _viaCepDatasource;
+  final ViaCepDatasource _viaCepDatasource = ViaCepDatasource();
 
   @override
   CheckoutState build() {
-    _viaCepDatasource = ViaCepDatasource();
+    loadPaymentMethods();
     return CheckoutState.initial();
+  }
+
+  Future<void> loadPaymentMethods() async {
+    try {
+      final repository = ref.read(tenantPaymentMethodRepositoryProvider);
+      final methods = await repository.getPaymentMethods();
+      state = state.copyWith(paymentMethods: methods);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error loading payment methods: $e');
+      }
+    }
+  }
+
+  void selectPaymentMethod(TenantPaymentMethodModel? method) {
+    state = state.copyWith(selectedPaymentMethod: method);
   }
 
   void setDeliveryMode(DeliveryType type) {
@@ -191,6 +217,11 @@ class Checkout extends _$Checkout {
       return;
     }
 
+    if (state.selectedPaymentMethod == null) {
+      state = state.copyWith(errorMessage: 'Selecione uma forma de pagamento');
+      return;
+    }
+
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
@@ -203,6 +234,31 @@ class Checkout extends _$Checkout {
         );
       }).toList();
 
+      // Simple mapping from slug/name to expected Enum string if necessary.
+      // Assuming backend expects PascalCase matching EPaymentMethod enum.
+      // If slug is "credit-card", we might need to convert.
+      // For now, sending the slug or name. Ideally this should be robust.
+      // Let's try to infer from slug or alias.
+      String? paymentMethodEnum;
+      final methodSlug = state.selectedPaymentMethod?.paymentMethod?.slug?.toLowerCase() ?? '';
+      
+      if (methodSlug.contains('credit') || methodSlug.contains('credito')) {
+        paymentMethodEnum = 'CreditCard';
+      } else if (methodSlug.contains('debit') || methodSlug.contains('debito')) {
+        paymentMethodEnum = 'DebitCard';
+      } else if (methodSlug.contains('pix')) {
+        paymentMethodEnum = 'Pix';
+      } else if (methodSlug.contains('cash') || methodSlug.contains('dinheiro')) {
+        paymentMethodEnum = 'Cash';
+      } else if (methodSlug.contains('transfer')) {
+        paymentMethodEnum = 'BankTransfer';
+      } else if (methodSlug.contains('ticket') || methodSlug.contains('boleto')) {
+        paymentMethodEnum = 'Ticket';
+      } else {
+        // Fallback to PascalCase conversion of slug if possible or just send slug
+        paymentMethodEnum = state.selectedPaymentMethod?.paymentMethod?.slug;
+      }
+
       final orderDto = CreateOrderRequestDto(
         customerName: state.customerName.isEmpty ? null : state.customerName,
         customerPhone: state.customerPhone.isEmpty ? null : state.customerPhone,
@@ -213,6 +269,7 @@ class Checkout extends _$Checkout {
         orderType: state.deliveryType.value,
         items: itemsDto,
         deliveryFee: state.isDelivery ? state.deliveryFee : null,
+        paymentMethod: paymentMethodEnum,
       );
 
       await ref.read(ordersRepositoryProvider).createOrder(orderDto);

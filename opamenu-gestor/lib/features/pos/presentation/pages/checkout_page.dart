@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/models/create_order_request_dto.dart';
 import '../../domain/enums/delivery_type.dart';
+import '../../domain/models/tenant_payment_method_model.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/utils/phone_utils.dart';
 import '../../../tables/presentation/controllers/tables_controller.dart';
@@ -440,6 +441,45 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                         ],
                       ),
                     ],
+
+                    const SizedBox(height: 32),
+                    _buildSectionTitle('Forma de Pagamento'),
+                    const SizedBox(height: 16),
+                    if (checkoutState.paymentMethods.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8.0),
+                        child: Text('Nenhuma forma de pagamento configurada.', style: TextStyle(color: Colors.red)),
+                      )
+                    else
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: checkoutState.paymentMethods.map((method) {
+                          final isSelected = checkoutState.selectedPaymentMethod?.id == method.id;
+                          return InkWell(
+                            onTap: () => ref.read(checkoutProvider.notifier).selectPaymentMethod(method),
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: isSelected ? AppColors.primary : Colors.white,
+                                border: Border.all(
+                                  color: isSelected ? AppColors.primary : Colors.grey[300]!,
+                                  width: 2,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                method.alias ?? method.paymentMethod?.name ?? 'Desconhecido',
+                                style: TextStyle(
+                                  color: isSelected ? Colors.white : AppColors.textPrimary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
                   ],
                 ),
               ),
