@@ -66,7 +66,7 @@ export const useCheckout = (): CheckoutHookReturn => {
   const [qrCodePayload, setQrCodePayload] = useState<string | undefined>(undefined);
 
   const { createOrder } = useOrder();
-  const { items: cartItems, clearCart, coupon } = useCart();
+  const { items: cartItems, clearCart, coupon, loyaltyPointsUsed } = useCart();
 
   // Persistir dados no localStorage sempre que mudarem
   useEffect(() => {
@@ -123,6 +123,7 @@ export const useCheckout = (): CheckoutHookReturn => {
         paymentMethod: paymentMethod as 'dinheiro' | 'cartao' | 'pix',
         notes: checkoutData.notes?.trim(),
         couponCode: coupon?.code,
+        loyaltyPointsUsed: loyaltyPointsUsed > 0 ? loyaltyPointsUsed : undefined,
         items: cartItems.map(item => ({
           productId: item.product.id,
           quantity: item.quantity,

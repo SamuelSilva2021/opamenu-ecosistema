@@ -15,6 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,7 +29,6 @@ const formSchema = z.object({
   pointsPerCurrency: z.coerce.number().min(0.1, "Deve ser maior que 0"),
   currencyValue: z.coerce.number().min(0.1, "Deve ser maior que 0"),
   minOrderValue: z.coerce.number().min(0, "Não pode ser negativo"),
-  // Aceita string vazia ou undefined e converte para number | undefined
   pointsValidityDays: z.union([
     z.coerce.number().min(1, "Mínimo 1 dia"),
     z.literal(""),
@@ -61,6 +61,20 @@ export function LoyaltyForm({ initialData, onSubmit, isLoading, readOnly }: Loya
       isActive: true,
     },
   });
+
+  const currencyValue = form.watch("currencyValue");
+  const pointsPerCurrency = form.watch("pointsPerCurrency");
+
+  useEffect(() => {
+    const formattedCurrency = new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(currencyValue || 0);
+    
+    const description = `A cada ${formattedCurrency} em compra você ganha ${pointsPerCurrency || 0} ponto para trocar por produtos ou ganhar descontos.`;
+    
+    form.setValue("description", description);
+  }, [currencyValue, pointsPerCurrency, form]);
 
   useEffect(() => {
     if (initialData) {
@@ -151,7 +165,12 @@ export function LoyaltyForm({ initialData, onSubmit, isLoading, readOnly }: Loya
                   <FormItem>
                     <FormLabel>R$ - Moeda por ponto</FormLabel>
                     <FormControl>
-                      <Input step="0.1" {...field} placeholder="Ex: 1 real valeu 1 ponto" disabled={readOnly} />
+                      <CurrencyInput 
+                        value={field.value} 
+                        onChange={field.onChange} 
+                        placeholder="Ex: 1 real valeu 1 ponto" 
+                        disabled={readOnly} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -184,7 +203,7 @@ export function LoyaltyForm({ initialData, onSubmit, isLoading, readOnly }: Loya
                       placeholder="Descreva os benefícios do programa..."
                       className="resize-none"
                       {...field}
-                      disabled={readOnly}
+                      disabled={true}
                     />
                   </FormControl>
                   <FormMessage />
@@ -200,11 +219,9 @@ export function LoyaltyForm({ initialData, onSubmit, isLoading, readOnly }: Loya
                   <FormItem>
                     <FormLabel>Valor Mínimo do Pedido (R$)</FormLabel>
                     <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        {...field}
-                        onChange={e => field.onChange(Number(e.target.value))}
+                      <CurrencyInput
+                        value={field.value}
+                        onChange={field.onChange}
                         disabled={readOnly}
                       />
                     </FormControl>

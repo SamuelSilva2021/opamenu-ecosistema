@@ -33,6 +33,8 @@ namespace OpaMenu.Domain.DTOs
         [StringLength(50)]
         public string? CouponCode { get; set; }
 
+        public int? LoyaltyPointsUsed { get; set; }
+
         public decimal? DeliveryFee { get; set; }
 
         [Required]

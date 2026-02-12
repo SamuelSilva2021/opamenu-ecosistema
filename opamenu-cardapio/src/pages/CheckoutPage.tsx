@@ -11,6 +11,7 @@ import { useCheckout } from "@/hooks/use-checkout";
 import { useCart } from "@/hooks/use-cart";
 import { useCustomer } from "@/hooks/use-customer";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { LoyaltyRedemption } from "@/components/LoyaltyRedemption";
 import { TenantBusinessInfo } from "@/types/api";
 
 interface CheckoutPageProps {
@@ -226,6 +227,14 @@ const CheckoutPage = ({ onBackToMenu, tenant }: CheckoutPageProps) => {
               </div>
             </AccordionTrigger>
             <AccordionContent className="px-0 pb-0 border-t border-border/50">
+              {tenant?.loyaltyProgram && tenant.loyaltyProgram.isActive && customer && (
+                <div className="mb-6">
+                  <LoyaltyRedemption 
+                    program={tenant.loyaltyProgram} 
+                    customer={customer} 
+                  />
+                </div>
+              )}
               <PaymentMethodSelector
                 selectedMethod={selectedPaymentMethod}
                 onMethodChange={setSelectedPaymentMethod}

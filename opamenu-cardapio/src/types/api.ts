@@ -60,6 +60,7 @@ export interface CustomerResponseDto {
   city?: string;
   state?: string;
   complement?: string;
+  loyaltyBalance?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -212,6 +213,7 @@ export interface CreateOrderRequest {
   deliveryAddress?: AddressDto;
   notes?: string;
   couponCode?: string;
+  loyaltyPointsUsed?: number;
   orderType: EOrderType;
   isDelivery: boolean;
   items: CreateOrderItemRequest[];

@@ -35,6 +35,12 @@ public class OrderEntity : BaseEntity
     [Column("discount_amount", TypeName = "decimal(10,2)")]
     public decimal DiscountAmount { get; set; } = 0;
 
+    [Column("loyalty_discount_amount", TypeName = "decimal(10,2)")]
+    public decimal LoyaltyDiscountAmount { get; set; } = 0;
+
+    [Column("loyalty_points_used")]
+    public int LoyaltyPointsUsed { get; set; } = 0;
+
     [MaxLength(50)]
     [Column("coupon_code")]
     public string? CouponCode { get; set; }

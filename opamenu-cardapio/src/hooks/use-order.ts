@@ -36,7 +36,9 @@ export const useOrder = (): OrderHookReturn => {
         deliveryAddress: orderData.orderType === EOrderType.Delivery && orderData.deliveryAddress ? orderData.deliveryAddress : undefined,
         notes: orderData.notes || '',
         couponCode: orderData.couponCode,
+        loyaltyPointsUsed: orderData.loyaltyPointsUsed,
         orderType: orderData.orderType,
+        isDelivery: orderData.orderType === EOrderType.Delivery,
         items: orderData.items.map(item => ({
           productId: item.productId,
           quantity: item.quantity,

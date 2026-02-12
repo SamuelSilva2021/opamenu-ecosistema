@@ -33,6 +33,8 @@ public class OrderService(
     ITenantRepository tenantRepository,
     ITableRepository tableRepository,
     ILoyaltyService loyaltyService,
+    ILoyaltyProgramRepository loyaltyProgramRepository,
+    ICustomerLoyaltyRepository customerLoyaltyRepository,
     IMapper mapper,
     OpaMenu.Infrastructure.Shared.Data.Context.Opamenu.OpamenuDbContext context
     ) : IOrderService
@@ -48,6 +50,8 @@ public class OrderService(
     private readonly ITenantRepository _tenantRepository = tenantRepository;
     private readonly ITableRepository _tableRepository = tableRepository;
     private readonly ILoyaltyService _loyaltyService = loyaltyService;
+    private readonly ILoyaltyProgramRepository _loyaltyProgramRepository = loyaltyProgramRepository;
+    private readonly ICustomerLoyaltyRepository _customerLoyaltyRepository = customerLoyaltyRepository;
     private readonly ILogger<OrderService> _logger = logger;
     private readonly IMapper _mapper = mapper;
     private readonly OpaMenu.Infrastructure.Shared.Data.Context.Opamenu.OpamenuDbContext _context = context;
@@ -354,7 +358,40 @@ public class OrderService(
                         }
                     }
 
-                    order.Total = order.Subtotal + order.DeliveryFee - order.DiscountAmount;
+                    // Processar Fidelidade (Cálculo e Validação)
+                    if (requestDto.LoyaltyPointsUsed.HasValue && requestDto.LoyaltyPointsUsed > 0)
+                    {
+                        var program = await _loyaltyProgramRepository.GetByTenantIdAsync(tenantId);
+                        if (program != null && program.IsActive)
+                        {
+                            if (order.Subtotal >= program.MinOrderValue)
+                            {
+                                var balance = await _customerLoyaltyRepository.GetByCustomerAndTenantAsync(tenantCustomer.Customer.Id, tenantId);
+                                if (balance != null && balance.Balance >= requestDto.LoyaltyPointsUsed.Value)
+                                {
+                                    decimal loyaltyDiscount = requestDto.LoyaltyPointsUsed.Value * program.CurrencyValue;
+                                    
+                                    // Limitar desconto ao valor restante após cupom
+                                    decimal maxDiscount = order.Subtotal - order.DiscountAmount;
+                                    if (loyaltyDiscount > maxDiscount) loyaltyDiscount = maxDiscount;
+                                    if (loyaltyDiscount < 0) loyaltyDiscount = 0;
+
+                                    order.LoyaltyDiscountAmount = loyaltyDiscount;
+                                    order.LoyaltyPointsUsed = requestDto.LoyaltyPointsUsed.Value;
+                                }
+                                else
+                                {
+                                    throw new InvalidOperationException("Saldo de pontos insuficiente.");
+                                }
+                            }
+                            else 
+                            {
+                                throw new InvalidOperationException($"Valor mínimo do pedido para usar pontos é {program.MinOrderValue:C}.");
+                            }
+                        }
+                    }
+
+                    order.Total = order.Subtotal + order.DeliveryFee - order.DiscountAmount - order.LoyaltyDiscountAmount;
                     if (order.Total < 0) order.Total = 0;
 
                     if (requestDto.PaymentMethod.HasValue)
@@ -375,6 +412,31 @@ public class OrderService(
                     order.OrderNumber = (lastOrderNumber ?? 0) + 1;
 
                     var createdOrder = await _orderRepository.AddAsync(order);
+
+                    // Persistir Resgate de Fidelidade
+                    if (order.LoyaltyPointsUsed > 0)
+                    {
+                         var balance = await _customerLoyaltyRepository.GetByCustomerAndTenantAsync(tenantCustomer.Customer.Id, tenantId);
+                         if (balance != null)
+                         {
+                             balance.Balance -= order.LoyaltyPointsUsed;
+                             balance.LastActivityAt = DateTime.UtcNow;
+                             await _customerLoyaltyRepository.UpdateAsync(balance);
+
+                             var loyaltyTransaction = new LoyaltyTransactionEntity
+                             {
+                                 CustomerLoyaltyBalanceId = balance.Id,
+                                 CustomerLoyaltyBalance = balance,
+                                 OrderId = createdOrder.Id,
+                                 Points = order.LoyaltyPointsUsed,
+                                 Type = ELoyaltyTransactionType.Redeem,
+                                 Description = "Resgate de pontos no pedido",
+                                 CreatedAt = DateTime.UtcNow
+                             };
+                             await _customerLoyaltyRepository.AddTransactionAsync(loyaltyTransaction);
+                         }
+                    }
+
                     var orderDto = _mapper.Map<OrderResponseDto>(createdOrder);
 
                     _logger.LogInformation("Pedido {OrderId} criado com sucesso", createdOrder.Id);
@@ -513,69 +575,150 @@ public class OrderService(
             order.Subtotal = order.Items.Sum(i => i.Subtotal);
             order.DeliveryFee = requestDto.DeliveryFee ?? 0.0m; // Taxa fixa de entrega
 
-            // Processar cupom
-            if (!string.IsNullOrEmpty(requestDto.CouponCode))
+            // Iniciar transação para garantir consistência
+            var strategy = _context.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async () =>
             {
-                var coupon = await _couponRepository.GetByCodeAsync(requestDto.CouponCode, tenant.Id);
-                if (coupon != null && coupon.IsActive)
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    var now = DateTime.UtcNow;
-                    bool isValid = true;
-
-                    if (coupon.StartDate.HasValue && coupon.StartDate > now) isValid = false;
-                    if (coupon.ExpirationDate.HasValue && coupon.ExpirationDate < now) isValid = false;
-                    if (coupon.UsageLimit.HasValue && coupon.UsageCount >= coupon.UsageLimit) isValid = false;
-                    if (coupon.MinOrderValue.HasValue && order.Subtotal < coupon.MinOrderValue) isValid = false;
-
-                    if (isValid)
+                    // Processar cupom
+                    if (!string.IsNullOrEmpty(requestDto.CouponCode))
                     {
-                        decimal discount = 0;
-                        if (coupon.DiscountType == EDiscountType.Porcentagem)
+                        var coupon = await _couponRepository.GetByCodeAsync(requestDto.CouponCode, tenant.Id);
+                        if (coupon != null && coupon.IsActive)
                         {
-                            discount = order.Subtotal * (coupon.DiscountValue / 100);
-                            if (coupon.MaxDiscountValue.HasValue && discount > coupon.MaxDiscountValue.Value)
-                                discount = coupon.MaxDiscountValue.Value;
+                            var now = DateTime.UtcNow;
+                            bool isValid = true;
+
+                            if (coupon.StartDate.HasValue && coupon.StartDate > now) isValid = false;
+                            if (coupon.ExpirationDate.HasValue && coupon.ExpirationDate < now) isValid = false;
+                            if (coupon.UsageLimit.HasValue && coupon.UsageCount >= coupon.UsageLimit) isValid = false;
+                            if (coupon.MinOrderValue.HasValue && order.Subtotal < coupon.MinOrderValue) isValid = false;
+
+                            if (isValid)
+                            {
+                                decimal discount = 0;
+                                if (coupon.DiscountType == EDiscountType.Porcentagem)
+                                {
+                                    discount = order.Subtotal * (coupon.DiscountValue / 100);
+                                    if (coupon.MaxDiscountValue.HasValue && discount > coupon.MaxDiscountValue.Value)
+                                        discount = coupon.MaxDiscountValue.Value;
+                                }
+                                else
+                                {
+                                    discount = coupon.DiscountValue;
+                                }
+
+                                // Garantir que o desconto não seja maior que o subtotal
+                                if (discount > order.Subtotal) discount = order.Subtotal;
+
+                                order.DiscountAmount = discount;
+                                order.CouponCode = coupon.Code;
+
+                                // Atualizar uso do cupom
+                                coupon.UsageCount++;
+                                await _couponRepository.UpdateAsync(coupon);
+                            }
                         }
-                        else
-                        {
-                            discount = coupon.DiscountValue;
-                        }
-
-                        // Garantir que o desconto nÃ£o seja maior que o subtotal
-                        if (discount > order.Subtotal) discount = order.Subtotal;
-
-                        order.DiscountAmount = discount;
-                        order.CouponCode = coupon.Code;
-
-                        // Atualizar uso do cupom
-                        coupon.UsageCount++;
-                        await _couponRepository.UpdateAsync(coupon);
                     }
+
+                    // Processar Fidelidade (Cálculo e Validação)
+                    if (requestDto.LoyaltyPointsUsed.HasValue && requestDto.LoyaltyPointsUsed > 0)
+                    {
+                        var program = await _loyaltyProgramRepository.GetByTenantIdAsync(tenant.Id);
+                        if (program != null && program.IsActive)
+                        {
+                            if (order.Subtotal >= program.MinOrderValue)
+                            {
+                                var balance = await _customerLoyaltyRepository.GetByCustomerAndTenantAsync(tenantCustomer.Customer.Id, tenant.Id);
+                                if (balance != null && balance.Balance >= requestDto.LoyaltyPointsUsed.Value)
+                                {
+                                    decimal loyaltyDiscount = requestDto.LoyaltyPointsUsed.Value * program.CurrencyValue;
+                                    
+                                    decimal maxDiscount = order.Subtotal - order.DiscountAmount;
+                                    if (loyaltyDiscount > maxDiscount) loyaltyDiscount = maxDiscount;
+                                    if (loyaltyDiscount < 0) loyaltyDiscount = 0;
+
+                                    order.LoyaltyDiscountAmount = loyaltyDiscount;
+                                    order.LoyaltyPointsUsed = requestDto.LoyaltyPointsUsed.Value;
+                                }
+                                else
+                                {
+                                    throw new InvalidOperationException("Saldo de pontos insuficiente.");
+                                }
+                            }
+                            else 
+                            {
+                                throw new InvalidOperationException($"Valor mínimo do pedido para usar pontos é {program.MinOrderValue:C}.");
+                            }
+                        }
+                    }
+
+                    order.Total = order.Subtotal + order.DeliveryFee - order.DiscountAmount - order.LoyaltyDiscountAmount;
+                    if (order.Total < 0) order.Total = 0;
+
+                    // Definir número do pedido (sequencial diário)
+                    var lastOrderNumber = await _orderRepository.GetLastOrderNumberAsync(tenant.Id, DateTime.UtcNow);
+                    order.OrderNumber = (lastOrderNumber ?? 0) + 1;
+
+                    var createdOrder = await _orderRepository.AddAsync(order);
+
+                    // Persistir Resgate de Fidelidade
+                    if (order.LoyaltyPointsUsed > 0)
+                    {
+                         var balance = await _customerLoyaltyRepository.GetByCustomerAndTenantAsync(tenantCustomer.Customer.Id, tenant.Id);
+                         if (balance != null)
+                         {
+                             balance.Balance -= order.LoyaltyPointsUsed;
+                             balance.LastActivityAt = DateTime.UtcNow;
+                             await _customerLoyaltyRepository.UpdateAsync(balance);
+
+                             var loyaltyTransaction = new LoyaltyTransactionEntity
+                             {
+                                 CustomerLoyaltyBalanceId = balance.Id,
+                                 CustomerLoyaltyBalance = balance,
+                                 OrderId = createdOrder.Id,
+                                 Points = order.LoyaltyPointsUsed,
+                                 Type = ELoyaltyTransactionType.Redeem,
+                                 Description = "Resgate de pontos no pedido",
+                                 CreatedAt = DateTime.UtcNow
+                             };
+                             await _customerLoyaltyRepository.AddTransactionAsync(loyaltyTransaction);
+                         }
+                    }
+
+                    var orderDto = _mapper.Map<OrderResponseDto>(createdOrder);
+
+                    // Commit da transação
+                    await transaction.CommitAsync();
+
+                    // Processar pontos de fidelidade (GANHO)
+                    try
+                    {
+                         await _loyaltyService.ProcessOrderPointsAsync(createdOrder.Id, tenant.Id);
+                    }
+                    catch (Exception loyaltyEx)
+                    {
+                        _logger.LogWarning(loyaltyEx, "Erro ao processar ganho de pontos para o pedido {OrderId}", createdOrder.Id);
+                    }
+
+                    try
+                    {
+                        await _notificationService.NotifyNewOrderAsync(orderDto);
+                    }
+                    catch (Exception notificationEx)
+                    {
+                        _logger.LogWarning(notificationEx, "Erro ao enviar notificação de novo pedido {OrderId}", createdOrder.Id);
+                    }
+                    return StaticResponseBuilder<OrderResponseDto>.BuildOk(orderDto);
                 }
-            }
-
-            order.Total = order.Subtotal + order.DeliveryFee - order.DiscountAmount;
-            if (order.Total < 0) order.Total = 0;
-
-            // Definir número do pedido (sequencial diário)
-            var lastOrderNumber = await _orderRepository.GetLastOrderNumberAsync(tenant.Id, DateTime.UtcNow);
-            order.OrderNumber = (lastOrderNumber ?? 0) + 1;
-
-            var createdOrder = await _orderRepository.AddAsync(order);
-            var orderDto = _mapper.Map<OrderResponseDto>(createdOrder);
-
-            // Processar pontos de fidelidade
-            await _loyaltyService.ProcessOrderPointsAsync(createdOrder.Id, tenant.Id);
-
-            try
-            {
-                await _notificationService.NotifyNewOrderAsync(orderDto);
-            }
-            catch (Exception notificationEx)
-            {
-                _logger.LogWarning(notificationEx, "Erro ao enviar notificação de novo pedido {OrderId}", createdOrder.Id);
-            }
-            return StaticResponseBuilder<OrderResponseDto>.BuildOk(orderDto);
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            });
         }
         catch (Exception ex)
         {

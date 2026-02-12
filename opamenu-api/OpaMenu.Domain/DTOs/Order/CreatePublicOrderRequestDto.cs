@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -31,6 +31,9 @@ namespace OpaMenu.Domain.DTOs.Order
 
         [StringLength(50)]
         public string? CouponCode { get; set; }
+
+        public int? LoyaltyPointsUsed { get; set; }
+
         public decimal? DeliveryFee { get; set; }
 
         [Required]
