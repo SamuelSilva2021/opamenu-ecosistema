@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/models/create_order_request_dto.dart';
 import '../../domain/models/cart_item_model.dart';
 import '../../data/repositories/orders_repository.dart';
+import '../../data/repositories/customers_repository.dart';
 import '../../data/datasources/viacep_datasource.dart';
 import 'package:flutter/foundation.dart';
 import '../../domain/enums/delivery_type.dart';
@@ -19,6 +20,7 @@ class CheckoutState {
   final bool isSearchingCep;
   final String? errorMessage;
   final bool isSuccess;
+  final double deliveryFee;
 
   CheckoutState({
     this.deliveryType = DeliveryType.pickup,
@@ -31,6 +33,7 @@ class CheckoutState {
     this.isSearchingCep = false,
     this.errorMessage,
     this.isSuccess = false,
+    this.deliveryFee = 0.0,
   });
 
   bool get isDelivery => deliveryType == DeliveryType.delivery;
@@ -46,6 +49,7 @@ class CheckoutState {
     bool? isSearchingCep,
     String? errorMessage,
     bool? isSuccess,
+    double? deliveryFee,
   }) {
     return CheckoutState(
       deliveryType: deliveryType ?? this.deliveryType,
@@ -56,8 +60,9 @@ class CheckoutState {
       address: address ?? this.address,
       isLoading: isLoading ?? this.isLoading,
       isSearchingCep: isSearchingCep ?? this.isSearchingCep,
-      errorMessage: errorMessage, // Reset error if not provided (or handle differently)
+      errorMessage: errorMessage, //Reset mensagem de erro ao submeter
       isSuccess: isSuccess ?? this.isSuccess,
+      deliveryFee: deliveryFee ?? this.deliveryFee,
     );
   }
   
@@ -87,7 +92,7 @@ class Checkout extends _$Checkout {
   void updateCustomerInfo({String? name, String? phone, String? email}) {
     state = state.copyWith(
       customerName: name ?? state.customerName,
-      customerPhone: phone ?? state.customerPhone,
+      customerPhone: phone != null ? phone.replaceAll(RegExp(r'[^0-9]'), '') : state.customerPhone,
       customerEmail: email ?? state.customerEmail,
     );
   }
@@ -96,12 +101,16 @@ class Checkout extends _$Checkout {
     state = state.copyWith(address: address);
   }
 
+  void setDeliveryFee(double fee) {
+    state = state.copyWith(deliveryFee: fee);
+  }
+
   Future<void> searchCep(String cep) async {
-    // Only search if 8 digits
+    // Busca o endereço apenas se tiver 8 dígitos numéricos
     final cleanCep = cep.replaceAll(RegExp(r'[^0-9]'), '');
     if (cleanCep.length != 8) return;
 
-    // Prevent multiple calls for same CEP or while loading
+    // Previne múltiplas chamadas para o mesmo CEP ou enquanto está carregando
     if (state.isSearchingCep) return;
     
     state = state.copyWith(isSearchingCep: true);
@@ -110,11 +119,10 @@ class Checkout extends _$Checkout {
       final result = await _viaCepDatasource.fetchAddress(cleanCep);
       
       if (result != null) {
-        // Keep existing number/complement if user already typed them
         final currentAddress = state.address;
         
         final newAddress = AddressDto(
-          zipCode: cep, // Keep original formatting if provided
+          zipCode: cep, //Sem formatação específica, apenas números
           street: result.logradouro,
           neighborhood: result.bairro,
           city: result.localidade,
@@ -132,6 +140,48 @@ class Checkout extends _$Checkout {
       }
     } catch (e) {
       state = state.copyWith(isSearchingCep: false);
+    }
+  }
+
+  Future<void> searchCustomerByPhone(String phone) async {
+    final cleanPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    if (cleanPhone.length < 10) return;
+
+    state = state.copyWith(isLoading: true);
+
+    try {
+      // Busca o cliente primeiro no repositório de clientes
+      final repository = ref.read(customersRepositoryProvider);
+      final customer = await repository.getCustomerByPhone(cleanPhone);
+      
+      if (customer != null) {
+        // Se o cliente tiver endereço, preenche o endereço
+        AddressDto? address;
+        if (customer.street != null) {
+          address = AddressDto(
+            street: customer.street!,
+            number: customer.streetNumber ?? '',
+            neighborhood: customer.neighborhood ?? '',
+            city: customer.city ?? '',
+            state: customer.state ?? '',
+            zipCode: customer.postalCode ?? '',
+            complement: customer.complement,
+          );
+        }
+
+        state = state.copyWith(
+          customerName: customer.name,
+          customerEmail: customer.email,
+          address: address ?? state.address,
+          isLoading: false,
+        );
+      } else {
+        // Se não encontrar, apenas para de carregar
+        state = state.copyWith(isLoading: false);
+      }
+    } catch (e) {
+      // Se ocorrer um erro, apenas para de carregar
+      state = state.copyWith(isLoading: false);
     }
   }
 
@@ -162,6 +212,7 @@ class Checkout extends _$Checkout {
         tableId: state.deliveryType == DeliveryType.table ? state.tableId : null,
         orderType: state.deliveryType.value,
         items: itemsDto,
+        deliveryFee: state.isDelivery ? state.deliveryFee : null,
       );
 
       await ref.read(ordersRepositoryProvider).createOrder(orderDto);

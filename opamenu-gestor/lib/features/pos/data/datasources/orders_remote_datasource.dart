@@ -130,6 +130,24 @@ class OrdersRemoteDataSource {
     }
   }
 
+  Future<List<OrderResponseDto>> getOrdersByCustomer(String phone) async {
+    try {
+      final response = await _dio.get('/api/orders/customer/$phone');
+      
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data is Map ? response.data['data'] : response.data;
+        return data.map((e) => OrderResponseDto.fromJson(e)).toList();
+      }
+      throw Exception('Failed to load orders by customer');
+    } catch (e, stack) {
+      developer.log('Error loading orders by customer', error: e, stackTrace: stack, name: 'OrdersRemoteDataSource');
+      if (e is DioException && e.response?.statusCode == 404) {
+        return [];
+      }
+      rethrow;
+    }
+  }
+
   Future<OrderResponseDto> updateOrderStatus(String orderId, UpdateOrderStatusRequestDto dto) async {
     try {
       final response = await _dio.put(

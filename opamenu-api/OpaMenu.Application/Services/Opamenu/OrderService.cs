@@ -199,6 +199,9 @@ public class OrderService(
         {
             var tenantId = _currentUserService.GetTenantGuid()!.Value;
 
+            if (!string.IsNullOrEmpty(requestDto.CustomerPhone))
+                requestDto.CustomerPhone = System.Text.RegularExpressions.Regex.Replace(requestDto.CustomerPhone, @"\D", "");
+
             var (IsValid, ErrorMessage) = await ValidateOrderItemsAsync(requestDto.Items, tenantId);
 
             if (!IsValid)
@@ -417,6 +420,9 @@ public class OrderService(
             var tenant = await _tenantRepository.GetBySlugAsync(slug);
             if (tenant == null)
                 return StaticResponseBuilder<OrderResponseDto>.BuildError("Estabelecimento não encontrado");
+
+            if (!string.IsNullOrEmpty(requestDto.CustomerPhone))
+                requestDto.CustomerPhone = System.Text.RegularExpressions.Regex.Replace(requestDto.CustomerPhone, @"\D", "");
 
             var (IsValid, ErrorMessage) = await ValidateOrderItemsAsync(requestDto.Items, tenant.Id);
             if (!IsValid)
@@ -704,12 +710,14 @@ public class OrderService(
         }
     }
     /// <summary>
-    /// ObtÃ©m pedidos por telefone do cliente
+    /// Obtém pedidos por telefone do cliente
     /// </summary>
     public async Task<ResponseDTO<IEnumerable<OrderResponseDto>>> GetOrdersByCustomerAsync(string customerPhone)
     {
         try
         {
+            customerPhone = System.Text.RegularExpressions.Regex.Replace(customerPhone, @"\D", "");
+
             var orders = await _orderRepository.FindAsync(o => o.CustomerPhone == customerPhone);
             var orderDtos = _mapper.Map<IEnumerable<OrderResponseDto>>(orders);
             return StaticResponseBuilder<IEnumerable<OrderResponseDto>>.BuildOk(orderDtos);

@@ -33,6 +33,9 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   late TextEditingController _cityController;
   late TextEditingController _stateController;
 
+  // Delivery Fee Controller
+  late TextEditingController _deliveryFeeController;
+
   @override
   void initState() {
     super.initState();
@@ -49,6 +52,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     _neighborhoodController = TextEditingController(text: state.address.neighborhood);
     _cityController = TextEditingController(text: state.address.city);
     _stateController = TextEditingController(text: state.address.state);
+
+    _deliveryFeeController = TextEditingController(text: state.deliveryFee > 0 ? state.deliveryFee.toStringAsFixed(2) : '');
   }
 
   @override
@@ -63,6 +68,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     _neighborhoodController.dispose();
     _cityController.dispose();
     _stateController.dispose();
+    _deliveryFeeController.dispose();
     super.dispose();
   }
 
@@ -90,7 +96,18 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         if (_cityController.text != next.address.city) _cityController.text = next.address.city;
         if (_stateController.text != next.address.state) _stateController.text = next.address.state;
         if (_zipController.text != next.address.zipCode && next.address.zipCode.isNotEmpty) {
+           _zipController.text = next.address.zipCode;
         }
+        if (_numberController.text != next.address.number) _numberController.text = next.address.number;
+        if (_complementController.text != next.address.complement) _complementController.text = next.address.complement ?? '';
+      }
+      
+      // Atualiza campos do cliente quando encontrados pela busca
+      if (previous?.customerName != next.customerName && next.customerName.isNotEmpty) {
+        _nameController.text = next.customerName;
+      }
+      if (previous?.customerEmail != next.customerEmail && next.customerEmail != null) {
+        _emailController.text = next.customerEmail!;
       }
 
       if (next.isSuccess && !(previous?.isSuccess ?? false)) {
@@ -151,6 +168,30 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                     Row(
                       children: [
                         Expanded(
+                          child: Focus(
+                            onFocusChange: (hasFocus) {
+                              if (!hasFocus && _phoneController.text.length >= 10) {
+                                ref.read(checkoutProvider.notifier).searchCustomerByPhone(_phoneController.text);
+                              }
+                            },
+                            child: _buildTextField(
+                              controller: _phoneController,
+                              label: checkoutState.deliveryType == DeliveryType.table 
+                                  ? 'Telefone' 
+                                  : 'Telefone *',
+                              suffixIcon: checkoutState.isLoading 
+                                  ? const SizedBox(width: 16, height: 16, child: Center(child: CircularProgressIndicator(strokeWidth: 2))) 
+                                  : const Icon(Icons.search, color: Colors.grey),
+                              onChanged: (v) => ref.read(checkoutProvider.notifier).updateCustomerInfo(phone: v),
+                              validator: (v) {
+                                if (checkoutState.deliveryType == DeliveryType.table) return null;
+                                return (v == null || v.length < 10) ? 'Inválido' : null;
+                              },
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
                           child: _buildTextField(
                             controller: _nameController,
                             label: checkoutState.deliveryType == DeliveryType.table 
@@ -160,20 +201,6 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                             validator: (v) {
                               if (checkoutState.deliveryType == DeliveryType.table) return null;
                               return (v == null || v.isEmpty) ? 'Obrigatório' : null;
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: _buildTextField(
-                            controller: _phoneController,
-                            label: checkoutState.deliveryType == DeliveryType.table 
-                                ? 'Telefone' 
-                                : 'Telefone *',
-                            onChanged: (v) => ref.read(checkoutProvider.notifier).updateCustomerInfo(phone: v),
-                            validator: (v) {
-                              if (checkoutState.deliveryType == DeliveryType.table) return null;
-                              return (v == null || v.length < 10) ? 'Inválido' : null;
                             },
                           ),
                         ),
@@ -493,8 +520,39 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                         value: cartItems.fold(0, (sum, item) => sum + item.totalPrice),
                       ),
                       const SizedBox(height: 8),
-                      // TODO: Implement delivery fee logic
-                      const _SummaryRow(label: 'Taxa de Entrega', value: 0.0),
+                      
+                      // Delivery Fee Input
+                      if (checkoutState.isDelivery)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Taxa de Entrega', style: TextStyle(color: Colors.grey)),
+                              SizedBox(
+                                width: 100,
+                                child: TextFormField(
+                                  controller: _deliveryFeeController,
+                                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                  textAlign: TextAlign.end,
+                                  decoration: const InputDecoration(
+                                    prefixText: 'R\$ ',
+                                    isDense: true,
+                                    contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  onChanged: (value) {
+                                    final fee = double.tryParse(value.replaceAll(',', '.')) ?? 0.0;
+                                    ref.read(checkoutProvider.notifier).setDeliveryFee(fee);
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      else
+                        const _SummaryRow(label: 'Taxa de Entrega', value: 0.0),
+
                       const Divider(height: 32),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -507,7 +565,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                             ),
                           ),
                           Text(
-                            'R\$ ${cartItems.fold<double>(0, (sum, item) => sum + item.totalPrice).toStringAsFixed(2)}',
+                            'R\$ ${(cartItems.fold<double>(0, (sum, item) => sum + item.totalPrice) + (checkoutState.isDelivery ? checkoutState.deliveryFee : 0)).toStringAsFixed(2)}',
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,

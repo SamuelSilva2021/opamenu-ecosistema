@@ -27,6 +27,9 @@ public class CollaboratorService(
         if (tenantId == null || tenantId == Guid.Empty)
             return StaticResponseBuilder<CollaboratorResponseDto>.BuildError("Tenant não identificado");
 
+        if (!string.IsNullOrEmpty(request.Phone))
+            request.Phone = System.Text.RegularExpressions.Regex.Replace(request.Phone, @"\D", "");
+
         var entity = new CollaboratorEntity
         {
             Name = request.Name,
@@ -56,7 +59,10 @@ public class CollaboratorService(
             return StaticResponseBuilder<CollaboratorResponseDto>.BuildError("Colaborador não encontrado");
 
         if (request.Name != null) entity.Name = request.Name;
-        if (request.Phone != null) entity.Phone = request.Phone;
+        if (request.Phone != null)
+        {
+            entity.Phone = System.Text.RegularExpressions.Regex.Replace(request.Phone, @"\D", "");
+        }
         if (request.Type.HasValue) entity.Type = request.Type.Value;
         if (request.Role != null) entity.Role = request.Role;
         if (request.Active.HasValue) entity.Active = request.Active.Value;

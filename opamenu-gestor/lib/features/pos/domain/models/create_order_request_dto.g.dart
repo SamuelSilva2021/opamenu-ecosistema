@@ -23,6 +23,7 @@ CreateOrderRequestDto _$CreateOrderRequestDtoFromJson(
       .toList(),
   tableId: json['tableId'] as String?,
   orderType: (json['orderType'] as num?)?.toInt() ?? 0,
+  deliveryFee: (json['deliveryFee'] as num?)?.toDouble(),
 );
 
 Map<String, dynamic> _$CreateOrderRequestDtoToJson(
@@ -38,6 +39,7 @@ Map<String, dynamic> _$CreateOrderRequestDtoToJson(
   'items': instance.items,
   'tableId': instance.tableId,
   'orderType': instance.orderType,
+  'deliveryFee': instance.deliveryFee,
 };
 
 CreateOrderItemRequestDto _$CreateOrderItemRequestDtoFromJson(

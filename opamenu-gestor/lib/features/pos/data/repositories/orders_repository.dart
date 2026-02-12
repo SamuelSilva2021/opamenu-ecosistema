@@ -33,6 +33,10 @@ class OrdersRepository {
     return await _datasource.getOrdersByStatus(status);
   }
 
+  Future<List<OrderResponseDto>> getOrdersByCustomer(String phone) async {
+    return await _datasource.getOrdersByCustomer(phone);
+  }
+
   Future<OrderResponseDto> updateOrderStatus(String orderId, int status, {String? notes, String? driverId}) async {
     final dto = UpdateOrderStatusRequestDto(
       status: status, 

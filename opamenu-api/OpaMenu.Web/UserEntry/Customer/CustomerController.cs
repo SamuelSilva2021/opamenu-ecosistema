@@ -30,5 +30,13 @@ namespace OpaMenu.Web.UserEntry.Customer
             var serviceResponse = await _customerService.GetPagedAsync(search, page, limit);
             return BuildResponse(serviceResponse);
         }
+
+        [HttpGet("phone/{phone}")]
+        [MapPermission(MODULE_CUSTOMER, OPERATION_SELECT)]
+        public async Task<ActionResult<ResponseDTO<CustomerResponseDto>>> GetByPhone(string phone)
+        {
+            var serviceResponse = await _customerService.GetByPhoneAsync(phone);
+            return BuildResponse(serviceResponse);
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using OpaMenu.Domain.DTOs.Customer;
 using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Domain.Interfaces;
@@ -31,6 +31,8 @@ namespace OpaMenu.Application.Services.Opamenu
                 var tenant = await _tenantRepository.GetBySlugAsync(slug);
                 if (tenant == null)
                     return StaticResponseBuilder<CustomerResponseDto?>.BuildNotFound(null);
+
+                request.Phone = System.Text.RegularExpressions.Regex.Replace(request.Phone, @"\D", "");
 
                 var existingTenantCustomer = await _tenantCustomerRepository.GetByTenantIdAndCustomerPhoneAsync(tenant.Id, request.Phone);
                 if (existingTenantCustomer != null)
@@ -97,6 +99,29 @@ namespace OpaMenu.Application.Services.Opamenu
             }
         }
 
+        public async Task<ResponseDTO<CustomerResponseDto?>> GetByPhoneAsync(string phone)
+        {
+            try
+            {
+                var tenantId = _currentUserService.GetTenantGuid();
+                if (!tenantId.HasValue)
+                    return StaticResponseBuilder<CustomerResponseDto?>.BuildError("Estabelecimento não identificado.");
+
+                phone = System.Text.RegularExpressions.Regex.Replace(phone, @"\D", "");
+
+                var tenantCustomer = await _tenantCustomerRepository.GetByTenantIdAndCustomerPhoneAsync(tenantId.Value, phone);
+                if (tenantCustomer == null)
+                    return StaticResponseBuilder<CustomerResponseDto?>.BuildNotFound(null);
+
+                var customerDto = _mapper.Map<CustomerResponseDto>(tenantCustomer.Customer);
+                return StaticResponseBuilder<CustomerResponseDto?>.BuildOk(customerDto);
+            }
+            catch (Exception ex)
+            {
+                return StaticResponseBuilder<CustomerResponseDto?>.BuildErrorResponse(ex);
+            }
+        }
+
         public async Task<ResponseDTO<CustomerResponseDto?>> GetPublicCustomer(string slug, string phoneNumber)
         {
             try
@@ -104,6 +129,9 @@ namespace OpaMenu.Application.Services.Opamenu
                 var tenant = await _tenantRepository.GetBySlugAsync(slug);
                 if (tenant == null)
                     return StaticResponseBuilder<CustomerResponseDto?>.BuildNotFound(null);
+
+                // Limpar telefone
+                phoneNumber = System.Text.RegularExpressions.Regex.Replace(phoneNumber, @"\D", "");
 
                 var tenantCustomer = await _tenantCustomerRepository.GetByTenantIdAndCustomerPhoneAsync(tenant.Id, phoneNumber);
                 if (tenantCustomer == null)
@@ -133,7 +161,10 @@ namespace OpaMenu.Application.Services.Opamenu
                 
                 customer.Name = request.Name ?? customer.Name;
 
-                if (!string.IsNullOrEmpty(request.Phone)) customer.Phone = request.Phone;
+                if (!string.IsNullOrEmpty(request.Phone))
+                {
+                    customer.Phone = System.Text.RegularExpressions.Regex.Replace(request.Phone, @"\D", "");
+                }
                 
                 customer.Email = request.Email ?? customer.Email;
                 customer.PostalCode = request.PostalCode ?? customer.PostalCode;

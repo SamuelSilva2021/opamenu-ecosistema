@@ -128,7 +128,7 @@ public class OrderRepository(OpamenuDbContext context) : OpamenuRepository<Order
             .ToListAsync();
     }
 
-    public static async Task<int?> GetLastOrderNumberAsync(Guid tenantId, DateTime date)
+    public async Task<int?> GetLastOrderNumberAsync(Guid tenantId, DateTime date)
     {
         return await _dbSet
             .Where(o => o.TenantId == tenantId && 

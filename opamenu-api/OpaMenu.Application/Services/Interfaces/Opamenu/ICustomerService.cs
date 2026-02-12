@@ -1,4 +1,4 @@
-﻿using OpaMenu.Application.DTOs;
+using OpaMenu.Application.DTOs;
 using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Domain.DTOs.Customer;
 using OpaMenu.Infrastructure.Shared.Entities;
@@ -14,6 +14,7 @@ namespace OpaMenu.Application.Services.Interfaces.Opamenu
     {
         Task<ResponseDTO<IEnumerable<CustomerResponseDto>>>GetAll();
         Task<PagedResponseDTO<CustomerResponseDto>> GetPagedAsync(string? search, int page, int limit);
+        Task<ResponseDTO<CustomerResponseDto?>> GetByPhoneAsync(string phone);
         Task<ResponseDTO<CustomerResponseDto?>> GetPublicCustomer(string slug, string phoneNumber);
         Task<ResponseDTO<CustomerResponseDto?>> CreatePublicCustomerAsync(CreateCustomerRequestDto request, string slug);
         Task<ResponseDTO<CustomerResponseDto?>> UpdatePublicCustomerAsync(UpdateCustomerRequestDto request, string slug);
