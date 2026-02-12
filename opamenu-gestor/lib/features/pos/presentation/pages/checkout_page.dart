@@ -4,11 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/models/create_order_request_dto.dart';
 import '../../domain/enums/delivery_type.dart';
-import '../../domain/models/tenant_payment_method_model.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/utils/phone_utils.dart';
 import '../../../tables/presentation/controllers/tables_controller.dart';
-import '../../../tables/data/models/table_response_dto.dart';
 import '../providers/cart_notifier.dart';
 import '../providers/checkout_provider.dart';
 

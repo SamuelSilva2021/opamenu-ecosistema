@@ -23,6 +23,7 @@ interface PixPaymentProps {
 
 const PixPayment: React.FC<PixPaymentProps> = ({
   orderId,
+  orderNumber,
   amount,
   pixKey,
   merchantName = "OPAMENU",

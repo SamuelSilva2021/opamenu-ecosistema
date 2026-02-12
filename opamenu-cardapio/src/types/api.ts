@@ -213,6 +213,7 @@ export interface CreateOrderRequest {
   notes?: string;
   couponCode?: string;
   orderType: EOrderType;
+  isDelivery: boolean;
   items: CreateOrderItemRequest[];
 }
 
@@ -271,12 +272,12 @@ export interface Order {
 
 export enum OrderStatus {
   Pending = 0,
-  Confirmed = 1,
-  Preparing = 2,
-  Ready = 3, // ReadyForPickup
-  OutForDelivery = 4,
-  Delivered = 5,
-  Cancelled = 6
+  Preparing = 1,
+  Ready = 2,
+  OutForDelivery = 3,
+  Delivered = 4,
+  Cancelled = 5,
+  Rejected = 6
 }
 
 // Addon Types

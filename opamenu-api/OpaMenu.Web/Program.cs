@@ -2,15 +2,23 @@ using CloudinaryDotNet;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using OpaMenu.Infrastructure.Configurations;
+using OpaMenu.Infrastructure.Filters;
 using OpaMenu.Infrastructure.Shared.Data.Context;
 using OpaMenu.Infrastructure.Shared.Data.Context.Opamenu;
-using OpaMenu.Infrastructure.Filters;
 using OpaMenu.Web.Extensions;
 using OpaMenu.Web.Hubs;
-using System;
-using System.Security.Principal;
+using Serilog;
+
 
 var builder = WebApplication.CreateBuilder(args);
+
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File("Logs/log.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
 
 // Add services to the container
 builder.Services.AddControllers()

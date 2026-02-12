@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../widgets/login_form.dart';
-import '../widgets/social_login_buttons.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});

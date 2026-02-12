@@ -11,7 +11,8 @@ import {
   CancelOrderRequest,
   UpdateOrderPaymentRequest,
   UpdateOrderDeliveryTypeRequest,
-  PixResponseDto
+  PixResponseDto,
+  EOrderType
 } from '@/types/api';
 
 // Serviço para gerenciar pedidos
@@ -109,12 +110,12 @@ export const orderService = new OrderService();
 export const getOrderStatusText = (status: OrderStatus): string => {
   const statusMap: Record<OrderStatus, string> = {
     [OrderStatus.Pending]: 'Aguardando confirmação',
-    [OrderStatus.Confirmed]: 'Pedido confirmado',
     [OrderStatus.Preparing]: 'Preparando',
     [OrderStatus.Ready]: 'Pronto para retirada',
     [OrderStatus.OutForDelivery]: 'Saiu para entrega',
     [OrderStatus.Delivered]: 'Entregue',
     [OrderStatus.Cancelled]: 'Cancelado',
+    [OrderStatus.Rejected]: 'Rejeitado',
   };
   
   return statusMap[status] || 'Status desconhecido';
@@ -123,12 +124,12 @@ export const getOrderStatusText = (status: OrderStatus): string => {
 export const getOrderStatusColor = (status: OrderStatus): string => {
   const colorMap: Record<OrderStatus, string> = {
     [OrderStatus.Pending]: 'text-yellow-600',
-    [OrderStatus.Confirmed]: 'text-blue-600',
     [OrderStatus.Preparing]: 'text-orange-600',
     [OrderStatus.Ready]: 'text-green-600',
     [OrderStatus.OutForDelivery]: 'text-orange-800',
     [OrderStatus.Delivered]: 'text-green-800',
     [OrderStatus.Cancelled]: 'text-red-600',
+    [OrderStatus.Rejected]: 'text-red-800',
   };
   
   return colorMap[status] || 'text-gray-600';

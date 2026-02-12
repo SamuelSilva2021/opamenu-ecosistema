@@ -9,8 +9,8 @@ using OpaMenu.Web.Hubs;
 namespace OpaMenu.Web.Services;
 
 /// <summary>
-/// Wrapper para o NotificationService que usa o Hub especÃ­fico
-/// Garante que as notificaÃ§Ãµes sejam enviadas atravÃ©s do OrderNotificationHub correto
+/// Wrapper para o NotificationService que usa o Hub específico do SignalR para garantir que as mensagens sejam enviadas corretamente aos clientes conectados.
+/// Garante que as notificações sejam enviadas atravÃ©s do OrderNotificationHub correto
 /// </summary>
 public class SignalRNotificationServiceWrapper : INotificationService
 {
@@ -29,7 +29,7 @@ public class SignalRNotificationServiceWrapper : INotificationService
     {
         try
         {
-            _logger.LogInformation("ðŸ”„ [WRAPPER] Iniciando envio de notificaÃ§Ã£o para novo pedido #{OrderId}", order.Id);
+            _logger.LogInformation("[WRAPPER] pedido {orderId}", order.Id);
             
             var notification = new
             {
@@ -44,17 +44,17 @@ public class SignalRNotificationServiceWrapper : INotificationService
                 Timestamp = DateTime.UtcNow
             };
 
-            _logger.LogInformation("ðŸ“¤ [WRAPPER] Enviando para grupo 'Administrators': {Notification}", 
+            _logger.LogInformation("[WRAPPER] Enviando para grupo 'Administrators': {Notification}", 
                 System.Text.Json.JsonSerializer.Serialize(notification));
 
             await _hubContext.Clients.Group("Administrators")
                 .SendAsync("NewOrderReceived", notification);
 
-            _logger.LogInformation("âœ… [WRAPPER] NotificaÃ§Ã£o enviada com sucesso: Pedido #{OrderId}", order.Id);
+            _logger.LogInformation("âœ… [WRAPPER] Notificação enviada com sucesso: Pedido #{OrderId}", order.Id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "âŒ [WRAPPER] Erro ao enviar notificaÃ§Ã£o de novo pedido {OrderId}", order.Id);
+            _logger.LogError(ex, "âŒ [WRAPPER] Erro ao enviar notificação de novo pedido {OrderId}", order.Id);
         }
     }
 
@@ -79,12 +79,12 @@ public class SignalRNotificationServiceWrapper : INotificationService
             await _hubContext.Clients.Group("Administrators")
                 .SendAsync("EOrderStatusChanged", notification);
 
-            _logger.LogInformation("NotificaÃ§Ã£o de mudanÃ§a de status enviada: Pedido #{OrderId} - {OldStatus} â†’ {NewStatus}", 
+            _logger.LogInformation("Notificação de mudança de status enviada: Pedido #{OrderId} - {OldStatus} â†’ {NewStatus}", 
                 orderId, oldStatus, newStatus);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao enviar notificaÃ§Ã£o de mudanÃ§a de status do pedido {OrderId}", orderId);
+            _logger.LogError(ex, "Erro ao enviar notificação de mudança de status do pedido {OrderId}", orderId);
         }
     }
 
@@ -105,11 +105,11 @@ public class SignalRNotificationServiceWrapper : INotificationService
             await _hubContext.Clients.Group($"Order_{order.Id}")
                 .SendAsync("OrderAccepted", notification);
 
-            _logger.LogInformation("NotificaÃ§Ã£o de pedido aceito enviada: Pedido #{OrderId}", order.Id);
+            _logger.LogInformation("Notificação de pedido aceito enviada: Pedido #{OrderId}", order.Id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao enviar notificaÃ§Ã£o de pedido aceito {OrderId}", order.Id);
+            _logger.LogError(ex, "Erro ao enviar notificação de pedido aceito {OrderId}", order.Id);
         }
     }
 
@@ -130,12 +130,12 @@ public class SignalRNotificationServiceWrapper : INotificationService
             await _hubContext.Clients.Group($"Order_{order.Id}")
                 .SendAsync("OrderRejected", notification);
 
-            _logger.LogInformation("NotificaÃ§Ã£o de pedido rejeitado enviada: Pedido #{OrderId} - Motivo: {Reason}", 
+            _logger.LogInformation("Notificação de pedido rejeitado enviada: Pedido #{OrderId} - Motivo: {Reason}", 
                 order.Id, reason);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao enviar notificaÃ§Ã£o de pedido rejeitado {OrderId}", order.Id);
+            _logger.LogError(ex, "Erro ao enviar Notificação de pedido rejeitado {OrderId}", order.Id);
         }
     }
 
@@ -154,11 +154,11 @@ public class SignalRNotificationServiceWrapper : INotificationService
             await _hubContext.Clients.Group($"Order_{orderId}")
                 .SendAsync("OrderReady", notification);
 
-            _logger.LogInformation("NotificaÃ§Ã£o de pedido pronto enviada: Pedido #{OrderId}", orderId);
+            _logger.LogInformation("Notificação de pedido pronto enviada: Pedido #{OrderId}", orderId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao enviar notificaÃ§Ã£o de pedido pronto {OrderId}", orderId);
+            _logger.LogError(ex, "Erro ao enviar notificação de pedido pronto {OrderId}", orderId);
         }
     }
 

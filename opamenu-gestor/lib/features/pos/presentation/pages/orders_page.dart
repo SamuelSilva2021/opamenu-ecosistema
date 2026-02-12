@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controllers/orders_controller.dart';
-import '../../domain/models/order_response_dto.dart';
 import '../widgets/order_details.dart';
 import '../widgets/order_list_item.dart';
 

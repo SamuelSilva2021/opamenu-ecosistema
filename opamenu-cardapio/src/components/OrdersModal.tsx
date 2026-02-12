@@ -200,10 +200,11 @@ export function OrdersModal({ isOpen, onClose }: OrdersModalProps) {
         }));
       };
 
-      signalRService.onOrderStatusUpdated(handleStatusUpdate);
+      const unsubscribe = signalRService.onOrderStatusUpdated(handleStatusUpdate);
 
-      // Cleanup: Sair dos grupos ao fechar modal
+      // Cleanup: Sair dos grupos e desinscrever do listener ao fechar modal ou desmontar
       return () => {
+        unsubscribe(); // Desinscreve o listener de status
         orders.forEach(order => {
            signalRService.leaveOrderGroup(order.id);
         });
@@ -442,12 +443,11 @@ export function OrdersModal({ isOpen, onClose }: OrdersModalProps) {
                              <Badge variant="outline" className={`
                                 mb-2 w-fit border font-semibold px-3 py-1 rounded-full text-xs uppercase tracking-wide
                                 ${order.status === OrderStatus.Pending ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                                  order.status === OrderStatus.Confirmed ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                    order.status === OrderStatus.Preparing ? 'bg-orange-50 text-orange-700 border-orange-200' :
-                                      order.status === OrderStatus.Ready ? 'bg-green-50 text-green-700 border-green-200' :
-                                        order.status === OrderStatus.OutForDelivery ? 'bg-purple-50 text-purple-700 border-purple-200' :
-                                          order.status === OrderStatus.Delivered ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                                            'bg-red-50 text-red-700 border-red-200'}
+                                  order.status === OrderStatus.Preparing ? 'bg-orange-50 text-orange-700 border-orange-200' :
+                                        order.status === OrderStatus.Ready ? 'bg-green-50 text-green-700 border-green-200' :
+                                          order.status === OrderStatus.OutForDelivery ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                                            order.status === OrderStatus.Delivered ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                              'bg-red-50 text-red-700 border-red-200'}
                              `}>
                                {getOrderStatusText(order.status)}
                              </Badge>
@@ -508,7 +508,7 @@ export function OrdersModal({ isOpen, onClose }: OrdersModalProps) {
                               style={{
                                 width: order.status === OrderStatus.Delivered ? 'calc(100% - 48px)' :
                                   [OrderStatus.Ready, OrderStatus.OutForDelivery].includes(order.status) ? '66%' :
-                                    [OrderStatus.Preparing, OrderStatus.Confirmed].includes(order.status) ? '33%' : '0%'
+                                    [OrderStatus.Preparing].includes(order.status) ? '33%' : '0%'
                               }}
                             />
 
