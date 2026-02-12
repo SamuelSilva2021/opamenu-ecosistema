@@ -41,7 +41,7 @@ final class CheckoutProvider
   }
 }
 
-String _$checkoutHash() => r'7a847fa0feb481a98e07b7c0b4a9140ef23ab1cd';
+String _$checkoutHash() => r'3f1a80f4649be221c6331f9078711036450660fc';
 
 abstract class _$Checkout extends $Notifier<CheckoutState> {
   CheckoutState build();

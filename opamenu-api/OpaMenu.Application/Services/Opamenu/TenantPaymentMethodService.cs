@@ -19,7 +19,7 @@ public class TenantPaymentMethodService(
         try
         {
             var tenantId = currentUserService.GetTenantGuid();
-            if (tenantId == null) return StaticResponseBuilder<IEnumerable<TenantPaymentMethodResponseDto>>.BuildError("Tenant nÃ£o identificado.");
+            if (tenantId == null) return StaticResponseBuilder<IEnumerable<TenantPaymentMethodResponseDto>>.BuildError("Tenant não identificado.");
 
             var entities = await repository.GetAllByTenantWithPaymentMethodAsync(tenantId.Value);
             var dtos = mapper.Map<IEnumerable<TenantPaymentMethodResponseDto>>(entities);

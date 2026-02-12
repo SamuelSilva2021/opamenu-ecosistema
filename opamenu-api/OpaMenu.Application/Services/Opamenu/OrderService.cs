@@ -357,6 +357,19 @@ public class OrderService(
                     order.Total = order.Subtotal + order.DeliveryFee - order.DiscountAmount;
                     if (order.Total < 0) order.Total = 0;
 
+                    if (requestDto.PaymentMethod.HasValue)
+                    {
+                        var payment = new PaymentEntity
+                        {
+                            Amount = order.Total,
+                            Method = requestDto.PaymentMethod.Value,
+                            Status = EPaymentStatus.Pending,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        };
+                        order.Payments.Add(payment);
+                    }
+
                     // Definir número do pedido (sequencial diário)
                     var lastOrderNumber = await _orderRepository.GetLastOrderNumberAsync(tenantId, DateTime.UtcNow);
                     order.OrderNumber = (lastOrderNumber ?? 0) + 1;

@@ -1,11 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 using System.Text.Json.Serialization;
 
 namespace OpaMenu.Domain.DTOs
 {
     /// <summary>
-    /// DTO para criaÃ§Ã£o de pedidos
+    /// DTO para criação de pedidos
     /// </summary>
     public class CreateOrderRequestDto
     {
@@ -38,6 +38,9 @@ namespace OpaMenu.Domain.DTOs
         [Required]
         [MinLength(1, ErrorMessage = "At least one item is required")]
         public List<CreateOrderItemRequestDto> Items { get; set; } = new();
+
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public EPaymentMethod? PaymentMethod { get; set; }
     }
 }
 

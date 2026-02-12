@@ -37,6 +37,9 @@ class CreateOrderRequestDto {
   @JsonKey(name: 'deliveryFee')
   final double? deliveryFee;
 
+  @JsonKey(name: 'paymentMethod')
+  final String? paymentMethod;
+
   CreateOrderRequestDto({
     this.customerName,
     this.customerPhone,
@@ -49,6 +52,7 @@ class CreateOrderRequestDto {
     this.tableId,
     this.orderType = 0,
     this.deliveryFee,
+    this.paymentMethod,
   });
 
   factory CreateOrderRequestDto.fromJson(Map<String, dynamic> json) =>
