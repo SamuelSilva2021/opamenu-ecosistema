@@ -83,6 +83,13 @@ const ProductModal = ({
     return selected?.quantity || 0;
   };
 
+  // Obter quantidade total selecionada em um grupo
+  const getGroupTotalQuantity = (group: AddonGroup) => {
+    return selectedAddons
+      .filter(selected => group.addons.some(addon => addon.id === selected.addonId))
+      .reduce((sum, selected) => sum + selected.quantity, 0);
+  };
+
   // Adicionar ou atualizar addon
   const handleAddonChange = (addon: Addon, addonGroup: AddonGroup, newQuantity: number) => {
     setSelectedAddons(prev => {
@@ -377,6 +384,7 @@ const ProductModal = ({
                                         variant="outline"
                                         size="icon"
                                         onClick={() => handleAddonChange(addon, group, getAddonQuantity(addon.id) + 1)}
+                                        disabled={!!group.maxSelections && getGroupTotalQuantity(group) >= group.maxSelections}
                                         className="h-8 w-8 p-0 hover:bg-accent/10 hover:border-accent touch-manipulation rounded-lg border-2 font-black transition-all"
                                       >
                                         <Plus className="h-3 w-3" />

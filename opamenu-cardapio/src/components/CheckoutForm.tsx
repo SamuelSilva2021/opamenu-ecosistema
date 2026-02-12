@@ -17,6 +17,20 @@ interface CheckoutFormProps {
   error?: string | null;
 }
 
+const formatPhone = (value: string) => {
+  const numbers = value.replace(/\D/g, '');
+  
+  // Se não tiver números suficientes para formatar, retorna como está (apenas números)
+  if (numbers.length < 10) return numbers;
+
+  if (numbers.length === 10) {
+    return numbers.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+  }
+  
+  // Para 11 dígitos ou mais
+  return numbers.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+};
+
 const CheckoutForm = ({
   checkoutData,
   onDataChange,
@@ -122,13 +136,16 @@ const CheckoutForm = ({
     }
   };
 
-  const formatPhone = (value: string) => {
-    const numbers = value.replace(/\D/g, '');
-    if (numbers.length <= 10) {
-      return numbers.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+  // Formatar telefone ao carregar se vier sem máscara
+  useEffect(() => {
+    if (checkoutData.customerPhone) {
+      const formatted = formatPhone(checkoutData.customerPhone);
+      if (formatted !== checkoutData.customerPhone) {
+        onDataChange({ customerPhone: formatted });
+      }
     }
-    return numbers.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checkoutData.customerPhone]);
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatPhone(e.target.value);

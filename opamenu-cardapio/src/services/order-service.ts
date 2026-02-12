@@ -121,6 +121,25 @@ export const getOrderStatusText = (status: OrderStatus): string => {
   return statusMap[status] || 'Status desconhecido';
 };
 
+export const parseOrderStatus = (status: string | number): OrderStatus => {
+  if (typeof status === 'number') return status;
+  
+  // Tenta converter string numérica "4" -> 4
+  const parsed = Number(status);
+  if (!isNaN(parsed)) return parsed;
+
+  const lower = status.toLowerCase();
+  if (lower === 'pending') return OrderStatus.Pending;
+  if (lower === 'preparing') return OrderStatus.Preparing;
+  if (lower === 'ready') return OrderStatus.Ready;
+  if (lower === 'outfordelivery') return OrderStatus.OutForDelivery;
+  if (lower === 'delivered') return OrderStatus.Delivered;
+  if (lower === 'cancelled') return OrderStatus.Cancelled;
+  if (lower === 'rejected') return OrderStatus.Rejected;
+
+  return OrderStatus.Pending;
+};
+
 export const getOrderStatusColor = (status: OrderStatus): string => {
   const colorMap: Record<OrderStatus, string> = {
     [OrderStatus.Pending]: 'text-yellow-600',
@@ -222,6 +241,7 @@ export const formatOrderForAPI = (
     deliveryAddress: isDelivery ? deliveryAddress : undefined,
     notes: notes?.trim() || undefined,
     isDelivery,
+    orderType: isDelivery ? EOrderType.Delivery : EOrderType.Counter
   };
 };
 

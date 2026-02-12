@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useCustomer } from "@/hooks/use-customer";
-import { orderService, getOrderStatusText } from "@/services/order-service";
+import { orderService, getOrderStatusText, parseOrderStatus } from "@/services/order-service";
 import { Order, OrderStatus, PaymentMethod } from "@/types/api";
 import { signalRService } from "@/services/signalr-service";
 import {
@@ -168,35 +168,12 @@ export function OrdersModal({ isOpen, onClose }: OrdersModalProps) {
       // Vamos adicionar um listener que atualiza o estado local 'orders'.
       
       const handleStatusUpdate = (orderId: string | number, newStatus: string | number) => {
-        setOrders(prevOrders => prevOrders.map(o => {
-          if (String(o.id) === String(orderId)) {
-            // Se o status for numérico ou string, normalizar se necessário. 
-            // O tipo OrderStatus é enum (number).
-            // Se vier string do backend, converter.
-            let statusEnum: OrderStatus = o.status;
-            
-            // Tenta converter para número se possível
-            if (typeof newStatus === 'string') {
-               // Tentar mapear string para enum se o backend mandar "Confirmed" ao invés de 1
-               // Mas geralmente manda número ou nome do enum.
-               // Assumindo que o backend manda o NOME do enum (string) ou o VALOR (int).
-               // Se for número:
-               if (!isNaN(Number(newStatus))) {
-                 statusEnum = Number(newStatus);
-               } else {
-                 // Se for string, tenta achar no enum (reverse mapping ou manual)
-                 // Simplificação: vamos fazer um refetch do pedido específico para garantir dados consistentes
-                 // Isso evita complexidade de parsing de enum no frontend
-                 refreshSingleOrder(String(orderId));
-                 return o; 
-               }
-            } else {
-              statusEnum = newStatus as OrderStatus;
-            }
-
-            return { ...o, status: statusEnum };
+        setOrders(prevOrders => prevOrders.map(order => {
+          if (String(order.id) === String(orderId)) {
+            console.log(`Atualizando status do pedido ${orderId} para ${newStatus}`);
+            return { ...order, status: parseOrderStatus(newStatus) };
           }
-          return o;
+          return order;
         }));
       };
 
@@ -439,6 +416,13 @@ export function OrdersModal({ isOpen, onClose }: OrdersModalProps) {
                       <div className="p-5 pb-0">
                         <div className="flex justify-between items-start mb-6">
                           <div className="flex flex-col gap-1">
+                             {/* Order Number */}
+                             {order.orderNumber && (
+                               <span className="text-lg font-black text-foreground tracking-tight mb-1">
+                                 #{order.orderNumber}
+                               </span>
+                             )}
+
                              {/* Status Badge */}
                              <Badge variant="outline" className={`
                                 mb-2 w-fit border font-semibold px-3 py-1 rounded-full text-xs uppercase tracking-wide
