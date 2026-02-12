@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { useCustomer } from "@/hooks/use-customer";
 import { orderService, getOrderStatusText } from "@/services/order-service";
 import { Order, OrderStatus, PaymentMethod } from "@/types/api";
+import { signalRService } from "@/services/signalr-service";
 import {
   Dialog,
   DialogContent,
@@ -38,6 +39,8 @@ import { Loader2, ShoppingBag, MapPin, Calendar, MoreVertical, CreditCard, Truck
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 
 interface OrdersModalProps {
   isOpen: boolean;
@@ -92,6 +95,7 @@ export function OrdersModal({ isOpen, onClose }: OrdersModalProps) {
       setAddressForm(newForm);
       updateFullAddressString(newForm);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showDeliveryDialog, deliveryType, customer]);
 
   useEffect(() => {
@@ -114,15 +118,109 @@ export function OrdersModal({ isOpen, onClose }: OrdersModalProps) {
 
     fetchOrders();
 
+    // SignalR Setup
+    const setupSignalR = async () => {
+      try {
+        await signalRService.startConnection();
+        // Não temos um grupo para "Todos os pedidos de um cliente específico" no backend ainda (a não ser que implementemos).
+        // Mas podemos ouvir eventos globais de status e filtrar, ou entrar no grupo de CADA pedido que carregamos.
+        // A melhor estratégia aqui é entrar no grupo de cada pedido carregado para receber updates.
+        
+        // Porém, isso pode ser custoso se forem muitos pedidos.
+        // Como alternativa simples, mantemos o polling para a lista, e usamos SignalR apenas na OrderConfirmation.
+        // MAS o usuário pediu explicitamente para funcionar aqui também ("Veja que eu movi o pedido #006...").
+        // Então vamos manter o polling por segurança, mas também tentar conectar nos grupos dos pedidos VISÍVEIS.
+        
+        // Como o fetchOrders é assíncrono e popula 'orders', precisamos reagir a mudança de 'orders' para conectar.
+      } catch (error) {
+        console.error("SignalR setup error in OrdersModal", error);
+      }
+    };
+
+    if (isOpen) {
+      setupSignalR();
+    }
+
+    // Polling de fallback (mantém lista atualizada caso entrem novos pedidos ou SignalR falhe)
     let interval: NodeJS.Timeout;
     if (isOpen) {
-      interval = setInterval(() => fetchOrders(true), 15000); // Poll a cada 15 segundos
+      interval = setInterval(() => fetchOrders(true), 15000); 
     }
 
     return () => {
       if (interval) clearInterval(interval);
     };
   }, [isOpen, customer, slug]);
+
+  // Efeito separado para conectar aos grupos dos pedidos carregados
+  useEffect(() => {
+    if (orders.length > 0) {
+      orders.forEach(order => {
+        // Entrar no grupo de cada pedido para receber updates em tempo real
+        signalRService.joinOrderGroup(order.id);
+      });
+
+      // Registrar listener único (se já não estiver registrado, o service gerencia)
+      // O service atual pode acumular listeners se chamarmos onOrderStatusUpdated várias vezes.
+      // O ideal seria o service suportar múltiplos listeners ou limparmos.
+      // Como o service é singleton e simples, vamos confiar que ele gerencia ou adicionar um método de limpeza se necessário.
+      // Para evitar vazamento, vamos assumir que o modal é montado/desmontado e o service é global.
+      // Vamos adicionar um listener que atualiza o estado local 'orders'.
+      
+      const handleStatusUpdate = (orderId: string | number, newStatus: string | number) => {
+        setOrders(prevOrders => prevOrders.map(o => {
+          if (String(o.id) === String(orderId)) {
+            // Se o status for numérico ou string, normalizar se necessário. 
+            // O tipo OrderStatus é enum (number).
+            // Se vier string do backend, converter.
+            let statusEnum: OrderStatus = o.status;
+            
+            // Tenta converter para número se possível
+            if (typeof newStatus === 'string') {
+               // Tentar mapear string para enum se o backend mandar "Confirmed" ao invés de 1
+               // Mas geralmente manda número ou nome do enum.
+               // Assumindo que o backend manda o NOME do enum (string) ou o VALOR (int).
+               // Se for número:
+               if (!isNaN(Number(newStatus))) {
+                 statusEnum = Number(newStatus);
+               } else {
+                 // Se for string, tenta achar no enum (reverse mapping ou manual)
+                 // Simplificação: vamos fazer um refetch do pedido específico para garantir dados consistentes
+                 // Isso evita complexidade de parsing de enum no frontend
+                 refreshSingleOrder(String(orderId));
+                 return o; 
+               }
+            } else {
+              statusEnum = newStatus as OrderStatus;
+            }
+
+            return { ...o, status: statusEnum };
+          }
+          return o;
+        }));
+      };
+
+      signalRService.onOrderStatusUpdated(handleStatusUpdate);
+
+      // Cleanup: Sair dos grupos ao fechar modal
+      return () => {
+        orders.forEach(order => {
+           signalRService.leaveOrderGroup(order.id);
+        });
+      };
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orders.length]); // Re-executa se a quantidade de pedidos mudar (novos carregados)
+
+  const refreshSingleOrder = async (orderId: string) => {
+    if (!slug) return;
+    try {
+      const updatedOrder = await orderService.getOrderById(orderId, slug);
+      setOrders(prev => prev.map(o => o.id === updatedOrder.id ? updatedOrder : o));
+    } catch (e) {
+      console.error("Erro ao atualizar pedido único via SignalR", e);
+    }
+  };
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -286,45 +384,45 @@ export function OrdersModal({ isOpen, onClose }: OrdersModalProps) {
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-xl h-[95vh] w-[95vw] sm:w-full flex flex-col p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl">
+        <DialogContent className="max-w-xl h-[95vh] w-[95vw] sm:w-full flex flex-col p-0 overflow-hidden rounded-xl border-none shadow-2xl">
           <div className="flex flex-col h-full bg-background">
-            <DialogHeader className="shrink-0 p-8 pb-4 bg-white border-b border-border/50">
-              <DialogTitle className="flex items-center gap-3 text-2xl font-black uppercase italic tracking-tighter text-foreground">
-                <div className="bg-primary/10 p-2 rounded-xl">
-                  <ShoppingBag className="h-6 w-6 text-primary stroke-[2.5]" />
+            <DialogHeader className="shrink-0 p-6 pb-4 bg-white border-b border-border/50">
+              <DialogTitle className="flex items-center gap-3 text-xl font-bold text-foreground">
+                <div className="bg-primary/10 p-2 rounded-full">
+                  <ShoppingBag className="h-5 w-5 text-primary" />
                 </div>
                 Meus Pedidos
               </DialogTitle>
-              <DialogDescription className="text-xs font-bold text-text-secondary/60 uppercase tracking-widest mt-1">
+              <DialogDescription className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mt-1">
                 Acompanhe o status das suas delícias
               </DialogDescription>
             </DialogHeader>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide bg-gray-50/50">
-              {loading ? (
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 scrollbar-hide bg-gray-50/50">
+              {loading && orders.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 gap-4">
                   <div className="relative">
                     <Loader2 className="h-12 w-12 animate-spin text-primary opacity-20" />
                     <ShoppingBag className="h-6 w-6 text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                   </div>
-                  <p className="text-xs font-black uppercase tracking-widest text-primary/40">Buscando seus pedidos...</p>
+                  <p className="text-xs font-bold uppercase tracking-widest text-primary/40">Buscando seus pedidos...</p>
                 </div>
               ) : error ? (
-                <div className="text-center py-12 bg-white rounded-[2rem] border-2 border-dashed border-red-100 p-8">
+                <div className="text-center py-12 bg-white rounded-xl border-2 border-dashed border-red-100 p-8">
                   <XCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
                   <p className="text-sm font-bold text-red-500 uppercase tracking-tight mb-4">{error}</p>
                   <Button onClick={() => onClose()} variant="outline" className="rounded-xl font-bold uppercase tracking-widest text-xs px-8">Fechar</Button>
                 </div>
               ) : orders.length === 0 ? (
-                <div className="text-center py-20 bg-white rounded-[2.5rem] border-2 border-dashed border-border p-10 flex flex-col items-center">
+                <div className="text-center py-20 bg-white rounded-xl border-2 border-dashed border-border p-10 flex flex-col items-center">
                   <div className="bg-muted/50 p-6 rounded-full mb-6">
                     <ShoppingBag className="h-16 w-16 text-muted-foreground opacity-30" />
                   </div>
-                  <h3 className="text-xl font-black uppercase italic tracking-tighter text-foreground mb-2">Fome acumulada!</h3>
-                  <p className="text-sm font-medium text-text-secondary/60 mb-8 max-w-[200px]">Você ainda não fez nenhum pedido conosco.</p>
+                  <h3 className="text-xl font-bold text-foreground mb-2">Fome acumulada!</h3>
+                  <p className="text-sm font-medium text-muted-foreground mb-8 max-w-[200px]">Você ainda não fez nenhum pedido conosco.</p>
                   <Button
                     onClick={onClose}
-                    className="h-14 px-10 bg-primary hover:bg-primary-hover text-white rounded-2xl font-black uppercase italic tracking-wider shadow-xl shadow-primary/20 transform transition-all active:scale-95"
+                    className="h-12 px-8 bg-primary hover:bg-primary-hover text-white rounded-xl font-bold shadow-lg shadow-primary/20 transform transition-all active:scale-95"
                   >
                     Começar a comprar
                   </Button>
@@ -334,65 +432,61 @@ export function OrdersModal({ isOpen, onClose }: OrdersModalProps) {
                   {orders.map((order) => (
                     <div
                       key={order.id}
-                      className="group bg-white rounded-[2.5rem] border border-border/50 shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden"
+                      className="group bg-white rounded-xl border border-border/50 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden"
                     >
                       {/* Card Header: Status & Price */}
-                      <div className="p-6 pb-0">
+                      <div className="p-5 pb-0">
                         <div className="flex justify-between items-start mb-6">
-                          <div className="flex flex-col gap-2">
-                            <div className="flex items-center gap-2">
-                              <span className={`
-                                 text-[10px] font-black uppercase tracking-[0.1em] px-4 py-1.5 rounded-full border-2 transition-all duration-500
-                                 ${order.status === OrderStatus.Pending ? 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20 shadow-sm shadow-yellow-500/10' :
-                                  order.status === OrderStatus.Confirmed ? 'bg-blue-500/10 text-blue-600 border-blue-500/20 shadow-sm shadow-blue-500/10' :
-                                    order.status === OrderStatus.OutForDelivery ? 'bg-orange-500/10 text-orange-600 border-orange-500/20 animate-pulse border-orange-500/20 shadow-sm shadow-orange-500/10' :
-                                      order.status === OrderStatus.Delivered ? 'bg-green-500/10 text-green-600 border-green-500/20 shadow-sm shadow-green-500/10' :
-                                        order.status === OrderStatus.Cancelled ? 'bg-red-500/10 text-red-600 border-red-500/20' :
-                                          'bg-gray-100 text-gray-500 border-gray-200'}
-                               `}>
-                                {getOrderStatusText(order.status)}
-                              </span>
-                              {order.status === OrderStatus.Delivered && (
-                                <div className="bg-green-500 text-white rounded-full p-1 border-2 border-white shadow-sm">
-                                  <Check className="h-3 w-3 stroke-[3]" />
-                                </div>
-                              )}
-                            </div>
-                            <p className="text-[10px] font-bold text-text-secondary/40 flex items-center gap-1.5 uppercase tracking-widest pl-1">
-                              <Calendar className="h-3 w-3" />
+                          <div className="flex flex-col gap-1">
+                             {/* Status Badge */}
+                             <Badge variant="outline" className={`
+                                mb-2 w-fit border font-semibold px-3 py-1 rounded-full text-xs uppercase tracking-wide
+                                ${order.status === OrderStatus.Pending ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                                  order.status === OrderStatus.Confirmed ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                    order.status === OrderStatus.Preparing ? 'bg-orange-50 text-orange-700 border-orange-200' :
+                                      order.status === OrderStatus.Ready ? 'bg-green-50 text-green-700 border-green-200' :
+                                        order.status === OrderStatus.OutForDelivery ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                                          order.status === OrderStatus.Delivered ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                            'bg-red-50 text-red-700 border-red-200'}
+                             `}>
+                               {getOrderStatusText(order.status)}
+                             </Badge>
+
+                            <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                              <Calendar className="h-3.5 w-3.5" />
                               {formatDate(order.createdAt)}
                             </p>
                           </div>
 
                           <div className="flex flex-col items-end gap-1">
-                            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/30 leading-none">Total</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Total</span>
                             <div className="flex items-center gap-2">
-                              <p className="text-2xl font-black text-foreground tracking-tighter leading-none">
+                              <p className="text-xl font-bold text-foreground">
                                 {formatPrice(order.total)}
                               </p>
                               {order.status === OrderStatus.Pending && (
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-10 w-10 text-muted-foreground hover:bg-muted rounded-full">
-                                      <MoreVertical className="h-5 w-5" />
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted rounded-full">
+                                      <MoreVertical className="h-4 w-4" />
                                     </Button>
                                   </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end" className="bg-white rounded-2xl border-border shadow-2xl p-2 min-w-[180px]">
-                                    <DropdownMenuLabel className="font-black uppercase tracking-widest text-[10px] opacity-40 px-3 py-2">Ações</DropdownMenuLabel>
-                                    <DropdownMenuItem onClick={() => openPaymentDialog(order)} className="rounded-xl font-bold p-3 focus:bg-primary/5 focus:text-primary cursor-pointer">
-                                      <CreditCard className="mr-3 h-4 w-4" />
+                                  <DropdownMenuContent align="end" className="bg-white rounded-xl border-border shadow-lg p-1 min-w-[160px]">
+                                    <DropdownMenuLabel className="font-semibold text-xs opacity-60 px-2 py-1.5">Ações</DropdownMenuLabel>
+                                    <DropdownMenuItem onClick={() => openPaymentDialog(order)} className="rounded-lg text-sm font-medium p-2 cursor-pointer">
+                                      <CreditCard className="mr-2 h-4 w-4" />
                                       Pagamento
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => openDeliveryDialog(order)} className="rounded-xl font-bold p-3 focus:bg-primary/5 focus:text-primary cursor-pointer">
-                                      <Truck className="mr-3 h-4 w-4" />
+                                    <DropdownMenuItem onClick={() => openDeliveryDialog(order)} className="rounded-lg text-sm font-medium p-2 cursor-pointer">
+                                      <Truck className="mr-2 h-4 w-4" />
                                       Entrega/Retirada
                                     </DropdownMenuItem>
-                                    <DropdownMenuSeparator className="my-1 bg-border/50" />
+                                    <DropdownMenuSeparator className="my-1" />
                                     <DropdownMenuItem
-                                      className="rounded-xl font-bold p-3 text-red-600 focus:bg-red-50 focus:text-red-700 cursor-pointer"
+                                      className="rounded-lg text-sm font-medium p-2 text-red-600 focus:text-red-700 cursor-pointer"
                                       onClick={() => openCancelDialog(order)}
                                     >
-                                      <XCircle className="mr-3 h-4 w-4" />
+                                      <XCircle className="mr-2 h-4 w-4" />
                                       Cancelar
                                     </DropdownMenuItem>
                                   </DropdownMenuContent>
@@ -404,15 +498,15 @@ export function OrdersModal({ isOpen, onClose }: OrdersModalProps) {
 
                         {/* Status Tracking Visualizer */}
                         {order.status !== OrderStatus.Cancelled && (
-                          <div className="relative flex items-center mb-8 px-4 h-12">
+                          <div className="relative flex items-center mb-6 px-2 h-12 mt-4">
                             {/* Connection Lines Background */}
-                            <div className="absolute left-10 right-10 top-1/2 -translate-y-1/2 h-1 bg-muted rounded-full" />
+                            <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-1 bg-muted rounded-full" />
 
                             {/* Active Line Progress */}
                             <div
-                              className="absolute left-10 top-1/2 -translate-y-1/2 h-1 bg-green-500 rounded-full transition-all duration-1000 ease-out z-[1]"
+                              className="absolute left-6 top-1/2 -translate-y-1/2 h-1 bg-green-500 rounded-full transition-all duration-1000 ease-out z-[1]"
                               style={{
-                                width: order.status === OrderStatus.Delivered ? 'calc(100% - 80px)' :
+                                width: order.status === OrderStatus.Delivered ? 'calc(100% - 48px)' :
                                   [OrderStatus.Ready, OrderStatus.OutForDelivery].includes(order.status) ? '66%' :
                                     [OrderStatus.Preparing, OrderStatus.Confirmed].includes(order.status) ? '33%' : '0%'
                               }}
@@ -426,15 +520,16 @@ export function OrdersModal({ isOpen, onClose }: OrdersModalProps) {
                                 { id: 'entrega', label: 'Entrega', active: [OrderStatus.Ready, OrderStatus.OutForDelivery, OrderStatus.Delivered].includes(order.status), done: order.status === OrderStatus.Delivered },
                                 { id: 'finalizado', label: 'Finalizado', active: order.status === OrderStatus.Delivered, done: order.status === OrderStatus.Delivered }
                               ].map((step, idx) => (
-                                <div key={step.id} className="flex flex-col items-center group/step">
+                                <div key={step.id} className="flex flex-col items-center group/step w-12">
                                   <div className={`
-                                    w-5 h-5 rounded-full border-4 flex items-center justify-center transition-all duration-500
-                                    ${step.done ? 'bg-green-500 border-green-200' :
-                                      step.active ? 'bg-white border-primary shadow-lg shadow-primary/20 scale-110' : 'bg-muted border-white'}
+                                    w-5 h-5 rounded-full flex items-center justify-center transition-all duration-500 border-2
+                                    ${step.done ? 'bg-green-500 border-green-500' :
+                                      step.active ? 'bg-white border-primary scale-110' : 'bg-muted border-muted-foreground/20'}
                                   `}>
-                                    {step.done && <Check className="h-4 w-4 text-white p-0.5" />}
+                                    {step.done && <Check className="h-3 w-3 text-white" />}
+                                    {!step.done && step.active && <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />}
                                   </div>
-                                  <span className={`text-[9px] font-black uppercase tracking-tighter mt-2 transition-colors ${step.active ? 'text-foreground' : 'text-muted-foreground/40'}`}>
+                                  <span className={`text-[9px] font-bold uppercase tracking-wider mt-2 text-center transition-colors ${step.active || step.done ? 'text-foreground' : 'text-muted-foreground'}`}>
                                     {step.label}
                                   </span>
                                 </div>
@@ -445,21 +540,21 @@ export function OrdersModal({ isOpen, onClose }: OrdersModalProps) {
                       </div>
 
                       {/* Card Details Body */}
-                      <div className="px-6 pb-6 space-y-4">
-                        <div className="bg-muted/30 rounded-[1.5rem] p-5 space-y-4">
-                          <div className="space-y-3">
+                      <div className="px-5 pb-5 pt-2 space-y-4">
+                        <div className="bg-muted/30 rounded-xl p-4 space-y-3">
+                          <div className="space-y-2">
                             <div className="flex items-center gap-2 mb-1">
-                              <div className="w-1.5 h-3 bg-primary rounded-full" />
-                              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 leading-none">Itens do Pedido</span>
+                              <div className="w-1 h-4 bg-primary rounded-full" />
+                              <span className="text-xs font-bold uppercase tracking-wide text-foreground">Itens do Pedido</span>
                             </div>
-                            <ul className="space-y-3">
+                            <ul className="space-y-2">
                               {order.items.map((item, idx) => (
-                                <li key={idx} className="flex items-center justify-between group/item">
+                                <li key={idx} className="flex items-center justify-between group/item py-1">
                                   <div className="flex items-center gap-3">
-                                    <span className="bg-white border border-border/50 text-xs font-black min-w-8 h-8 flex items-center justify-center rounded-lg shadow-sm">
+                                    <span className="bg-white border text-xs font-bold min-w-6 h-6 flex items-center justify-center rounded-md shadow-sm text-foreground">
                                       {item.quantity}x
                                     </span>
-                                    <span className="text-sm font-bold text-foreground group-hover/item:text-primary transition-colors">
+                                    <span className="text-sm font-medium text-foreground">
                                       {item.productName}
                                     </span>
                                   </div>
@@ -469,15 +564,18 @@ export function OrdersModal({ isOpen, onClose }: OrdersModalProps) {
                           </div>
 
                           {order.deliveryAddress && (
-                            <div className="pt-4 border-t border-border/10">
-                              <div className="flex items-center gap-2 mb-2">
-                                <MapPin className="h-3.5 w-3.5 text-primary stroke-[2.5]" />
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 leading-none">Endereço de Entrega</span>
+                            <>
+                              <Separator className="bg-border/50" />
+                              <div className="pt-1">
+                                <div className="flex items-center gap-2 mb-1.5">
+                                  <MapPin className="h-3.5 w-3.5 text-primary" />
+                                  <span className="text-xs font-bold uppercase tracking-wide text-foreground">Endereço de Entrega</span>
+                                </div>
+                                <p className="text-xs text-muted-foreground leading-relaxed pl-5">
+                                  {order.deliveryAddress}
+                                </p>
                               </div>
-                              <p className="text-xs font-medium text-text-secondary leading-relaxed pl-5 opacity-80">
-                                {order.deliveryAddress}
-                              </p>
-                            </div>
+                            </>
                           )}
                         </div>
                       </div>

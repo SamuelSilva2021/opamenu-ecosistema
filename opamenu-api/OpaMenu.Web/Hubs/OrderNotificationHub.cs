@@ -78,7 +78,7 @@ public class OrderNotificationHub : Hub, IOrderNotificationHub
     /// <summary>
     /// Cliente se registra para receber atualizações de seu pedido específico
     /// </summary>
-    public async Task JoinOrderGroup(int orderId)
+    public async Task JoinOrderGroup(string orderId)
     {
         var connectionId = Context.ConnectionId;
         var groupName = $"Order_{orderId}";

@@ -15,6 +15,12 @@ export default defineConfig(({ mode }) => ({
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, '/api')
+      },
+      '/hubs': {
+        target: 'https://localhost:7243',
+        changeOrigin: true,
+        secure: false,
+        ws: true
       }
     }
   },
