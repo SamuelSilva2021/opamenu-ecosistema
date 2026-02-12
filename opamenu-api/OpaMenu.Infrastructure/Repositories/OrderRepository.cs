@@ -1,11 +1,12 @@
 using Microsoft.EntityFrameworkCore;
-using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Domain.Interfaces;
+using OpaMenu.Infrastructure.Repositories;
 using OpaMenu.Infrastructure.Shared.Data.Context;
 using OpaMenu.Infrastructure.Shared.Data.Context.Opamenu;
-using OpaMenu.Infrastructure.Repositories;
-using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
+using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
+using System.Drawing.Printing;
 
 namespace OpaMenu.Infrastructure.Repositories;
 
@@ -13,10 +14,10 @@ public class OrderRepository(OpamenuDbContext context) : OpamenuRepository<Order
 {
 
     /// <summary>
-    /// ObtÃ©m pedidos ativos que contÃªm um produto especÃ­fico
+    /// Obtém pedidos ativos que contêm um produto específico (filtra por status para evitar lixo de pedidos antigos)
     /// </summary>
     /// <param name="productId">ID do produto</param>
-    /// <returns>ColeÃ§Ã£o de pedidos ativos com o produto</returns>
+    /// <returns>Coleção de pedidos ativos</returns>
     public async Task<IEnumerable<OrderEntity>> GetActiveOrdersWithProductAsync(Guid productId)
     {
         return await _dbSet
@@ -29,7 +30,12 @@ public class OrderRepository(OpamenuDbContext context) : OpamenuRepository<Order
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync();
     }
-
+    /// <summary>
+    /// Obtém pedidos por ID do cliente e ID do tenant, ordenados por data de criação (mais recentes primeiro)
+    /// </summary>
+    /// <param name="tenantId"></param>
+    /// <param name="customerId"></param>
+    /// <returns></returns>
     public async Task<IEnumerable<OrderEntity>> GetByCustomerIdAndTenantIdAsync(Guid tenantId, Guid customerId)
     {
         return await _dbSet
