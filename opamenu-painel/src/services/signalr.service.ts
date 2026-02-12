@@ -100,7 +100,6 @@ class SignalRService {
       // Start the connection if it's disconnected
       if (this.connection.state === HubConnectionState.Disconnected) {
         await this.connection.start();
-        console.log("✅ SignalR Conectado com Sucesso!");
         await this.joinAdminGroup();
       }
 
