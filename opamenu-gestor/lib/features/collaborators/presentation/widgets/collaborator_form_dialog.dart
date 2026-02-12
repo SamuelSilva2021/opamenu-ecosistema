@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opamenu_gestor/core/theme/app_colors.dart';
 import 'package:opamenu_gestor/features/collaborators/domain/models/collaborator_model.dart';
 import 'package:opamenu_gestor/features/collaborators/presentation/providers/collaborators_provider.dart';
+import 'package:flutter/services.dart';
+import 'package:opamenu_gestor/core/utils/phone_utils.dart';
 
 class CollaboratorFormDialog extends ConsumerStatefulWidget {
   final CollaboratorModel? collaborator;
@@ -25,7 +27,7 @@ class _CollaboratorFormDialogState extends ConsumerState<CollaboratorFormDialog>
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.collaborator?.name);
-    _phoneController = TextEditingController(text: widget.collaborator?.phone);
+    _phoneController = TextEditingController(text: widget.collaborator?.phone != null ? PhoneUtils.formatDisplay(widget.collaborator!.phone!) : null);
     _roleController = TextEditingController(text: widget.collaborator?.role);
     _type = widget.collaborator?.type ?? 2;
     _isActive = widget.collaborator?.active ?? true;
@@ -43,7 +45,7 @@ class _CollaboratorFormDialogState extends ConsumerState<CollaboratorFormDialog>
     if (_formKey.currentState!.validate()) {
       final data = {
         'name': _nameController.text,
-        'phone': _phoneController.text,
+        'phone': PhoneUtils.sanitize(_phoneController.text),
         'role': _roleController.text,
         'type': _type,
         'active': _isActive,
@@ -110,6 +112,8 @@ class _CollaboratorFormDialogState extends ConsumerState<CollaboratorFormDialog>
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.phone_outlined),
                       ),
+                      keyboardType: TextInputType.phone,
+                      inputFormatters: [PhoneMaskTextInputFormatter()],
                     ),
                   ),
                   const SizedBox(width: 16),

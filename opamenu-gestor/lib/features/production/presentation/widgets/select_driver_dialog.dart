@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opamenu_gestor/features/collaborators/presentation/providers/collaborators_provider.dart';
 import 'package:opamenu_gestor/features/collaborators/domain/models/collaborator_model.dart';
+import 'package:opamenu_gestor/core/utils/phone_utils.dart';
 
 class SelectDriverDialog extends ConsumerStatefulWidget {
   const SelectDriverDialog({super.key});
@@ -89,7 +90,7 @@ class _SelectDriverDialogState extends ConsumerState<SelectDriverDialog> {
                         ),
                         title: Text(driver.name),
                         subtitle: Text(
-                          driver.typeLabel + (driver.phone != null ? ' • ${driver.phone}' : ''),
+                          driver.typeLabel + (driver.phone != null ? ' • ${PhoneUtils.formatDisplay(driver.phone!)}' : ''),
                           style: TextStyle(color: Colors.grey[600], fontSize: 12),
                         ),
                         trailing: isSelected 

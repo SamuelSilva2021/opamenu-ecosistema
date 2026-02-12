@@ -2,6 +2,7 @@ import 'package:esc_pos_utils_plus/esc_pos_utils.dart' as esc;
 import 'package:intl/intl.dart';
 import '../../features/pos/domain/models/order_response_dto.dart';
 import '../services/printer_service.dart';
+import 'phone_utils.dart';
 
 class ReceiptGenerator {
   static Future<List<int>> generateOrderReceipt({
@@ -25,7 +26,7 @@ class ReceiptGenerator {
       bytes += generator.text(restaurantAddress, styles: const esc.PosStyles(align: esc.PosAlign.center));
     }
     if (restaurantPhone != null && restaurantPhone.isNotEmpty) {
-      bytes += generator.text('Tel: $restaurantPhone', styles: const esc.PosStyles(align: esc.PosAlign.center));
+      bytes += generator.text('Tel: ${restaurantPhone}', styles: const esc.PosStyles(align: esc.PosAlign.center));
     }
     
     bytes += generator.text(order.isDelivery ? 'PEDIDO DELIVERY' : 'PEDIDO LOCAL',
@@ -42,7 +43,7 @@ class ReceiptGenerator {
 
     // Customer Info
     bytes += generator.text('Cliente: ${order.customerName}');
-    bytes += generator.text('Tel: ${order.customerPhone}');
+    bytes += generator.text('Tel: ${PhoneUtils.formatDisplay(order.customerPhone)}');
     if (order.isDelivery) {
       bytes += generator.text('End: ${order.deliveryAddress}');
     }

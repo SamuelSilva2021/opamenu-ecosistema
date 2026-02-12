@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/models/create_order_request_dto.dart';
 import '../../domain/enums/delivery_type.dart';
+import 'package:flutter/services.dart';
+import '../../../../core/utils/phone_utils.dart';
 import '../../../tables/presentation/controllers/tables_controller.dart';
 import '../../../tables/data/models/table_response_dto.dart';
 import '../providers/cart_notifier.dart';
@@ -42,7 +44,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     final state = ref.read(checkoutProvider);
     
     _nameController = TextEditingController(text: state.customerName);
-    _phoneController = TextEditingController(text: state.customerPhone);
+    _phoneController = TextEditingController(text: PhoneUtils.formatDisplay(state.customerPhone));
     _emailController = TextEditingController(text: state.customerEmail);
 
     _zipController = TextEditingController(text: state.address.zipCode);
@@ -183,9 +185,12 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                                   ? const SizedBox(width: 16, height: 16, child: Center(child: CircularProgressIndicator(strokeWidth: 2))) 
                                   : const Icon(Icons.search, color: Colors.grey),
                               onChanged: (v) => ref.read(checkoutProvider.notifier).updateCustomerInfo(phone: v),
+                              keyboardType: TextInputType.phone,
+                              inputFormatters: [PhoneMaskTextInputFormatter()],
                               validator: (v) {
                                 if (checkoutState.deliveryType == DeliveryType.table) return null;
-                                return (v == null || v.length < 10) ? 'Inválido' : null;
+                                final digits = v == null ? '' : PhoneUtils.sanitize(v);
+                                return (digits.length < 10 || digits.length > 11) ? 'Inválido' : null;
                               },
                             ),
                           ),
@@ -629,12 +634,16 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     String? Function(String?)? validator,
     Widget? suffixIcon,
     bool readOnly = false,
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return TextFormField(
       controller: controller,
       onChanged: onChanged,
       validator: validator,
       readOnly: readOnly,
+      keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
       decoration: InputDecoration(
         labelText: label,
         border: OutlineInputBorder(
