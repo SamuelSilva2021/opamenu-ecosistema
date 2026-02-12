@@ -39,6 +39,7 @@ OrderResponseDto _$OrderResponseDtoFromJson(Map<String, dynamic> json) =>
               )
               .toList() ??
           const [],
+      driverName: json['driverName'] as String?,
     );
 
 Map<String, dynamic> _$OrderResponseDtoToJson(
@@ -64,6 +65,7 @@ Map<String, dynamic> _$OrderResponseDtoToJson(
   'queuePosition': instance.queuePosition,
   'orderNumber': instance.orderNumber,
   'items': instance.items,
+  'driverName': instance.driverName,
 };
 
 const _$OrderStatusEnumMap = {

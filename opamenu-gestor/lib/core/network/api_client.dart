@@ -159,6 +159,6 @@ class AuthInterceptor extends Interceptor {
   Future<void> _handleLogout() async {
     const storage = FlutterSecureStorage();
     await storage.deleteAll();
-    _ref.invalidate(authProvider);
+    await _ref.read(authProvider.notifier).logout();
   }
 }

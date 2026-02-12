@@ -63,6 +63,37 @@ class ProductionCard extends ConsumerWidget {
                   ],
                 ),
               ),
+            // Exibir nome do entregador se disponível
+            if (order.driverName != null)
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.motorcycle, size: 14, color: Colors.blue),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        'Entregador: ${order.driverName}',
+                        style: const TextStyle(
+                          color: Colors.blue,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

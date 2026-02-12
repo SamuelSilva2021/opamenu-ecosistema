@@ -43,27 +43,43 @@ public class OrderRepository(OpamenuDbContext context) : OpamenuRepository<Order
     }
 
     /// <summary>
-    /// ObtÃ©m pedidos por status
+    /// Obtém pedidos por status (filtra apenas do dia atual se não for Pending)
     /// </summary>
     /// <param name="status">Status do pedido</param>
-    /// <returns>ColeÃ§Ã£o de pedidos com o status especificado</returns>
+    /// <returns>Coleção de pedidos com o status especificado</returns>
     public async Task<IEnumerable<OrderEntity>> GetOrdersByStatusAsync(EOrderStatus status)
     {
-        return await _dbSet
-            .Where(o => o.Status == status)
+        var query = _dbSet.Where(o => o.Status == status);
+
+        // Se o status for finalizado (Delivered/Cancelled/Rejected), filtra pelo dia atual
+        if (status == EOrderStatus.Delivered || status == EOrderStatus.Cancelled || status == EOrderStatus.Rejected)
+        {
+            var today = DateTime.UtcNow.Date;
+            query = query.Where(o => o.CreatedAt >= today);
+        }
+        
+        // Se for status de produção (Ready/Preparing), também foca no dia atual para evitar lixo antigo
+        if (status == EOrderStatus.Ready || status == EOrderStatus.Preparing || status == EOrderStatus.OutForDelivery)
+        {
+            var today = DateTime.UtcNow.Date;
+            query = query.Where(o => o.CreatedAt >= today);
+        }
+
+        return await query
             .Include(o => o.Items)
             .ThenInclude(i => i.Product)
             .Include(o => o.StatusHistory)
+            .Include(o => o.Driver) // Inclui dados do Colaborador
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync();
     }
     
     /// <summary>
-    /// ObtÃ©m pedidos de um perÃ­odo especÃ­fico
+    /// Obtém pedidos por período de criação
     /// </summary>
     /// <param name="startDate">Data inicial</param>
     /// <param name="endDate">Data final</param>
-    /// <returns>ColeÃ§Ã£o de pedidos do perÃ­odo</returns>
+    /// <returns>Coleção de pedidos do período</returns>    
     public async Task<IEnumerable<OrderEntity>> GetOrdersByDateRangeAsync(Guid tenantId, DateTime startDate, DateTime endDate)
     {
         return await _dbSet
@@ -78,10 +94,10 @@ public class OrderRepository(OpamenuDbContext context) : OpamenuRepository<Order
     }
     
     /// <summary>
-    /// ObtÃ©m pedidos ativos que contÃªm um ProductAditionalGroup especÃ­fico
+    /// Obtém pedidos ativos que contêm um ProductAditionalGroup específico
     /// </summary>
     /// <param name="productAditionalGroupId">ID do ProductAditionalGroup</param>
-    /// <returns>ColeÃ§Ã£o de pedidos ativos com o ProductAditionalGroup</returns>
+    /// <returns>Coleção de pedidos ativos com o ProductAditionalGroup</returns>    
     public async Task<IEnumerable<OrderEntity>> GetActiveOrdersWithProductAditionalGroupAsync(Guid productAditionalGroupId)
     {
         return await _dbSet
@@ -112,7 +128,7 @@ public class OrderRepository(OpamenuDbContext context) : OpamenuRepository<Order
             .ToListAsync();
     }
 
-    public async Task<int?> GetLastOrderNumberAsync(Guid tenantId, DateTime date)
+    public static async Task<int?> GetLastOrderNumberAsync(Guid tenantId, DateTime date)
     {
         return await _dbSet
             .Where(o => o.TenantId == tenantId && 

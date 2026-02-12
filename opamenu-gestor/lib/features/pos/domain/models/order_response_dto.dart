@@ -26,6 +26,7 @@ class OrderResponseDto {
   final int queuePosition;
   final int? orderNumber;
   final List<OrderItemResponseDto> items;
+  final String? driverName;
 
   OrderResponseDto({
     required this.id,
@@ -48,6 +49,7 @@ class OrderResponseDto {
     required this.queuePosition,
     this.orderNumber,
     this.items = const [],
+    this.driverName,
   });
 
   factory OrderResponseDto.fromJson(Map<String, dynamic> json) =>
@@ -76,6 +78,7 @@ class OrderResponseDto {
     int? queuePosition,
     int? orderNumber,
     List<OrderItemResponseDto>? items,
+    String? driverName,
   }) {
     return OrderResponseDto(
       id: id ?? this.id,
@@ -98,6 +101,7 @@ class OrderResponseDto {
       queuePosition: queuePosition ?? this.queuePosition,
       orderNumber: orderNumber ?? this.orderNumber,
       items: items ?? this.items,
+      driverName: driverName ?? this.driverName,
     );
   }
 }

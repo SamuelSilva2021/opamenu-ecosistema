@@ -69,3 +69,24 @@ Garantir a estabilidade do sistema antes da escala.
 1.  **Prioridade 1**: Refinar o fluxo de **Delivery** (Endereços, Taxas Dinâmicas).
 2.  **Prioridade 2**: Implementar sistema de **Notificações em Tempo Real** para novos pedidos.
 3.  **Prioridade 3**: Escrever testes automatizados para os fluxos críticos (PDV e KDS).
+
+---
+
+## Insights para Implementação Futura (Backlog)
+
+### 1. Dashboard Financeiro (Caixa)
+- [ ] Implementar aba específica para **Controle de Caixa**.
+- [ ] Exibir dados consolidados por período (dia, semana, mês).
+- [ ] Visualização de entradas, saídas e saldo.
+
+### 2. Regras de Negócio
+- [ ] **Bloqueio de Pedidos**: Impedir abertura de novos pedidos quando o status da loja for "Fechado".
+
+### 3. Controle de Estoque Avançado
+Funcionalidade opcional para clientes que desejam gestão detalhada.
+
+- [ ] **Configuração de Estoque**: Flag no cadastro da empresa/configurações para ativar/desativar o módulo.
+    - *Caso desativado*: Segue o padrão atual de cadastro de produtos simples.
+    - *Caso ativado*: Habilita as funções abaixo.
+- [ ] **Integração Produção e Vendas**: Baixa automática de estoque ao realizar vendas.
+- [ ] **Ficha Técnica**: Possibilidade de "montar" produtos compostos por itens de estoque (ex: Hambúrguer = 1 Pão + 1 Carne + 1 Queijo).
