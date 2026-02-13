@@ -1,4 +1,5 @@
-using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OpaMenu.Domain.Interfaces;
@@ -11,9 +12,11 @@ namespace OpaMenu.Infrastructure.Repositories;
 
 public class LoyaltyProgramRepository(OpamenuDbContext context) : OpamenuRepository<LoyaltyProgramEntity>(context), ILoyaltyProgramRepository
 {
-    public async Task<LoyaltyProgramEntity?> GetByTenantIdAsync(Guid tenantId)
+    public async Task<IEnumerable<LoyaltyProgramEntity>> GetByTenantIdAsync(Guid tenantId)
     {
         return await _dbSet
-            .FirstOrDefaultAsync(p => p.TenantId == tenantId);
+            .Include(p => p.Filters)
+            .Where(p => p.TenantId == tenantId)
+            .ToListAsync();
     }
 }

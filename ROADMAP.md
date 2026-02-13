@@ -26,6 +26,7 @@ Este roadmap foca em transformar o OpaMenu em um competidor de elite, priorizand
 - [ ] **Cálculo Dinâmico de Frete:** Integração com Google Maps para cobrar por distância real, não apenas por bairro.
 - [ ] **Painel de Desempenho (Lojista):** Dashboard no App Gestor com faturamento por período e itens mais vendidos.
 - [ ] **Gestão de Entregadores:** Módulo no Gestor para associar pedidos a entregadores específicos e rastrear entregas.
+- [x] **Programa de Fidelidade v2:** Engine flexível com suporte a itens, categorias e múltiplos programas ativos. [Ver Documentação](DOCS_LOYALTY_V2.md)
 - [ ] **Promoções Direcionadas:** Sistema para enviar cupons via WhatsApp para clientes que não compram há mais de 15 dias.
 
 ---

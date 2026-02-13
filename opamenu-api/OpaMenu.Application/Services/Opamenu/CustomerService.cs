@@ -15,7 +15,8 @@ namespace OpaMenu.Application.Services.Opamenu
         ITenantCustomerRepository tenantCustomerRepository,
         ICurrentUserService currentUserService,
         IMapper mapper,
-        ITenantRepository tenantRepository
+        ITenantRepository tenantRepository,
+        ICustomerLoyaltyRepository customerLoyaltyRepository
         ) : ICustomerService
     {
         private readonly ICustomerRepository _customerRepository = customerRepository;
@@ -23,6 +24,7 @@ namespace OpaMenu.Application.Services.Opamenu
         private readonly ITenantCustomerRepository _tenantCustomerRepository = tenantCustomerRepository;
         private readonly IMapper _mapper = mapper;
         private readonly ITenantRepository _tenantRepository = tenantRepository;
+        private readonly ICustomerLoyaltyRepository _customerLoyaltyRepository = customerLoyaltyRepository;
 
         public async Task<ResponseDTO<CustomerResponseDto?>> CreatePublicCustomerAsync(CreateCustomerRequestDto request, string slug)
         {
@@ -38,6 +40,8 @@ namespace OpaMenu.Application.Services.Opamenu
                 if (existingTenantCustomer != null)
                 {
                     var existingCustomerDto = _mapper.Map<CustomerResponseDto>(existingTenantCustomer.Customer);
+                    var loyaltyBalance = await _customerLoyaltyRepository.GetByCustomerAndTenantAsync(existingTenantCustomer.Customer.Id, tenant.Id);
+                    existingCustomerDto.LoyaltyBalance = loyaltyBalance?.Balance ?? 0;
                     return StaticResponseBuilder<CustomerResponseDto?>.BuildOk(existingCustomerDto);
                 }
                 var customerEntity = _mapper.Map<CustomerEntity>(request);
@@ -49,6 +53,7 @@ namespace OpaMenu.Application.Services.Opamenu
                 };
                 await _tenantCustomerRepository.CreateAsync(tenantCustomerEntity);
                 var customerDto = _mapper.Map<CustomerResponseDto>(createdCustomer);
+                customerDto.LoyaltyBalance = 0; // Novo cliente
                 return StaticResponseBuilder<CustomerResponseDto?>.BuildCreated( customerDto );
 
             }
@@ -138,6 +143,11 @@ namespace OpaMenu.Application.Services.Opamenu
                     return StaticResponseBuilder<CustomerResponseDto?>.BuildNotFound(null);
 
                 var customerDto = _mapper.Map<CustomerResponseDto>(tenantCustomer.Customer);
+                
+                // Buscar saldo de fidelidade
+                var loyaltyBalance = await _customerLoyaltyRepository.GetByCustomerAndTenantAsync(tenantCustomer.Customer.Id, tenant.Id);
+                customerDto.LoyaltyBalance = loyaltyBalance?.Balance ?? 0;
+
                 return StaticResponseBuilder<CustomerResponseDto?>.BuildOk( customerDto );
             }
             catch (Exception ex)

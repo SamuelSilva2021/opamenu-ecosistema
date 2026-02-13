@@ -228,7 +228,7 @@ const StorefrontContent = () => {
           {/* Mobile Loyalty Card */}
           <div className="lg:hidden">
             {tenantBusiness?.loyaltyProgram?.isActive && (
-              <LoyaltyCard program={tenantBusiness.loyaltyProgram} />
+              <LoyaltyCard program={tenantBusiness.loyaltyProgram} customer={customer} />
             )}
           </div>
 
@@ -377,7 +377,7 @@ const StorefrontContent = () => {
         <div className="hidden lg:block space-y-6">
           <div className="sticky top-4 space-y-6">
             {tenantBusiness?.loyaltyProgram?.isActive && (
-              <LoyaltyCard program={tenantBusiness.loyaltyProgram} />
+              <LoyaltyCard program={tenantBusiness.loyaltyProgram} customer={customer} />
             )}
             {tenantBusiness && customer && customer.street && (
               <DeliveryInfo tenant={tenantBusiness} customer={customer} />

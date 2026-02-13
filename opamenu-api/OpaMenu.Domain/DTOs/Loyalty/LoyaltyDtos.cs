@@ -1,5 +1,4 @@
-using System;
-using System.Collections.Generic;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Domain.DTOs.Loyalty;
 
@@ -13,6 +12,11 @@ public class LoyaltyProgramDto
     public decimal MinOrderValue { get; set; }
     public int? PointsValidityDays { get; set; }
     public bool IsActive { get; set; }
+    public ELoyaltyProgramType Type { get; set; }
+    public int? TargetCount { get; set; }
+    public ELoyaltyRewardType? RewardType { get; set; }
+    public decimal? RewardValue { get; set; }
+    public List<LoyaltyProgramFilterDto> Filters { get; set; } = new();
 }
 
 public class CreateLoyaltyProgramDto
@@ -24,6 +28,17 @@ public class CreateLoyaltyProgramDto
     public decimal MinOrderValue { get; set; } = 0m;
     public int? PointsValidityDays { get; set; }
     public bool IsActive { get; set; } = true;
+    public ELoyaltyProgramType Type { get; set; } = ELoyaltyProgramType.PointsPerValue;
+    public int? TargetCount { get; set; }
+    public ELoyaltyRewardType? RewardType { get; set; }
+    public decimal? RewardValue { get; set; }
+    public List<LoyaltyProgramFilterDto> Filters { get; set; } = new();
+}
+
+public class LoyaltyProgramFilterDto
+{
+    public Guid? ProductId { get; set; }
+    public Guid? CategoryId { get; set; }
 }
 
 public class CustomerLoyaltySummaryDto

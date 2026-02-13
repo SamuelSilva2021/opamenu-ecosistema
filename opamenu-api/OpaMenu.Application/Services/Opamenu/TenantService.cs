@@ -1,3 +1,4 @@
+using System.Linq;
 using AutoMapper;
 using OpaMenu.Application.Services.Interfaces.Opamenu;
 using OpaMenu.Commons.Api.Commons;
@@ -17,7 +18,9 @@ public class TenantService(ITenantRepository tenantRepository, ILoyaltyProgramRe
 
         var dto = mapper.Map<TenantBusinessResponseDto>(tenant);
 
-        var loyaltyProgram = await loyaltyProgramRepository.GetByTenantIdAsync(tenant.Id);
+        var programs = await loyaltyProgramRepository.GetByTenantIdAsync(tenant.Id);
+        var loyaltyProgram = programs.FirstOrDefault();
+
         if (loyaltyProgram != null && loyaltyProgram.IsActive)
         {
             dto = dto with { LoyaltyProgram = new LoyaltyProgramDto

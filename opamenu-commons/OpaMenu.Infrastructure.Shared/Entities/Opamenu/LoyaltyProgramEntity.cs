@@ -1,3 +1,5 @@
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -32,4 +34,20 @@ public class LoyaltyProgramEntity : BaseEntity
     [Required]
     [Column("is_active")]
     public bool IsActive { get; set; } = true;
+
+    [Required]
+    [Column("type")]
+    public ELoyaltyProgramType Type { get; set; } = ELoyaltyProgramType.PointsPerValue;
+
+    [Column("target_count")]
+    public int? TargetCount { get; set; }
+
+    [Column("reward_type")]
+    public ELoyaltyRewardType? RewardType { get; set; }
+
+    [Column("reward_value", TypeName = "decimal(10,2)")]
+    public decimal? RewardValue { get; set; }
+
+    // Navigation properties
+    public virtual ICollection<LoyaltyProgramFilterEntity> Filters { get; set; } = new List<LoyaltyProgramFilterEntity>();
 }

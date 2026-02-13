@@ -29,6 +29,7 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
     public DbSet<CustomerEntity> Customers { get; set; }
     public DbSet<TableEntity> Tables { get; set; }
     public DbSet<LoyaltyProgramEntity> LoyaltyPrograms { get; set; }
+    public DbSet<LoyaltyProgramFilterEntity> LoyaltyProgramFilters { get; set; }
     public DbSet<LoyaltyTransactionEntity> LoyaltyTransactions { get; set; }
     public DbSet<CustomerLoyaltyBalanceEntity> CustomerLoyaltyBalances { get; set; }
     public DbSet<CollaboratorEntity> Collaborators { get; set; }
@@ -390,15 +391,30 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
         // Loyalty Program configuration
         modelBuilder.Entity<LoyaltyProgramEntity>(entity =>
         {
+            // Múltiplos programas por Tenant
+            entity.HasIndex(e => e.TenantId);
+
+            entity.HasMany(e => e.Filters)
+                .WithOne(f => f.LoyaltyProgram)
+                .HasForeignKey(f => f.LoyaltyProgramId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Loyalty Program Filter configuration
+        modelBuilder.Entity<LoyaltyProgramFilterEntity>(entity =>
+        {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.Description).HasMaxLength(500);
-            entity.Property(e => e.PointsPerCurrency).HasPrecision(10, 2).IsRequired();
-            entity.Property(e => e.CurrencyValue).HasPrecision(10, 2).IsRequired();
-            entity.Property(e => e.MinOrderValue).HasPrecision(10, 2).IsRequired();
-            
-            // Um programa por Tenant
-            entity.HasIndex(e => e.TenantId).IsUnique();
+            entity.HasOne(e => e.Product)
+                .WithMany()
+                .HasForeignKey(e => e.ProductId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.Category)
+                .WithMany()
+                .HasForeignKey(e => e.CategoryId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(e => e.LoyaltyProgramId);
         });
 
         // Customer Loyalty Balance configuration

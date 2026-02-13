@@ -13,6 +13,8 @@ using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 using OpaMenu.Web.Models.DTOs;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace OpaMenu.Application.Services.Opamenu;
@@ -361,7 +363,9 @@ public class OrderService(
                     // Processar Fidelidade (Cálculo e Validação)
                     if (requestDto.LoyaltyPointsUsed.HasValue && requestDto.LoyaltyPointsUsed > 0)
                     {
-                        var program = await _loyaltyProgramRepository.GetByTenantIdAsync(tenantId);
+                        var programs = await _loyaltyProgramRepository.GetByTenantIdAsync(tenantId);
+                        var program = programs.FirstOrDefault();
+
                         if (program != null && program.IsActive)
                         {
                             if (order.Subtotal >= program.MinOrderValue)
@@ -624,9 +628,11 @@ public class OrderService(
                     }
 
                     // Processar Fidelidade (Cálculo e Validação)
-                    if (requestDto.LoyaltyPointsUsed.HasValue && requestDto.LoyaltyPointsUsed > 0)
+                    if (requestDto.LoyaltyPointsUsed.HasValue && requestDto.LoyaltyPointsUsed > 0) 
                     {
-                        var program = await _loyaltyProgramRepository.GetByTenantIdAsync(tenant.Id);
+                        var programs = await _loyaltyProgramRepository.GetByTenantIdAsync(tenant.Id);
+                        var program = programs.FirstOrDefault();
+
                         if (program != null && program.IsActive)
                         {
                             if (order.Subtotal >= program.MinOrderValue)

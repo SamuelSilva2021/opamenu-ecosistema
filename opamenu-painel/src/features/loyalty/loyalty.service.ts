@@ -14,6 +14,11 @@ export const loyaltyService = {
     }
   },
 
+  getPrograms: async (): Promise<LoyaltyProgram[]> => {
+    const response = await api.get<LoyaltyProgram[]>("/loyalty/programs");
+    return response.data;
+  },
+
   createProgram: async (data: CreateLoyaltyProgramRequest): Promise<LoyaltyProgram> => {
     const response = await api.post<LoyaltyProgram>("/loyalty/program", data);
     return response.data;
@@ -26,5 +31,9 @@ export const loyaltyService = {
 
   toggleStatus: async (id: string, status: boolean): Promise<void> => {
     await api.patch(`/loyalty/program/${id}/toggle-status?status=${status}`);
+  },
+
+  deleteProgram: async (id: string): Promise<void> => {
+    await api.delete(`/loyalty/program/${id}`);
   }
 };

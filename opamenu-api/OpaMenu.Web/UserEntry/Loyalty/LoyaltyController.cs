@@ -40,6 +40,22 @@ public class LoyaltyController(
     }
 
     /// <summary>
+    /// Obtém todos os programas de fidelidade do tenant atual
+    /// </summary>
+    [HttpGet("programs")]
+    [Authorize]
+    [MapPermission(MODULE_LOYALTY, OPERATION_SELECT)]
+    public async Task<ActionResult<ResponseDTO<IEnumerable<LoyaltyProgramDto>>>> GetAllPrograms()
+    {
+        var tenantId = _currentUserService.GetTenantGuid();
+        if (!tenantId.HasValue)
+            return Unauthorized();
+
+        var response = await _loyaltyService.GetAllProgramsAsync(tenantId.Value);
+        return BuildResponse(response);
+    }
+
+    /// <summary>
     /// Cria ou atualiza o programa de fidelidade
     /// </summary>
     [HttpPost("program")]
@@ -80,6 +96,18 @@ public class LoyaltyController(
         if (!tenantId.HasValue)
             return Unauthorized();
         var response = await _loyaltyService.ToggleStatus(tenantId.Value, id, status);
+        return BuildResponse(response);
+    }
+
+    [HttpDelete("program/{id}")]
+    [Authorize]
+    [MapPermission(MODULE_LOYALTY, OPERATION_DELETE)]
+    public async Task<ActionResult> DeleteProgram(Guid id)
+    {
+        var tenantId = _currentUserService.GetTenantGuid();
+        if (!tenantId.HasValue)
+            return Unauthorized();
+        var response = await _loyaltyService.DeleteProgramAsync(tenantId.Value, id);
         return BuildResponse(response);
     }
 

@@ -55,7 +55,9 @@ namespace OpaMenu.Application.Services.Opamenu
                     if (pixConfig != null && pixConfig.IsActive)
                         tenantBusinness = tenantBusinness with { PixIntegration = true };
 
-                    var loyaltyProgram = await _loyaltyProgramRepository.GetByTenantIdAsync(tenantId);
+                    var programs = await _loyaltyProgramRepository.GetByTenantIdAsync(tenantId);
+                    var loyaltyProgram = programs.FirstOrDefault();
+
                     if (loyaltyProgram != null && loyaltyProgram.IsActive)
                     {
                         tenantBusinness = tenantBusinness with

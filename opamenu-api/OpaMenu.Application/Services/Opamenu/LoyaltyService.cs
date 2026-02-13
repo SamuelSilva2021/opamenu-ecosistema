@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using OpaMenu.Application.Services.Interfaces.Opamenu;
@@ -6,7 +8,6 @@ using OpaMenu.Commons.Api.Commons;
 using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Domain.DTOs.Loyalty;
 using OpaMenu.Domain.Interfaces;
-using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
@@ -30,21 +31,12 @@ public class LoyaltyService(
     {
         try
         {
-            var program = await _loyaltyProgramRepository.GetByTenantIdAsync(tenantId);
+            var programs = await _loyaltyProgramRepository.GetByTenantIdAsync(tenantId);
+            var program = programs.FirstOrDefault();
             if (program == null)
                 return StaticResponseBuilder<LoyaltyProgramDto>.BuildOk(null!);
 
-            return StaticResponseBuilder<LoyaltyProgramDto>.BuildOk(new LoyaltyProgramDto
-            {
-                Id = program.Id,
-                Name = program.Name,
-                Description = program.Description,
-                PointsPerCurrency = program.PointsPerCurrency,
-                CurrencyValue = program.CurrencyValue,
-                MinOrderValue = program.MinOrderValue,
-                PointsValidityDays = program.PointsValidityDays,
-                IsActive = program.IsActive
-            });
+            return StaticResponseBuilder<LoyaltyProgramDto>.BuildOk(MapToDto(program));
         }
         catch (Exception ex)
         {
@@ -53,11 +45,37 @@ public class LoyaltyService(
         }
     }
 
+    public async Task<ResponseDTO<IEnumerable<LoyaltyProgramDto>>> GetAllProgramsAsync(Guid tenantId)
+    {
+        try
+        {
+            var programs = await _loyaltyProgramRepository.GetByTenantIdAsync(tenantId);
+            return StaticResponseBuilder<IEnumerable<LoyaltyProgramDto>>.BuildOk(programs.Select(MapToDto));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao obter programas de fidelidade");
+            return StaticResponseBuilder<IEnumerable<LoyaltyProgramDto>>.BuildError("Erro ao obter lista de programas");
+        }
+    }
+
     public async Task<ResponseDTO<LoyaltyProgramDto>> UpsertProgramAsync(Guid tenantId, CreateLoyaltyProgramDto dto)
     {
         try
         {
-            var program = await _loyaltyProgramRepository.GetByTenantIdAsync(tenantId);
+            var programs = await _loyaltyProgramRepository.GetByTenantIdAsync(tenantId);
+            LoyaltyProgramEntity? program = null;
+            
+            // Se for uma atualização (contém ID ou buscamos pelo primeiro existente para compatibilidade v1)
+            // No futuro o Painel passará o ID para edição de programas específicos.
+            // Para Phase 4, se o Painel não enviar ID, criamos um NOVO.
+            // Mas para manter compatibilidade com a migração, vamos buscar se o usuário enviou um ID.
+            
+            // Nota: CreateLoyaltyProgramDto ainda não tem Id, mas podemos usar um UpdateLoyaltyProgramDto se necessário.
+            // Por enquanto, se houver um programa e o nome for igual, atualizamos. Senão, criamos.
+            // Para simplificar a Fase 4, vamos sempre criar se for um Post novo, ou atualizar se houver lógica de ID.
+            
+            program = programs.FirstOrDefault(); // Lógica V1: atualiza o primeiro.
 
             if (program == null)
             {
@@ -70,7 +88,16 @@ public class LoyaltyService(
                     CurrencyValue = dto.CurrencyValue,
                     MinOrderValue = dto.MinOrderValue,
                     PointsValidityDays = dto.PointsValidityDays,
-                    IsActive = dto.IsActive
+                    IsActive = dto.IsActive,
+                    Type = dto.Type,
+                    TargetCount = dto.TargetCount,
+                    RewardType = dto.RewardType,
+                    RewardValue = dto.RewardValue,
+                    Filters = dto.Filters.Select(f => new LoyaltyProgramFilterEntity
+                    {
+                        ProductId = f.ProductId,
+                        CategoryId = f.CategoryId
+                    }).ToList()
                 };
                 await _loyaltyProgramRepository.AddAsync(program);
             }
@@ -83,21 +110,28 @@ public class LoyaltyService(
                 program.MinOrderValue = dto.MinOrderValue;
                 program.PointsValidityDays = dto.PointsValidityDays;
                 program.IsActive = dto.IsActive;
+                program.Type = dto.Type;
+                program.TargetCount = dto.TargetCount;
+                program.RewardType = dto.RewardType;
+                program.RewardValue = dto.RewardValue;
                 program.UpdatedAt = DateTime.UtcNow;
+
+                // Atualizar Filtros
+                program.Filters.Clear();
+                foreach (var filterDto in dto.Filters)
+                {
+                    program.Filters.Add(new LoyaltyProgramFilterEntity
+                    {
+                        LoyaltyProgramId = program.Id,
+                        ProductId = filterDto.ProductId,
+                        CategoryId = filterDto.CategoryId
+                    });
+                }
+
                 await _loyaltyProgramRepository.UpdateAsync(program);
             }
 
-            return StaticResponseBuilder<LoyaltyProgramDto>.BuildOk(new LoyaltyProgramDto
-            {
-                Id = program.Id,
-                Name = program.Name,
-                Description = program.Description,
-                PointsPerCurrency = program.PointsPerCurrency,
-                CurrencyValue = program.CurrencyValue,
-                MinOrderValue = program.MinOrderValue,
-                PointsValidityDays = program.PointsValidityDays,
-                IsActive = program.IsActive
-            });
+            return StaticResponseBuilder<LoyaltyProgramDto>.BuildOk(MapToDto(program));
         }
         catch (Exception ex)
         {
@@ -110,29 +144,19 @@ public class LoyaltyService(
     {
         try
         {
-            // Busca cliente pelo telefone e tenant
             var customer = await _customerRepository.GetByPhoneAsync(tenantId, customerPhone);
             if (customer == null)
                 return StaticResponseBuilder<CustomerLoyaltySummaryDto>.BuildNotFound(null!);
 
             var balance = await _customerLoyaltyRepository.GetByCustomerAndTenantAsync(customer.Id, tenantId);
-            var program = await _loyaltyProgramRepository.GetByTenantIdAsync(tenantId);
+            var programs = await _loyaltyProgramRepository.GetByTenantIdAsync(tenantId);
+            var program = programs.FirstOrDefault();
 
             return StaticResponseBuilder<CustomerLoyaltySummaryDto>.BuildOk(new CustomerLoyaltySummaryDto
             {
                 Balance = balance?.Balance ?? 0,
                 TotalEarned = balance?.TotalEarned ?? 0,
-                Program = program != null ? new LoyaltyProgramDto
-                {
-                    Id = program.Id,
-                    Name = program.Name,
-                    Description = program.Description,
-                    PointsPerCurrency = program.PointsPerCurrency,
-                    CurrencyValue = program.CurrencyValue,
-                    MinOrderValue = program.MinOrderValue,
-                    PointsValidityDays = program.PointsValidityDays,
-                    IsActive = program.IsActive
-                } : null
+                Program = program != null ? MapToDto(program) : null
             });
         }
         catch (Exception ex)
@@ -148,18 +172,12 @@ public class LoyaltyService(
         {
             var order = await _orderRepository.GetByIdAsync(orderId, tenantId);
             if (order == null) return;
-            var program = await _loyaltyProgramRepository.GetByTenantIdAsync(tenantId);
+            var programs = await _loyaltyProgramRepository.GetByTenantIdAsync(tenantId);
 
-            // Regras básicas: Programa existe, está ativo, e pedido atinge valor mínimo
-            if (program == null || !program.IsActive || order.Total < program.MinOrderValue) return;
+            var activePrograms = programs.Where(p => p.IsActive).ToList();
+            if (!activePrograms.Any()) return;
 
-            // Calcula pontos
-            int pointsToEarn = (int)Math.Floor(order.Total * program.PointsPerCurrency);
-            if (pointsToEarn <= 0) return;
-
-            // Busca saldo
             var balance = await _customerLoyaltyRepository.GetByCustomerAndTenantAsync(order.CustomerId, tenantId);
-
             if (balance == null)
             {
                 balance = new CustomerLoyaltyBalanceEntity
@@ -170,37 +188,70 @@ public class LoyaltyService(
                     TotalEarned = 0
                 };
                 await _customerLoyaltyRepository.AddAsync(balance);
-                // Precisa salvar para gerar ID se for Identity, mas EF Core gerencia tracking.
-                // Como CustomerLoyaltyRepository usa UnitOfWork implícito via contexto compartilhado, ok.
             }
 
-            // Cria transação
-            var transaction = new LoyaltyTransactionEntity
+            int totalPointsInOrder = 0;
+
+            foreach (var program in activePrograms)
             {
-                CustomerLoyaltyBalanceId = balance.Id, // EF Core vai resolver isso se balance for tracked
-                CustomerLoyaltyBalance = balance, // Vínculo direto
-                OrderId = order.Id,
-                Points = pointsToEarn,
-                Type = ELoyaltyTransactionType.Earn,
-                Description = $"Pontos do pedido #{order.Id}",
-                ExpiresAt = program.PointsValidityDays.HasValue 
-                    ? DateTime.UtcNow.AddDays(program.PointsValidityDays.Value) 
-                    : null
-            };
+                if (order.Total < program.MinOrderValue) continue;
 
-            await _customerLoyaltyRepository.AddTransactionAsync(transaction);
+                int pointsToEarn = 0;
+                string description = string.Empty;
 
-            // Atualiza saldo
-            balance.Balance += pointsToEarn;
-            balance.TotalEarned += pointsToEarn;
-            balance.LastActivityAt = DateTime.UtcNow;
+                if (program.Type == ELoyaltyProgramType.PointsPerValue)
+                {
+                    pointsToEarn = (int)Math.Floor(order.Total * program.PointsPerCurrency);
+                    description = $"Pontos do pedido #{order.Id} ({program.Name})";
+                }
+                else if (program.Type == ELoyaltyProgramType.OrderCount)
+                {
+                    pointsToEarn = 1;
+                    description = $"Contagem de pedido #{order.Id} ({program.Name})";
+                }
+                else if (program.Type == ELoyaltyProgramType.ItemCount)
+                {
+                    var eligibleItems = order.Items.Where(item => 
+                        program.Filters.Any(f => 
+                            (f.ProductId.HasValue && f.ProductId == item.ProductId) || 
+                            (f.CategoryId.HasValue && item.Product != null && item.Product.CategoryId == f.CategoryId)
+                        )
+                    );
 
-            await _customerLoyaltyRepository.UpdateAsync(balance);
+                    pointsToEarn = eligibleItems.Sum(i => i.Quantity);
+                    description = $"Contagem de itens do pedido #{order.Id} ({program.Name})";
+                }
+
+                if (pointsToEarn <= 0) continue;
+
+                var transaction = new LoyaltyTransactionEntity
+                {
+                    CustomerLoyaltyBalanceId = balance.Id,
+                    CustomerLoyaltyBalance = balance,
+                    OrderId = order.Id,
+                    Points = pointsToEarn,
+                    Type = ELoyaltyTransactionType.Earn,
+                    Description = description,
+                    ExpiresAt = program.PointsValidityDays.HasValue
+                        ? DateTime.UtcNow.AddDays(program.PointsValidityDays.Value)
+                        : null
+                };
+
+                await _customerLoyaltyRepository.AddTransactionAsync(transaction);
+                totalPointsInOrder += pointsToEarn;
+            }
+
+            if (totalPointsInOrder > 0)
+            {
+                balance.Balance += totalPointsInOrder;
+                balance.TotalEarned += totalPointsInOrder;
+                balance.LastActivityAt = DateTime.UtcNow;
+                await _customerLoyaltyRepository.UpdateAsync(balance);
+            }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao processar pontos para o pedido {OrderId}", orderId);
-            // Não relança exceção para não bloquear o fluxo do pedido
+            _logger.LogError(ex, "Erro ao processar fidelidade para o pedido {OrderId}", orderId);
         }
     }
 
@@ -208,7 +259,8 @@ public class LoyaltyService(
     {
         try
         {
-            var program = await _loyaltyProgramRepository.FirstOrDefaultAsync(p => p.TenantId == tenantId && p.Id == id);
+            var programs = await _loyaltyProgramRepository.GetByTenantIdAsync(tenantId);
+            var program = programs.FirstOrDefault(p => p.Id == id);
 
             if (program == null)
                 return StaticResponseBuilder<LoyaltyProgramDto>.BuildNotFound(null!);
@@ -216,22 +268,56 @@ public class LoyaltyService(
             program.IsActive = status;
             program.UpdatedAt = DateTime.UtcNow;
             await _loyaltyProgramRepository.UpdateAsync(program);
-            return StaticResponseBuilder<LoyaltyProgramDto>.BuildOk(new LoyaltyProgramDto
-            {
-                Id = program.Id,
-                Name = program.Name,
-                Description = program.Description,
-                PointsPerCurrency = program.PointsPerCurrency,
-                CurrencyValue = program.CurrencyValue,
-                MinOrderValue = program.MinOrderValue,
-                PointsValidityDays = program.PointsValidityDays,
-                IsActive = program.IsActive
-            });
+            return StaticResponseBuilder<LoyaltyProgramDto>.BuildOk(MapToDto(program));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao alterar status do programa de fidelidade");
             return StaticResponseBuilder<LoyaltyProgramDto>.BuildError("Erro ao alterar status do programa");
         }
+    }
+
+    public async Task<ResponseDTO<bool>> DeleteProgramAsync(Guid tenantId, Guid id)
+    {
+        try
+        {
+            var programs = await _loyaltyProgramRepository.GetByTenantIdAsync(tenantId);
+            var program = programs.FirstOrDefault(p => p.Id == id);
+
+            if (program == null)
+                return StaticResponseBuilder<bool>.BuildNotFound(false);
+
+            await _loyaltyProgramRepository.DeleteAsync(program);
+            return StaticResponseBuilder<bool>.BuildOk(true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao excluir programa de fidelidade");
+            return StaticResponseBuilder<bool>.BuildError("Erro ao excluir programa");
+        }
+    }
+
+    private LoyaltyProgramDto MapToDto(LoyaltyProgramEntity program)
+    {
+        return new LoyaltyProgramDto
+        {
+            Id = program.Id,
+            Name = program.Name,
+            Description = program.Description,
+            PointsPerCurrency = program.PointsPerCurrency,
+            CurrencyValue = program.CurrencyValue,
+            MinOrderValue = program.MinOrderValue,
+            PointsValidityDays = program.PointsValidityDays,
+            IsActive = program.IsActive,
+            Type = program.Type,
+            TargetCount = program.TargetCount,
+            RewardType = program.RewardType,
+            RewardValue = program.RewardValue,
+            Filters = program.Filters?.Select(f => new LoyaltyProgramFilterDto
+            {
+                ProductId = f.ProductId,
+                CategoryId = f.CategoryId
+            }).ToList() ?? new List<LoyaltyProgramFilterDto>()
+        };
     }
 }
