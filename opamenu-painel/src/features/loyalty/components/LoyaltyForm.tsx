@@ -207,6 +207,7 @@ export function LoyaltyForm({ initialData, onSubmit, isLoading, readOnly }: Loya
                   <FormControl>
                     <Input placeholder="Ex: Clube de Vantagens" {...field} disabled={readOnly} />
                   </FormControl>
+                  <FormDescription>Identificação interna do programa.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -233,6 +234,7 @@ export function LoyaltyForm({ initialData, onSubmit, isLoading, readOnly }: Loya
                       <SelectItem value={ELoyaltyProgramType.ItemCount.toString()}>Quantidade de Itens/Produtos</SelectItem>
                     </SelectContent>
                   </Select>
+                  <FormDescription>Forma como os clientes acumulam pontos.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -240,7 +242,7 @@ export function LoyaltyForm({ initialData, onSubmit, isLoading, readOnly }: Loya
           </div>
 
           {type === ELoyaltyProgramType.PointsPerValue && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border p-6 rounded-lg bg-muted/20">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control as any}
                 name="currencyValue"
@@ -273,28 +275,26 @@ export function LoyaltyForm({ initialData, onSubmit, isLoading, readOnly }: Loya
           )}
 
           {type === ELoyaltyProgramType.ItemCount && (
-            <div className="space-y-4 border p-6 rounded-lg bg-muted/20">
-              <div className="flex items-end gap-2">
-                <div className="flex-1 space-y-2">
-                  <Label>Adicionar Filtro (Produto ou Categoria)</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Select onValueChange={(val) => addFilter(val, undefined)} disabled={readOnly}>
-                      <SelectTrigger><SelectValue placeholder="Produto" /></SelectTrigger>
-                      <SelectContent>
-                        {products?.map((p: any) => (
-                          <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Select onValueChange={(val) => addFilter(undefined, val)} disabled={readOnly}>
-                      <SelectTrigger><SelectValue placeholder="Categoria" /></SelectTrigger>
-                      <SelectContent>
-                        {categories?.map((c: any) => (
-                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Adicionar Filtro (Produto ou Categoria)</Label>
+                <div className="grid grid-cols-2 gap-6">
+                  <Select onValueChange={(val) => addFilter(val, undefined)} disabled={readOnly}>
+                    <SelectTrigger><SelectValue placeholder="Produto" /></SelectTrigger>
+                    <SelectContent>
+                      {products?.map((p: any) => (
+                        <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select onValueChange={(val) => addFilter(undefined, val)} disabled={readOnly}>
+                    <SelectTrigger><SelectValue placeholder="Categoria" /></SelectTrigger>
+                    <SelectContent>
+                      {categories?.map((c: any) => (
+                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -396,6 +396,7 @@ export function LoyaltyForm({ initialData, onSubmit, isLoading, readOnly }: Loya
                         <SelectItem value={ELoyaltyRewardType.FreeProduct.toString()}>Produto Grátis</SelectItem>
                       </SelectContent>
                     </Select>
+                    <FormDescription>Tipo de benefício concedido.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

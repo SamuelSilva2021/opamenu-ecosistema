@@ -53,7 +53,6 @@ export default function SettingsPage() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("general");
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
-  const [isCepLoading, setIsCepLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const canUpdate = can("SETTINGS", "UPDATE");
@@ -254,7 +253,7 @@ export default function SettingsPage() {
               ))}
             </nav>
           </aside>
-          <div className="flex-1 lg:max-w-2xl">
+          <div className={cn("flex-1", activeTab !== "loyalty" && "lg:max-w-2xl")}>
             {activeTab === "loyalty" ? (
               <LoyaltyPage />
             ) : activeTab === "bank-details" ? (
@@ -384,7 +383,6 @@ export default function SettingsPage() {
                                   form.setValue("addressZipcode", e.target.value, { shouldValidate: true });
                                 }}
                                 onAddressLoaded={handleAddressLoaded}
-                                onLoadingChange={setIsCepLoading}
                                 placeholder="00000-000"
                               />
                             </div>

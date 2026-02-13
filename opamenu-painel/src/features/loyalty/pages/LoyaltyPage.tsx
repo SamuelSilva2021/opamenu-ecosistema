@@ -243,7 +243,7 @@ export default function LoyaltyPage() {
         </div>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="sm:max-w-5xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingProgram ? "Editar Programa" : "Novo Programa"}</DialogTitle>
               <DialogDescription>
