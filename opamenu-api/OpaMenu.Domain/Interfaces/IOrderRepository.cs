@@ -19,5 +19,6 @@ public interface IOrderRepository : IRepository<OrderEntity>
 
     Task<IEnumerable<OrderEntity>> GetPagedByTenantIdWithDetailsAsync(Guid tenantId, int pageNumber, int pageSize);
     Task<int?> GetLastOrderNumberAsync(Guid tenantId, DateTime date);
+    Task<OrderEntity?> GetByIdForLoyaltyAsync(Guid id, Guid tenantId);
 }
 

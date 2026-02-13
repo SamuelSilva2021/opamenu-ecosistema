@@ -1,10 +1,10 @@
 export const API_CONFIG = {
   // URL base da API - usando proxy do Vite em desenvolvimento
   BASE_URL: import.meta.env.VITE_API_URL || '/api',
-  
+
   // Timeout para requisições (30 segundos)
   TIMEOUT: 30000,
-  
+
   // Headers padrão
   DEFAULT_HEADERS: {
     'Content-Type': 'application/json',
@@ -20,31 +20,35 @@ export const API_ENDPOINTS = {
   // Categorias
   CATEGORIES: '/categories',
   CATEGORIES_ACTIVE: '/categories/active',
-  
+
   // Produtos
   PRODUCTS: '/products',
   PRODUCTS_MENU: '/products/menu',
   PRODUCTS_BY_CATEGORY: (categoryId: string) => `/products/by-category/${categoryId}`,
   PRODUCT_WITH_ADDONS: (productId: string) => `/products/${productId}/with-addons`,
-  
+
   // Pedidos
   ORDERS: '/orders',
   ORDER_BY_ID: (id: string) => `/orders/${id}`,
-  
+
   // Health check
   HEALTH: '/health',
 
   // Endpoints Públicos (Slug-based)
   PUBLIC: {
-     MENU: (slug: string) => `/public/${slug}/menu`,
-     CATEGORIES: (slug: string) => `/public/${slug}/categories`,
-     PRODUCTS_BY_CATEGORY: (slug: string, categoryId: string) => `/public/${slug}/products/by-category/${categoryId}`,
-     PRODUCT: (slug: string, id: string) => `/public/${slug}/products/${id}`,
+    MENU: (slug: string) => `/public/${slug}/menu`,
+    CATEGORIES: (slug: string) => `/public/${slug}/categories`,
+    PRODUCTS_BY_CATEGORY: (slug: string, categoryId: string) => `/public/${slug}/products/by-category/${categoryId}`,
+    PRODUCT: (slug: string, id: string) => `/public/${slug}/products/${id}`,
     ORDERS: (slug: string) => `/public/${slug}/orders`,
     ORDER: (slug: string, id: string) => `/public/${slug}/orders/${id}`,
     PIX: (slug: string, id: string) => `/public/${slug}/orders/${id}/pix`,
     ORDERS_BY_CUSTOMER: (slug: string, customerId: string) => `/public/${slug}/orders/customer/${customerId}`,
-    CUSTOMER: (slug: string) => `/public/${slug}/customer`
+    CUSTOMER: (slug: string) => `/public/${slug}/customer`,
+    LOYALTY: {
+      PROGRAMS: (slug: string) => `/public/${slug}/loyalty/programs`,
+      BALANCE: (slug: string, phone: string) => `/public/${slug}/loyalty/balance/${phone}`
+    }
   }
 } as const;
 
@@ -66,13 +70,13 @@ export const CLIENT_CONFIG = {
     // Taxa de entrega padrão
     DEFAULT_DELIVERY_FEE: 5.00,
   },
-  
+
   // Configurações de paginação
   PAGINATION: {
     DEFAULT_PAGE_SIZE: 20,
     MAX_PAGE_SIZE: 100,
   },
-  
+
   // Configurações de cache
   CACHE: {
     // Tempo de cache para produtos (minutos)

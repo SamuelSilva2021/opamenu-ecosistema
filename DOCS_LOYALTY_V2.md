@@ -1,34 +1,46 @@
 # 🏆 Sistema de Fidelidade OpaMenu v2
 
-O sistema de fidelidade do OpaMenu foi evoluído de um modelo simples de pontos para uma engine de regras flexível que suporta múltiplos tipos de campanhas simultâneas por restaurante (tenant).
+O sistema de fidelidade do OpaMenu é uma engine de regras flexível que permite aos restaurantes gerenciar múltiplos programas de recompensas simultâneos, com segmentação por itens e tipos de acúmulo dinâmicos.
 
-## 1. Tipos de Programas Suportados
-O lojista pode configurar três modelos distintos:
+## 🛠️ Arquitetura Técnica
 
-- **Pontos por Valor Gasto (`PointsPerValue`)**: O modelo clássico onde cada R$ 1,00 gasto equivale a X pontos.
-- **Quantidade de Pedidos (`OrderCount`)**: Baseado no número de compras realizadas. Ex: "Ganhe 1 ponto a cada pedido. Ao atingir 10 pedidos, ganhe uma recompensa."
-- **Quantidade de Itens Especificos (`ItemCount`)**: Baseado em categorias ou produtos específicos. Ex: "Ganhe 1 ponto a cada Açaí comprado. Ao atingir 10 unidades, o 11º é grátis."
+### Modelagem de Dados (Backend)
+- **Engine de Regras**: Processa múltiplos programas ativos. Um único pedido pode pontuar em diferentes regras independentes.
+- **Enums Compartilhados**: Localizados em `opamenu-commons`, definem os tipos de acúmulo e recompensas.
+    - `ELoyaltyProgramType`: PointsPerValue (0), OrderCount (1), ItemCount (2).
+    - `ELoyaltyRewardType`: DiscountPercentage (0), DiscountValue (1), FreeProduct (2).
 
-## 2. Estrutura de Recompensas
-Cada programa pode definir sua própria recompensa:
-- **Desconto Percentual**: X% de desconto no próximo pedido.
-- **Desconto Fixo**: R$ X de desconto no próximo pedido.
-- **Produto Grátis**: Um item específico sem custo.
+### Implementação Frontend (`opamenu-painel`)
+- **Segurança**: Baseada no hook `usePermission`. O botão de criação e ações de edição/exclusão seguem permissões granulares (`LOYALTY:CREATE`, `LOYALTY:UPDATE`, etc).
+- **Sincronização de Estado**: Utiliza `@tanstack/react-query` para cache e invalidação automática de listas após mutações.
+- **Robustez de Formulário**:
+    - **Key-Remounting**: O `LoyaltyForm` utiliza `key={editingProgram?.id}` para forçar um remount limpo, garantindo que o estado interno do `react-hook-form` seja zerado entre diferentes programas.
+    - **Defensive Casting**: Conversão explícita de tipos numéricos do backend para garantir compatibilidade com componentes `Select` e `Input`.
 
-## 3. Lógica de Acúmulo Multi-Programa
-Diferente da versão 1.0, o sistema agora permite que **múltiplos programas** estejam ativos ao mesmo tempo.
-- Quando um pedido é finalizado, a engine filtra todos os programas ativos do restaurante.
-- Cada regra é aplicada de forma independente.
-- Um único pedido pode gerar pontos em diferentes programas (ex: pontos por valor total e crédito na cartela de pizzas).
+## ✨ UI/UX Patterns (Design System)
 
-## 4. Estrutura de Dados (Backend)
-- `loyalty_programs`: Armazena a configuração das regras, metas e recompensas.
-- `loyalty_program_filters`: Define quais produtos ou categorias pertencem a um programa (essencial para o tipo `ItemCount`).
-- `loyalty_transactions`: Registro individual de cada crédito/débito de pontos/contagem.
-- `customer_loyalty_balances`: Saldo consolidado do cliente por restaurante.
+### Visualização em Cards
+- **Hierarquia Clara**: Uso de ícones dinâmicos (`Award`, `Calendar`) e badges coloridos para indicar status (Ativo/Inativo).
+- **Progressão**: Barras de progresso visuais para representar a meta de resgate.
+- **Micro-interações**: Hover effects e botões de ação rápidos (Editar/Excluir) que aparecem contextualmente.
 
-## 5. Fluxo de Integração (Roadmap Frontend)
-Para o painel do lojista (`opamenu-painel`), o fluxo seguirá:
-1. **Configuração**: Tela para criar/editar programas com seleção de tipo.
-2. **Filtros**: Se o tipo for "Por Item", abrir seletor de categorias/produtos.
-3. **Monitoramento**: Dashboard para ver quantos clientes estão próximos de atingir recompensas em cada campanha.
+### Formulário de Gestão
+- **Dialog Flexível**: Janelas de edição widen (1024px) para acomodar layouts complexos sem claustrofobia.
+- **Alinhamento Cirúrgico**: Design em grid sistemático (`gap-6`) com alinhamento perfeito de inputs em ambos os eixos, independente das descrições ou estados dinâmicos.
+- **Interações Modernas**: Substituição de alertas nativos por `AlertDialog` estilizados.
+
+## 🧠 Smart Features
+
+### Descrição Automática Inteligente
+- **Agrupamento de Itens**: Ao selecionar produtos para o tipo `ItemCount`, o sistema extrai o "nome base" (ex: "Pizza" de "Pizza Calabresa").
+- **Deduplicação**: Se múltiplos sabores da mesma categoria forem selecionados, a descrição lista apenas o grupo principal, mantendo o texto conciso e legível para o cliente final.
+- **Texto Natural**: Gera listas gramaticalmente corretas usando vírgulas e conjunções ("e").
+
+---
+
+## 🚀 Como Utilizar
+1. **Configurar Programa**: Defina o nome e o tipo (Valor, Pedido ou Item).
+2. **Estabelecer Meta**: Defina quantos pontos/itens são necessários para o prêmio.
+3. **Escolher Recompensa**: Selecione se o prêmio é desconto ou produto grátis.
+4. **Filtros (Opcional)**: Se for um programa de itens, selecione os produtos ou categorias participantes.
+5. **Monitorar**: Acompanhe o status "Em vigor" diretamente na listagem principal.

@@ -29,6 +29,23 @@ export interface TenantBusinessResponseDto {
   pixIntegration?: boolean;
 }
 
+export enum ELoyaltyProgramType {
+  PointsPerValue = 0,
+  OrderCount = 1,
+  ItemCount = 2
+}
+
+export enum ELoyaltyRewardType {
+  DiscountPercentage = 0,
+  DiscountValue = 1,
+  FreeProduct = 2
+}
+
+export interface LoyaltyProgramFilterDto {
+  productId?: string;
+  categoryId?: string;
+}
+
 export interface LoyaltyProgramDto {
   id: string;
   name: string;
@@ -38,6 +55,17 @@ export interface LoyaltyProgramDto {
   minOrderValue: number;
   pointsValidityDays?: number;
   isActive: boolean;
+  type: ELoyaltyProgramType;
+  targetCount?: number;
+  rewardType?: ELoyaltyRewardType;
+  rewardValue?: number;
+  filters?: LoyaltyProgramFilterDto[];
+}
+
+export interface CustomerLoyaltySummaryDto {
+  balance: number;
+  totalEarned: number;
+  program?: LoyaltyProgramDto;
 }
 
 export interface PixResponseDto {

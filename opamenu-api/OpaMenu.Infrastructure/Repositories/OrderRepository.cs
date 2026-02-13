@@ -141,4 +141,13 @@ public class OrderRepository(OpamenuDbContext context) : OpamenuRepository<Order
                         o.CreatedAt.Date == date.Date)
             .MaxAsync(o => (int?)o.OrderNumber);
     }
+
+    public async Task<OrderEntity?> GetByIdForLoyaltyAsync(Guid id, Guid tenantId)
+    {
+        return await _dbSet
+            .Where(o => o.Id == id && o.TenantId == tenantId)
+            .Include(o => o.Items)
+                .ThenInclude(i => i.Product)
+            .FirstOrDefaultAsync();
+    }
 }

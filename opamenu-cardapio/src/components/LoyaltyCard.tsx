@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Gift, Wallet } from "lucide-react";
+import { Gift, Wallet, ArrowRight } from "lucide-react";
 import { LoyaltyProgramDto, CustomerResponseDto } from "@/types/api";
+import { Link, useParams } from "react-router-dom";
 
 interface LoyaltyCardProps {
   program: LoyaltyProgramDto;
@@ -8,6 +9,8 @@ interface LoyaltyCardProps {
 }
 
 const LoyaltyCard = ({ program, customer }: LoyaltyCardProps) => {
+  const { slug } = useParams<{ slug: string }>();
+
   return (
     <Card className="border-none shadow-sm bg-primary/5">
       <CardHeader className="pb-2">
@@ -28,8 +31,15 @@ const LoyaltyCard = ({ program, customer }: LoyaltyCardProps) => {
       </CardHeader>
       <CardContent className="text-sm text-gray-600 space-y-2">
         {program.description && (
-          <p className="whitespace-pre-line">{program.description}</p>
+          <p className="whitespace-pre-line line-clamp-2">{program.description}</p>
         )}
+        <Link
+          to={`/${slug}/loyalty`}
+          className="flex items-center justify-between mt-4 text-xs font-black uppercase tracking-widest text-primary hover:opacity-80 transition-opacity"
+        >
+          Ver detalhes e metas
+          <ArrowRight className="w-3 h-3" />
+        </Link>
       </CardContent>
     </Card>
   );

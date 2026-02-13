@@ -4,7 +4,8 @@ import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Gift, AlertCircle } from "lucide-react";
 import { LoyaltyProgramDto, CustomerResponseDto } from "@/types/api";
-import { useCart } from "@/hooks/use-cart";
+import { useCart, useLoyalty } from "@/hooks";
+import { useParams } from "react-router-dom";
 
 interface LoyaltyRedemptionProps {
   program: LoyaltyProgramDto;
@@ -12,16 +13,16 @@ interface LoyaltyRedemptionProps {
 }
 
 export const LoyaltyRedemption = ({ program, customer }: LoyaltyRedemptionProps) => {
+  const { slug } = useParams<{ slug: string }>();
   const { subtotal, applyLoyaltyPoints, removeLoyaltyPoints, loyaltyPointsUsed } = useCart();
+  const { balance } = useLoyalty(slug, customer.phone);
   const [pointsToUse, setPointsToUse] = useState<number>(loyaltyPointsUsed);
 
-  // TODO: O saldo deve vir do backend. Por enquanto, se undefined, assume 0.
-  // Quando o backend for atualizado para retornar loyaltyBalance, isso funcionará automaticamente.
-  const pointsBalance = customer.loyaltyBalance || 0;
-  
+  const pointsBalance = balance?.balance || 0;
+
   // Valor de resgate: 1 ponto = R$ 1.00 (Configuração temporária)
   // Idealmente isso viria do LoyaltyProgramDto (ex: redemptionValue)
-  const VALUE_PER_POINT = program.currencyValue || 1.0; 
+  const VALUE_PER_POINT = program.currencyValue || 1.0;
 
   // Calcula o máximo de pontos que podem ser usados
   // Não pode usar mais que o saldo
@@ -43,7 +44,7 @@ export const LoyaltyRedemption = ({ program, customer }: LoyaltyRedemptionProps)
     removeLoyaltyPoints();
     setPointsToUse(0);
   };
-  
+
   const discountValue = pointsToUse * VALUE_PER_POINT;
 
   // Se o programa não estiver ativo ou cliente sem saldo, não exibe nada
@@ -52,9 +53,9 @@ export const LoyaltyRedemption = ({ program, customer }: LoyaltyRedemptionProps)
   }
 
   return (
-    <Card className="border-opamenu-orange/20 bg-opamenu-orange/5 mb-6">
+    <Card className="border-none shadow-sm bg-primary/5 rounded-[2rem] overflow-hidden">
       <CardHeader className="pb-2">
-        <CardTitle className="text-base font-bold flex items-center gap-2 text-opamenu-orange-dark">
+        <CardTitle className="text-base font-black uppercase italic tracking-tight flex items-center gap-2 text-primary">
           <Gift className="w-5 h-5" />
           Programa de Fidelidade
         </CardTitle>
@@ -72,7 +73,7 @@ export const LoyaltyRedemption = ({ program, customer }: LoyaltyRedemptionProps)
                 <span>Usar pontos:</span>
                 <span className="font-bold">{pointsToUse}</span>
               </div>
-              
+
               <Slider
                 value={[pointsToUse]}
                 max={maxRedeemablePoints}
@@ -80,7 +81,7 @@ export const LoyaltyRedemption = ({ program, customer }: LoyaltyRedemptionProps)
                 onValueChange={(vals) => setPointsToUse(vals[0])}
                 className="py-2"
               />
-              
+
               <div className="flex justify-between items-center">
                 <div className="text-xs text-gray-500">
                   Desconto: <span className="font-semibold text-green-600">
@@ -92,20 +93,20 @@ export const LoyaltyRedemption = ({ program, customer }: LoyaltyRedemptionProps)
 
             <div className="flex gap-2 justify-end pt-2">
               {loyaltyPointsUsed > 0 && (
-                 <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={handleRemove} 
-                    className="text-red-500 border-red-200 hover:bg-red-50 h-8"
-                 >
-                   Remover
-                 </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRemove}
+                  className="text-red-500 border-red-200 hover:bg-red-50 h-10 rounded-xl px-4 font-bold"
+                >
+                  Remover
+                </Button>
               )}
-              <Button 
-                size="sm" 
-                onClick={handleApply} 
+              <Button
+                size="sm"
+                onClick={handleApply}
                 disabled={pointsToUse === 0 || pointsToUse === loyaltyPointsUsed}
-                className="bg-opamenu-orange hover:bg-opamenu-orange-dark text-white h-8"
+                className="bg-primary hover:bg-primary/90 text-white h-10 rounded-xl px-4 font-bold shadow-lg shadow-primary/20"
               >
                 Aplicar Desconto
               </Button>

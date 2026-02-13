@@ -7,6 +7,7 @@ export { useOrder } from './use-order';
 export { useCheckout } from './use-checkout';
 export { useProductModal } from './useProductModal';
 export { useCustomer } from './use-customer';
+export { useLoyalty } from './use-loyalty';
 
 // Re-exportar tipos úteis
 export type { CartHookReturn } from './use-cart';

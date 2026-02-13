@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Domain.Interfaces;
 
@@ -9,4 +10,5 @@ public interface ICustomerLoyaltyRepository : IRepository<CustomerLoyaltyBalance
 {
     Task<CustomerLoyaltyBalanceEntity?> GetByCustomerAndTenantAsync(Guid customerId, Guid tenantId);
     Task AddTransactionAsync(LoyaltyTransactionEntity transaction);
+    Task<bool> TransactionExistsAsync(Guid orderId, ELoyaltyTransactionType type);
 }

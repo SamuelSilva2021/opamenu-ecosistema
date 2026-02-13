@@ -838,6 +838,14 @@ public class OrderService(
                         break;
                     case EOrderStatus.Delivered:
                         await _notificationService.NotifyOrderCompletedAsync(id);
+                        try
+                        {
+                            await _loyaltyService.ProcessOrderPointsAsync(id, (Guid)order.TenantId!);
+                        }
+                        catch (Exception loyaltyEx)
+                        {
+                            _logger.LogWarning(loyaltyEx, "Erro ao processar pontos de fidelidade na entrega do pedido {OrderId}", id);
+                        }
                         break;
                 }
             }

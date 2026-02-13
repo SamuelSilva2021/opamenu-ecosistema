@@ -170,12 +170,19 @@ public class LoyaltyService(
     {
         try
         {
-            var order = await _orderRepository.GetByIdAsync(orderId, tenantId);
+            var order = await _orderRepository.GetByIdForLoyaltyAsync(orderId, tenantId);
             if (order == null) return;
             var programs = await _loyaltyProgramRepository.GetByTenantIdAsync(tenantId);
 
             var activePrograms = programs.Where(p => p.IsActive).ToList();
             if (!activePrograms.Any()) return;
+
+            // Verificar se já foram gerados pontos para este pedido (Idempotência)
+            if (await _customerLoyaltyRepository.TransactionExistsAsync(order.Id, ELoyaltyTransactionType.Earn))
+            {
+                _logger.LogInformation("Pontos do pedido {OrderId} já foram processados anteriormente.", order.Id);
+                return;
+            }
 
             var balance = await _customerLoyaltyRepository.GetByCustomerAndTenantAsync(order.CustomerId, tenantId);
             if (balance == null)
