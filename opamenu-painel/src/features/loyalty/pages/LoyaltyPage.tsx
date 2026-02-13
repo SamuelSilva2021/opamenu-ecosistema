@@ -251,6 +251,7 @@ export default function LoyaltyPage() {
               </DialogDescription>
             </DialogHeader>
             <LoyaltyForm
+              key={editingProgram?.id || "new"}
               initialData={editingProgram}
               onSubmit={handleSubmit}
               isLoading={createMutation.isPending || updateMutation.isPending}

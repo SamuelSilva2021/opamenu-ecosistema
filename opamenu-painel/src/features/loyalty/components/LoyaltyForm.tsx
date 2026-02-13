@@ -72,7 +72,20 @@ export function LoyaltyForm({ initialData, onSubmit, isLoading, readOnly }: Loya
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema) as any,
-    defaultValues: {
+    defaultValues: initialData ? {
+      name: initialData.name,
+      description: initialData.description || "",
+      type: Number(initialData.type ?? ELoyaltyProgramType.PointsPerValue) as ELoyaltyProgramType,
+      pointsPerCurrency: Number(initialData.pointsPerCurrency ?? 1),
+      currencyValue: Number(initialData.currencyValue ?? 0),
+      minOrderValue: Number(initialData.minOrderValue ?? 0),
+      pointsValidityDays: initialData.pointsValidityDays,
+      isActive: initialData.isActive ?? true,
+      targetCount: initialData.targetCount ?? null,
+      rewardType: (initialData.rewardType !== null && initialData.rewardType !== undefined) ? Number(initialData.rewardType) as ELoyaltyRewardType : ELoyaltyRewardType.PercentageDiscount,
+      rewardValue: Number(initialData.rewardValue ?? 0),
+      filters: initialData.filters || [],
+    } : {
       name: "",
       description: "",
       type: ELoyaltyProgramType.PointsPerValue,
@@ -118,24 +131,49 @@ export function LoyaltyForm({ initialData, onSubmit, isLoading, readOnly }: Loya
     } else if (type === ELoyaltyProgramType.OrderCount) {
       form.setValue("description", "Cada pedido realizado conta 1 ponto para o programa.");
     } else if (type === ELoyaltyProgramType.ItemCount) {
-      form.setValue("description", "Cada item (dos produtos selecionados) conta 1 ponto para o programa.");
+      if (selectedFilters.length === 0) {
+        form.setValue("description", "Cada item (de todos os produtos) conta 1 ponto para o programa.");
+      } else {
+        const baseNames = new Set<string>();
+        selectedFilters.forEach(f => {
+          if (f.productId) {
+            const p = products.find((p: any) => p.id === f.productId);
+            if (p) {
+              // Extract base name (first word, e.g., "Pizza" from "Pizza Calabresa")
+              const baseName = p.name.split(" ")[0];
+              baseNames.add(baseName);
+            }
+          } else if (f.categoryId) {
+            const c = categories?.find((c: any) => c.id === f.categoryId);
+            if (c) baseNames.add(c.name);
+          }
+        });
+
+        const list = Array.from(baseNames);
+        if (list.length === 0) {
+          form.setValue("description", "Cada item (dos produtos selecionados) conta 1 ponto para o programa.");
+        } else {
+          const itemsList = list.join(", ").replace(/, ([^,]*)$/, " e $1");
+          form.setValue("description", `Cada item do tipo ${itemsList} conta 1 ponto para o programa.`);
+        }
+      }
     }
-  }, [type, currencyValue, pointsPerCurrency, form]);
+  }, [type, currencyValue, pointsPerCurrency, selectedFilters, products, categories, form]);
 
   useEffect(() => {
-    if (initialData) {
+    if (initialData && initialData.id !== form.getValues("name")) { // Basic check to avoid redundant resets
       form.reset({
         name: initialData.name,
         description: initialData.description || "",
-        type: initialData.type,
-        pointsPerCurrency: initialData.pointsPerCurrency,
-        currencyValue: initialData.currencyValue,
-        minOrderValue: initialData.minOrderValue,
+        type: Number(initialData.type ?? ELoyaltyProgramType.PointsPerValue) as ELoyaltyProgramType,
+        pointsPerCurrency: Number(initialData.pointsPerCurrency ?? 1),
+        currencyValue: Number(initialData.currencyValue ?? 0),
+        minOrderValue: Number(initialData.minOrderValue ?? 0),
         pointsValidityDays: initialData.pointsValidityDays,
-        isActive: initialData.isActive,
-        targetCount: initialData.targetCount,
-        rewardType: initialData.rewardType,
-        rewardValue: initialData.rewardValue,
+        isActive: initialData.isActive ?? true,
+        targetCount: initialData.targetCount ?? null,
+        rewardType: (initialData.rewardType !== null && initialData.rewardType !== undefined) ? Number(initialData.rewardType) as ELoyaltyRewardType : ELoyaltyRewardType.PercentageDiscount,
+        rewardValue: Number(initialData.rewardValue ?? 0),
         filters: initialData.filters || [],
       });
     }
@@ -220,7 +258,7 @@ export function LoyaltyForm({ initialData, onSubmit, isLoading, readOnly }: Loya
                   <FormLabel>Tipo de Acúmulo</FormLabel>
                   <Select
                     onValueChange={(val) => field.onChange(parseInt(val))}
-                    value={field.value.toString()}
+                    value={field.value?.toString()}
                     disabled={readOnly}
                   >
                     <FormControl>
@@ -384,11 +422,13 @@ export function LoyaltyForm({ initialData, onSubmit, isLoading, readOnly }: Loya
                     <FormLabel>Recompensa</FormLabel>
                     <Select
                       onValueChange={(val) => field.onChange(parseInt(val))}
-                      value={field.value?.toString() ?? ELoyaltyRewardType.PercentageDiscount.toString()}
+                      value={field.value?.toString()}
                       disabled={readOnly}
                     >
                       <FormControl>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione a recompensa" />
+                        </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value={ELoyaltyRewardType.PercentageDiscount.toString()}>Desconto (%)</SelectItem>
