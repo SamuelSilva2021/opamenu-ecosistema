@@ -36,9 +36,17 @@ public class CustomerLoyaltyRepository(OpamenuDbContext context) : OpamenuReposi
         await _context.Set<LoyaltyTransactionEntity>().AddAsync(transaction);
     }
 
-    public async Task<bool> TransactionExistsAsync(Guid orderId, ELoyaltyTransactionType type)
+    public async Task<bool> TransactionExistsAsync(Guid orderId, ELoyaltyTransactionType type, Guid? programId = null)
     {
-        return await _context.Set<LoyaltyTransactionEntity>()
-            .AnyAsync(t => t.OrderId == orderId && t.Type == type);
+        var query = _context.Set<LoyaltyTransactionEntity>()
+            .AsNoTracking()
+            .Where(t => t.OrderId == orderId && t.Type == type);
+
+        if (programId.HasValue)
+        {
+            query = query.Where(t => t.CustomerLoyaltyBalance.LoyaltyProgramId == programId.Value);
+        }
+
+        return await query.AnyAsync();
     }
 }

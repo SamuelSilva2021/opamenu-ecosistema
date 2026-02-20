@@ -149,7 +149,7 @@ public class LoyaltyService(
                 return StaticResponseBuilder<CustomerLoyaltySummaryDto>.BuildNotFound(null!);
 
             // Multi-Wallet: Get All Balances
-            var balances = await _customerLoyaltyRepository.GetAllBalancesAsync(customer.Id, tenantId).ToList();
+            var balances = await _customerLoyaltyRepository.GetAllBalancesAsync(customer.Id, tenantId);
             var programs = await _loyaltyProgramRepository.GetByTenantIdAsync(tenantId);
             var activePrograms = programs.Where(p => p.IsActive).ToList();
 
@@ -166,8 +166,7 @@ public class LoyaltyService(
                     legacyBalance.LoyaltyProgramId = targetProgram.Id;
                     await _customerLoyaltyRepository.UpdateAsync(legacyBalance);
                     
-                    // Refresh balances list after update
-                    balances = await _customerLoyaltyRepository.GetAllBalancesAsync(customer.Id, tenantId).ToList();
+                    balances = await _customerLoyaltyRepository.GetAllBalancesAsync(customer.Id, tenantId);
                 }
             }
             
@@ -181,7 +180,6 @@ public class LoyaltyService(
             var totalBalance = balances.Sum(b => b.Balance);
             var totalEarned = balances.Sum(b => b.TotalEarned);
 
-            // Legacy support: Populate 'Program' with the first found active program, or null
             var firstProgram = activePrograms.FirstOrDefault();
 
             return StaticResponseBuilder<CustomerLoyaltySummaryDto>.BuildOk(new CustomerLoyaltySummaryDto
@@ -210,15 +208,15 @@ public class LoyaltyService(
             var activePrograms = programs.Where(p => p.IsActive).ToList();
             if (!activePrograms.Any()) return;
 
-            // Verificar se já foram gerados pontos para este pedido (Idempotência)
-            if (await _customerLoyaltyRepository.TransactionExistsAsync(order.Id, ELoyaltyTransactionType.Earn))
-            {
-                _logger.LogInformation("Pontos do pedido {OrderId} já foram processados anteriormente.", order.Id);
-                return;
-            }
-
             foreach (var program in activePrograms)
             {
+                // Multi-Program: Check if points already awarded FOR TEHIS PROGRAM
+                if (await _customerLoyaltyRepository.TransactionExistsAsync(order.Id, ELoyaltyTransactionType.Earn, program.Id))
+                {
+                    _logger.LogInformation("Pontos do pedido {OrderId} já processados para o programa {ProgramName}.", order.Id, program.Name);
+                    continue;
+                }
+
                 if (order.Total < program.MinOrderValue) continue;
 
                 int pointsToEarn = 0;
@@ -227,7 +225,7 @@ public class LoyaltyService(
                 if (program.Type == ELoyaltyProgramType.PointsPerValue)
                 {
                     decimal eligibleValue = order.Total;
-                    _logger.LogInformation("Processing PointsPerValue. Order Total: {Total}, MinOrder: {Min}, Items: {ItemCount}", 
+                    _logger.LogInformation("Processando PointsPerValue. Total: {Total}, MinOrder: {Min}, Items: {ItemCount}", 
                         order.Total, program.MinOrderValue, order.Items.Count);
 
                     if (program.Filters != null && program.Filters.Any())
@@ -240,12 +238,12 @@ public class LoyaltyService(
                             .Sum(i => i.Subtotal);
 
                         eligibleValue -= excludedItemsValue;
-                        _logger.LogInformation("Excluded Value: {Excluded}, Eligible Value: {Eligible}", excludedItemsValue, eligibleValue);
+                        _logger.LogInformation("Valor Excluído: {Excluded}, Valor Elegível: {Eligible}", excludedItemsValue, eligibleValue);
                     }
 
                     if (eligibleValue <= 0) 
                     {
-                        _logger.LogInformation("Eligible value is 0 or less. Skipping.");
+                        _logger.LogInformation("Valor elegível é 0 ou menor. Pulando.");
                         continue;
                     }
 
@@ -258,7 +256,7 @@ public class LoyaltyService(
                         pointsToEarn = (int)Math.Floor(eligibleValue * program.PointsPerCurrency);
                     }
                     
-                    _logger.LogInformation("Points Calculated: {Points} (CurrencyVal: {CV}, PointsPerCurr: {PPC})", 
+                    _logger.LogInformation("Pontos Calculados: {Points} (CurrencyVal: {CV}, PointsPerCurr: {PPC})", 
                         pointsToEarn, program.CurrencyValue, program.PointsPerCurrency);
 
                     description = $"Pontos do pedido #{order.Id} ({program.Name})";
@@ -270,14 +268,41 @@ public class LoyaltyService(
                 }
                 else if (program.Type == ELoyaltyProgramType.ItemCount)
                 {
-                    var eligibleItems = order.Items.Where(item => 
-                        program.Filters.Any(f => 
-                            (f.ProductId.HasValue && f.ProductId == item.ProductId) || 
-                            (f.CategoryId.HasValue && item.Product != null && item.Product.CategoryId == f.CategoryId)
-                        )
-                    );
+                    _logger.LogInformation("Processando ItemCount Program: {ProgramName} ({ProgramId}). Order Items: {ItemCount}", program.Name, program.Id, order.Items.Count);
+                    
+                    if (program.Filters != null)
+                    {
+                        foreach(var f in program.Filters)
+                        {
+                            _logger.LogInformation("Filtro do Programa -> Cat: {CatId}, Prod: {ProdId}", f.CategoryId, f.ProductId);
+                        }
+                    }
+
+                    foreach(var item in order.Items)
+                    {
+                         _logger.LogInformation("Item do Pedido -> Name: {Name}, ProdId: {ProdId}, CatId: {CatId}", 
+                            item.ProductName, item.ProductId, item.Product?.CategoryId);
+                    }
+
+                    List<OrderItemEntity> eligibleItems;
+                    if (program.Filters == null || !program.Filters.Any())
+                    {
+                        eligibleItems = order.Items.ToList();
+                        _logger.LogInformation("Contador de Itens: Sem filtros definidos. Todos os {Count} itens são elegíveis.", eligibleItems.Count);
+                    }
+                    else
+                    {
+                        eligibleItems = order.Items.Where(item => 
+                            program.Filters.Any(f => 
+                                (f.ProductId.HasValue && f.ProductId == item.ProductId) || 
+                                (f.CategoryId.HasValue && item.Product != null && item.Product.CategoryId == f.CategoryId)
+                            )
+                        ).ToList();
+                    }
 
                     pointsToEarn = eligibleItems.Sum(i => i.Quantity);
+                    _logger.LogInformation("Contador de Itens: Encontrados {Count} itens elegíveis. Total de Pontos: {Points}", eligibleItems.Count, pointsToEarn);
+                    
                     description = $"Contagem de itens do pedido #{order.Id} ({program.Name})";
                 }
 

@@ -425,8 +425,8 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
             entity.Property(e => e.Balance).IsRequired();
             entity.Property(e => e.TotalEarned).IsRequired();
             
-            // Saldo único por Cliente e Tenant
-            entity.HasIndex(e => new { e.TenantId, e.CustomerId }).IsUnique();
+            // Saldo único por Cliente, Tenant e Programa de fidelidade
+            entity.HasIndex(e => new { e.TenantId, e.CustomerId, e.LoyaltyProgramId }).IsUnique();
 
             entity.HasOne(e => e.Customer)
                 .WithMany() // Assumindo que Customer não precisa navegar para Balances por enquanto

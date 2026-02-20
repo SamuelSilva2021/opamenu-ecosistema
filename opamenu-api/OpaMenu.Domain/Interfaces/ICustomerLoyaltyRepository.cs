@@ -12,5 +12,5 @@ public interface ICustomerLoyaltyRepository : IRepository<CustomerLoyaltyBalance
     Task<CustomerLoyaltyBalanceEntity?> GetByCustomerAndProgramAsync(Guid customerId, Guid programId);
     Task<IEnumerable<CustomerLoyaltyBalanceEntity>> GetAllBalancesAsync(Guid customerId, Guid tenantId);
     Task AddTransactionAsync(LoyaltyTransactionEntity transaction);
-    Task<bool> TransactionExistsAsync(Guid orderId, ELoyaltyTransactionType type);
+    Task<bool> TransactionExistsAsync(Guid orderId, ELoyaltyTransactionType type, Guid? programId = null);
 }
