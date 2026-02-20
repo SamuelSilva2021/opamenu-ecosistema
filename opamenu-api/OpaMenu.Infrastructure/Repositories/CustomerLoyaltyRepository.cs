@@ -15,6 +15,22 @@ public class CustomerLoyaltyRepository(OpamenuDbContext context) : OpamenuReposi
             .FirstOrDefaultAsync(b => b.CustomerId == customerId && b.TenantId == tenantId);
     }
 
+    public async Task<CustomerLoyaltyBalanceEntity?> GetByCustomerAndProgramAsync(Guid customerId, Guid programId)
+    {
+        return await _dbSet
+            .Include(b => b.Transactions.OrderByDescending(t => t.CreatedAt).Take(20))
+            .FirstOrDefaultAsync(b => b.CustomerId == customerId && b.LoyaltyProgramId == programId);
+    }
+
+    public async Task<IEnumerable<CustomerLoyaltyBalanceEntity>> GetAllBalancesAsync(Guid customerId, Guid tenantId)
+    {
+        return await _dbSet
+            .Include(b => b.LoyaltyProgram)
+            .Include(b => b.Transactions.OrderByDescending(t => t.CreatedAt).Take(5))
+            .Where(b => b.CustomerId == customerId && b.TenantId == tenantId)
+            .ToListAsync();
+    }
+
     public async Task AddTransactionAsync(LoyaltyTransactionEntity transaction)
     {
         await _context.Set<LoyaltyTransactionEntity>().AddAsync(transaction);

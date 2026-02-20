@@ -22,6 +22,12 @@ public class CustomerLoyaltyBalanceEntity : BaseEntity
     [Column("last_activity_at")]
     public DateTime LastActivityAt { get; set; } = DateTime.UtcNow;
 
+    [Column("loyalty_program_id")]
+    public Guid? LoyaltyProgramId { get; set; }
+
+    [ForeignKey("LoyaltyProgramId")]
+    public virtual LoyaltyProgramEntity? LoyaltyProgram { get; set; }
+
     // Navigation properties
     public virtual CustomerEntity Customer { get; set; } = null!;
     public virtual ICollection<LoyaltyTransactionEntity> Transactions { get; set; } = new List<LoyaltyTransactionEntity>();

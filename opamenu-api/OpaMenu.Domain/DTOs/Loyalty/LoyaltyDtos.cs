@@ -46,6 +46,14 @@ public class CustomerLoyaltySummaryDto
     public int Balance { get; set; }
     public int TotalEarned { get; set; }
     public LoyaltyProgramDto? Program { get; set; }
+    public List<CustomerLoyaltyBalanceDto> Balances { get; set; } = new();
+}
+
+public class CustomerLoyaltyBalanceDto
+{
+    public Guid? ProgramId { get; set; }
+    public string ProgramName { get; set; } = string.Empty;
+    public int Balance { get; set; }
 }
 
 public class LoyaltyTransactionDto

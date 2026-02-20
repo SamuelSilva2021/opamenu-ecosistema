@@ -148,15 +148,48 @@ public class LoyaltyService(
             if (customer == null)
                 return StaticResponseBuilder<CustomerLoyaltySummaryDto>.BuildNotFound(null!);
 
-            var balance = await _customerLoyaltyRepository.GetByCustomerAndTenantAsync(customer.Id, tenantId);
+            // Multi-Wallet: Get All Balances
+            var balances = await _customerLoyaltyRepository.GetAllBalancesAsync(customer.Id, tenantId).ToList();
             var programs = await _loyaltyProgramRepository.GetByTenantIdAsync(tenantId);
-            var program = programs.FirstOrDefault();
+            var activePrograms = programs.Where(p => p.IsActive).ToList();
+
+            // Lazy Migration: If there is a legacy balance (ProgramId == null), assign it to the first active PointsPerValue program
+            var legacyBalance = balances.FirstOrDefault(b => b.LoyaltyProgramId == null);
+            if (legacyBalance != null && activePrograms.Any())
+            {
+                var targetProgram = activePrograms.FirstOrDefault(p => p.Type == ELoyaltyProgramType.PointsPerValue);
+                if (targetProgram != null)
+                {
+                    _logger.LogInformation("Migrating legacy balance {BalanceId} for customer {CustomerId} to program {ProgramId}", 
+                        legacyBalance.Id, customer.Id, targetProgram.Id);
+                    
+                    legacyBalance.LoyaltyProgramId = targetProgram.Id;
+                    await _customerLoyaltyRepository.UpdateAsync(legacyBalance);
+                    
+                    // Refresh balances list after update
+                    balances = await _customerLoyaltyRepository.GetAllBalancesAsync(customer.Id, tenantId).ToList();
+                }
+            }
+            
+            var balancesDto = balances.Select(b => new CustomerLoyaltyBalanceDto
+            {
+                ProgramId = b.LoyaltyProgramId,
+                ProgramName = b.LoyaltyProgram?.Name ?? "Saldo Geral",
+                Balance = b.Balance
+            }).ToList();
+
+            var totalBalance = balances.Sum(b => b.Balance);
+            var totalEarned = balances.Sum(b => b.TotalEarned);
+
+            // Legacy support: Populate 'Program' with the first found active program, or null
+            var firstProgram = activePrograms.FirstOrDefault();
 
             return StaticResponseBuilder<CustomerLoyaltySummaryDto>.BuildOk(new CustomerLoyaltySummaryDto
             {
-                Balance = balance?.Balance ?? 0,
-                TotalEarned = balance?.TotalEarned ?? 0,
-                Program = program != null ? MapToDto(program) : null
+                Balance = totalBalance,
+                TotalEarned = totalEarned,
+                Program = firstProgram != null ? MapToDto(firstProgram) : null,
+                Balances = balancesDto
             });
         }
         catch (Exception ex)
@@ -183,21 +216,6 @@ public class LoyaltyService(
                 _logger.LogInformation("Pontos do pedido {OrderId} já foram processados anteriormente.", order.Id);
                 return;
             }
-
-            var balance = await _customerLoyaltyRepository.GetByCustomerAndTenantAsync(order.CustomerId, tenantId);
-            if (balance == null)
-            {
-                balance = new CustomerLoyaltyBalanceEntity
-                {
-                    CustomerId = order.CustomerId,
-                    TenantId = tenantId,
-                    Balance = 0,
-                    TotalEarned = 0
-                };
-                await _customerLoyaltyRepository.AddAsync(balance);
-            }
-
-            int totalPointsInOrder = 0;
 
             foreach (var program in activePrograms)
             {
@@ -231,15 +249,12 @@ public class LoyaltyService(
                         continue;
                     }
 
-                    // Fix: Apply CurrencyValue (e.g., 1 point per R$ 1.50)
-                    // Formula: (Value / CurrencyValue) * PointsPerCurrency
                     if (program.CurrencyValue > 0)
                     {
                         pointsToEarn = (int)Math.Floor((eligibleValue / program.CurrencyValue) * program.PointsPerCurrency);
                     }
                     else
                     {
-                        // Fallback if CurrencyValue is 0 (should exist validation) -> Simply multiply
                         pointsToEarn = (int)Math.Floor(eligibleValue * program.PointsPerCurrency);
                     }
                     
@@ -268,6 +283,22 @@ public class LoyaltyService(
 
                 if (pointsToEarn <= 0) continue;
 
+                // Multi-Wallet: Get or Create Balance Specifc for THIS Program
+                var balance = await _customerLoyaltyRepository.GetByCustomerAndProgramAsync(order.CustomerId, program.Id);
+                
+                if (balance == null)
+                {
+                    balance = new CustomerLoyaltyBalanceEntity
+                    {
+                        CustomerId = order.CustomerId,
+                        TenantId = tenantId,
+                        LoyaltyProgramId = program.Id, // Link to Program
+                        Balance = 0,
+                        TotalEarned = 0
+                    };
+                    await _customerLoyaltyRepository.AddAsync(balance);
+                }
+
                 var transaction = new LoyaltyTransactionEntity
                 {
                     CustomerLoyaltyBalanceId = balance.Id,
@@ -282,13 +313,9 @@ public class LoyaltyService(
                 };
 
                 await _customerLoyaltyRepository.AddTransactionAsync(transaction);
-                totalPointsInOrder += pointsToEarn;
-            }
-
-            if (totalPointsInOrder > 0)
-            {
-                balance.Balance += totalPointsInOrder;
-                balance.TotalEarned += totalPointsInOrder;
+                
+                balance.Balance += pointsToEarn;
+                balance.TotalEarned += pointsToEarn;
                 balance.LastActivityAt = DateTime.UtcNow;
                 await _customerLoyaltyRepository.UpdateAsync(balance);
             }

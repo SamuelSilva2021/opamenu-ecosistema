@@ -18,7 +18,10 @@ export const LoyaltyRedemption = ({ program, customer }: LoyaltyRedemptionProps)
   const { balance } = useLoyalty(slug, customer.phone);
   const [pointsToUse, setPointsToUse] = useState<number>(loyaltyPointsUsed);
 
-  const pointsBalance = balance?.balance || 0;
+  // Multi-Wallet: Tenta encontrar o saldo específico deste programa
+  // Fallback para balance.balance apenas se não houver lista de balanços (compatibilidade)
+  const programBalance = balance?.balances?.find(b => b.programId === program.id)?.balance;
+  const pointsBalance = programBalance !== undefined ? programBalance : (balance?.balance || 0);
 
   // Valor de resgate: 1 ponto = R$ 1.00 (Configuração padrão se não houver currencyValue)
   // O usuário está usando "currencyValue" para "Moeda Base" no painel, que pode ser 0 ou outro valor.

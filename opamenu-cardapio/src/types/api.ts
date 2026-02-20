@@ -62,10 +62,17 @@ export interface LoyaltyProgramDto {
   filters?: LoyaltyProgramFilterDto[];
 }
 
+export interface CustomerLoyaltyBalanceDto {
+  programId?: string;
+  programName: string;
+  balance: number;
+}
+
 export interface CustomerLoyaltySummaryDto {
   balance: number;
   totalEarned: number;
   program?: LoyaltyProgramDto;
+  balances?: CustomerLoyaltyBalanceDto[];
 }
 
 export interface PixResponseDto {

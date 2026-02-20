@@ -29,12 +29,12 @@ const LoyaltyPageContent = () => {
     };
 
     const getRewardDescription = (type?: ELoyaltyRewardType, value?: number) => {
-        if (value === undefined) return '';
+        // if (value === undefined) return ''; // Removed to allow handling 0 or undefined inside switch
         switch (type) {
             case ELoyaltyRewardType.DiscountPercentage:
-                return `${value}% de desconto no seu próximo pedido`;
+                return value && value > 0 ? `${value}% de desconto no seu próximo pedido` : 'Descontos exclusivos';
             case ELoyaltyRewardType.DiscountValue:
-                return `R$ ${value.toFixed(2)} de desconto no seu próximo pedido`;
+                return value && value > 0 ? `R$ ${value.toFixed(2)} de desconto no seu próximo pedido` : 'Troque pontos por descontos no pagamento';
             case ELoyaltyRewardType.FreeProduct:
                 return 'Ganhe um produto grátis na sua próxima compra';
             default:
@@ -122,9 +122,11 @@ const LoyaltyPageContent = () => {
                     ) : (
                         <div className="grid gap-4">
                             {programs.map((program) => {
-                                const hasBalance = !!balance;
+                                // Multi-Wallet: Find specific balance for this program
+                                const programBalance = balance?.balances?.find(b => b.programId === program.id)?.balance || 0;
+                                const hasBalance = programBalance > 0;
                                 const progress = hasBalance && program.targetCount
-                                    ? Math.min((balance.balance / program.targetCount) * 100, 100)
+                                    ? Math.min((programBalance / program.targetCount) * 100, 100)
                                     : 0;
 
                                 return (
@@ -166,7 +168,7 @@ const LoyaltyPageContent = () => {
                                                 <div className="space-y-2">
                                                     <div className="flex justify-between text-xs font-bold text-gray-500">
                                                         <span>Progresso</span>
-                                                        <span>{hasBalance ? balance.balance : 0} / {program.targetCount}</span>
+                                                        <span>{hasBalance ? programBalance : 0} / {program.targetCount}</span>
                                                     </div>
                                                     <Progress value={progress} className="h-2 rounded-full" />
                                                 </div>
