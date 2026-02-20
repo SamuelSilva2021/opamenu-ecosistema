@@ -156,7 +156,7 @@ public static class ServiceCollectionExtensions
                     var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
                     var userId = context.Principal?.FindFirst("user_id")?.Value ?? 
                                 context.Principal?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-                    logger.LogInformation("Token JWT validado para usuÃ¡rio: {UserId}", userId);
+                    logger.LogInformation("Token JWT validado para usuário: {UserId}", userId);
                     return Task.CompletedTask;
                 }
             };

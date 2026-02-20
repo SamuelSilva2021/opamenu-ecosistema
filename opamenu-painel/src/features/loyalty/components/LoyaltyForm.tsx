@@ -103,6 +103,7 @@ export function LoyaltyForm({ initialData, onSubmit, isLoading, readOnly }: Loya
 
   const type = form.watch("type");
   const currencyValue = form.watch("currencyValue");
+  const minOrderValue = form.watch("minOrderValue");
   const pointsPerCurrency = form.watch("pointsPerCurrency");
   const selectedFilters = form.watch("filters");
 
@@ -126,7 +127,33 @@ export function LoyaltyForm({ initialData, onSubmit, isLoading, readOnly }: Loya
         currency: "BRL",
       }).format(currencyValue || 0);
 
-      const desc = `A cada ${formattedCurrency} em compra você ganha ${pointsPerCurrency || 0} ponto para trocar por recompensas.`;
+      const formattedMinOrderValue = new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      }).format(minOrderValue || 0);
+
+      const formattedMinOderValueText = minOrderValue > 0 ? `nos pedidos acima de ${formattedMinOrderValue}` : "";
+
+      let exclusionsText = "";
+      if (selectedFilters.length > 0) {
+        const baseNames = new Set<string>();
+        selectedFilters.forEach(f => {
+          if (f.categoryId) {
+            const c = categories?.find((c: any) => c.id === f.categoryId);
+            if (c) baseNames.add(c.name);
+          } else if (f.productId) {
+            const p = products.find((p: any) => p.id === f.productId);
+            if (p) baseNames.add(p.name);
+          }
+        });
+
+        if (baseNames.size > 0) {
+          const list = Array.from(baseNames).join(", ").replace(/, ([^,]*)$/, " e $1");
+          exclusionsText = ` (exceto ${list})`;
+        }
+      }
+
+      const desc = `A cada ${formattedCurrency} em compra${formattedMinOderValueText} você ganha ${pointsPerCurrency || 0} ponto para trocar por recompensas${exclusionsText}.`;
       form.setValue("description", desc);
     } else if (type === ELoyaltyProgramType.OrderCount) {
       form.setValue("description", "Cada pedido realizado conta 1 ponto para o programa.");
@@ -312,10 +339,14 @@ export function LoyaltyForm({ initialData, onSubmit, isLoading, readOnly }: Loya
             </div>
           )}
 
-          {type === ELoyaltyProgramType.ItemCount && (
+          {(type === ELoyaltyProgramType.ItemCount || type === ELoyaltyProgramType.PointsPerValue) && (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Adicionar Filtro (Produto ou Categoria)</Label>
+                <Label>
+                  {type === ELoyaltyProgramType.PointsPerValue
+                    ? "Excluir Produtos ou Categorias (Não pontuam)"
+                    : "Adicionar Filtro (Apenas estes pontuam)"}
+                </Label>
                 <div className="grid grid-cols-2 gap-6">
                   <Select onValueChange={(val) => addFilter(val, undefined)} disabled={readOnly}>
                     <SelectTrigger><SelectValue placeholder="Produto" /></SelectTrigger>

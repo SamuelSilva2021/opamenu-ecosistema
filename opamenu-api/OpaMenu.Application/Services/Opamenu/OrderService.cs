@@ -75,22 +75,31 @@ public class OrderService(
             }
 
             var tenantId = tenantGuid.Value;
+            
+            // Ajuste de Fuso Horário (Temporário: assumindo -3h para Brasil)
+            // TODO: Implementar configuração de TimeZone por Tenant
+            var timeZoneOffset = TimeSpan.FromHours(-3);
 
+            DateTime targetDate;
             if (date.HasValue)
             {
-                var startDate = DateTime.SpecifyKind(date.Value.Date, DateTimeKind.Utc);
-                var endDate = startDate.AddDays(1).AddTicks(-1);
-                _logger.LogInformation("Buscando pedidos para o Tenant {TenantId} na data {Date} (Range: {Start} a {End})", tenantId, date.Value.ToShortDateString(), startDate, endDate);
-                orders = await _orderRepository.GetOrdersByDateRangeAsync(tenantId, startDate, endDate);
+                targetDate = date.Value.Date;
             }
             else
             {
-                // Se não informado data, busca somente os de hoje (UTC)
-                var startDate = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
-                var endDate = startDate.AddDays(1).AddTicks(-1);
-                _logger.LogInformation("Buscando pedidos de hoje para o Tenant {TenantId} (Range UTC: {Start} a {End})", tenantId, startDate, endDate);
-                orders = await _orderRepository.GetOrdersByDateRangeAsync(tenantId, startDate, endDate);
+                // Se não informado, usa a data atual do tenant
+                targetDate = DateTime.UtcNow.Add(timeZoneOffset).Date;
             }
+
+            // Converter o range do dia (Local) para UTC
+            // Ex: 19/02 00:00 Local (-3) -> 19/02 03:00 UTC
+            var startDate = DateTime.SpecifyKind(targetDate.Add(-timeZoneOffset), DateTimeKind.Utc);
+            var endDate = startDate.AddDays(1).AddTicks(-1);
+
+            _logger.LogInformation("Buscando pedidos para o Tenant {TenantId} na data {Date} (Range UTC: {Start} a {End})", 
+                tenantId, targetDate.ToShortDateString(), startDate, endDate);
+            
+            orders = await _orderRepository.GetOrdersByDateRangeAsync(tenantId, startDate, endDate);
 
             var orderDtos = _mapper.Map<IEnumerable<OrderResponseDto>>(orders);
 

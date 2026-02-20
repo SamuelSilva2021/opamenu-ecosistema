@@ -59,84 +59,84 @@ public class LoyaltyService(
         }
     }
 
-    public async Task<ResponseDTO<LoyaltyProgramDto>> UpsertProgramAsync(Guid tenantId, CreateLoyaltyProgramDto dto)
+    public async Task<ResponseDTO<LoyaltyProgramDto>> CreateProgramAsync(Guid tenantId, CreateLoyaltyProgramDto dto)
     {
         try
         {
-            var programs = await _loyaltyProgramRepository.GetByTenantIdAsync(tenantId);
-            LoyaltyProgramEntity? program = null;
-            
-            // Se for uma atualização (contém ID ou buscamos pelo primeiro existente para compatibilidade v1)
-            // No futuro o Painel passará o ID para edição de programas específicos.
-            // Para Phase 4, se o Painel não enviar ID, criamos um NOVO.
-            // Mas para manter compatibilidade com a migração, vamos buscar se o usuário enviou um ID.
-            
-            // Nota: CreateLoyaltyProgramDto ainda não tem Id, mas podemos usar um UpdateLoyaltyProgramDto se necessário.
-            // Por enquanto, se houver um programa e o nome for igual, atualizamos. Senão, criamos.
-            // Para simplificar a Fase 4, vamos sempre criar se for um Post novo, ou atualizar se houver lógica de ID.
-            
-            program = programs.FirstOrDefault(); // Lógica V1: atualiza o primeiro.
-
-            if (program == null)
+            var program = new LoyaltyProgramEntity
             {
-                program = new LoyaltyProgramEntity
+                TenantId = tenantId,
+                Name = dto.Name,
+                Description = dto.Description,
+                PointsPerCurrency = dto.PointsPerCurrency,
+                CurrencyValue = dto.CurrencyValue,
+                MinOrderValue = dto.MinOrderValue,
+                PointsValidityDays = dto.PointsValidityDays,
+                IsActive = dto.IsActive,
+                Type = dto.Type,
+                TargetCount = dto.TargetCount,
+                RewardType = dto.RewardType,
+                RewardValue = dto.RewardValue,
+                Filters = dto.Filters.Select(f => new LoyaltyProgramFilterEntity
                 {
-                    TenantId = tenantId,
-                    Name = dto.Name,
-                    Description = dto.Description,
-                    PointsPerCurrency = dto.PointsPerCurrency,
-                    CurrencyValue = dto.CurrencyValue,
-                    MinOrderValue = dto.MinOrderValue,
-                    PointsValidityDays = dto.PointsValidityDays,
-                    IsActive = dto.IsActive,
-                    Type = dto.Type,
-                    TargetCount = dto.TargetCount,
-                    RewardType = dto.RewardType,
-                    RewardValue = dto.RewardValue,
-                    Filters = dto.Filters.Select(f => new LoyaltyProgramFilterEntity
-                    {
-                        ProductId = f.ProductId,
-                        CategoryId = f.CategoryId
-                    }).ToList()
-                };
-                await _loyaltyProgramRepository.AddAsync(program);
-            }
-            else
-            {
-                program.Name = dto.Name;
-                program.Description = dto.Description;
-                program.PointsPerCurrency = dto.PointsPerCurrency;
-                program.CurrencyValue = dto.CurrencyValue;
-                program.MinOrderValue = dto.MinOrderValue;
-                program.PointsValidityDays = dto.PointsValidityDays;
-                program.IsActive = dto.IsActive;
-                program.Type = dto.Type;
-                program.TargetCount = dto.TargetCount;
-                program.RewardType = dto.RewardType;
-                program.RewardValue = dto.RewardValue;
-                program.UpdatedAt = DateTime.UtcNow;
-
-                // Atualizar Filtros
-                program.Filters.Clear();
-                foreach (var filterDto in dto.Filters)
-                {
-                    program.Filters.Add(new LoyaltyProgramFilterEntity
-                    {
-                        LoyaltyProgramId = program.Id,
-                        ProductId = filterDto.ProductId,
-                        CategoryId = filterDto.CategoryId
-                    });
-                }
-
-                await _loyaltyProgramRepository.UpdateAsync(program);
-            }
+                    ProductId = f.ProductId,
+                    CategoryId = f.CategoryId
+                }).ToList()
+            };
+            await _loyaltyProgramRepository.AddAsync(program);
 
             return StaticResponseBuilder<LoyaltyProgramDto>.BuildOk(MapToDto(program));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao salvar programa de fidelidade");
-            return StaticResponseBuilder<LoyaltyProgramDto>.BuildError("Erro ao salvar programa");
+            _logger.LogError(ex, "Erro ao criar programa de fidelidade");
+            return StaticResponseBuilder<LoyaltyProgramDto>.BuildError("Erro ao criar programa");
+        }
+    }
+
+    public async Task<ResponseDTO<LoyaltyProgramDto>> UpdateProgramAsync(Guid tenantId, Guid programId, CreateLoyaltyProgramDto dto)
+    {
+        try
+        {
+            var programs = await _loyaltyProgramRepository.GetByTenantIdAsync(tenantId);
+            var program = programs.FirstOrDefault(p => p.Id == programId);
+
+            if (program == null)
+                return StaticResponseBuilder<LoyaltyProgramDto>.BuildNotFound(null!);
+
+            program.Name = dto.Name;
+            program.Description = dto.Description;
+            program.PointsPerCurrency = dto.PointsPerCurrency;
+            program.CurrencyValue = dto.CurrencyValue;
+            program.MinOrderValue = dto.MinOrderValue;
+            program.PointsValidityDays = dto.PointsValidityDays;
+            program.IsActive = dto.IsActive;
+            program.Type = dto.Type;
+            program.TargetCount = dto.TargetCount;
+            program.RewardType = dto.RewardType;
+            program.RewardValue = dto.RewardValue;
+            program.UpdatedAt = DateTime.UtcNow;
+
+            // Atualizar Filtros
+            program.Filters.Clear();
+            foreach (var filterDto in dto.Filters)
+            {
+                program.Filters.Add(new LoyaltyProgramFilterEntity
+                {
+                    LoyaltyProgramId = program.Id,
+                    ProductId = filterDto.ProductId,
+                    CategoryId = filterDto.CategoryId
+                });
+            }
+
+            await _loyaltyProgramRepository.UpdateAsync(program);
+
+            return StaticResponseBuilder<LoyaltyProgramDto>.BuildOk(MapToDto(program));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao atualizar programa de fidelidade");
+            return StaticResponseBuilder<LoyaltyProgramDto>.BuildError("Erro ao atualizar programa");
         }
     }
 
@@ -208,7 +208,44 @@ public class LoyaltyService(
 
                 if (program.Type == ELoyaltyProgramType.PointsPerValue)
                 {
-                    pointsToEarn = (int)Math.Floor(order.Total * program.PointsPerCurrency);
+                    decimal eligibleValue = order.Total;
+                    _logger.LogInformation("Processing PointsPerValue. Order Total: {Total}, MinOrder: {Min}, Items: {ItemCount}", 
+                        order.Total, program.MinOrderValue, order.Items.Count);
+
+                    if (program.Filters != null && program.Filters.Any())
+                    {
+                        var excludedItemsValue = order.Items
+                            .Where(orderItem => program.Filters.Any(f =>
+                                (f.ProductId.HasValue && f.ProductId == orderItem.ProductId) ||
+                                (f.CategoryId.HasValue && orderItem.Product != null && orderItem.Product.CategoryId == f.CategoryId)
+                            ))
+                            .Sum(i => i.Subtotal);
+
+                        eligibleValue -= excludedItemsValue;
+                        _logger.LogInformation("Excluded Value: {Excluded}, Eligible Value: {Eligible}", excludedItemsValue, eligibleValue);
+                    }
+
+                    if (eligibleValue <= 0) 
+                    {
+                        _logger.LogInformation("Eligible value is 0 or less. Skipping.");
+                        continue;
+                    }
+
+                    // Fix: Apply CurrencyValue (e.g., 1 point per R$ 1.50)
+                    // Formula: (Value / CurrencyValue) * PointsPerCurrency
+                    if (program.CurrencyValue > 0)
+                    {
+                        pointsToEarn = (int)Math.Floor((eligibleValue / program.CurrencyValue) * program.PointsPerCurrency);
+                    }
+                    else
+                    {
+                        // Fallback if CurrencyValue is 0 (should exist validation) -> Simply multiply
+                        pointsToEarn = (int)Math.Floor(eligibleValue * program.PointsPerCurrency);
+                    }
+                    
+                    _logger.LogInformation("Points Calculated: {Points} (CurrencyVal: {CV}, PointsPerCurr: {PPC})", 
+                        pointsToEarn, program.CurrencyValue, program.PointsPerCurrency);
+
                     description = $"Pontos do pedido #{order.Id} ({program.Name})";
                 }
                 else if (program.Type == ELoyaltyProgramType.OrderCount)

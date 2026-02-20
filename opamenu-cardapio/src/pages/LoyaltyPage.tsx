@@ -36,7 +36,7 @@ const LoyaltyPageContent = () => {
             case ELoyaltyRewardType.DiscountValue:
                 return `R$ ${value.toFixed(2)} de desconto no seu próximo pedido`;
             case ELoyaltyRewardType.FreeProduct:
-                return 'Gahne um produto grátis na sua próxima compra';
+                return 'Ganhe um produto grátis na sua próxima compra';
             default:
                 return 'Recompensa especial';
         }
@@ -122,9 +122,9 @@ const LoyaltyPageContent = () => {
                     ) : (
                         <div className="grid gap-4">
                             {programs.map((program) => {
-                                const isUserInThisProgram = balance?.program?.id === program.id;
-                                const progress = isUserInThisProgram && program.targetCount
-                                    ? (balance.balance / program.targetCount) * 100
+                                const hasBalance = !!balance;
+                                const progress = hasBalance && program.targetCount
+                                    ? Math.min((balance.balance / program.targetCount) * 100, 100)
                                     : 0;
 
                                 return (
@@ -134,9 +134,9 @@ const LoyaltyPageContent = () => {
                                                 <CardTitle className="text-lg font-bold text-gray-800">{program.name}</CardTitle>
                                                 <div className={`
                           px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest
-                          ${isUserInThisProgram ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}
+                          ${hasBalance ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}
                         `}>
-                                                    {isUserInThisProgram ? 'Sua meta atual' : 'Participe'}
+                                                    {hasBalance ? 'Ativo' : 'Participe'}
                                                 </div>
                                             </div>
                                             <p className="text-sm text-gray-500 leading-tight">
@@ -166,7 +166,7 @@ const LoyaltyPageContent = () => {
                                                 <div className="space-y-2">
                                                     <div className="flex justify-between text-xs font-bold text-gray-500">
                                                         <span>Progresso</span>
-                                                        <span>{isUserInThisProgram ? balance.balance : 0} / {program.targetCount}</span>
+                                                        <span>{hasBalance ? balance.balance : 0} / {program.targetCount}</span>
                                                     </div>
                                                     <Progress value={progress} className="h-2 rounded-full" />
                                                 </div>

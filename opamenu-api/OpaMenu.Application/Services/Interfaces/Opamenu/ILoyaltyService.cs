@@ -9,7 +9,8 @@ public interface ILoyaltyService
 {
     Task<ResponseDTO<LoyaltyProgramDto>> GetProgramAsync(Guid tenantId);
     Task<ResponseDTO<IEnumerable<LoyaltyProgramDto>>> GetAllProgramsAsync(Guid tenantId);
-    Task<ResponseDTO<LoyaltyProgramDto>> UpsertProgramAsync(Guid tenantId, CreateLoyaltyProgramDto dto);
+    Task<ResponseDTO<LoyaltyProgramDto>> CreateProgramAsync(Guid tenantId, CreateLoyaltyProgramDto dto);
+    Task<ResponseDTO<LoyaltyProgramDto>> UpdateProgramAsync(Guid tenantId, Guid programId, CreateLoyaltyProgramDto dto);
     Task<ResponseDTO<CustomerLoyaltySummaryDto>> GetCustomerBalanceAsync(Guid tenantId, string customerPhone);
     Task ProcessOrderPointsAsync(Guid orderId, Guid tenantId);
     Task<ResponseDTO<LoyaltyProgramDto>> ToggleStatus(Guid tenantId, Guid id, bool status);

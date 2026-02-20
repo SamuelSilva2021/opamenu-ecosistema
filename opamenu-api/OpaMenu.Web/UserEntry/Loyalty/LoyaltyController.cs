@@ -56,7 +56,7 @@ public class LoyaltyController(
     }
 
     /// <summary>
-    /// Cria ou atualiza o programa de fidelidade
+    /// Cria um novo programa de fidelidade
     /// </summary>
     [HttpPost("program")]
     [Authorize]
@@ -67,23 +67,23 @@ public class LoyaltyController(
         if (!tenantId.HasValue)
             return Unauthorized();
 
-        var response = await _loyaltyService.UpsertProgramAsync(tenantId.Value, dto);
+        var response = await _loyaltyService.CreateProgramAsync(tenantId.Value, dto);
         return BuildResponse(response);
     }
 
     /// <summary>
-    /// Cria ou atualiza o programa de fidelidade
+    /// Atualiza um programa de fidelidade existente
     /// </summary>
-    [HttpPut("program")]
+    [HttpPut("program/{id}")]
     [Authorize]
     [MapPermission(MODULE_LOYALTY, OPERATION_UPDATE)]
-    public async Task<ActionResult> UpdateProgram([FromBody] CreateLoyaltyProgramDto dto)
+    public async Task<ActionResult> UpdateProgram(Guid id, [FromBody] CreateLoyaltyProgramDto dto)
     {
         var tenantId = _currentUserService.GetTenantGuid();
         if (!tenantId.HasValue)
             return Unauthorized();
 
-        var response = await _loyaltyService.UpsertProgramAsync(tenantId.Value, dto);
+        var response = await _loyaltyService.UpdateProgramAsync(tenantId.Value, id, dto);
         return BuildResponse(response);
     }
 

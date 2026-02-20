@@ -20,9 +20,10 @@ export const LoyaltyRedemption = ({ program, customer }: LoyaltyRedemptionProps)
 
   const pointsBalance = balance?.balance || 0;
 
-  // Valor de resgate: 1 ponto = R$ 1.00 (Configuração temporária)
-  // Idealmente isso viria do LoyaltyProgramDto (ex: redemptionValue)
-  const VALUE_PER_POINT = program.currencyValue || 1.0;
+  // Valor de resgate: 1 ponto = R$ 1.00 (Configuração padrão se não houver currencyValue)
+  // O usuário está usando "currencyValue" para "Moeda Base" no painel, que pode ser 0 ou outro valor.
+  // Se for 0, assumimos 1.0 para permitir o funcionamento.
+  const VALUE_PER_POINT = (program.currencyValue && program.currencyValue > 0) ? program.currencyValue : 1.0;
 
   // Calcula o máximo de pontos que podem ser usados
   // Não pode usar mais que o saldo

@@ -8,7 +8,11 @@ export const loyaltyService = {
      */
     getPrograms: async (slug: string) => {
         const url = API_ENDPOINTS.PUBLIC.LOYALTY.PROGRAMS(slug);
-        return httpClient.get<ApiResponse<LoyaltyProgramDto[]>>(url);
+        const data = await httpClient.get<LoyaltyProgramDto[]>(url);
+        return {
+            data,
+            succeeded: true
+        } as ApiResponse<LoyaltyProgramDto[]>;
     },
 
     /**
@@ -16,6 +20,10 @@ export const loyaltyService = {
      */
     getCustomerBalance: async (slug: string, phone: string) => {
         const url = API_ENDPOINTS.PUBLIC.LOYALTY.BALANCE(slug, phone);
-        return httpClient.get<ApiResponse<CustomerLoyaltySummaryDto>>(url);
+        const data = await httpClient.get<CustomerLoyaltySummaryDto>(url);
+        return {
+            data,
+            succeeded: true
+        } as ApiResponse<CustomerLoyaltySummaryDto>;
     }
 };

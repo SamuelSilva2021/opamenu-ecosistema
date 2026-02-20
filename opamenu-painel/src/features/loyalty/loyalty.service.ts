@@ -25,7 +25,8 @@ export const loyaltyService = {
   },
 
   updateProgram: async (data: UpdateLoyaltyProgramRequest): Promise<LoyaltyProgram> => {
-    const response = await api.put<LoyaltyProgram>(`/loyalty/program`, data);
+    const { id, ...payload } = data;
+    const response = await api.put<LoyaltyProgram>(`/loyalty/program/${id}`, payload);
     return response.data;
   },
 
