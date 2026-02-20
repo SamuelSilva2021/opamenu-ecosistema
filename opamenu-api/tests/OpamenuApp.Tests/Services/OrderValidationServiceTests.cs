@@ -48,7 +48,7 @@ namespace OpamenuApp.Tests.Services
             // Arrange
             var createRequest = new CreateOrderRequestDto
             {
-                CustomerName = "JoÃ£o Silva",
+                CustomerName = "João Silva",
                 CustomerPhone = "11999999999",
                 Items = new List<CreateOrderItemRequestDto>
                 {
@@ -88,7 +88,7 @@ namespace OpamenuApp.Tests.Services
 
             // Assert
             Assert.False(result.Success);
-            Assert.Equal("Nome do cliente Ã© obrigatÃ³rio.", result.Error);
+            Assert.Equal("Nome do cliente é obrigatório.", result.Error);
         }
 
         [Fact]
@@ -97,7 +97,7 @@ namespace OpamenuApp.Tests.Services
             // Arrange
             var createRequest = new CreateOrderRequestDto
             {
-                CustomerName = "JoÃ£o Silva",
+                CustomerName = "João Silva",
                 CustomerPhone = "11999999999",
                 Items = new List<CreateOrderItemRequestDto>()
             };
@@ -116,7 +116,7 @@ namespace OpamenuApp.Tests.Services
             // Arrange
             var createRequest = new CreateOrderRequestDto
             {
-                CustomerName = "JoÃ£o Silva",
+                CustomerName = "João Silva",
                 CustomerPhone = "11999999999",
                 Items = new List<CreateOrderItemRequestDto>
                 {
@@ -133,7 +133,7 @@ namespace OpamenuApp.Tests.Services
 
             // Assert
             Assert.False(result.Success);
-            Assert.Equal("Produto com ID 999 nÃ£o encontrado.", result.Error);
+            Assert.Equal("Produto com ID 999 não encontrado.", result.Error);
         }
 
         [Fact]
@@ -142,7 +142,7 @@ namespace OpamenuApp.Tests.Services
             // Arrange
             var createRequest = new CreateOrderRequestDto
             {
-                CustomerName = "JoÃ£o Silva",
+                CustomerName = "João Silva",
                 CustomerPhone = "11999999999",
                 Items = new List<CreateOrderItemRequestDto>
                 {
@@ -155,12 +155,12 @@ namespace OpamenuApp.Tests.Services
             _mockProductRepository.Setup(x => x.GetByIdAsync(productId, _tenantId)).ReturnsAsync(product);
             createRequest.Items[0].ProductId = productId;
 
-            // Act
+            // Act  
             var result = await _validationService.ValidateCreateOrderAsync(createRequest);
 
             // Assert
             Assert.False(result.Success);
-            Assert.Equal("Produto 'Produto Teste' nÃ£o estÃ¡ disponÃ­vel.", result.Error);
+            Assert.Equal("Produto 'Produto Teste' não está disponível.", result.Error);
         }
 
         [Fact]
@@ -169,7 +169,7 @@ namespace OpamenuApp.Tests.Services
             // Arrange
             var updateRequest = new UpdateOrderRequestDto
             {
-                CustomerName = "JoÃ£o Silva Atualizado",
+                CustomerName = "João Silva Atualizado",
                 CustomerPhone = "11888888888"
             };
             var orderId = Guid.NewGuid();
@@ -190,7 +190,7 @@ namespace OpamenuApp.Tests.Services
             // Arrange
             var updateRequest = new UpdateOrderRequestDto
             {
-                CustomerName = "JoÃ£o Silva Atualizado"
+                CustomerName = "João Silva Atualizado"
             };
             var orderId = Guid.NewGuid();
             var order = new OrderEntity { Id = orderId, Status = EOrderStatus.Delivered, TenantId = _tenantId };
@@ -202,7 +202,7 @@ namespace OpamenuApp.Tests.Services
 
             // Assert
             Assert.False(result.Success);
-            Assert.Equal("NÃ£o Ã© possÃ­vel atualizar pedidos finalizados ou cancelados.", result.Error);
+            Assert.Equal("Não é possível atualizar pedidos finalizados ou cancelados.", result.Error);
         }
 
         [Fact]
