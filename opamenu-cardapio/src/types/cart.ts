@@ -39,6 +39,7 @@ export interface OrderRequest {
   paymentMethod: 'dinheiro' | 'cartao' | 'pix';
   couponCode?: string;
   loyaltyPointsUsed?: number;
+  loyaltyProgramId?: string;
   items: {
     productId: string;
     quantity: number;

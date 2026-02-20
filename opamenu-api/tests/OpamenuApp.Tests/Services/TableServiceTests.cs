@@ -2,18 +2,17 @@
 using Moq;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using OpaMenu.Application.Services;
-using OpaMenu.Application.Interfaces;
-using OpaMenu.Infrastructure.Shared.Entities;
+using OpaMenu.Application.Services.Opamenu;
+using OpaMenu.Application.Services.Interfaces.Opamenu;
+using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 using OpaMenu.Domain.Interfaces;
 using OpaMenu.Domain.DTOs.Table;
-using OpaMenu.Application.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 
-namespace PedejaApp.Tests.Unit.Services
+namespace OpamenuApp.Tests.Services
 {
     public class TableServiceTests
     {
@@ -51,8 +50,9 @@ namespace PedejaApp.Tests.Unit.Services
             // Arrange
             var pageNumber = 1;
             var pageSize = 10;
-            var tables = new List<TableEntity> { new TableEntity { Id = 1, Name = "Mesa 1", TenantId = _tenantId } };
-            var tableDtos = new List<TableResponseDto> { new TableResponseDto(1, "Mesa 1", 4, true, null) };
+            var tableId = Guid.NewGuid();
+            var tables = new List<TableEntity> { new TableEntity { Id = tableId, Name = "Mesa 1", TenantId = _tenantId } };
+            var tableDtos = new List<TableResponseDto> { new TableResponseDto(tableId, "Mesa 1", 4, true, null) };
 
             _mockTableRepository.Setup(x => x.GetPagedByTenantIdAsync(_tenantId, pageNumber, pageSize))
                 .ReturnsAsync(tables);
@@ -74,9 +74,10 @@ namespace PedejaApp.Tests.Unit.Services
         public async Task CreateAsync_WithValidData_ShouldCreateTable()
         {
             // Arrange
+            var tableId = Guid.NewGuid();
             var createDto = new CreateTableRequestDto("Mesa 1", 4);
-            var tableEntity = new TableEntity { Id = 1, Name = "Mesa 1", Capacity = 4, TenantId = _tenantId };
-            var tableResponse = new TableResponseDto(1, "Mesa 1", 4, true, null);
+            var tableEntity = new TableEntity { Id = tableId, Name = "Mesa 1", Capacity = 4, TenantId = _tenantId };
+            var tableResponse = new TableResponseDto(tableId, "Mesa 1", 4, true, null);
 
             _mockTableRepository.Setup(x => x.ExistsByNameAsync(createDto.Name, _tenantId))
                 .ReturnsAsync(false);
@@ -116,7 +117,7 @@ namespace PedejaApp.Tests.Unit.Services
         public async Task UpdateAsync_WithValidData_ShouldUpdateTable()
         {
             // Arrange
-            var id = 1;
+            var id = Guid.NewGuid();
             var updateDto = new UpdateTableRequestDto("Mesa Atualizada", 6, true);
             var existingTable = new TableEntity { Id = id, Name = "Mesa 1", Capacity = 4, TenantId = _tenantId };
             
@@ -138,7 +139,7 @@ namespace PedejaApp.Tests.Unit.Services
         public async Task GenerateQrCodeAsync_ShouldGenerateUrlAndUpdateTable()
         {
             // Arrange
-            var id = 1;
+            var id = Guid.NewGuid();
             var table = new TableEntity { Id = id, Name = "Mesa 1", TenantId = _tenantId };
             var baseUrl = "https://api.opamenu.com";
             var expectedUrl = $"{baseUrl}/menu/{_tenantId}/{id}";

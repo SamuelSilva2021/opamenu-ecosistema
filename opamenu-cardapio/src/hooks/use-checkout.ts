@@ -46,7 +46,7 @@ export const useCheckout = (): CheckoutHookReturn => {
   const storageKey = slug ? `${CHECKOUT_STORAGE_KEY}-${slug}` : CHECKOUT_STORAGE_KEY;
 
   const [currentStep, setCurrentStep] = useState<CheckoutSteps>(CheckoutSteps.CUSTOMER_INFO);
-  
+
   const [checkoutData, setCheckoutData] = useState<CheckoutData>(() => {
     try {
       const saved = localStorage.getItem(storageKey);
@@ -124,6 +124,7 @@ export const useCheckout = (): CheckoutHookReturn => {
         notes: checkoutData.notes?.trim(),
         couponCode: coupon?.code,
         loyaltyPointsUsed: loyaltyPointsUsed > 0 ? loyaltyPointsUsed : undefined,
+        loyaltyProgramId: loyaltyPointsUsed > 0 ? (useCart() as any).loyaltyProgramId : undefined,
         items: cartItems.map(item => ({
           productId: item.product.id,
           quantity: item.quantity,
@@ -137,24 +138,24 @@ export const useCheckout = (): CheckoutHookReturn => {
       };
 
       const order = await createOrder(orderRequest);
-      
+
       if (order) {
         // Armazenar o pedido no estado local do checkout
         setLastOrder(order);
-        
+
         // Limpar dados do localStorage após sucesso
         localStorage.removeItem(storageKey);
 
         // Limpar o carrinho APÓS o pedido ser criado com sucesso
         clearCart();
-        
+
         if (!skipConfirmationNavigation) {
           setCurrentStep(CheckoutSteps.CONFIRMATION);
         }
-        
+
         return order;
       }
-      
+
       return null;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao processar pedido');
@@ -171,14 +172,14 @@ export const useCheckout = (): CheckoutHookReturn => {
     setError(null);
     setLastOrder(null);
     setShowPixPayment(false);
-    
+
     // Limpar dados do localStorage
     localStorage.removeItem(storageKey);
   }, [storageKey]);
 
   const handlePixPayment = useCallback(async (orderOverride?: Order) => {
     const order = orderOverride || lastOrder;
-    
+
     if (!order?.id || !slug) {
       setShowPixPayment(true);
       return;

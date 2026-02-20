@@ -53,4 +53,18 @@ public class PublicLoyaltyController(
         var response = await _loyaltyService.GetCustomerBalanceAsync(tenantResponse.Data.Id, phone);
         return BuildResponse(response);
     }
+
+    /// <summary>
+    /// Resgata pontos de um programa específico (Público/Checkout)
+    /// </summary>
+    [HttpPost("redeem")]
+    public async Task<ActionResult> RedeemPublicPoints(string slug, [FromBody] RedeemLoyaltyPointsDto dto)
+    {
+        var tenantResponse = await _tenantService.GetTenantBusinessInfoBySlugAsync(slug);
+        if (!tenantResponse.Succeeded || tenantResponse.Data == null)
+            return NotFound(StaticResponseBuilder<bool>.BuildError("Restaurante não encontrado"));
+
+        var response = await _loyaltyService.RedeemPointsAsync(tenantResponse.Data.Id, dto);
+        return BuildResponse(response);
+    }
 }

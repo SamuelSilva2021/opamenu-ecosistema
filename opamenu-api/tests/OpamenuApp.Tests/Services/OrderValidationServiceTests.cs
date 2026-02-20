@@ -1,15 +1,20 @@
 ﻿using Xunit;
 using Moq;
 using Microsoft.Extensions.Logging;
-using OpaMenu.Application.Services;
-using OpaMenu.Infrastructure.Shared.Entities;
-using OpaMenu.Domain.Interfaces;
-using OpaMenu.Domain.DTOs;
-using OpaMenu.Infrastructure.Shared.Enums;
 using OpaMenu.Application.Common.Models;
-using OpaMenu.Application.Services.Interfaces;
+using OpaMenu.Application.Services.Interfaces.Opamenu;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
+using OpaMenu.Application.Services.Opamenu;
+using OpaMenu.Domain.Interfaces;
+using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
+using OpaMenu.Domain.DTOs;
+using OpaMenu.Application.DTOs;
+using System.Collections.Generic;
+using System;
+using System.Threading.Tasks;
+using System.Linq;
 
-namespace OpaMenu.Tests.Unit.Services    
+namespace OpamenuApp.Tests.Services    
 {
     public class OrderValidationServiceTests
     {
@@ -47,12 +52,15 @@ namespace OpaMenu.Tests.Unit.Services
                 CustomerPhone = "11999999999",
                 Items = new List<CreateOrderItemRequestDto>
                 {
-                    new CreateOrderItemRequestDto { ProductId = 1, Quantity = 2 }
+                    new CreateOrderItemRequestDto { ProductId = Guid.NewGuid(), Quantity = 2 }
                 }
             };
-            var product = new ProductEntity { Id = 1, Name = "Produto Teste", Price = 15.99m, IsActive = true, TenantId = _tenantId };
+            var productId = Guid.NewGuid();
+            var product = new ProductEntity { Id = productId, Name = "Produto Teste", Price = 15.99m, IsActive = true, TenantId = _tenantId };
 
-            _mockProductRepository.Setup(x => x.GetByIdAsync(1, _tenantId)).ReturnsAsync(product);
+            _mockProductRepository.Setup(x => x.GetByIdAsync(productId, _tenantId)).ReturnsAsync(product);
+
+            createRequest.Items[0].ProductId = productId;
 
             // Act
             var result = await _validationService.ValidateCreateOrderAsync(createRequest);
@@ -71,7 +79,7 @@ namespace OpaMenu.Tests.Unit.Services
                 CustomerPhone = "11999999999",
                 Items = new List<CreateOrderItemRequestDto>
                 {
-                    new CreateOrderItemRequestDto { ProductId = 1, Quantity = 2 }
+                    new CreateOrderItemRequestDto { ProductId = Guid.NewGuid(), Quantity = 2 }
                 }
             };
 
@@ -112,11 +120,13 @@ namespace OpaMenu.Tests.Unit.Services
                 CustomerPhone = "11999999999",
                 Items = new List<CreateOrderItemRequestDto>
                 {
-                    new CreateOrderItemRequestDto { ProductId = 999, Quantity = 2 }
+                    new CreateOrderItemRequestDto { ProductId = Guid.NewGuid(), Quantity = 2 }
                 }
             };
 
-            _mockProductRepository.Setup(x => x.GetByIdAsync(999, _tenantId)).ReturnsAsync((ProductEntity?)null);
+            var productId = Guid.NewGuid();
+            createRequest.Items[0].ProductId = productId;
+            _mockProductRepository.Setup(x => x.GetByIdAsync(productId, _tenantId)).ReturnsAsync((ProductEntity?)null);
 
             // Act
             var result = await _validationService.ValidateCreateOrderAsync(createRequest);
@@ -136,12 +146,14 @@ namespace OpaMenu.Tests.Unit.Services
                 CustomerPhone = "11999999999",
                 Items = new List<CreateOrderItemRequestDto>
                 {
-                    new CreateOrderItemRequestDto { ProductId = 1, Quantity = 2 }
+                    new CreateOrderItemRequestDto { ProductId = Guid.NewGuid(), Quantity = 2 }
                 }
             };
-            var product = new ProductEntity { Id = 1, Name = "Produto Teste", Price = 15.99m, IsActive = false, TenantId = _tenantId };
+            var productId = Guid.NewGuid();
+            var product = new ProductEntity { Id = productId, Name = "Produto Teste", Price = 15.99m, IsActive = false, TenantId = _tenantId };
 
-            _mockProductRepository.Setup(x => x.GetByIdAsync(1, _tenantId)).ReturnsAsync(product);
+            _mockProductRepository.Setup(x => x.GetByIdAsync(productId, _tenantId)).ReturnsAsync(product);
+            createRequest.Items[0].ProductId = productId;
 
             // Act
             var result = await _validationService.ValidateCreateOrderAsync(createRequest);
@@ -160,12 +172,13 @@ namespace OpaMenu.Tests.Unit.Services
                 CustomerName = "JoÃ£o Silva Atualizado",
                 CustomerPhone = "11888888888"
             };
-            var order = new OrderEntity { Id = 1, Status = OrderStatus.Pending, TenantId = _tenantId };
+            var orderId = Guid.NewGuid();
+            var order = new OrderEntity { Id = orderId, Status = EOrderStatus.Pending, TenantId = _tenantId };
 
-            _mockOrderRepository.Setup(x => x.GetByIdAsync(1, _tenantId)).ReturnsAsync(order);
+            _mockOrderRepository.Setup(x => x.GetByIdAsync(orderId, _tenantId)).ReturnsAsync(order);
 
             // Act
-            var result = await _validationService.ValidateUpdateOrderAsync(1, updateRequest);
+            var result = await _validationService.ValidateUpdateOrderAsync(orderId, updateRequest);
 
             // Assert
             Assert.True(result.Success);
@@ -179,12 +192,13 @@ namespace OpaMenu.Tests.Unit.Services
             {
                 CustomerName = "JoÃ£o Silva Atualizado"
             };
-            var order = new OrderEntity { Id = 1, Status = OrderStatus.Delivered, TenantId = _tenantId };
+            var orderId = Guid.NewGuid();
+            var order = new OrderEntity { Id = orderId, Status = EOrderStatus.Delivered, TenantId = _tenantId };
 
-            _mockOrderRepository.Setup(x => x.GetByIdAsync(1, _tenantId)).ReturnsAsync(order);
+            _mockOrderRepository.Setup(x => x.GetByIdAsync(orderId, _tenantId)).ReturnsAsync(order);
 
             // Act
-            var result = await _validationService.ValidateUpdateOrderAsync(1, updateRequest);
+            var result = await _validationService.ValidateUpdateOrderAsync(orderId, updateRequest);
 
             // Assert
             Assert.False(result.Success);
@@ -195,13 +209,14 @@ namespace OpaMenu.Tests.Unit.Services
         public async Task ValidateAcceptOrderAsync_WithPendingOrder_ReturnsSuccess()
         {
             // Arrange
-            var order = new OrderEntity { Id = 1, Status = OrderStatus.Pending, TenantId = _tenantId };
+            var orderId = Guid.NewGuid();
+            var order = new OrderEntity { Id = orderId, Status = EOrderStatus.Pending, TenantId = _tenantId };
             var request = new AcceptOrderRequestDto();
 
-            _mockOrderRepository.Setup(x => x.GetByIdAsync(1, _tenantId)).ReturnsAsync(order);
+            _mockOrderRepository.Setup(x => x.GetByIdAsync(orderId, _tenantId)).ReturnsAsync(order);
 
             // Act
-            var result = await _validationService.ValidateAcceptOrderAsync(1, request);
+            var result = await _validationService.ValidateAcceptOrderAsync(orderId, request);
 
             // Assert
             Assert.True(result.Success);
@@ -211,13 +226,14 @@ namespace OpaMenu.Tests.Unit.Services
         public async Task ValidateAcceptOrderAsync_WithNonPendingOrder_ReturnsBadRequest()
         {
             // Arrange
-            var order = new OrderEntity { Id = 1, Status = OrderStatus.Confirmed, TenantId = _tenantId };
+            var orderId = Guid.NewGuid();
+            var order = new OrderEntity { Id = orderId, Status = EOrderStatus.Preparing, TenantId = _tenantId };
             var request = new AcceptOrderRequestDto();
 
-            _mockOrderRepository.Setup(x => x.GetByIdAsync(1, _tenantId)).ReturnsAsync(order);
+            _mockOrderRepository.Setup(x => x.GetByIdAsync(orderId, _tenantId)).ReturnsAsync(order);
 
             // Act
-            var result = await _validationService.ValidateAcceptOrderAsync(1, request);
+            var result = await _validationService.ValidateAcceptOrderAsync(orderId, request);
 
             // Assert
             Assert.False(result.Success);
@@ -228,12 +244,13 @@ namespace OpaMenu.Tests.Unit.Services
         public async Task ValidateStatusChangeAsync_WithValidTransition_ReturnsSuccess()
         {
             // Arrange
-            var order = new OrderEntity { Id = 1, Status = OrderStatus.Confirmed, TenantId = _tenantId };
+            var orderId = Guid.NewGuid();
+            var order = new OrderEntity { Id = orderId, Status = EOrderStatus.Preparing, TenantId = _tenantId };
 
-            _mockOrderRepository.Setup(x => x.GetByIdAsync(1, _tenantId)).ReturnsAsync(order);
+            _mockOrderRepository.Setup(x => x.GetByIdAsync(orderId, _tenantId)).ReturnsAsync(order);
 
             // Act
-            var result = await _validationService.ValidateStatusChangeAsync(1, OrderStatus.Preparing);
+            var result = await _validationService.ValidateStatusChangeAsync(orderId, EOrderStatus.Preparing);
 
             // Assert
             Assert.True(result.Success);
@@ -243,16 +260,17 @@ namespace OpaMenu.Tests.Unit.Services
         public async Task ValidateStatusChangeAsync_WithInvalidTransition_ReturnsBadRequest()
         {
             // Arrange
-            var order = new OrderEntity { Id = 1, Status = OrderStatus.Pending, TenantId = _tenantId };
+            var orderId = Guid.NewGuid();
+            var order = new OrderEntity { Id = orderId, Status = EOrderStatus.Pending, TenantId = _tenantId };
 
-            _mockOrderRepository.Setup(x => x.GetByIdAsync(1, _tenantId)).ReturnsAsync(order);
+            _mockOrderRepository.Setup(x => x.GetByIdAsync(orderId, _tenantId)).ReturnsAsync(order);
 
             // Act
-            var result = await _validationService.ValidateStatusChangeAsync(1, OrderStatus.Delivered);
+            var result = await _validationService.ValidateStatusChangeAsync(orderId, EOrderStatus.Delivered);
 
             // Assert
             Assert.False(result.Success);
-            Assert.Equal("TransiÃ§Ã£o de status invÃ¡lida: de 'Pending' para 'Delivered'.", result.Error);
+            Assert.Equal($"Transição de status inválida: de '{EOrderStatus.Pending}' para '{EOrderStatus.Delivered}'.", result.Error);
         }
 
         [Theory]
@@ -263,7 +281,7 @@ namespace OpaMenu.Tests.Unit.Services
             // Arrange
             var item = new CreateOrderItemRequestDto
             {
-                ProductId = 1,
+                ProductId = Guid.NewGuid(),
                 Quantity = quantity
             };
 

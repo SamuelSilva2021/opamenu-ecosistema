@@ -227,11 +227,10 @@ const CheckoutPage = ({ onBackToMenu, tenant }: CheckoutPageProps) => {
               </div>
             </AccordionTrigger>
             <AccordionContent className="px-0 pb-0 border-t border-border/50">
-              {tenant?.loyaltyProgram && tenant.loyaltyProgram.isActive && customer && (
+              {customer && (
                 <div className="mb-6">
-                  <LoyaltyRedemption 
-                    program={tenant.loyaltyProgram} 
-                    customer={customer} 
+                  <LoyaltyRedemption
+                    customer={customer}
                   />
                 </div>
               )}

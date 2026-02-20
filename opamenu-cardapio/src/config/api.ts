@@ -47,7 +47,8 @@ export const API_ENDPOINTS = {
     CUSTOMER: (slug: string) => `/public/${slug}/customer`,
     LOYALTY: {
       PROGRAMS: (slug: string) => `/public/${slug}/loyalty/programs`,
-      BALANCE: (slug: string, phone: string) => `/public/${slug}/loyalty/balance/${phone}`
+      BALANCE: (slug: string, phone: string) => `/public/${slug}/loyalty/balance/${phone}`,
+      REDEEM: (slug: string) => `/public/${slug}/loyalty/redeem`
     }
   }
 } as const;

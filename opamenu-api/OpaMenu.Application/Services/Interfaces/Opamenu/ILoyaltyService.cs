@@ -15,4 +15,5 @@ public interface ILoyaltyService
     Task ProcessOrderPointsAsync(Guid orderId, Guid tenantId);
     Task<ResponseDTO<LoyaltyProgramDto>> ToggleStatus(Guid tenantId, Guid id, bool status);
     Task<ResponseDTO<bool>> DeleteProgramAsync(Guid tenantId, Guid id);
+    Task<ResponseDTO<bool>> RedeemPointsAsync(Guid tenantId, RedeemLoyaltyPointsDto dto);
 }

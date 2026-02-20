@@ -127,4 +127,20 @@ public class LoyaltyController(
         var response = await _loyaltyService.GetCustomerBalanceAsync(tenantId.Value, phone);
         return BuildResponse(response);
     }
+
+    /// <summary>
+    /// Resgata pontos de um programa específico
+    /// </summary>
+    [HttpPost("redeem")]
+    [Authorize]
+    [MapPermission(MODULE_LOYALTY, OPERATION_UPDATE)]
+    public async Task<ActionResult> RedeemPoints([FromBody] RedeemLoyaltyPointsDto dto)
+    {
+        var tenantId = _currentUserService.GetTenantGuid();
+        if (!tenantId.HasValue)
+            return Unauthorized();
+
+        var response = await _loyaltyService.RedeemPointsAsync(tenantId.Value, dto);
+        return BuildResponse(response);
+    }
 }

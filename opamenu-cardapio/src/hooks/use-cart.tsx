@@ -1,14 +1,17 @@
 import { useState, useCallback, useEffect, useMemo, createContext, useContext, ReactNode } from 'react';
 import { CartItem } from '@/types/cart';
-import { Product, ProductSelection, Coupon, EDiscountType } from '@/types/api';
+import { Product, ProductSelection, Coupon, EDiscountType, EOrderType } from '@/types/api';
 
 export interface CartContextType {
   items: CartItem[];
   totalItems: number;
   subtotal: number;
   discount: number;
-  loyaltyPointsUsed: number;
+  couponCode?: string; // Added this line
+  loyaltyPointsUsed?: number; // Changed to optional
   loyaltyDiscount: number;
+  loyaltyProgramId?: string; // Changed to optional
+  orderType: EOrderType; // Added this line
   totalPrice: number;
   coupon: Coupon | null;
   addToCart: (product: Product, quantity?: number) => void;
@@ -22,7 +25,7 @@ export interface CartContextType {
   getItemQuantity: (productId: string) => number;
   applyCoupon: (coupon: Coupon) => void;
   removeCoupon: () => void;
-  applyLoyaltyPoints: (points: number, valuePerPoint: number) => void;
+  applyLoyaltyPoints: (points: number, valuePerPoint: number, programId: string) => void;
   removeLoyaltyPoints: () => void;
 }
 
@@ -62,6 +65,7 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
   const [coupon, setCoupon] = useState<Coupon | null>(null);
   const [loyaltyPointsUsed, setLoyaltyPointsUsed] = useState(0);
   const [loyaltyDiscount, setLoyaltyDiscount] = useState(0);
+  const [loyaltyProgramId, setLoyaltyProgramId] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
   const storageKey = slug ? `opamenu-cart-${slug}` : CART_STORAGE_KEY;
@@ -312,6 +316,7 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
     setItems([]);
     setLoyaltyPointsUsed(0);
     setLoyaltyDiscount(0);
+    setLoyaltyProgramId(null);
     setCoupon(null);
   }, []);
 
@@ -330,14 +335,16 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
     setCoupon(null);
   }, []);
 
-  const applyLoyaltyPoints = useCallback((points: number, valuePerPoint: number) => {
+  const applyLoyaltyPoints = useCallback((points: number, valuePerPoint: number, programId: string) => {
     setLoyaltyPointsUsed(points);
     setLoyaltyDiscount(points * valuePerPoint);
+    setLoyaltyProgramId(programId);
   }, []);
 
   const removeLoyaltyPoints = useCallback(() => {
     setLoyaltyPointsUsed(0);
     setLoyaltyDiscount(0);
+    setLoyaltyProgramId(null);
   }, []);
 
   // Cálculos totais
@@ -370,6 +377,7 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
     discount,
     loyaltyPointsUsed,
     loyaltyDiscount,
+    loyaltyProgramId,
     totalPrice,
     coupon,
     addToCart,

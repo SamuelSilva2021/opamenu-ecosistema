@@ -18,7 +18,8 @@ public class LoyaltyService(
     ICustomerLoyaltyRepository customerLoyaltyRepository,
     IOrderRepository orderRepository,
     ICustomerRepository customerRepository,
-    ILogger<LoyaltyService> logger
+    ILogger<LoyaltyService> logger,
+    ICurrentUserService currentUserService
     ) : ILoyaltyService
 {
     private readonly ILoyaltyProgramRepository _loyaltyProgramRepository = loyaltyProgramRepository;
@@ -26,6 +27,7 @@ public class LoyaltyService(
     private readonly IOrderRepository _orderRepository = orderRepository;
     private readonly ICustomerRepository _customerRepository = customerRepository;
     private readonly ILogger<LoyaltyService> _logger = logger;
+
 
     public async Task<ResponseDTO<LoyaltyProgramDto>> GetProgramAsync(Guid tenantId)
     {
@@ -390,6 +392,48 @@ public class LoyaltyService(
         {
             _logger.LogError(ex, "Erro ao excluir programa de fidelidade");
             return StaticResponseBuilder<bool>.BuildError("Erro ao excluir programa");
+        }
+    }
+
+    public async Task<ResponseDTO<bool>> RedeemPointsAsync(Guid tenantId, RedeemLoyaltyPointsDto dto)
+    {
+        try
+        {
+            var customer = await _customerRepository.GetByPhoneAsync(tenantId, dto.CustomerPhone);
+            if (customer == null)
+                return StaticResponseBuilder<bool>.BuildNotFound(false);
+
+            var program = await _loyaltyProgramRepository.GetByIdAsync(dto.ProgramId, tenantId);
+            if (program == null || program.TenantId != tenantId)
+                return StaticResponseBuilder<bool>.BuildNotFound(false);
+
+            var balance = await _customerLoyaltyRepository.GetByCustomerAndProgramAsync(customer.Id, dto.ProgramId);
+            if (balance == null || balance.Balance < dto.Points)
+                return StaticResponseBuilder<bool>.BuildError("Saldo insuficiente neste programa");
+
+            var transaction = new LoyaltyTransactionEntity
+            {
+                CustomerLoyaltyBalanceId = balance.Id,
+                CustomerLoyaltyBalance = balance,
+                OrderId = dto.OrderId ?? Guid.Empty,
+                Points = -dto.Points, // Resgate é negativo
+                Type = ELoyaltyTransactionType.Redeem,
+                Description = $"Resgate de pontos - Programa: {program.Name}",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _customerLoyaltyRepository.AddTransactionAsync(transaction);
+
+            balance.Balance -= dto.Points;
+            balance.LastActivityAt = DateTime.UtcNow;
+            await _customerLoyaltyRepository.UpdateAsync(balance);
+
+            return StaticResponseBuilder<bool>.BuildOk(true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao resgatar pontos para o cliente {Phone}", dto.CustomerPhone);
+            return StaticResponseBuilder<bool>.BuildError("Erro ao processar resgate de pontos");
         }
     }
 

@@ -249,6 +249,7 @@ export interface CreateOrderRequest {
   notes?: string;
   couponCode?: string;
   loyaltyPointsUsed?: number;
+  loyaltyProgramId?: string;
   orderType: EOrderType;
   isDelivery: boolean;
   items: CreateOrderItemRequest[];

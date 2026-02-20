@@ -1,4 +1,4 @@
-﻿namespace OpamenuApp.Tests.Unit;
+﻿namespace OpamenuApp.Tests;
 
 public class UnitTest1
 {

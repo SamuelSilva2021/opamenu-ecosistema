@@ -25,5 +25,17 @@ export const loyaltyService = {
             data,
             succeeded: true
         } as ApiResponse<CustomerLoyaltySummaryDto>;
+    },
+
+    /**
+     * Resgata pontos de um programa específico durante o checkout
+     */
+    redeemPoints: async (slug: string, dto: { programId: string, customerPhone: string, points: number, orderId?: string }) => {
+        const url = API_ENDPOINTS.PUBLIC.LOYALTY.REDEEM(slug);
+        const data = await httpClient.post<boolean>(url, dto);
+        return {
+            data,
+            succeeded: true
+        } as ApiResponse<boolean>;
     }
 };

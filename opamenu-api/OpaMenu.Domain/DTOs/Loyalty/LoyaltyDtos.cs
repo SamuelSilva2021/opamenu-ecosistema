@@ -64,3 +64,11 @@ public class LoyaltyTransactionDto
     public string? Description { get; set; }
     public DateTime CreatedAt { get; set; }
 }
+
+public class RedeemLoyaltyPointsDto
+{
+    public Guid ProgramId { get; set; }
+    public string CustomerPhone { get; set; } = null!;
+    public int Points { get; set; }
+    public Guid? OrderId { get; set; }
+}
