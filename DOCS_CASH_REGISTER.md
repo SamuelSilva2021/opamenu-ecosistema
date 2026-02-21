@@ -5,10 +5,10 @@ O sistema de Controle de Caixa do OpaMenu permite uma gestão financeira precisa
 ## 🚀 Fluxo de Trabalho do Usuário
 
 ### 1. Abertura do Turno
-Para iniciar as operações no PDV/Balcão, o operador deve abrir o caixa.
-- **Ação**: Clique em "Abrir Caixa" no menu **Fluxo de Caixa**.
+Para acessar o sistema de vendas (**PDV**), o operador deve obrigatoriamente abrir o caixa.
+- **Ação**: Clique no menu **PDV**. Se o caixa estiver fechado, uma tela de bloqueio será exibida. Clique em "Abrir Turno Agora".
 - **Fundo de Troco**: Informe o valor em dinheiro disponível na gaveta no momento do início (ex: R$ 50,00).
-- **Resultado**: O sistema altera o status para **Aberto** e registra a primeira movimentação de "Abertura".
+- **Resultado**: O sistema libera o acesso ao PDV e registra a primeira movimentação de "Abertura".
 
 ### 2. Registro de Vendas (Automático)
 Toda venda realizada através do **PDV** ou **Balcão** que tenha um método de pagamento informado é registrada automaticamente no caixa.
@@ -16,13 +16,12 @@ Toda venda realizada através do **PDV** ou **Balcão** que tenha um método de 
 - **Auditoria**: Cada venda gera um vínculo direto entre o pedido e a movimentação de caixa.
 
 ### 3. Movimentações Manuais (Sangria e Suprimento)
-Durante o turno, podem ocorrer entradas ou saídas extras de dinheiro.
-- **Suprimento (Entrada)**: Adição de dinheiro no caixa (ex: reforço de troco).
-- **Sangria (Saída)**: Retirada de dinheiro da gaveta (ex: pagamento de fornecedor ou retirada de excesso para cofre).
-- **Como fazer**: No menu **Fluxo de Caixa**, clique em **Movimentar**, escolha o tipo e informe o motivo.
+Durante o turno, as ações de caixa podem ser acessadas diretamente no topo da tela do **PDV**.
+- **Como fazer**: No cabeçalho do **PDV**, clique em **Sangria / Suprimento**, escolha o tipo e informe o motivo.
 
 ### 4. Fechamento do Caixa
-Ao final do expediente ou troca de turno, o operador deve encerrar a sessão.
+Ao final do expediente, o encerramento também é feito diretamente pela tela de vendas.
+- **Ação**: No cabeçalho do **PDV**, clique em **Fechar Caixa**.
 - **Conferência**: O sistema exibe o **Saldo Esperado** (Abertura + Vendas + Suprimentos - Sangrias).
 - **Contagem Real**: O operador deve contar o dinheiro físico na gaveta e informar no campo "Saldo Final".
 - **Diferença**: O sistema calcula automaticamente se há **Sobra** ou **Quebra** de caixa, facilitando o fechamento financeiro.

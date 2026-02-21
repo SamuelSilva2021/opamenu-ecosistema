@@ -32,7 +32,7 @@ import {
 import { CashMovementType } from "../types";
 
 const formSchema = z.object({
-    type: z.enum([CashMovementType.Inbound, CashMovementType.Outbound]),
+    type: z.union([z.literal(CashMovementType.Inbound), z.literal(CashMovementType.Outbound)]),
     amount: z.coerce.number().min(0.01, "O valor deve ser maior que zero"),
     description: z.string().min(3, "Descrição muito curta"),
 });
@@ -84,8 +84,8 @@ export function AddMovementDialog({
                                 <FormItem>
                                     <FormLabel>Tipo de Movimentação</FormLabel>
                                     <Select
-                                        onValueChange={field.onChange}
-                                        defaultValue={field.value}
+                                        onValueChange={(val) => field.onChange(Number(val))}
+                                        defaultValue={String(field.value)}
                                     >
                                         <FormControl>
                                             <SelectTrigger>
@@ -93,8 +93,8 @@ export function AddMovementDialog({
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            <SelectItem value={CashMovementType.Outbound}>Saída (Sangria)</SelectItem>
-                                            <SelectItem value={CashMovementType.Inbound}>Entrada (Suprimento)</SelectItem>
+                                            <SelectItem value={String(CashMovementType.Outbound)}>Saída (Sangria)</SelectItem>
+                                            <SelectItem value={String(CashMovementType.Inbound)}>Entrada (Suprimento)</SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />
@@ -134,11 +134,11 @@ export function AddMovementDialog({
                             )}
                         />
 
-                        <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                        <DialogFooter className="gap-2 sm:gap-0">
+                            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} className="rounded-xl font-bold uppercase text-xs tracking-widest text-zinc-500 hover:text-zinc-900 dark:hover:text-white">
                                 Cancelar
                             </Button>
-                            <Button type="submit" disabled={isLoading}>
+                            <Button type="submit" disabled={isLoading} className="bg-gradient-to-r from-primary to-orange-600 hover:from-orange-600 hover:to-primary text-white rounded-xl shadow-md shadow-primary/20 hover:shadow-primary/40 transition-all font-bold uppercase text-xs tracking-widest px-6 border-none">
                                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 Confirmar
                             </Button>

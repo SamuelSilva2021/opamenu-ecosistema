@@ -7,18 +7,18 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { type CashMovement, type CashMovementType } from "../types";
+import { type CashMovement, CashMovementType } from "../types";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ArrowUpRight, ArrowDownLeft, Store, Ticket, XCircle, LogOut } from "lucide-react";
 
-const movementConfig: Record<CashMovementType, { label: string; icon: any; color: string }> = {
-    Opening: { label: "Abertura", icon: Store, color: "text-blue-500" },
-    OrderPayment: { label: "Venda", icon: Ticket, color: "text-green-500" },
-    Inbound: { label: "Suprimento", icon: ArrowUpRight, color: "text-emerald-500" },
-    Outbound: { label: "Sangria", icon: ArrowDownLeft, color: "text-red-500" },
-    Reversed: { label: "Estorno", icon: XCircle, color: "text-orange-500" },
-    Closing: { label: "Fechamento", icon: LogOut, color: "text-zinc-500" },
+const movementConfig: Record<number, { label: string; icon: any; color: string }> = {
+    [CashMovementType.Opening]: { label: "Abertura", icon: Store, color: "text-blue-500" },
+    [CashMovementType.OrderPayment]: { label: "Venda", icon: Ticket, color: "text-green-500" },
+    [CashMovementType.Inbound]: { label: "Suprimento", icon: ArrowUpRight, color: "text-emerald-500" },
+    [CashMovementType.Outbound]: { label: "Sangria", icon: ArrowDownLeft, color: "text-red-500" },
+    [CashMovementType.Reversed]: { label: "Estorno", icon: XCircle, color: "text-orange-500" },
+    [CashMovementType.Closing]: { label: "Fechamento", icon: LogOut, color: "text-zinc-500" },
 };
 
 interface MovementsTableProps {
@@ -78,10 +78,10 @@ export function MovementsTable({ movements }: MovementsTableProps) {
                                             </Badge>
                                         ) : <span className="text-muted-foreground text-xs text-center block w-full">-</span>}
                                     </TableCell>
-                                    <TableCell className={`text-right font-bold text-sm ${movement.type === 'Outbound' || movement.type === 'Reversed' ? 'text-red-500' :
-                                            movement.type === 'Inbound' || movement.type === 'OrderPayment' || movement.type === 'Opening' ? 'text-emerald-500' : ''
+                                    <TableCell className={`text-right font-bold text-sm ${movement.type === CashMovementType.Outbound || movement.type === CashMovementType.Reversed ? 'text-red-500' :
+                                        movement.type === CashMovementType.Inbound || movement.type === CashMovementType.OrderPayment || movement.type === CashMovementType.Opening ? 'text-emerald-500' : ''
                                         }`}>
-                                        {movement.type === 'Outbound' || movement.type === 'Reversed' ? '-' : '+'}
+                                        {movement.type === CashMovementType.Outbound || movement.type === CashMovementType.Reversed ? '-' : '+'}
                                         {movement.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                                     </TableCell>
                                 </TableRow>

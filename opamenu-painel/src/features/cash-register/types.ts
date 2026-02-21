@@ -1,17 +1,17 @@
 export const CashShiftStatus = {
-    Open: 'Open',
-    Closed: 'Closed'
+    Open: 1,
+    Closed: 2
 } as const;
 
 export type CashShiftStatus = typeof CashShiftStatus[keyof typeof CashShiftStatus];
 
 export const CashMovementType = {
-    Opening: 'Opening',
-    OrderPayment: 'OrderPayment',
-    Inbound: 'Inbound',
-    Outbound: 'Outbound',
-    Reversed: 'Reversed',
-    Closing: 'Closing'
+    Opening: 1,
+    OrderPayment: 2,
+    Inbound: 3,
+    Outbound: 4,
+    Reversed: 5,
+    Closing: 6
 } as const;
 
 export type CashMovementType = typeof CashMovementType[keyof typeof CashMovementType];

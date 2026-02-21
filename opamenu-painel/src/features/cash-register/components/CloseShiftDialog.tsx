@@ -106,11 +106,11 @@ export function CloseShiftDialog({
                                 </div>
                             )}
 
-                            <DialogFooter>
-                                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                            <DialogFooter className="gap-2 sm:gap-0 mt-6">
+                                <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} className="rounded-xl font-bold uppercase text-xs tracking-widest text-zinc-500 hover:text-zinc-900 dark:hover:text-white">
                                     Cancelar
                                 </Button>
-                                <Button type="submit" variant="destructive" disabled={isLoading}>
+                                <Button type="submit" variant="destructive" disabled={isLoading} className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-600 text-white rounded-xl shadow-md shadow-red-200/50 hover:shadow-red-300 dark:shadow-none transition-all font-bold uppercase text-xs tracking-widest px-6 border-none">
                                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     Encerrar Turno
                                 </Button>

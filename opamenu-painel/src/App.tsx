@@ -18,7 +18,6 @@ import { POSPage } from '@/features/pos/pages/POSPage'
 import EmployeesPage from '@/features/employees/pages/EmployeesPage'
 import RolesPage from '@/features/employees/pages/RolesPage'
 
-import CashRegisterPage from './features/cash-register/pages/CashRegisterPage'
 
 function App() {
   return (
@@ -33,7 +32,6 @@ function App() {
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardPage />} />
           <Route path="pos" element={<POSPage />} />
-          <Route path="cash-register" element={<CashRegisterPage />} />
           <Route path="products" element={<ProductsPage />} />
           <Route path="categories" element={<CategoriesPage />} />
           <Route path="aditionals" element={<AditionalsPage />} />

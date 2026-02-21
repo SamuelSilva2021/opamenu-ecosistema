@@ -19,8 +19,7 @@ import {
   CreditCard,
   Monitor,
   ChevronDown,
-  ChevronRight,
-  DollarSign
+  ChevronRight
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -50,13 +49,6 @@ const routes = [
     title: "PDV",
     icon: Monitor,
     href: "/dashboard/pos",
-    variant: "ghost",
-    module: "PDV",
-  },
-  {
-    title: "Fluxo de Caixa",
-    icon: DollarSign,
-    href: "/dashboard/cash-register",
     variant: "ghost",
     module: "PDV",
   },
