@@ -20,9 +20,9 @@ public class DashboardController(IDashboardService dashboardService) : BaseContr
 
     [HttpGet("summary")]
     [MapPermission(MODULE_DASHBOARD, OPERATION_SELECT)]
-    public async Task<ActionResult<ResponseDTO<DashboardSummaryDto>>> GetSummary()
+    public async Task<ActionResult<ResponseDTO<DashboardSummaryDto>>> GetSummary([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
     {
-        var result = await _dashboardService.GetSummaryAsync();
+        var result = await _dashboardService.GetSummaryAsync(startDate, endDate);
         return BuildResponse(result);
     }
 }

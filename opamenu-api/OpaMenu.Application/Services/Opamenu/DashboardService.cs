@@ -18,7 +18,7 @@ public class DashboardService(
     private readonly ICustomerRepository _customerRepository = customerRepository;
     private readonly ICurrentUserService _currentUserService = currentUserService;
 
-    public async Task<ResponseDTO<DashboardSummaryDto>> GetSummaryAsync()
+    public async Task<ResponseDTO<DashboardSummaryDto>> GetSummaryAsync(DateTime? startDate = null, DateTime? endDate = null)
     {
         try
         {
@@ -27,40 +27,49 @@ public class DashboardService(
                 return StaticResponseBuilder<DashboardSummaryDto>.BuildError("Tenant não identificado.");
 
             var now = DateTime.UtcNow;
-            var startOfMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-            var endOfMonth = startOfMonth.AddMonths(1).AddTicks(-1);
             
-            var startOfLastMonth = startOfMonth.AddMonths(-1);
-            var endOfLastMonth = startOfMonth.AddTicks(-1);
+            // Set default period to current month if not provided
+            var start = startDate ?? new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+            var end = endDate ?? start.AddMonths(1).AddTicks(-1);
             
+            // Ensure kinds are Utc
+            start = DateTime.SpecifyKind(start, DateTimeKind.Utc);
+            end = DateTime.SpecifyKind(end, DateTimeKind.Utc);
+
+            // Calculate duration of selected period to find previous period
+            var duration = end - start;
+            var startOfPreviousPeriod = start.Subtract(duration).AddTicks(-1);
+            var endOfPreviousPeriod = start.AddTicks(-1);
+
+            // Fetch current period orders
+            var currentPeriodOrders = (await _orderRepository.FindAsync(o => 
+                o.TenantId == tenantId && 
+                o.CreatedAt >= start && 
+                o.CreatedAt <= end &&
+                o.Status != EOrderStatus.Cancelled && 
+                o.Status != EOrderStatus.Rejected)).ToList();
+                
+            // Fetch previous period orders
+            var previousPeriodOrders = (await _orderRepository.FindAsync(o => 
+                o.TenantId == tenantId && 
+                o.CreatedAt >= startOfPreviousPeriod && 
+                o.CreatedAt <= endOfPreviousPeriod &&
+                o.Status != EOrderStatus.Cancelled && 
+                o.Status != EOrderStatus.Rejected)).ToList();
+                
+            // Fetch today orders for the small metric (still relevant)
             var startOfToday = DateTime.SpecifyKind(now.Date, DateTimeKind.Utc);
             var endOfToday = startOfToday.AddDays(1).AddTicks(-1);
-            
             var startOfYesterday = startOfToday.AddDays(-1);
             var endOfYesterday = startOfToday.AddTicks(-1);
 
-            // Fetch current month orders
-            var currentMonthOrders = (await _orderRepository.FindAsync(o => 
+            var todayOrders = (await _orderRepository.FindAsync(o => 
                 o.TenantId == tenantId && 
-                o.CreatedAt >= startOfMonth && 
-                o.CreatedAt <= endOfMonth &&
+                o.CreatedAt >= startOfToday && 
+                o.CreatedAt <= endOfToday &&
                 o.Status != EOrderStatus.Cancelled && 
                 o.Status != EOrderStatus.Rejected)).ToList();
-                
-            // Fetch last month orders
-            var lastMonthOrders = (await _orderRepository.FindAsync(o => 
-                o.TenantId == tenantId && 
-                o.CreatedAt >= startOfLastMonth && 
-                o.CreatedAt <= endOfLastMonth &&
-                o.Status != EOrderStatus.Cancelled && 
-                o.Status != EOrderStatus.Rejected)).ToList();
-                
-            // Fetch today orders
-            var todayOrders = currentMonthOrders
-                .Where(o => o.CreatedAt >= startOfToday && o.CreatedAt <= endOfToday)
-                .ToList();
             
-            // Fetch yesterday orders
             var yesterdayOrders = (await _orderRepository.FindAsync(o => 
                 o.TenantId == tenantId && 
                 o.CreatedAt >= startOfYesterday && 
@@ -88,13 +97,13 @@ public class DashboardService(
             }).ToList();
 
             // Calculate metrics
-            var totalRevenue = currentMonthOrders.Sum(o => o.Total);
-            var lastMonthRevenue = lastMonthOrders.Sum(o => o.Total);
-            var revenueGrowth = CalculateGrowth(totalRevenue, lastMonthRevenue);
+            var totalRevenue = currentPeriodOrders.Sum(o => o.Total);
+            var previousRevenue = previousPeriodOrders.Sum(o => o.Total);
+            var revenueGrowth = CalculateGrowth(totalRevenue, previousRevenue);
             
-            var totalOrdersCount = currentMonthOrders.Count;
-            var lastMonthOrdersCount = lastMonthOrders.Count;
-            var ordersGrowth = CalculateGrowth(totalOrdersCount, lastMonthOrdersCount);
+            var totalOrdersCount = currentPeriodOrders.Count;
+            var previousOrdersCount = previousPeriodOrders.Count;
+            var ordersGrowth = CalculateGrowth(totalOrdersCount, previousOrdersCount);
             
             var ordersTodayCount = todayOrders.Count;
             var ordersYesterdayCount = yesterdayOrders.Count;
@@ -105,27 +114,53 @@ public class DashboardService(
             // Average Ticket
             var averageTicket = totalOrdersCount > 0 ? totalRevenue / totalOrdersCount : 0;
 
-            // Daily Sales (Last 7 Days)
-            var weekAgo = startOfToday.AddDays(-6);
-            var lastWeekOrders = (await _orderRepository.FindAsync(o => 
-                o.TenantId == tenantId && 
-                o.CreatedAt >= weekAgo && 
-                o.Status != EOrderStatus.Cancelled && 
-                o.Status != EOrderStatus.Rejected)).ToList();
+            // Daily Sales (Last 7 Days or selected period if shorter?) 
+            // Let's keep last 7 days for the chart for now, or use the selected period if it's within a reasonable range
+            var chartStartDate = start;
+            var chartEndDate = end;
+            
+            // If period is longer than 30 days, maybe group by week? 
+            // For now, let's just use the selected period for the chart if it's <= 31 days
+            var chartDuration = (end - start).TotalDays;
+            
+            var dailySales = new List<DailySaleDto>();
+            if (chartDuration <= 31)
+            {
+                var days = (int)Math.Ceiling(chartDuration);
+                dailySales = Enumerable.Range(0, days + 1)
+                    .Select(offset => start.AddDays(offset))
+                    .Where(date => date <= end)
+                    .Select(date => new DailySaleDto
+                    {
+                        Date = date.ToString("dd/MM"),
+                        Total = currentPeriodOrders
+                            .Where(o => o.CreatedAt.Date == date.Date)
+                            .Sum(o => o.Total)
+                    }).ToList();
+            }
+            else
+            {
+                // Fallback to last 7 days if period is too long for daily chart
+                var weekAgo = startOfToday.AddDays(-6);
+                var lastWeekOrders = (await _orderRepository.FindAsync(o => 
+                    o.TenantId == tenantId && 
+                    o.CreatedAt >= weekAgo && 
+                    o.Status != EOrderStatus.Cancelled && 
+                    o.Status != EOrderStatus.Rejected)).ToList();
 
-            var dailySales = Enumerable.Range(0, 7)
-                .Select(offset => weekAgo.AddDays(offset))
-                .Select(date => new DailySaleDto
-                {
-                    Date = date.ToString("dd/MM"),
-                    Total = lastWeekOrders
-                        .Where(o => o.CreatedAt.Date == date.Date)
-                        .Sum(o => o.Total)
-                }).ToList();
+                dailySales = Enumerable.Range(0, 7)
+                    .Select(offset => weekAgo.AddDays(offset))
+                    .Select(date => new DailySaleDto
+                    {
+                        Date = date.ToString("dd/MM"),
+                        Total = lastWeekOrders
+                            .Where(o => o.CreatedAt.Date == date.Date)
+                            .Sum(o => o.Total)
+                    }).ToList();
+            }
 
             // Category Sales (Distribution)
-            // Note: This requires including OrderItems and Products
-            var categorySales = lastWeekOrders
+            var categorySales = currentPeriodOrders
                 .SelectMany(o => o.Items ?? new List<OrderItemEntity>())
                 .Where(i => i.Product != null && i.Product.Category != null)
                 .GroupBy(i => i.Product!.Category!.Name)

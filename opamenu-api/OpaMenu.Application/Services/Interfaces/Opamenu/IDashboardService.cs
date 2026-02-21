@@ -5,5 +5,5 @@ namespace OpaMenu.Application.Services.Interfaces.Opamenu;
 
 public interface IDashboardService
 {
-    Task<ResponseDTO<DashboardSummaryDto>> GetSummaryAsync();
+    Task<ResponseDTO<DashboardSummaryDto>> GetSummaryAsync(DateTime? startDate = null, DateTime? endDate = null);
 }

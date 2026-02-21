@@ -5,6 +5,17 @@ export interface RecentOrder {
   createdAt: string;
 }
 
+export interface DailySale {
+  date: string;
+  total: number;
+}
+
+export interface CategorySale {
+  categoryName: string;
+  total: number;
+  quantity: number;
+}
+
 export interface DashboardSummary {
   totalRevenue: number;
   totalRevenueGrowth: number;
@@ -14,5 +25,8 @@ export interface DashboardSummary {
   totalOrdersGrowth: number;
   activeCustomers: number;
   activeCustomersGrowth: number;
+  averageTicket: number;
   recentOrders: RecentOrder[];
+  dailySales: DailySale[];
+  categorySales: CategorySale[];
 }
