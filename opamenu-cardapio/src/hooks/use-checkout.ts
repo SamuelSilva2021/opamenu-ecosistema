@@ -66,7 +66,7 @@ export const useCheckout = (): CheckoutHookReturn => {
   const [qrCodePayload, setQrCodePayload] = useState<string | undefined>(undefined);
 
   const { createOrder } = useOrder();
-  const { items: cartItems, clearCart, coupon, loyaltyPointsUsed } = useCart();
+  const { items: cartItems, clearCart, coupon, loyaltyPointsUsed, loyaltyProgramId, loyaltyDiscount } = useCart();
 
   // Persistir dados no localStorage sempre que mudarem
   useEffect(() => {
@@ -124,7 +124,8 @@ export const useCheckout = (): CheckoutHookReturn => {
         notes: checkoutData.notes?.trim(),
         couponCode: coupon?.code,
         loyaltyPointsUsed: loyaltyPointsUsed > 0 ? loyaltyPointsUsed : undefined,
-        loyaltyProgramId: loyaltyPointsUsed > 0 ? (useCart() as any).loyaltyProgramId : undefined,
+        loyaltyProgramId: loyaltyPointsUsed > 0 ? loyaltyProgramId : undefined,
+        loyaltyDiscount: loyaltyDiscount && loyaltyDiscount > 0 ? loyaltyDiscount : undefined,
         items: cartItems.map(item => ({
           productId: item.product.id,
           quantity: item.quantity,
@@ -163,7 +164,7 @@ export const useCheckout = (): CheckoutHookReturn => {
     } finally {
       setIsProcessing(false);
     }
-  }, [checkoutData, cartItems, createOrder, clearCart, storageKey]);
+  }, [checkoutData, cartItems, createOrder, clearCart, storageKey, coupon, loyaltyPointsUsed, loyaltyProgramId, loyaltyDiscount]);
 
   const resetCheckout = useCallback(() => {
     setCurrentStep(CheckoutSteps.CUSTOMER_INFO);

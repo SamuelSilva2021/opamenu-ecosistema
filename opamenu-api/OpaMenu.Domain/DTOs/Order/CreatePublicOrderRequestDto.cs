@@ -34,6 +34,10 @@ namespace OpaMenu.Domain.DTOs.Order
 
         public int? LoyaltyPointsUsed { get; set; }
 
+        public Guid? LoyaltyProgramId { get; set; }
+
+        public decimal? LoyaltyDiscount { get; set; }
+
         public decimal? DeliveryFee { get; set; }
 
         [Required]

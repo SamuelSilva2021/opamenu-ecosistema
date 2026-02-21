@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Gift, AlertCircle, ChevronDown, CheckCircle2 } from "lucide-react";
-import { LoyaltyProgramDto, CustomerResponseDto } from "@/types/api";
+import { LoyaltyProgramDto, CustomerResponseDto, ELoyaltyProgramType } from "@/types/api";
 import { useCart, useLoyalty } from "@/hooks";
 import { useParams } from "react-router-dom";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -15,16 +15,48 @@ interface LoyaltyRedemptionProps {
 
 export const LoyaltyRedemption = ({ program: initialProgram, customer }: LoyaltyRedemptionProps) => {
   const { slug } = useParams<{ slug: string }>();
-  const { subtotal, applyLoyaltyPoints, removeLoyaltyPoints, loyaltyPointsUsed, loyaltyProgramId } = useCart();
+  const { items, subtotal, applyLoyaltyPoints, removeLoyaltyPoints, loyaltyPointsUsed, loyaltyProgramId } = useCart();
   const { balance, programs, loading } = useLoyalty(slug, customer.phone);
+
+  // Helper function to calculate eligible subtotal for a program based on its filters
+  const calculateEligibleSubtotal = (program: LoyaltyProgramDto) => {
+    if (!program.filters || program.filters.length === 0) {
+      return subtotal; // No filters, all items are eligible
+    }
+
+    const eligibleItemsValue = items.reduce((acc, item) => {
+      const matchFilter = program.filters!.some(f => {
+        const productMatch = f.productId ? f.productId.toLowerCase() === item.product.id.toLowerCase() : false;
+        const categoryMatch = f.categoryId ? f.categoryId.toLowerCase() === item.product.categoryId.toLowerCase() : false;
+        return productMatch || categoryMatch;
+      });
+
+      let isEligible = true;
+      if (program.type === ELoyaltyProgramType.PointsPerValue) {
+        // For PointsPerValue, filters are EXCLUSIONS (e.g. valid for everything EXCEPT pizzas)
+        isEligible = !matchFilter;
+      } else if (program.type === ELoyaltyProgramType.ItemCount) {
+        // For ItemCount, filters are INCLUSIONS (e.g. valid ONLY for pizzas)
+        isEligible = matchFilter;
+      }
+
+      return isEligible ? acc + item.totalPrice : acc;
+    }, 0);
+
+    return eligibleItemsValue;
+  };
 
   // Encontrar o programa selecionado atualmente ou o primeiro disponível com saldo
   const [selectedProgram, setSelectedProgram] = useState<LoyaltyProgramDto | null>(null);
   const [pointsToUse, setPointsToUse] = useState<number>(loyaltyPointsUsed);
 
-  // Filtrar programas que o usuário realmente tem saldo
+  // Filtrar programas que o usuário realmente tem saldo E que têm itens elegíveis no carrinho
   const activeBalances = balance?.balances?.filter(b => b.balance > 0) || [];
-  const availablePrograms = programs.filter(p => activeBalances.some(b => b.programId === p.id));
+  const availablePrograms = programs.filter(p => {
+    const hasBalance = activeBalances.some(b => b.programId === p.id);
+    const eligibleSubtotal = calculateEligibleSubtotal(p);
+    return hasBalance && eligibleSubtotal > 0;
+  });
 
   useEffect(() => {
     if (availablePrograms.length > 0 && !selectedProgram) {
@@ -36,8 +68,14 @@ export const LoyaltyRedemption = ({ program: initialProgram, customer }: Loyalty
         // Senão seleciona o primeiro com saldo
         setSelectedProgram(availablePrograms[0]);
       }
+    } else if (availablePrograms.length === 0 && selectedProgram) {
+      // Se o carrinho mudou e não há mais programas válidos
+      setSelectedProgram(null);
+      if (loyaltyPointsUsed > 0) {
+        removeLoyaltyPoints();
+      }
     }
-  }, [availablePrograms, selectedProgram, loyaltyProgramId]);
+  }, [availablePrograms, selectedProgram, loyaltyProgramId, loyaltyPointsUsed, removeLoyaltyPoints]);
 
   useEffect(() => {
     // Se mudou o programa selecionado, reseta os pontos a serem usados (ou ajusta ao que já está no carrinho se for o mesmo programa)
@@ -49,12 +87,21 @@ export const LoyaltyRedemption = ({ program: initialProgram, customer }: Loyalty
   }, [selectedProgram, loyaltyProgramId, loyaltyPointsUsed]);
 
   const pointsBalance = selectedProgram ? (balance?.balances?.find(b => b.programId === selectedProgram.id)?.balance || 0) : 0;
-  const VALUE_PER_POINT = (selectedProgram?.currencyValue && selectedProgram.currencyValue > 0) ? selectedProgram.currencyValue : 1.0;
+  const VALUE_PER_POINT = (selectedProgram?.rewardValue && selectedProgram.rewardValue > 0) ? selectedProgram.rewardValue : 1.0;
+  const eligibleSubtotal = selectedProgram ? calculateEligibleSubtotal(selectedProgram) : 0;
 
   const maxRedeemablePoints = Math.min(
     pointsBalance,
-    Math.floor(subtotal / VALUE_PER_POINT)
+    Math.floor(eligibleSubtotal / VALUE_PER_POINT)
   );
+
+  useEffect(() => {
+    // Safety check if cart items change making maxRedeemablePoints less than what is currently applied
+    if (selectedProgram?.id === loyaltyProgramId && pointsToUse > maxRedeemablePoints) {
+      setPointsToUse(maxRedeemablePoints);
+      applyLoyaltyPoints(maxRedeemablePoints, VALUE_PER_POINT, selectedProgram.id);
+    }
+  }, [maxRedeemablePoints, pointsToUse, selectedProgram, loyaltyProgramId, applyLoyaltyPoints, VALUE_PER_POINT]);
 
   const handleApply = () => {
     if (selectedProgram) {

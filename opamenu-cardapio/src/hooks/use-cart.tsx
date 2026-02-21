@@ -95,7 +95,7 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
 
   // Salvar carrinho no localStorage
   useEffect(() => {
-    if (!slug || !isInitialized) return; 
+    if (!slug || !isInitialized) return;
 
     try {
       localStorage.setItem(storageKey, JSON.stringify(items));
@@ -367,7 +367,10 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
   }, [subtotal, coupon]);
 
   const totalPrice = useMemo(() => {
-    return Math.max(0, subtotal - discount - loyaltyDiscount);
+    // Ensures loyalty discount doesn't reduce total below zero when combined with other discounts
+    const availableForLoyalty = Math.max(0, subtotal - discount);
+    const safeLoyaltyDiscount = Math.min(loyaltyDiscount, availableForLoyalty);
+    return Math.max(0, availableForLoyalty - safeLoyaltyDiscount);
   }, [subtotal, discount, loyaltyDiscount]);
 
   const value = {
@@ -378,6 +381,7 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
     loyaltyPointsUsed,
     loyaltyDiscount,
     loyaltyProgramId,
+    orderType: EOrderType.Delivery, // Default required by interface, but ideally populated by state
     totalPrice,
     coupon,
     addToCart,

@@ -249,7 +249,7 @@ public class OrderService(
                 Status = EOrderStatus.Pending,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                CustomerId = tenantCustomer.Customer.Id,
+                CustomerId = existingCustomer.Id,
                 TenantId = tenantId
             };
 
@@ -370,19 +370,20 @@ public class OrderService(
                     }
 
                     // Processar Fidelidade (Cálculo e Validação)
-                    if (requestDto.LoyaltyPointsUsed.HasValue && requestDto.LoyaltyPointsUsed > 0)
+                    if (requestDto.LoyaltyPointsUsed.HasValue && requestDto.LoyaltyPointsUsed > 0 && requestDto.LoyaltyProgramId.HasValue)
                     {
-                        var programs = await _loyaltyProgramRepository.GetByTenantIdAsync(tenantId);
-                        var program = programs.FirstOrDefault();
+                        var program = await _loyaltyProgramRepository.GetByIdAsync(requestDto.LoyaltyProgramId.Value, tenantId);
 
                         if (program != null && program.IsActive)
                         {
                             if (order.Subtotal >= program.MinOrderValue)
                             {
-                                var balance = await _customerLoyaltyRepository.GetByCustomerAndTenantAsync(tenantCustomer.Customer.Id, tenantId);
+                                var balance = await _customerLoyaltyRepository.GetByCustomerAndProgramAsync(existingCustomer.Id, program.Id);
                                 if (balance != null && balance.Balance >= requestDto.LoyaltyPointsUsed.Value)
                                 {
-                                    decimal loyaltyDiscount = requestDto.LoyaltyPointsUsed.Value * program.CurrencyValue;
+                                    //decimal valuePerPoint = (decimal)(program.RewardValue > 0 ? program.RewardValue : 1.0m);
+                                    //decimal loyaltyDiscount = requestDto.LoyaltyPointsUsed.Value * valuePerPoint;
+                                    decimal loyaltyDiscount = requestDto.LoyaltyDiscount ?? 0;
                                     
                                     // Limitar desconto ao valor restante após cupom
                                     decimal maxDiscount = order.Subtotal - order.DiscountAmount;
@@ -427,9 +428,9 @@ public class OrderService(
                     var createdOrder = await _orderRepository.AddAsync(order);
 
                     // Persistir Resgate de Fidelidade
-                    if (order.LoyaltyPointsUsed > 0)
+                    if (order.LoyaltyPointsUsed > 0 && requestDto.LoyaltyProgramId.HasValue)
                     {
-                         var balance = await _customerLoyaltyRepository.GetByCustomerAndTenantAsync(tenantCustomer.Customer.Id, tenantId);
+                         var balance = await _customerLoyaltyRepository.GetByCustomerAndProgramAsync(existingCustomer.Id, requestDto.LoyaltyProgramId.Value);
                          if (balance != null)
                          {
                              balance.Balance -= order.LoyaltyPointsUsed;
@@ -542,7 +543,7 @@ public class OrderService(
                 Status = EOrderStatus.Pending,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                CustomerId = tenantCustomer.Customer.Id,
+                CustomerId = existingCustomer.Id,
                 TenantId = tenant.Id    
             };
 
@@ -636,38 +637,39 @@ public class OrderService(
                         }
                     }
 
-                    // Processar Fidelidade (Cálculo e Validação)
-                    if (requestDto.LoyaltyPointsUsed.HasValue && requestDto.LoyaltyPointsUsed > 0) 
+                    if (requestDto.LoyaltyPointsUsed.HasValue && requestDto.LoyaltyPointsUsed > 0 && requestDto.LoyaltyProgramId.HasValue) 
                     {
-                        var programs = await _loyaltyProgramRepository.GetByTenantIdAsync(tenant.Id);
-                        var program = programs.FirstOrDefault();
+                        var program = await _loyaltyProgramRepository.GetByIdAsync(requestDto.LoyaltyProgramId.Value, tenant.Id);
 
                         if (program != null && program.IsActive)
                         {
-                            if (order.Subtotal >= program.MinOrderValue)
+                            var balance = await _customerLoyaltyRepository.GetByCustomerAndProgramAsync(existingCustomer.Id, program.Id);
+                            if (balance != null && balance.Balance >= requestDto.LoyaltyPointsUsed.Value)
                             {
-                                var balance = await _customerLoyaltyRepository.GetByCustomerAndTenantAsync(tenantCustomer.Customer.Id, tenant.Id);
-                                if (balance != null && balance.Balance >= requestDto.LoyaltyPointsUsed.Value)
-                                {
-                                    decimal loyaltyDiscount = requestDto.LoyaltyPointsUsed.Value * program.CurrencyValue;
-                                    
-                                    decimal maxDiscount = order.Subtotal - order.DiscountAmount;
-                                    if (loyaltyDiscount > maxDiscount) loyaltyDiscount = maxDiscount;
-                                    if (loyaltyDiscount < 0) loyaltyDiscount = 0;
+                                decimal loyaltyDiscount = requestDto.LoyaltyDiscount ?? 0;
 
-                                    order.LoyaltyDiscountAmount = loyaltyDiscount;
-                                    order.LoyaltyPointsUsed = requestDto.LoyaltyPointsUsed.Value;
-                                }
-                                else
-                                {
-                                    throw new InvalidOperationException("Saldo de pontos insuficiente.");
-                                }
+                                decimal maxDiscount = order.Subtotal - order.DiscountAmount;
+                                if (loyaltyDiscount > maxDiscount) loyaltyDiscount = maxDiscount;
+                                if (loyaltyDiscount < 0) loyaltyDiscount = 0;
+
+                                order.LoyaltyDiscountAmount = loyaltyDiscount;
+                                order.LoyaltyPointsUsed = requestDto.LoyaltyPointsUsed.Value;
                             }
-                            else 
+                            else
                             {
-                                throw new InvalidOperationException($"Valor mínimo do pedido para usar pontos é {program.MinOrderValue:C}.");
+                                throw new InvalidOperationException("Saldo de pontos insuficiente.");
                             }
                         }
+                    }
+                    else if (requestDto.LoyaltyDiscount.HasValue && requestDto.LoyaltyDiscount > 0)
+                    {
+                        decimal loyaltyDiscount = requestDto.LoyaltyDiscount.Value;
+
+                        decimal maxDiscount = order.Subtotal - order.DiscountAmount;
+                        if (loyaltyDiscount > maxDiscount) loyaltyDiscount = maxDiscount;
+                        if (loyaltyDiscount < 0) loyaltyDiscount = 0;
+
+                        order.LoyaltyDiscountAmount = loyaltyDiscount;
                     }
 
                     order.Total = order.Subtotal + order.DeliveryFee - order.DiscountAmount - order.LoyaltyDiscountAmount;
@@ -680,9 +682,9 @@ public class OrderService(
                     var createdOrder = await _orderRepository.AddAsync(order);
 
                     // Persistir Resgate de Fidelidade
-                    if (order.LoyaltyPointsUsed > 0)
+                    if (order.LoyaltyPointsUsed > 0 && requestDto.LoyaltyProgramId.HasValue)
                     {
-                         var balance = await _customerLoyaltyRepository.GetByCustomerAndTenantAsync(tenantCustomer.Customer.Id, tenant.Id);
+                         var balance = await _customerLoyaltyRepository.GetByCustomerAndProgramAsync(existingCustomer.Id, requestDto.LoyaltyProgramId.Value);
                          if (balance != null)
                          {
                              balance.Balance -= order.LoyaltyPointsUsed;

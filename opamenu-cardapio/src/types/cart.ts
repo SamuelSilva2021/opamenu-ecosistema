@@ -40,6 +40,7 @@ export interface OrderRequest {
   couponCode?: string;
   loyaltyPointsUsed?: number;
   loyaltyProgramId?: string;
+  loyaltyDiscount?: number;
   items: {
     productId: string;
     quantity: number;

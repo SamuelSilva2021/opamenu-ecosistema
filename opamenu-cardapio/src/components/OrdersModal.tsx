@@ -125,12 +125,12 @@ export function OrdersModal({ isOpen, onClose }: OrdersModalProps) {
         // Não temos um grupo para "Todos os pedidos de um cliente específico" no backend ainda (a não ser que implementemos).
         // Mas podemos ouvir eventos globais de status e filtrar, ou entrar no grupo de CADA pedido que carregamos.
         // A melhor estratégia aqui é entrar no grupo de cada pedido carregado para receber updates.
-        
+
         // Porém, isso pode ser custoso se forem muitos pedidos.
         // Como alternativa simples, mantemos o polling para a lista, e usamos SignalR apenas na OrderConfirmation.
         // MAS o usuário pediu explicitamente para funcionar aqui também ("Veja que eu movi o pedido #006...").
         // Então vamos manter o polling por segurança, mas também tentar conectar nos grupos dos pedidos VISÍVEIS.
-        
+
         // Como o fetchOrders é assíncrono e popula 'orders', precisamos reagir a mudança de 'orders' para conectar.
       } catch (error) {
         console.error("SignalR setup error in OrdersModal", error);
@@ -144,7 +144,7 @@ export function OrdersModal({ isOpen, onClose }: OrdersModalProps) {
     // Polling de fallback (mantém lista atualizada caso entrem novos pedidos ou SignalR falhe)
     let interval: NodeJS.Timeout;
     if (isOpen) {
-      interval = setInterval(() => fetchOrders(true), 15000); 
+      interval = setInterval(() => fetchOrders(true), 15000);
     }
 
     return () => {
@@ -166,7 +166,7 @@ export function OrdersModal({ isOpen, onClose }: OrdersModalProps) {
       // Como o service é singleton e simples, vamos confiar que ele gerencia ou adicionar um método de limpeza se necessário.
       // Para evitar vazamento, vamos assumir que o modal é montado/desmontado e o service é global.
       // Vamos adicionar um listener que atualiza o estado local 'orders'.
-      
+
       const handleStatusUpdate = (orderId: string | number, newStatus: string | number) => {
         setOrders(prevOrders => prevOrders.map(order => {
           if (String(order.id) === String(orderId)) {
@@ -183,7 +183,7 @@ export function OrdersModal({ isOpen, onClose }: OrdersModalProps) {
       return () => {
         unsubscribe(); // Desinscreve o listener de status
         orders.forEach(order => {
-           signalRService.leaveOrderGroup(order.id);
+          signalRService.leaveOrderGroup(order.id);
         });
       };
     }
@@ -416,25 +416,25 @@ export function OrdersModal({ isOpen, onClose }: OrdersModalProps) {
                       <div className="p-5 pb-0">
                         <div className="flex justify-between items-start mb-6">
                           <div className="flex flex-col gap-1">
-                             {/* Order Number */}
-                             {order.orderNumber && (
-                               <span className="text-lg font-black text-foreground tracking-tight mb-1">
-                                 #{order.orderNumber}
-                               </span>
-                             )}
+                            {/* Order Number */}
+                            {order.orderNumber && (
+                              <span className="text-lg font-black text-foreground tracking-tight mb-1">
+                                #{order.orderNumber}
+                              </span>
+                            )}
 
-                             {/* Status Badge */}
-                             <Badge variant="outline" className={`
+                            {/* Status Badge */}
+                            <Badge variant="outline" className={`
                                 mb-2 w-fit border font-semibold px-3 py-1 rounded-full text-xs uppercase tracking-wide
                                 ${order.status === OrderStatus.Pending ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                                  order.status === OrderStatus.Preparing ? 'bg-orange-50 text-orange-700 border-orange-200' :
-                                        order.status === OrderStatus.Ready ? 'bg-green-50 text-green-700 border-green-200' :
-                                          order.status === OrderStatus.OutForDelivery ? 'bg-purple-50 text-purple-700 border-purple-200' :
-                                            order.status === OrderStatus.Delivered ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                                              'bg-red-50 text-red-700 border-red-200'}
+                                order.status === OrderStatus.Preparing ? 'bg-orange-50 text-orange-700 border-orange-200' :
+                                  order.status === OrderStatus.Ready ? 'bg-green-50 text-green-700 border-green-200' :
+                                    order.status === OrderStatus.OutForDelivery ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                                      order.status === OrderStatus.Delivered ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                        'bg-red-50 text-red-700 border-red-200'}
                              `}>
-                               {getOrderStatusText(order.status)}
-                             </Badge>
+                              {getOrderStatusText(order.status)}
+                            </Badge>
 
                             <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
                               <Calendar className="h-3.5 w-3.5" />
@@ -545,6 +545,33 @@ export function OrdersModal({ isOpen, onClose }: OrdersModalProps) {
                                 </li>
                               ))}
                             </ul>
+
+                            <Separator className="bg-border/50 my-2" />
+
+                            <div className="space-y-1 text-sm">
+                              <div className="flex justify-between text-muted-foreground">
+                                <span>Subtotal</span>
+                                <span>{formatPrice(order.subtotal)}</span>
+                              </div>
+                              {order.deliveryFee > 0 && (
+                                <div className="flex justify-between text-muted-foreground">
+                                  <span>Taxa de entrega</span>
+                                  <span>{formatPrice(order.deliveryFee)}</span>
+                                </div>
+                              )}
+                              {order.discountAmount ? (
+                                <div className="flex justify-between text-green-600">
+                                  <span>Desconto do cupom</span>
+                                  <span>- {formatPrice(order.discountAmount)}</span>
+                                </div>
+                              ) : null}
+                              {order.loyaltyDiscountAmount ? (
+                                <div className="flex justify-between text-green-600">
+                                  <span>Desconto de Pontos</span>
+                                  <span>- {formatPrice(order.loyaltyDiscountAmount)}</span>
+                                </div>
+                              ) : null}
+                            </div>
                           </div>
 
                           {order.deliveryAddress && (

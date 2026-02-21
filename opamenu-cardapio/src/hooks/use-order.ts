@@ -37,6 +37,8 @@ export const useOrder = (): OrderHookReturn => {
         notes: orderData.notes || '',
         couponCode: orderData.couponCode,
         loyaltyPointsUsed: orderData.loyaltyPointsUsed,
+        loyaltyProgramId: orderData.loyaltyProgramId,
+        loyaltyDiscount: orderData.loyaltyDiscount,
         orderType: orderData.orderType,
         isDelivery: orderData.orderType === EOrderType.Delivery,
         items: orderData.items.map(item => ({
@@ -52,10 +54,10 @@ export const useOrder = (): OrderHookReturn => {
 
       const order = await orderService.createOrder(createRequest, slug);
       setCurrentOrder(order);
-      
+
       // Adicionar ao histórico
       setOrderHistory(prev => [order, ...prev]);
-      
+
       return order;
     } catch (err) {
       console.error('Error creating order:', err);
@@ -70,11 +72,11 @@ export const useOrder = (): OrderHookReturn => {
     try {
       setError(null);
       const order = await orderService.getOrderById(orderId, slug);
-      
+
       if (currentOrder?.id === orderId) {
         setCurrentOrder(order);
       }
-      
+
       return order;
     } catch (err) {
       console.error('Error getting order:', err);

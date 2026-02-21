@@ -250,6 +250,7 @@ export interface CreateOrderRequest {
   couponCode?: string;
   loyaltyPointsUsed?: number;
   loyaltyProgramId?: string;
+  loyaltyDiscount?: number;
   orderType: EOrderType;
   isDelivery: boolean;
   items: CreateOrderItemRequest[];
@@ -298,6 +299,9 @@ export interface Order {
   items: OrderItem[];
   subtotal: number;
   deliveryFee: number;
+  discountAmount?: number;
+  loyaltyDiscountAmount?: number;
+  loyaltyPointsUsed?: number;
   total: number;
   status: OrderStatus;
   isDelivery: boolean;

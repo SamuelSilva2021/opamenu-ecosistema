@@ -18,6 +18,8 @@ namespace OpaMenu.Domain.DTOs
         public decimal Subtotal { get; set; }
         public decimal DeliveryFee { get; set; }
         public decimal DiscountAmount { get; set; }
+        public decimal LoyaltyDiscountAmount { get; set; }
+        public int LoyaltyPointsUsed { get; set; }
         public string? CouponCode { get; set; }
         public decimal Total { get; set; }
         public EOrderStatus Status { get; set; }

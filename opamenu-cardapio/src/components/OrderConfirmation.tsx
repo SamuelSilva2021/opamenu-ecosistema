@@ -31,11 +31,11 @@ const OrderConfirmation = ({ order, onBackToMenu, onNewOrder }: OrderConfirmatio
           console.log(`Recebida atualização de status para pedido ${orderId}: ${status}`);
           // Se o ID corresponder (tratando string/number)
           if (String(orderId) === String(currentOrder.id)) {
-             // Atualizar o pedido completo para garantir dados frescos
-             const updatedOrder = await getOrderById(String(orderId));
-             if (updatedOrder) {
-               setCurrentOrder(updatedOrder);
-             }
+            // Atualizar o pedido completo para garantir dados frescos
+            const updatedOrder = await getOrderById(String(orderId));
+            if (updatedOrder) {
+              setCurrentOrder(updatedOrder);
+            }
           }
         });
       } catch (error) {
@@ -199,7 +199,7 @@ const OrderConfirmation = ({ order, onBackToMenu, onNewOrder }: OrderConfirmatio
                 <span className="font-bold text-2xl text-foreground">#{String(currentOrder.orderNumber || 0).padStart(3, '0')}</span>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <Badge className={`${getStatusColor(currentOrder.status)} border text-sm font-semibold py-1 px-4 rounded-full flex-1 sm:flex-none justify-center`}>
                 {getStatusText(currentOrder.status)}
@@ -217,7 +217,7 @@ const OrderConfirmation = ({ order, onBackToMenu, onNewOrder }: OrderConfirmatio
               </h3>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2 text-muted-foreground">
-                   <Phone className="w-4 h-4" /> <span className="font-medium text-foreground">{currentOrder.customerPhone}</span>
+                  <Phone className="w-4 h-4" /> <span className="font-medium text-foreground">{currentOrder.customerPhone}</span>
                 </div>
                 {currentOrder.customerEmail && (
                   <div className="flex items-center gap-2 text-muted-foreground">
@@ -233,16 +233,16 @@ const OrderConfirmation = ({ order, onBackToMenu, onNewOrder }: OrderConfirmatio
                 <MapPin className="w-5 h-5 text-primary" /> Entrega
               </h3>
               <div className="space-y-2 text-sm">
-                 {currentOrder.isDelivery ? (
-                    <>
-                      <p className="font-medium text-foreground">Entrega em domicílio</p>
-                      <p className="text-muted-foreground leading-relaxed">
-                        {currentOrder.deliveryAddress}
-                      </p>
-                    </>
-                  ) : (
-                    <p className="font-medium text-foreground">Retirada no local</p>
-                  )}
+                {currentOrder.isDelivery ? (
+                  <>
+                    <p className="font-medium text-foreground">Entrega em domicílio</p>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {currentOrder.deliveryAddress}
+                    </p>
+                  </>
+                ) : (
+                  <p className="font-medium text-foreground">Retirada no local</p>
+                )}
               </div>
             </div>
           </div>
@@ -273,10 +273,10 @@ const OrderConfirmation = ({ order, onBackToMenu, onNewOrder }: OrderConfirmatio
                   <div className="flex-1 space-y-1">
                     <div className="flex items-start justify-between sm:block">
                       <div className="flex items-center gap-3">
-                         <Badge variant="secondary" className="h-6 min-w-6 flex items-center justify-center p-0 rounded-md text-xs font-bold">
-                           {item.quantity}x
-                         </Badge>
-                         <p className="font-medium text-base text-foreground">
+                        <Badge variant="secondary" className="h-6 min-w-6 flex items-center justify-center p-0 rounded-md text-xs font-bold">
+                          {item.quantity}x
+                        </Badge>
+                        <p className="font-medium text-base text-foreground">
                           {item.productName || `Produto ${item.productId}`}
                         </p>
                       </div>
@@ -314,6 +314,18 @@ const OrderConfirmation = ({ order, onBackToMenu, onNewOrder }: OrderConfirmatio
                 <span className="font-medium">{formatPrice(currentOrder.deliveryFee)}</span>
               </div>
             )}
+            {currentOrder.discountAmount ? (
+              <div className="flex justify-between text-sm text-green-600">
+                <span className="font-medium">Desconto do cupom</span>
+                <span className="font-medium">- {formatPrice(currentOrder.discountAmount)}</span>
+              </div>
+            ) : null}
+            {currentOrder.loyaltyDiscountAmount ? (
+              <div className="flex justify-between text-sm text-green-600">
+                <span className="font-medium">Desconto de Pontos</span>
+                <span className="font-medium">- {formatPrice(currentOrder.loyaltyDiscountAmount)}</span>
+              </div>
+            ) : null}
             <Separator className="bg-border/50 my-1" />
             <div className="flex justify-between items-end pt-1">
               <span className="font-bold text-lg">Total</span>
