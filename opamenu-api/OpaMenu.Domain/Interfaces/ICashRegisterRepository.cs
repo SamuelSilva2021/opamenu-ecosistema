@@ -1,0 +1,10 @@
+using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
+
+namespace OpaMenu.Domain.Interfaces;
+
+public interface ICashRegisterRepository : IRepository<CashShiftEntity>
+{
+    Task<CashShiftEntity?> GetActiveShiftAsync(Guid userId, Guid tenantId);
+    Task<IEnumerable<CashShiftEntity>> GetShiftHistoryAsync(Guid tenantId, int count);
+    Task AddMovementAsync(CashMovementEntity movement);
+}

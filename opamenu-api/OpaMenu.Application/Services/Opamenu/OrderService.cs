@@ -7,6 +7,7 @@ using OpaMenu.Commons.Api.Commons;
 using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Domain.DTOs;
 using OpaMenu.Domain.DTOs.Aditionals;
+using OpaMenu.Domain.DTOs.CashRegister;
 using OpaMenu.Domain.DTOs.Order;
 using OpaMenu.Domain.Interfaces;
 using OpaMenu.Infrastructure.Shared.Entities;
@@ -38,7 +39,8 @@ public class OrderService(
     ILoyaltyProgramRepository loyaltyProgramRepository,
     ICustomerLoyaltyRepository customerLoyaltyRepository,
     IMapper mapper,
-    OpaMenu.Infrastructure.Shared.Data.Context.Opamenu.OpamenuDbContext context
+    OpaMenu.Infrastructure.Shared.Data.Context.Opamenu.OpamenuDbContext context,
+    ICashRegisterService cashRegisterService
     ) : IOrderService
 {
     private readonly IOrderRepository _orderRepository = orderRepository;
@@ -57,6 +59,7 @@ public class OrderService(
     private readonly ILogger<OrderService> _logger = logger;
     private readonly IMapper _mapper = mapper;
     private readonly OpaMenu.Infrastructure.Shared.Data.Context.Opamenu.OpamenuDbContext _context = context;
+    private readonly ICashRegisterService _cashRegisterService = cashRegisterService;
 
     /// <summary>
     /// Obtém todos os pedidos, opcionalmente filtrando por data
@@ -488,6 +491,28 @@ public class OrderService(
 
                     // Commit da transação
                     await transaction.CommitAsync();
+
+                    // Registrar movimentação no caixa se for pedido de balcão ou mesa (PDV)
+                    if (requestDto.OrderType == EOrderType.Counter || requestDto.OrderType == EOrderType.Table)
+                    {
+                        if (requestDto.PaymentMethod.HasValue)
+                        {
+                            try
+                            {
+                                await _cashRegisterService.AddMovementAsync(new AddCashMovementRequestDto
+                                {
+                                    Type = ECashMovementType.OrderPayment,
+                                    Amount = createdOrder.Total,
+                                    Description = $"Pagamento do pedido #{createdOrder.OrderNumber}",
+                                    PaymentMethod = requestDto.PaymentMethod.Value
+                                });
+                            }
+                            catch (Exception cashEx)
+                            {
+                                _logger.LogWarning(cashEx, "Erro ao registrar pagamento no caixa para o pedido {OrderId}", createdOrder.Id);
+                            }
+                        }
+                    }
 
                     // Processar pontos de fidelidade (fora da transação principal para não bloquear, mas idealmente deveria ser resiliente)
                     try

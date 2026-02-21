@@ -33,6 +33,8 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
     public DbSet<LoyaltyTransactionEntity> LoyaltyTransactions { get; set; }
     public DbSet<CustomerLoyaltyBalanceEntity> CustomerLoyaltyBalances { get; set; }
     public DbSet<CollaboratorEntity> Collaborators { get; set; }
+    public DbSet<CashShiftEntity> CashShifts { get; set; }
+    public DbSet<CashMovementEntity> CashMovements { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -636,6 +638,42 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
         {
             entity.Property(e => e.Provider).HasConversion<string>().IsRequired();
             entity.Property(e => e.PaymentMethod).HasConversion<string>().IsRequired();
+        });
+
+        // CashShift configuration
+        modelBuilder.Entity<CashShiftEntity>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.OpeningBalance).HasPrecision(10, 2);
+            entity.Property(e => e.ClosingBalance).HasPrecision(10, 2);
+            entity.Property(e => e.ExpectedBalance).HasPrecision(10, 2);
+            entity.Property(e => e.Status).HasConversion<string>();
+
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => e.Status);
+        });
+
+        // CashMovement configuration
+        modelBuilder.Entity<CashMovementEntity>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Amount).HasPrecision(10, 2);
+            entity.Property(e => e.Type).HasConversion<string>();
+            entity.Property(e => e.PaymentMethod).HasConversion<string>();
+
+            entity.HasOne(e => e.Shift)
+                .WithMany(s => s.Movements)
+                .HasForeignKey(e => e.ShiftId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Order)
+                .WithMany()
+                .HasForeignKey(e => e.OrderId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(e => e.ShiftId);
+            entity.HasIndex(e => e.Type);
         });
 
         modelBuilder.OpamenuSeed();
