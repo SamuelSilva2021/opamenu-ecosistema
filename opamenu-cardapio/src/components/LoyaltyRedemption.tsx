@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Gift, AlertCircle, ChevronDown, CheckCircle2 } from "lucide-react";
-import { LoyaltyProgramDto, CustomerResponseDto, ELoyaltyProgramType } from "@/types/api";
+import { LoyaltyProgramDto, CustomerResponseDto, ELoyaltyProgramType, ELoyaltyRewardType } from "@/types/api";
 import { useCart, useLoyalty } from "@/hooks";
 import { useParams } from "react-router-dom";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -15,7 +15,7 @@ interface LoyaltyRedemptionProps {
 
 export const LoyaltyRedemption = ({ program: initialProgram, customer }: LoyaltyRedemptionProps) => {
   const { slug } = useParams<{ slug: string }>();
-  const { items, subtotal, applyLoyaltyPoints, removeLoyaltyPoints, loyaltyPointsUsed, loyaltyProgramId } = useCart();
+  const { items, subtotal, applyLoyaltyPoints, removeLoyaltyPoints, loyaltyPointsUsed, loyaltyProgramId, loyaltyDiscount } = useCart();
   const { balance, programs, loading } = useLoyalty(slug, customer.phone);
 
   // Helper function to calculate eligible subtotal for a program based on its filters
@@ -99,13 +99,13 @@ export const LoyaltyRedemption = ({ program: initialProgram, customer }: Loyalty
     // Safety check if cart items change making maxRedeemablePoints less than what is currently applied
     if (selectedProgram?.id === loyaltyProgramId && pointsToUse > maxRedeemablePoints) {
       setPointsToUse(maxRedeemablePoints);
-      applyLoyaltyPoints(maxRedeemablePoints, VALUE_PER_POINT, selectedProgram.id);
+      // Let the discountValue effect handle the applyLoyaltyPoints call for consistency
     }
-  }, [maxRedeemablePoints, pointsToUse, selectedProgram, loyaltyProgramId, applyLoyaltyPoints, VALUE_PER_POINT]);
+  }, [maxRedeemablePoints, pointsToUse, selectedProgram, loyaltyProgramId]);
 
   const handleApply = () => {
     if (selectedProgram) {
-      applyLoyaltyPoints(pointsToUse, VALUE_PER_POINT, selectedProgram.id);
+      applyLoyaltyPoints(pointsToUse, discountValue, selectedProgram.id);
     }
   };
 
@@ -114,7 +114,54 @@ export const LoyaltyRedemption = ({ program: initialProgram, customer }: Loyalty
     setPointsToUse(0);
   };
 
-  const discountValue = pointsToUse * VALUE_PER_POINT;
+  // Helper calculation for discount value based on program type
+  const calculatedDiscount = useMemo(() => {
+    if (!selectedProgram) return 0;
+
+    // ItemCount + FreeProduct = Free item of the same category (most expensive)
+    if (selectedProgram.type === ELoyaltyProgramType.ItemCount &&
+      selectedProgram.rewardType === ELoyaltyRewardType.FreeProduct &&
+      selectedProgram.targetCount && selectedProgram.targetCount > 0) {
+
+      const numFreeItems = Math.floor(pointsToUse / selectedProgram.targetCount);
+      if (numFreeItems <= 0) return 0;
+
+      // Pegar todos os itens elegíveis do carrinho
+      const eligibleItems = items.filter(item => {
+        if (!selectedProgram.filters || selectedProgram.filters.length === 0) return true;
+        return selectedProgram.filters.some(f => {
+          const productMatch = f.productId ? f.productId.toLowerCase() === item.product.id.toLowerCase() : false;
+          const categoryMatch = f.categoryId ? f.categoryId.toLowerCase() === item.product.categoryId.toLowerCase() : false;
+          return productMatch || categoryMatch;
+        });
+      });
+
+      // Expand items by quantity and sort by price descending
+      const expandedPrices = eligibleItems.flatMap(item =>
+        Array(item.quantity).fill(item.unitPrice)
+      ).sort((a, b) => b - a);
+
+      // Sum the prices of the N most expensive items
+      return expandedPrices.slice(0, numFreeItems).reduce((sum, price) => sum + price, 0);
+    }
+
+    // Default: Points * ValuePerPoint
+    return pointsToUse * VALUE_PER_POINT;
+  }, [selectedProgram, pointsToUse, items, VALUE_PER_POINT]);
+
+  const discountValue = calculatedDiscount;
+
+  // Auto-reapply discount if cart changes and it's a dynamic discount (FreeProduct)
+  useEffect(() => {
+    if (selectedProgram?.id === loyaltyProgramId &&
+      selectedProgram.type === ELoyaltyProgramType.ItemCount &&
+      selectedProgram.rewardType === ELoyaltyRewardType.FreeProduct) {
+
+      if (discountValue !== loyaltyDiscount) {
+        applyLoyaltyPoints(pointsToUse, discountValue, selectedProgram.id);
+      }
+    }
+  }, [items, discountValue, loyaltyDiscount, loyaltyProgramId, selectedProgram, pointsToUse, applyLoyaltyPoints]);
 
   if (loading) return <div className="p-4 text-center text-sm text-gray-500">Carregando fidelidade...</div>;
   if (availablePrograms.length === 0) return null;
@@ -168,21 +215,60 @@ export const LoyaltyRedemption = ({ program: initialProgram, customer }: Loyalty
             {maxRedeemablePoints > 0 ? (
               <>
                 <div className="space-y-4">
-                  <div className="flex justify-between text-sm font-bold">
-                    <span>Pontos para usar:</span>
-                    <span className="text-primary">{pointsToUse}</span>
-                  </div>
+                  {selectedProgram.type === ELoyaltyProgramType.ItemCount &&
+                    selectedProgram.rewardType === ELoyaltyRewardType.FreeProduct ? (
+                    <div className="flex flex-col gap-3">
+                      <div className="flex justify-between items-center bg-white p-3 rounded-xl border border-gray-100 h-14">
+                        <span className="text-xs font-bold uppercase text-gray-400">Produtos para resgatar:</span>
+                        <div className="flex items-center gap-4">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8 rounded-full"
+                            onClick={() => setPointsToUse(p => Math.max(0, p - (selectedProgram.targetCount || 1)))}
+                            disabled={pointsToUse === 0}
+                          >
+                            -
+                          </Button>
+                          <span className="font-black text-lg w-4 text-center">
+                            {Math.floor(pointsToUse / (selectedProgram.targetCount || 1))}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8 rounded-full"
+                            onClick={() => setPointsToUse(p => Math.min(pointsBalance, p + (selectedProgram.targetCount || 1)))}
+                            disabled={pointsToUse + (selectedProgram.targetCount || 1) > maxRedeemablePoints}
+                          >
+                            +
+                          </Button>
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-gray-400 text-center px-2">
+                        Meta: <b>{selectedProgram.targetCount} pontos</b> por produto grátis.
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex justify-between text-sm font-bold">
+                        <span>Pontos para usar:</span>
+                        <span className="text-primary">{pointsToUse}</span>
+                      </div>
 
-                  <Slider
-                    value={[pointsToUse]}
-                    max={maxRedeemablePoints}
-                    step={1}
-                    onValueChange={(vals) => setPointsToUse(vals[0])}
-                    className="py-2"
-                  />
+                      <Slider
+                        value={[pointsToUse]}
+                        max={maxRedeemablePoints}
+                        step={1}
+                        onValueChange={(vals) => setPointsToUse(vals[0])}
+                        className="py-2"
+                      />
+                    </>
+                  )}
 
                   <div className="flex justify-between items-center p-3 bg-green-50 rounded-xl border border-green-100">
-                    <span className="text-xs font-bold text-green-700 uppercase">Desconto aplicado:</span>
+                    <span className="text-xs font-bold text-green-700 uppercase">
+                      {selectedProgram.rewardType === ELoyaltyRewardType.FreeProduct ? "Valor dos itens grátis:" : "Desconto aplicado:"}
+                    </span>
                     <span className="font-black text-green-600">
                       {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(discountValue)}
                     </span>

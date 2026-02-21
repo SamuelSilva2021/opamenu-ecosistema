@@ -1,6 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Clock, User, MessageSquare } from "lucide-react";
+import { Clock, User, MessageSquare, Gift } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { Order } from "../types";
@@ -60,6 +60,20 @@ export function OrderCard({ order }: OrderCardProps) {
                     {order.notes}
                   </p>
                 </div>
+              </div>
+            )}
+
+            {order.loyaltyPointsUsed > 0 && (
+              <div className="flex items-center gap-1.5 p-1.5 px-2 bg-primary/5 rounded-md border border-primary/10">
+                <Gift className="h-3 w-3 text-primary" />
+                <span className="text-[10px] font-bold text-primary uppercase">
+                  Fidelidade: {order.loyaltyPointsUsed} pts
+                  {order.loyaltyDiscountAmount > 0 && (
+                    <span className="ml-1 text-muted-foreground font-normal">
+                      (-{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(order.loyaltyDiscountAmount)})
+                    </span>
+                  )}
+                </span>
               </div>
             )}
 

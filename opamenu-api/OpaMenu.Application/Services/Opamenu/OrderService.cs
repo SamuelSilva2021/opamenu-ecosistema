@@ -287,7 +287,8 @@ public class OrderService(
                     UnitPrice = product.Price,
                     Quantity = itemDto.Quantity,
                     Notes = itemDto.Notes,
-                    Subtotal = product.Price * itemDto.Quantity
+                    Subtotal = product.Price * itemDto.Quantity,
+                    Product = product
                 };
 
                 // Adicionar aditionals
@@ -381,10 +382,40 @@ public class OrderService(
                                 var balance = await _customerLoyaltyRepository.GetByCustomerAndProgramAsync(existingCustomer.Id, program.Id);
                                 if (balance != null && balance.Balance >= requestDto.LoyaltyPointsUsed.Value)
                                 {
-                                    //decimal valuePerPoint = (decimal)(program.RewardValue > 0 ? program.RewardValue : 1.0m);
-                                    //decimal loyaltyDiscount = requestDto.LoyaltyPointsUsed.Value * valuePerPoint;
                                     decimal loyaltyDiscount = requestDto.LoyaltyDiscount ?? 0;
-                                    
+
+                                    // Validação Inteligente para ItemCount / Produto Grátis
+                                    if (program.Type == ELoyaltyProgramType.ItemCount && program.RewardType == ELoyaltyRewardType.FreeProduct)
+                                    {
+                                        int targetCount = program.TargetCount ?? 1;
+                                        int numFreeItems = requestDto.LoyaltyPointsUsed.Value / targetCount;
+
+                                        if (requestDto.LoyaltyPointsUsed.Value % targetCount != 0)
+                                            throw new InvalidOperationException($"Os pontos para resgate ({requestDto.LoyaltyPointsUsed.Value}) devem ser múltiplos da meta ({targetCount}).");
+
+                                        if (numFreeItems > 0)
+                                        {
+                                            var prices = order.Items.Where(item =>
+                                                program.Filters == null || !program.Filters.Any() ||
+                                                program.Filters.Any(f =>
+                                                    (f.ProductId.HasValue && f.ProductId == item.ProductId) ||
+                                                    (f.CategoryId.HasValue && item.Product != null && item.Product.CategoryId == f.CategoryId)
+                                                )
+                                            )
+                                            .SelectMany(i => Enumerable.Repeat(i.UnitPrice, i.Quantity))
+                                            .OrderByDescending(p => p)
+                                            .Take(numFreeItems)
+                                            .ToList();
+
+                                            decimal calculatedDiscount = prices.Sum();
+                                            if (Math.Abs(loyaltyDiscount - calculatedDiscount) > 0.01m)
+                                            {
+                                                _logger.LogWarning("Divergência no desconto de fidelidade. Solicitado: {Requested}, Calculado: {Calculated}", loyaltyDiscount, calculatedDiscount);
+                                                loyaltyDiscount = calculatedDiscount;
+                                            }
+                                        }
+                                    }
+
                                     // Limitar desconto ao valor restante após cupom
                                     decimal maxDiscount = order.Subtotal - order.DiscountAmount;
                                     if (loyaltyDiscount > maxDiscount) loyaltyDiscount = maxDiscount;
@@ -398,7 +429,7 @@ public class OrderService(
                                     throw new InvalidOperationException("Saldo de pontos insuficiente.");
                                 }
                             }
-                            else 
+                            else
                             {
                                 throw new InvalidOperationException($"Valor mínimo do pedido para usar pontos é {program.MinOrderValue:C}.");
                             }
@@ -560,7 +591,8 @@ public class OrderService(
                     UnitPrice = product.Price,
                     Quantity = itemDto.Quantity,
                     Notes = itemDto.Notes,
-                    Subtotal = product.Price * itemDto.Quantity
+                    Subtotal = product.Price * itemDto.Quantity,
+                    Product = product
                 };
 
                 // Adicionar aditionals
@@ -647,6 +679,38 @@ public class OrderService(
                             if (balance != null && balance.Balance >= requestDto.LoyaltyPointsUsed.Value)
                             {
                                 decimal loyaltyDiscount = requestDto.LoyaltyDiscount ?? 0;
+
+                                // Validação Inteligente para ItemCount / Produto Grátis
+                                if (program.Type == ELoyaltyProgramType.ItemCount && program.RewardType == ELoyaltyRewardType.FreeProduct)
+                                {
+                                    int targetCount = program.TargetCount ?? 1;
+                                    int numFreeItems = requestDto.LoyaltyPointsUsed.Value / targetCount;
+
+                                    if (requestDto.LoyaltyPointsUsed.Value % targetCount != 0)
+                                        throw new InvalidOperationException($"Os pontos para resgate ({requestDto.LoyaltyPointsUsed.Value}) devem ser múltiplos da meta ({targetCount}).");
+
+                                    if (numFreeItems > 0)
+                                    {
+                                        var prices = order.Items.Where(item =>
+                                            program.Filters == null || !program.Filters.Any() ||
+                                            program.Filters.Any(f =>
+                                                (f.ProductId.HasValue && f.ProductId == item.ProductId) ||
+                                                (f.CategoryId.HasValue && item.Product != null && item.Product.CategoryId == f.CategoryId)
+                                            )
+                                        )
+                                        .SelectMany(i => Enumerable.Repeat(i.UnitPrice, i.Quantity))
+                                        .OrderByDescending(p => p)
+                                        .Take(numFreeItems)
+                                        .ToList();
+
+                                        decimal calculatedDiscount = prices.Sum();
+                                        if (Math.Abs(loyaltyDiscount - calculatedDiscount) > 0.01m)
+                                        {
+                                            _logger.LogWarning("Divergência no desconto de fidelidade público. Solicitado: {Requested}, Calculado: {Calculated}", loyaltyDiscount, calculatedDiscount);
+                                            loyaltyDiscount = calculatedDiscount;
+                                        }
+                                    }
+                                }
 
                                 decimal maxDiscount = order.Subtotal - order.DiscountAmount;
                                 if (loyaltyDiscount > maxDiscount) loyaltyDiscount = maxDiscount;

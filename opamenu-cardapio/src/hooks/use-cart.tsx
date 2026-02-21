@@ -25,7 +25,7 @@ export interface CartContextType {
   getItemQuantity: (productId: string) => number;
   applyCoupon: (coupon: Coupon) => void;
   removeCoupon: () => void;
-  applyLoyaltyPoints: (points: number, valuePerPoint: number, programId: string) => void;
+  applyLoyaltyPoints: (points: number, discount: number, programId: string) => void;
   removeLoyaltyPoints: () => void;
 }
 
@@ -335,9 +335,9 @@ export const CartProvider = ({ children, slug }: { children: ReactNode; slug?: s
     setCoupon(null);
   }, []);
 
-  const applyLoyaltyPoints = useCallback((points: number, valuePerPoint: number, programId: string) => {
+  const applyLoyaltyPoints = useCallback((points: number, discount: number, programId: string) => {
     setLoyaltyPointsUsed(points);
-    setLoyaltyDiscount(points * valuePerPoint);
+    setLoyaltyDiscount(discount);
     setLoyaltyProgramId(programId);
   }, []);
 

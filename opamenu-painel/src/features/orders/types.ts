@@ -40,6 +40,8 @@ export interface Order {
   subtotal: number;
   deliveryFee: number;
   discountAmount: number;
+  loyaltyDiscountAmount: number;
+  loyaltyPointsUsed: number;
   couponCode?: string;
   total: number;
   status: OrderStatus;
