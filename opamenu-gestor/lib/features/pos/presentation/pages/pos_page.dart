@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opamenu_gestor/core/constants/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/product_provider.dart';
+import '../providers/cash_register_notifier.dart';
 import '../widgets/product_card.dart';
 import '../widgets/order_summary.dart';
+import '../widgets/cash_register_gatekeeper.dart';
+import '../widgets/close_shift_dialog.dart';
 
 class PosPage extends ConsumerWidget {
   const PosPage({super.key});
@@ -65,115 +68,149 @@ class PosPage extends ConsumerWidget {
   Widget _buildContent(BuildContext context, WidgetRef ref) {
     final productsAsync = ref.watch(filteredProductsProvider);
     final isMobile = MediaQuery.of(context).size.width < 800;
+    final cashShift = ref.watch(cashRegisterProvider).value;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // Top Bar
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 24, vertical: 16),
-          color: Colors.white,
-          child: Row(
-            children: [
-              if (!isMobile) ...[
-                const Text(
-                  AppStrings.appName,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(width: 48),
-              ],
-              Expanded(
-                child: TextField(
-                  onChanged: (value) {
-                    ref.read(productSearchQueryProvider.notifier).setQuery(value);
-                  },
-                  decoration: InputDecoration(
-                    hintText: AppStrings.searchProduct,
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor: const Color(0xFFF5F5F5),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                  ),
-                ),
-              ),
-              if (!isMobile) ...[
-                const SizedBox(width: 24),
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.notifications_none),
-                ),
-                const SizedBox(width: 16),
-                const CircleAvatar(
-                  backgroundColor: AppColors.primary,
-                  child: Icon(Icons.person, color: Colors.white),
-                ),
-              ] else ...[
-                 const SizedBox(width: 12),
-                 const CircleAvatar(
-                   radius: 18,
-                   backgroundColor: AppColors.primary,
-                   child: Icon(Icons.person, size: 20, color: Colors.white),
-                 ),
-              ]
-            ],
-          ),
-        ),
-        // Scrollable Content
-        Expanded(
-          child: Padding(
-            padding: EdgeInsets.all(isMobile ? 16 : 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+    return CashRegisterGatekeeper(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Top Bar
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 24, vertical: 16),
+            color: Colors.white,
+            child: Row(
               children: [
-                const Text(
-                  AppStrings.specialMenuForYou,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                if (!isMobile) ...[
+                  const Text(
+                    AppStrings.appName,
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 24),
+                  const SizedBox(width: 48),
+                ],
                 Expanded(
-                  child: productsAsync.when(
-                    data: (products) {
-                      if (products.isEmpty) {
-                        return const Center(child: Text(AppStrings.noProductsFound));
-                      }
-                      return GridView.builder(
-                        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 300,
-                          childAspectRatio: 0.75,
-                          crossAxisSpacing: isMobile ? 16 : 24,
-                          mainAxisSpacing: isMobile ? 16 : 24,
-                        ),
-                        itemCount: products.length,
-                        itemBuilder: (context, index) {
-                          return ProductCard(product: products[index]);
-                        },
-                      );
+                  child: TextField(
+                    onChanged: (value) {
+                      ref.read(productSearchQueryProvider.notifier).setQuery(value);
                     },
-                    loading: () {
-                      return const Center(child: CircularProgressIndicator());
-                    },
-                    error: (error, stack) {
-                      return Center(child: Text('Error: $error'));
-                    },
+                    decoration: InputDecoration(
+                      hintText: AppStrings.searchProduct,
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFFF5F5F5),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                    ),
                   ),
                 ),
+                if (cashShift != null) ...[
+                  const SizedBox(width: 16),
+                  TextButton.icon(
+                    onPressed: () => _showCloseShiftDialog(context, ref, cashShift.expectedBalance),
+                    icon: const Icon(Icons.no_encryption_gmailerrorred_outlined, color: Colors.redAccent),
+                    label: isMobile ? const SizedBox.shrink() : const Text('Fechar Caixa', style: TextStyle(color: Colors.redAccent)),
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 16),
+                    ),
+                  ),
+                ],
+                if (!isMobile) ...[
+                  const SizedBox(width: 24),
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.notifications_none),
+                  ),
+                  const SizedBox(width: 16),
+                  const CircleAvatar(
+                    backgroundColor: AppColors.primary,
+                    child: Icon(Icons.person, color: Colors.white),
+                  ),
+                ] else ...[
+                  const SizedBox(width: 12),
+                  const CircleAvatar(
+                    radius: 18,
+                    backgroundColor: AppColors.primary,
+                    child: Icon(Icons.person, size: 20, color: Colors.white),
+                  ),
+                ]
               ],
             ),
           ),
-        ),
-      ],
+          // Scrollable Content
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.all(isMobile ? 16 : 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    AppStrings.specialMenuForYou,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Expanded(
+                    child: productsAsync.when(
+                      data: (products) {
+                        if (products.isEmpty) {
+                          return const Center(child: Text(AppStrings.noProductsFound));
+                        }
+                        return GridView.builder(
+                          gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 300,
+                            childAspectRatio: 0.75,
+                            crossAxisSpacing: isMobile ? 16 : 24,
+                            mainAxisSpacing: isMobile ? 16 : 24,
+                          ),
+                          itemCount: products.length,
+                          itemBuilder: (context, index) {
+                            return ProductCard(product: products[index]);
+                          },
+                        );
+                      },
+                      loading: () {
+                        return const Center(child: CircularProgressIndicator());
+                      },
+                      error: (error, stack) {
+                        return Center(child: Text('Error: $error'));
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCloseShiftDialog(BuildContext context, WidgetRef ref, double expectedBalance) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Consumer(
+        builder: (context, ref, _) {
+          final state = ref.watch(cashRegisterProvider);
+          return CloseShiftDialog(
+            expectedBalance: expectedBalance,
+            isLoading: state.isLoading,
+            onSubmit: (balance) async {
+              await ref.read(cashRegisterProvider.notifier).closeShift(balance);
+              if (context.mounted) Navigator.pop(context);
+            },
+          );
+        },
+      ),
     );
   }
 }
