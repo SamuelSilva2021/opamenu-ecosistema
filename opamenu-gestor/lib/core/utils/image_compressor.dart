@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
+import 'dart:typed_data';
 
 class ImageCompressor {
   static Future<File?> compressFile(
@@ -18,15 +19,15 @@ class ImageCompressor {
       final decoded = img.decodeImage(bytes);
       if (decoded == null) return file;
 
-      final image = img.bakeOrientation(decoded);
+      final image = decoded;
 
-      final hasAlpha = image.channels == img.Channels.rgba;
+      final hasAlpha = image.numChannels == 4;
 
       img.Image working = image;
       int longestSide = working.width > working.height ? working.width : working.height;
       int targetLongest = longestSide.clamp(1, maxDimension);
 
-      List<int> outBytes;
+      Uint8List outBytes;
       String ext;
 
       if (!hasAlpha) {
@@ -56,7 +57,7 @@ class ImageCompressor {
         }
 
         if (outBytes.length > maxBytes) {
-          final flattened = _flattenOnColor(working, img.getColor(255, 255, 255));
+          final flattened = _flattenOnColor(working, img.ColorRgb8(255, 255, 255));
           var quality = initialJpegQuality;
           outBytes = img.encodeJpg(flattened, quality: quality);
           while (outBytes.length > maxBytes) {
@@ -98,10 +99,10 @@ class ImageCompressor {
     }
   }
 
-  static img.Image _flattenOnColor(img.Image src, int color) {
-    final canvas = img.Image(src.width, src.height);
-    img.fillRect(canvas, 0, 0, src.width, src.height, color);
-    img.copyInto(canvas, src);
+  static img.Image _flattenOnColor(img.Image src, img.Color color) {
+    final canvas = img.Image(width: src.width, height: src.height);
+    img.fillRect(canvas, x1: 0, y1: 0, x2: src.width - 1, y2: src.height - 1, color: color);
+    img.compositeImage(canvas, src);
     return canvas;
   }
 }

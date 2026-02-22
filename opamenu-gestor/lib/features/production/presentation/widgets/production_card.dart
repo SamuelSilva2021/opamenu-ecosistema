@@ -5,7 +5,7 @@ import '../../../pos/domain/enums/order_status.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/services/printer_service.dart';
 import '../../../../core/utils/receipt_generator.dart';
-import 'package:esc_pos_utils_plus/esc_pos_utils.dart' as esc;
+import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart' as esc;
 import '../controllers/production_controller.dart';
 import '../../../../features/settings/presentation/providers/settings_notifier.dart';
 

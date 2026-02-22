@@ -21,6 +21,7 @@ class PosSidebar extends ConsumerWidget {
     if (location.startsWith('/collaborators')) return 10;
     if (location.startsWith('/messages')) return 8;
     if (location.startsWith('/settings')) return 9;
+    if (location.startsWith('/reports/cash')) return 11;
     return -1;
   }
 
@@ -62,6 +63,9 @@ class PosSidebar extends ConsumerWidget {
         break;
       case 10:
         context.go('/collaborators');
+        break;
+      case 11:
+        context.go('/reports/cash');
         break;
     }
   }
@@ -173,6 +177,15 @@ class PosSidebar extends ConsumerWidget {
                       label: 'Cozinha',
                       isSelected: currentIndex == 5,
                       onTap: () => _navigateTo(context, 5),
+                    ),
+                  ),
+                  PermissionGate(
+                    module: 'PDV', // Ou criar módulo REPORTS
+                    child: _SidebarItem(
+                      icon: Icons.assessment_rounded,
+                      label: 'Relat. de Caixa',
+                      isSelected: currentIndex == 11,
+                      onTap: () => _navigateTo(context, 11),
                     ),
                   ),
                   

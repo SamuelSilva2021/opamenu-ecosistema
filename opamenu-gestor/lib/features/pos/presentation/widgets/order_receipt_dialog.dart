@@ -6,7 +6,7 @@ import '../../domain/models/order_response_dto.dart';
 import '../../domain/models/order_item_response_dto.dart';
 import '../../../../core/services/printer_service.dart';
 import '../../../../core/utils/receipt_generator.dart';
-import 'package:esc_pos_utils_plus/esc_pos_utils.dart' as esc;
+import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart' as esc;
 import '../../../../features/settings/presentation/providers/settings_notifier.dart';
 
 class OrderReceiptDialog extends ConsumerWidget {

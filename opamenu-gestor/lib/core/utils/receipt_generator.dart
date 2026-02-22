@@ -1,4 +1,4 @@
-import 'package:esc_pos_utils_plus/esc_pos_utils.dart' as esc;
+import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart' as esc;
 import 'package:intl/intl.dart';
 import '../../features/pos/domain/models/order_response_dto.dart';
 import '../services/printer_service.dart';

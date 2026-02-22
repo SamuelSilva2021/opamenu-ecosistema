@@ -46,4 +46,11 @@ public class CashRegisterController(ICashRegisterService cashRegisterService) : 
     {
         return BuildResponse(await _cashRegisterService.GetShiftHistoryAsync(count));
     }
+
+    [HttpGet("report")]
+    [MapPermission(MODULE_PDV, OPERATION_SELECT)]
+    public async Task<ActionResult> GetReport([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+    {
+        return BuildResponse(await _cashRegisterService.GetReportAsync(startDate, endDate));
+    }
 }

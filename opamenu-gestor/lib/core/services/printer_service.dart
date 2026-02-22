@@ -1,5 +1,5 @@
-import 'package:flutter_pos_printer_platform/flutter_pos_printer_platform.dart';
-import 'package:esc_pos_utils_plus/esc_pos_utils.dart' as esc;
+import 'package:flutter_pos_printer_platform_image_3/flutter_pos_printer_platform_image_3.dart';
+import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart' as esc;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'printer_service.g.dart';

@@ -15,6 +15,7 @@ import '../../features/production/presentation/pages/production_page.dart';
 import 'package:opamenu_gestor/core/presentation/providers/permissions_provider.dart';
 import '../../features/users/presentation/pages/users_page.dart';
 import '../../features/collaborators/presentation/pages/collaborators_page.dart';
+import '../../features/reports/presentation/pages/cash_reports_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opamenu_gestor/features/auth/presentation/providers/auth_notifier.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -154,6 +155,12 @@ GoRouter goRouter(Ref ref) {
               child: SettingsPage(),
             ),
           ),
+          GoRoute(
+            path: '/reports/cash',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: CashReportsPage(),
+            ),
+          ),
         ],
       ),
     ],
@@ -176,4 +183,5 @@ const _routePermissions = {
   '/users': 'USER_ACCOUNT',
   '/collaborators': 'USER_ACCOUNT', // Usando mesma permissão por enquanto
   '/settings': 'SETTINGS',
+  '/reports/cash': 'PDV', // Usando permissão de PDV ou DASHBOARD
 };

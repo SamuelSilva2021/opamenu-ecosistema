@@ -3,6 +3,7 @@ import '../datasources/cash_register_remote_datasource.dart';
 import '../../domain/models/cash_shift_response_dto.dart';
 import '../../domain/models/cash_movement_response_dto.dart';
 import '../../domain/models/cash_register_requests.dart';
+import '../../domain/models/cash_register_report_dto.dart';
 
 part 'cash_register_repository.g.dart';
 
@@ -26,4 +27,7 @@ class CashRegisterRepository {
 
   Future<CashMovementResponseDto> addMovement(AddCashMovementRequestDto request) => 
       _dataSource.addMovement(request);
+
+  Future<CashRegisterReportDto> getReport(DateTime startDate, DateTime endDate) =>
+      _dataSource.getReport(startDate, endDate);
 }

@@ -185,6 +185,87 @@ public class CashRegisterService(
         }
     }
 
+    public async Task<ResponseDTO<CashRegisterReportDto>> GetReportAsync(DateTime startDate, DateTime endDate)
+    {
+        try
+        {
+            var (tenantId, _) = GetContext();
+            var shifts = await _cashRegisterRepository.GetShiftsByPeriodAsync(tenantId, startDate, endDate);
+            
+            var report = new CashRegisterReportDto
+            {
+                StartDate = startDate,
+                EndDate = endDate,
+                TotalGrossSales = 0,
+                TotalNetSales = 0,
+                TotalInflows = 0,
+                TotalOutflows = 0,
+                TotalDiscrepancy = 0
+            };
+
+            var paymentMethodTotals = new Dictionary<EPaymentMethod, (decimal total, int count)>();
+
+            foreach (var shift in shifts)
+            {
+                if (shift.Status == ECashShiftStatus.Closed)
+                {
+                    report.TotalDiscrepancy += (shift.ClosingBalance ?? 0) - shift.ExpectedBalance;
+                }
+
+                foreach (var movement in shift.Movements)
+                {
+                    switch (movement.Type)
+                    {
+                        case ECashMovementType.OrderPayment:
+                            report.TotalGrossSales += movement.Amount;
+                            report.TotalNetSales += movement.Amount;
+                            
+                            if (movement.PaymentMethod.HasValue)
+                            {
+                                var method = movement.PaymentMethod.Value;
+                                if (!paymentMethodTotals.ContainsKey(method))
+                                    paymentMethodTotals[method] = (0, 0);
+                                
+                                var current = paymentMethodTotals[method];
+                                paymentMethodTotals[method] = (current.total + movement.Amount, current.count + 1);
+                            }
+                            break;
+                            
+                        case ECashMovementType.Inbound:
+                        case ECashMovementType.Opening:
+                            report.TotalInflows += movement.Amount;
+                            break;
+                            
+                        case ECashMovementType.Outbound:
+                        case ECashMovementType.Closing:
+                            report.TotalOutflows += movement.Amount;
+                            break;
+                            
+                        case ECashMovementType.Reversed:
+                            report.TotalGrossSales -= movement.Amount;
+                            report.TotalNetSales -= movement.Amount;
+                            break;
+                    }
+                }
+            }
+
+            report.SalesByPaymentMethod = paymentMethodTotals.Select(p => new PaymentMethodSummaryDto
+            {
+                PaymentMethod = p.Key,
+                PaymentMethodName = p.Key.ToString(),
+                TotalAmount = p.Value.total,
+                Count = p.Value.count
+            }).ToList();
+
+            return StaticResponseBuilder<CashRegisterReportDto>.BuildOk(report);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao gerar relatório de caixa");
+            return StaticResponseBuilder<CashRegisterReportDto>.BuildError("Erro ao gerar relatório");
+        }
+    }
+
     private CashShiftResponseDto MapToDto(CashShiftEntity entity)
     {
         return new CashShiftResponseDto

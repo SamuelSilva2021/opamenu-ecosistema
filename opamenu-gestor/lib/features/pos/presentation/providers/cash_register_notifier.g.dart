@@ -35,7 +35,7 @@ final class CashRegisterNotifierProvider
 }
 
 String _$cashRegisterNotifierHash() =>
-    r'9025a564cbef9646f923ddf0ac6d7a5315afe3d6';
+    r'bb028f5517124c2e8a858c3218cc25fda9851d7e';
 
 abstract class _$CashRegisterNotifier
     extends $AsyncNotifier<CashShiftResponseDto?> {

@@ -35,6 +35,7 @@ namespace OpamenuApp.Tests.Services
         private readonly Mock<ICustomerLoyaltyRepository> _mockCustomerLoyaltyRepository;
         private readonly Mock<IMapper> _mockMapper;
         private readonly Mock<OpaMenu.Infrastructure.Shared.Data.Context.Opamenu.OpamenuDbContext> _mockContext;
+        private readonly Mock<ICashRegisterService> _mockCashRegisterService;
         private readonly OrderService _orderService;
 
         private readonly Guid _tenantId = Guid.NewGuid();
@@ -56,9 +57,8 @@ namespace OpamenuApp.Tests.Services
             _mockLoyaltyProgramRepository = new Mock<ILoyaltyProgramRepository>();
             _mockCustomerLoyaltyRepository = new Mock<ICustomerLoyaltyRepository>();
             _mockMapper = new Mock<IMapper>();
-            
-            // Note: DBContext might need actual instantiation if it's not easily mockable, or specialized mock
             _mockContext = new Mock<OpaMenu.Infrastructure.Shared.Data.Context.Opamenu.OpamenuDbContext>();
+            _mockCashRegisterService = new Mock<ICashRegisterService>();
 
             _mockCurrentUserService.Setup(x => x.GetTenantGuid()).Returns(_tenantId);
 
@@ -78,7 +78,8 @@ namespace OpamenuApp.Tests.Services
                 _mockLoyaltyProgramRepository.Object,
                 _mockCustomerLoyaltyRepository.Object,
                 _mockMapper.Object,
-                _mockContext.Object
+                _mockContext.Object,
+                _mockCashRegisterService.Object
             );
         }
 

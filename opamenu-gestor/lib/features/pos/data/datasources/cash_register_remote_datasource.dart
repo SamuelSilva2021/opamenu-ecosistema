@@ -4,6 +4,7 @@ import '../../../../core/network/api_client.dart';
 import '../../domain/models/cash_shift_response_dto.dart';
 import '../../domain/models/cash_movement_response_dto.dart';
 import '../../domain/models/cash_register_requests.dart';
+import '../../domain/models/cash_register_report_dto.dart';
 import 'dart:developer' as developer;
 
 part 'cash_register_remote_datasource.g.dart';
@@ -21,7 +22,6 @@ class CashRegisterRemoteDataSource {
   Future<CashShiftResponseDto?> getActiveShift() async {
     try {
       final response = await _dio.get('/api/cash-register/active');
-      developer.log('Active shift response: status=${response.statusCode}, data=${response.data}', name: 'CashRegisterRemoteDataSource');
       
       if (response.statusCode == 200) {
         final data = _extractData(response.data);
@@ -30,9 +30,8 @@ class CashRegisterRemoteDataSource {
       }
       return null;
     } catch (e, stack) {
-      developer.log('Error getting active shift', error: e, stackTrace: stack, name: 'CashRegisterRemoteDataSource');
       if (e is DioException && e.response?.statusCode == 404) {
-        return null; // Not found often means no active shift
+        return null;
       }
       rethrow;
     }
@@ -53,7 +52,6 @@ class CashRegisterRemoteDataSource {
       if (data == null) throw Exception('Resposta da API está vazia');
       return CashShiftResponseDto.fromJson(data);
     } catch (e, stack) {
-      developer.log('Error opening shift', error: e, stackTrace: stack, name: 'CashRegisterRemoteDataSource');
       rethrow;
     }
   }
@@ -73,7 +71,6 @@ class CashRegisterRemoteDataSource {
       if (data == null) throw Exception('Resposta da API está vazia');
       return CashShiftResponseDto.fromJson(data);
     } catch (e, stack) {
-      developer.log('Error closing shift', error: e, stackTrace: stack, name: 'CashRegisterRemoteDataSource');
       rethrow;
     }
   }
@@ -93,7 +90,28 @@ class CashRegisterRemoteDataSource {
       if (data == null) throw Exception('API returned empty data');
       return CashMovementResponseDto.fromJson(data);
     } catch (e, stack) {
-      developer.log('Error adding movement', error: e, stackTrace: stack, name: 'CashRegisterRemoteDataSource');
+      rethrow;
+    }
+  }
+
+  Future<CashRegisterReportDto> getReport(DateTime startDate, DateTime endDate) async {
+    try {
+      final response = await _dio.get(
+        '/api/cash-register/report',
+        queryParameters: {
+          'startDate': startDate.toIso8601String(),
+          'endDate': endDate.toIso8601String(),
+        },
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to fetch report: ${response.statusCode}');
+      }
+      
+      final data = _extractData(response.data);
+      if (data == null) throw Exception('API returned empty report data');
+      return CashRegisterReportDto.fromJson(data);
+    } catch (e, stack) {
       rethrow;
     }
   }

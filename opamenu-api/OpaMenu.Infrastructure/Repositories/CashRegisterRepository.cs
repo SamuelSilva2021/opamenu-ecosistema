@@ -24,6 +24,15 @@ public class CashRegisterRepository(OpamenuDbContext context) : OpamenuRepositor
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<CashShiftEntity>> GetShiftsByPeriodAsync(Guid tenantId, DateTime startDate, DateTime endDate)
+    {
+        return await _dbSet
+            .Include(s => s.Movements)
+            .Where(s => s.TenantId == tenantId && s.OpenedAt >= startDate && s.OpenedAt <= endDate)
+            .OrderByDescending(s => s.OpenedAt)
+            .ToListAsync();
+    }
+
     public async Task AddMovementAsync(CashMovementEntity movement)
     {
         movement.CreatedAt = DateTime.UtcNow;

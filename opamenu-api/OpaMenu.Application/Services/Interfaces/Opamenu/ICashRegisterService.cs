@@ -10,4 +10,5 @@ public interface ICashRegisterService
     Task<ResponseDTO<CashShiftResponseDto>> CloseShiftAsync(CloseCashShiftRequestDto request);
     Task<ResponseDTO<CashMovementResponseDto>> AddMovementAsync(AddCashMovementRequestDto request);
     Task<ResponseDTO<IEnumerable<CashShiftResponseDto>>> GetShiftHistoryAsync(int count = 10);
+    Task<ResponseDTO<CashRegisterReportDto>> GetReportAsync(DateTime startDate, DateTime endDate);
 }
