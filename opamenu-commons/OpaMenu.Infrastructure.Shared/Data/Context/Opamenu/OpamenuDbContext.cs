@@ -20,6 +20,8 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
     public DbSet<AditionalGroupEntity> AditionalGroups { get; set; }
     public DbSet<AditionalEntity> Aditionals { get; set; }
     public DbSet<ProductAditionalGroupEntity> ProductAditionalGroups { get; set; }
+    public DbSet<IngredientEntity> Ingredients { get; set; }
+    public DbSet<ProductCompositionEntity> ProductCompositions { get; set; }
     public DbSet<OrderItemAditionalEntity> OrderItemAditionals { get; set; }
     public DbSet<PaymentMethodEntity> PaymentMethods { get; set; }
     public DbSet<TenantPaymentConfigEntity> TenantPaymentConfigs { get; set; }
@@ -497,6 +499,34 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
                   .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(e => new { e.ProductId, e.AditionalGroupId }).IsUnique();
+        });
+
+        // Ingredient configuration
+        modelBuilder.Entity<IngredientEntity>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.UnitOfMeasure).IsRequired().HasMaxLength(20);
+            
+            entity.HasIndex(e => e.TenantId);
+        });
+
+        // ProductComposition configuration
+        modelBuilder.Entity<ProductCompositionEntity>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            
+            entity.HasOne(e => e.Product)
+                .WithMany(p => p.Compositions)
+                .HasForeignKey(e => e.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Ingredient)
+                .WithMany(i => i.Compositions)
+                .HasForeignKey(e => e.IngredientId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => new { e.ProductId, e.IngredientId }).IsUnique();
         });
 
         // OrderItemAditional configuration

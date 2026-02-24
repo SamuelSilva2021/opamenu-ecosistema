@@ -31,9 +31,16 @@ public class ProductEntity : BaseEntity
     [Column("image_url")]
     public string? ImageUrl { get; set; }
 
+    [Column("is_composite")]
+    public bool IsComposite { get; set; } = false;
+
+    [Column("track_inventory")]
+    public bool TrackInventory { get; set; } = false;
+
     // Navigation property
     public virtual CategoryEntity Category { get; set; } = null!;  
     public virtual ICollection<ProductImageEntity> Images { get; set; } = new List<ProductImageEntity>();
     public virtual ICollection<ProductAditionalGroupEntity> AditionalGroups { get; set; } = new List<ProductAditionalGroupEntity>();
+    public virtual ICollection<ProductCompositionEntity> Compositions { get; set; } = new List<ProductCompositionEntity>();
 }
 
