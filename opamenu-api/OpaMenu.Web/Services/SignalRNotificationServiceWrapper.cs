@@ -20,12 +20,10 @@ public class SignalRNotificationServiceWrapper : INotificationService
 
     public SignalRNotificationServiceWrapper(
         IHubContext<OrderNotificationHub> hubContext,
-        ILogger<SignalRNotificationServiceWrapper> logger,
-        IWhatsAppService whatsAppService)
+        ILogger<SignalRNotificationServiceWrapper> logger)
     {
         _hubContext = hubContext;
         _logger = logger;
-        _whatsAppService = whatsAppService;
     }
 
     public async Task NotifyNewOrderAsync(OrderResponseDto order)

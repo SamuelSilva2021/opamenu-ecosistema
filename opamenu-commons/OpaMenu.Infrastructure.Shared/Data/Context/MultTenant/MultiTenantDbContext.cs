@@ -32,6 +32,12 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context.MultTenant
         public DbSet<PlanEntity> Plans { get; set; }
         public DbSet<SubscriptionEntity> Subscriptions { get; set; }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.ConfigureWarnings(warnings => warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+            base.OnConfiguring(optionsBuilder);
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Ignore<UserAccountEntity>();

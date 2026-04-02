@@ -1,0 +1,46 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+
+    <!-- OpaMenu Brand Colors -->
+    <Color x:Key="OpaMenuPrimaryColor">#F8772E</Color>
+    <Color x:Key="OpaMenuPrimaryLightColor">#FFA85D</Color>
+    <Color x:Key="OpaMenuPrimaryDarkColor">#C04700</Color>
+    <Color x:Key="OpaMenuSecondaryColor">#1A1A1A</Color>
+    
+    <!-- Backgrounds & Surfaces -->
+    <Color x:Key="OpaMenuBackgroundColor">#FFFFFF</Color>
+    <Color x:Key="OpaMenuSurfaceColor">#FAFAFA</Color>
+    <Color x:Key="OpaMenuBorderColor">#E0E0E0</Color>
+
+    <!-- Text Colors -->
+    <Color x:Key="OpaMenuTextPrimaryColor">#1A1A1A</Color>
+    <Color x:Key="OpaMenuTextSecondaryColor">#757575</Color>
+
+    <!-- Solid Color Brushes -->
+    <SolidColorBrush x:Key="OpaMenuPrimaryBrush" Color="{StaticResource OpaMenuPrimaryColor}" />
+    <SolidColorBrush x:Key="OpaMenuPrimaryLightBrush" Color="{StaticResource OpaMenuPrimaryLightColor}" />
+    <SolidColorBrush x:Key="OpaMenuPrimaryDarkBrush" Color="{StaticResource OpaMenuPrimaryDarkColor}" />
+    <SolidColorBrush x:Key="OpaMenuSecondaryBrush" Color="{StaticResource OpaMenuSecondaryColor}" />
+    <SolidColorBrush x:Key="OpaMenuBackgroundBrush" Color="{StaticResource OpaMenuBackgroundColor}" />
+    <SolidColorBrush x:Key="OpaMenuSurfaceBrush" Color="{StaticResource OpaMenuSurfaceColor}" />
+    <SolidColorBrush x:Key="OpaMenuBorderBrush" Color="{StaticResource OpaMenuBorderColor}" />
+    <SolidColorBrush x:Key="OpaMenuTextPrimaryBrush" Color="{StaticResource OpaMenuTextPrimaryColor}" />
+    <SolidColorBrush x:Key="OpaMenuTextSecondaryBrush" Color="{StaticResource OpaMenuTextSecondaryColor}" />
+
+    <!-- Material Design Overrides -->
+    <SolidColorBrush x:Key="PrimaryHueLightBrush" Color="{StaticResource OpaMenuPrimaryLightColor}" />
+    <SolidColorBrush x:Key="PrimaryHueLightForegroundBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="PrimaryHueMidBrush" Color="{StaticResource OpaMenuPrimaryColor}" />
+    <SolidColorBrush x:Key="PrimaryHueMidForegroundBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="PrimaryHueDarkBrush" Color="{StaticResource OpaMenuPrimaryDarkColor}" />
+    <SolidColorBrush x:Key="PrimaryHueDarkForegroundBrush" Color="#FFFFFF" />
+
+    <SolidColorBrush x:Key="SecondaryHueLightBrush" Color="#4D4D4D" />
+    <SolidColorBrush x:Key="SecondaryHueLightForegroundBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="SecondaryHueMidBrush" Color="{StaticResource OpaMenuSecondaryColor}" />
+    <SolidColorBrush x:Key="SecondaryHueMidForegroundBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="SecondaryHueDarkBrush" Color="#000000" />
+    <SolidColorBrush x:Key="SecondaryHueDarkForegroundBrush" Color="#FFFFFF" />
+
+</ResourceDictionary>

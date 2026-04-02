@@ -101,7 +101,7 @@ public static class ServiceCollectionExtensions
 
         // WhatsApp Service
         services.AddHttpClient();
-        services.AddScoped<IWhatsAppService, WhatsAppService>();
+        //services.AddScoped<IWhatsAppService, WhatsAppService>();
 
         // Registrar serviços de autenticação e usuário atual
         services.AddScoped<IAuthenticationService, ExternalAuthenticationService>();

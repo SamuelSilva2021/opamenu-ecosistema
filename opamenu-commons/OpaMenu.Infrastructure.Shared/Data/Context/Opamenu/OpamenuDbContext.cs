@@ -37,6 +37,12 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
     public DbSet<CollaboratorEntity> Collaborators { get; set; }
     public DbSet<CashShiftEntity> CashShifts { get; set; }
     public DbSet<CashMovementEntity> CashMovements { get; set; }
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.ConfigureWarnings(warnings => warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+        base.OnConfiguring(optionsBuilder);
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

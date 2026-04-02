@@ -36,6 +36,12 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context.AccessControl
         public DbSet<ApplicationEntity> Applications { get; set; }
         public DbSet<ModuleEntity> Modules { get; set; }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.ConfigureWarnings(warnings => warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+            base.OnConfiguring(optionsBuilder);
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Ignore<TenantProductEntity>();
@@ -223,11 +229,12 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context.AccessControl
                 
                 // Converter para deserializar o JSON automaticamente
                 entity.Property(e => e.Actions)
-                    .HasColumnName("actions")
-                    .HasColumnType("jsonb")
-                    .HasConversion(
-                        v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions)null),
-                        v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions)null) ?? new List<string>());
+                .HasColumnName("actions")
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions)null),
+                    v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions)null) ?? new List<string>())
+                .Metadata.SetValueComparer(OpaMenu.Infrastructure.Shared.Helpers.JsonComparerHelper.GetListComparer<string>());
                 
                 entity.Property(e => e.IsActive).HasColumnName("is_active");
             });
