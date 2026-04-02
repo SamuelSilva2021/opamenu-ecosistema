@@ -10,6 +10,7 @@ abstract class ITablesRepository {
   Future<TableResponseDto> createTable(CreateTableRequestDto dto);
   Future<TableResponseDto> updateTable(String id, UpdateTableRequestDto dto);
   Future<bool> deleteTable(String id);
+  Future<bool> updateLayouts(List<Map<String, dynamic>> dtos);
   Future<String> generateQrCode(String id);
   Future<OrderResponseDto?> getActiveOrder(String id);
   Future<OrderResponseDto> closeAccount(String id);

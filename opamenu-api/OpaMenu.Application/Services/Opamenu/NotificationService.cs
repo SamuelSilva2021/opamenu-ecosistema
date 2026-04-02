@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using OpaMenu.Application.Services.Interfaces.Opamenu;
 using OpaMenu.Domain.DTOs;
@@ -85,7 +85,11 @@ public class NotificationService : INotificationService
             await _hubContext.Clients.Group("Administrators")
                 .SendAsync("EOrderStatusChanged", notification);
 
-            _logger.LogInformation("Notificação de mudança de status enviada: Pedido #{OrderId} - {OldStatus} â†’ {NewStatus}", 
+            // TODO: In a real scenario, we would fetch the order to get the CustomerPhone and TenantId
+            // For now, this is a placeholder for the WhatsApp integration
+            // await _whatsAppService.SendOrderStatusUpdateAsync(tenantId, customerPhone, orderNumber, newStatus);
+
+            _logger.LogInformation("Notificação de mudança de status enviada: Pedido #{OrderId} - {OldStatus} → {NewStatus}", 
                 orderId, oldStatus, newStatus);
         }
         catch (Exception ex)

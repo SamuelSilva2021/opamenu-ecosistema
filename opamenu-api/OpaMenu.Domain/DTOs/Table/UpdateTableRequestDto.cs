@@ -9,5 +9,15 @@ public record UpdateTableRequestDto(
     [Range(1, 100, ErrorMessage = "A capacidade deve ser entre 1 e 100")]
     int? Capacity,
 
-    bool? IsActive
+    bool? IsActive,
+
+    double? LayoutX,
+
+    double? LayoutY,
+
+    double? LayoutWidth,
+
+    double? LayoutHeight,
+
+    string? Floor
 );

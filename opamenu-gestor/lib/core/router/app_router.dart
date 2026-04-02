@@ -10,8 +10,10 @@ import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/pos/presentation/pages/checkout_page.dart';
 import '../../features/pos/presentation/pages/orders_page.dart';
 import '../../features/tables/presentation/pages/tables_page.dart';
+import '../../features/tables/presentation/pages/table_map_page.dart';
 import '../../features/products/presentation/pages/catalog_page.dart';
 import '../../features/production/presentation/pages/production_page.dart';
+import '../../features/delivery/presentation/pages/delivery_board_page.dart';
 import 'package:opamenu_gestor/core/presentation/providers/permissions_provider.dart';
 import '../../features/users/presentation/pages/users_page.dart';
 import '../../features/collaborators/presentation/pages/collaborators_page.dart';
@@ -114,6 +116,18 @@ GoRouter goRouter(Ref ref) {
             ),
           ),
           GoRoute(
+            path: '/table-map',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: TableMapPage(),
+            ),
+          ),
+          GoRoute(
+            path: '/delivery',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: DeliveryBoardPage(),
+            ),
+          ),
+          GoRoute(
             path: '/products',
             pageBuilder: (context, state) => const NoTransitionPage(
               child: CatalogPage(),
@@ -177,7 +191,9 @@ const _routePermissions = {
   '/dashboard': 'DASHBOARD',
   '/pos': 'PDV',
   '/orders': 'ORDER',
+  '/delivery': 'ORDER',
   '/tables': 'TABLE',
+  '/table-map': 'TABLE',
   '/products': 'PRODUCT',
   '/production': 'ORDER',
   '/users': 'USER_ACCOUNT',

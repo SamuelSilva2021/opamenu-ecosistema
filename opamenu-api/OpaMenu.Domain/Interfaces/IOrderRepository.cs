@@ -15,6 +15,8 @@ public interface IOrderRepository : IRepository<OrderEntity>
     
     Task<IEnumerable<OrderEntity>> GetOrdersByDateRangeAsync(Guid tenantId, DateTime startDate, DateTime endDate);
 
+    Task<IEnumerable<OrderEntity>> GetDeliveryBoardOrdersAsync(Guid tenantId, DateTime todayStart, DateTime todayEnd);
+
     Task<IEnumerable<OrderEntity>> GetActiveOrdersWithProductAditionalGroupAsync(Guid productAditionalGroupId);
 
     Task<IEnumerable<OrderEntity>> GetPagedByTenantIdWithDetailsAsync(Guid tenantId, int pageNumber, int pageSize);

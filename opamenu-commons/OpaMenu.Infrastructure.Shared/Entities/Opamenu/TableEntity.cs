@@ -21,6 +21,22 @@ public class TableEntity : BaseEntity
     [MaxLength(500)]
     public string? QrCodeUrl { get; set; }
 
+    [Column("layout_x")]
+    public double LayoutX { get; set; } = 50.0;
+
+    [Column("layout_y")]
+    public double LayoutY { get; set; } = 50.0;
+
+    [Column("layout_width")]
+    public double LayoutWidth { get; set; } = 80.0;
+
+    [Column("layout_height")]
+    public double LayoutHeight { get; set; } = 80.0;
+
+    [Column("floor")]
+    [MaxLength(50)]
+    public string? Floor { get; set; }
+
     public virtual ICollection<OrderEntity> Orders { get; set; } = new List<OrderEntity>();
 }
 

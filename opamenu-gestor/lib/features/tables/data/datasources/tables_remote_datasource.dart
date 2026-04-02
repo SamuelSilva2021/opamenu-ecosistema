@@ -114,6 +114,21 @@ class TablesRemoteDataSource {
     }
   }
 
+  Future<bool> updateLayouts(List<Map<String, dynamic>> dtos) async {
+    try {
+      final response = await _dio.put(
+        '/api/tables/layout',
+        data: dtos,
+      );
+      if (response.data is Map<String, dynamic> && response.data['data'] != null) {
+        return response.data['data'] as bool;
+      }
+      return response.data as bool;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<String> generateQrCode(String id) async {
     try {
       final response = await _dio.post('/api/tables/$id/qrcode');

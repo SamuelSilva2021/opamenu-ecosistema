@@ -9,6 +9,11 @@ class TableResponseDto {
   final int capacity;
   final bool isActive;
   final String? qrCodeUrl;
+  final double? layoutX;
+  final double? layoutY;
+  final double? layoutWidth;
+  final double? layoutHeight;
+  final String? floor;
 
   const TableResponseDto({
     required this.id,
@@ -16,6 +21,11 @@ class TableResponseDto {
     required this.capacity,
     required this.isActive,
     this.qrCodeUrl,
+    this.layoutX,
+    this.layoutY,
+    this.layoutWidth,
+    this.layoutHeight,
+    this.floor,
   });
 
   factory TableResponseDto.fromJson(Map<String, dynamic> json) =>

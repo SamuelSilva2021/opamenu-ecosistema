@@ -175,5 +175,34 @@ public class TableService : ITableService
             return StaticResponseBuilder<string>.BuildErrorResponse(ex);
         }
     }
+
+    public async Task<ResponseDTO<bool>> UpdateLayoutsAsync(List<UpdateTableLayoutRequestDto> dtos)
+    {
+        try
+        {
+            var tenantId = _currentUserService.GetTenantGuid();
+            if (tenantId == null) return StaticResponseBuilder<bool>.BuildError("Tenant nÃ£o identificado");
+
+            foreach(var dto in dtos)
+            {
+                var table = await _tableRepository.GetByIdAsync(dto.TableId, tenantId.Value);
+                if (table != null)
+                {
+                    table.LayoutX = dto.LayoutX;
+                    table.LayoutY = dto.LayoutY;
+                    table.LayoutWidth = dto.LayoutWidth;
+                    table.LayoutHeight = dto.LayoutHeight;
+                    table.Floor = dto.Floor;
+                    await _tableRepository.UpdateAsync(table);
+                }
+            }
+
+            return StaticResponseBuilder<bool>.BuildOk(true);
+        }
+        catch (Exception ex)
+        {
+             return StaticResponseBuilder<bool>.BuildErrorResponse(ex);
+        }
+    }
 }
 

@@ -148,6 +148,24 @@ class OrdersRemoteDataSource {
     }
   }
 
+  Future<List<OrderResponseDto>> getDeliveryBoardOrders([DateTime? date]) async {
+    try {
+      final response = await _dio.get(
+        '/api/orders/delivery-board',
+        queryParameters: date != null ? {'date': date.toIso8601String()} : null,
+      );
+      
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data is Map ? response.data['data'] : response.data;
+        return data.map((e) => OrderResponseDto.fromJson(e)).toList();
+      }
+      throw Exception('Failed to load delivery board orders');
+    } catch (e, stack) {
+      developer.log('Error loading delivery board orders', error: e, stackTrace: stack, name: 'OrdersRemoteDataSource');
+      rethrow;
+    }
+  }
+
   Future<OrderResponseDto> updateOrderStatus(String orderId, UpdateOrderStatusRequestDto dto) async {
     try {
       final response = await _dio.put(

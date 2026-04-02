@@ -1777,9 +1777,30 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<string>("Floor")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("floor");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
+
+                    b.Property<double>("LayoutHeight")
+                        .HasColumnType("double precision")
+                        .HasColumnName("layout_height");
+
+                    b.Property<double>("LayoutWidth")
+                        .HasColumnType("double precision")
+                        .HasColumnName("layout_width");
+
+                    b.Property<double>("LayoutX")
+                        .HasColumnType("double precision")
+                        .HasColumnName("layout_x");
+
+                    b.Property<double>("LayoutY")
+                        .HasColumnType("double precision")
+                        .HasColumnName("layout_y");
 
                     b.Property<string>("Name")
                         .IsRequired()

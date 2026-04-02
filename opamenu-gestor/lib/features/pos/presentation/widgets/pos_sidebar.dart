@@ -13,7 +13,9 @@ class PosSidebar extends ConsumerWidget {
     if (location.startsWith('/pos')) return 1;
     if (location.startsWith('/checkout')) return 1; // Mantém selecionado se estiver no checkout
     if (location.startsWith('/orders')) return 2;
+    if (location.startsWith('/delivery')) return 13;
     if (location.startsWith('/tables')) return 3;
+    if (location.startsWith('/table-map')) return 12;
     if (location.startsWith('/products')) return 4;
     if (location.startsWith('/production')) return 5;
     if (location.startsWith('/notifications')) return 6;
@@ -42,6 +44,12 @@ class PosSidebar extends ConsumerWidget {
         break;
       case 3:
         context.go('/tables');
+        break;
+      case 12:
+        context.go('/table-map');
+        break;
+      case 13:
+        context.go('/delivery');
         break;
       case 4:
         context.go('/products');
@@ -153,12 +161,30 @@ class PosSidebar extends ConsumerWidget {
                     ),
                   ),
                   PermissionGate(
+                    module: 'ORDER',
+                    child: _SidebarItem(
+                      icon: Icons.delivery_dining_rounded,
+                      label: 'Delivery',
+                      isSelected: currentIndex == 13,
+                      onTap: () => _navigateTo(context, 13),
+                    ),
+                  ),
+                  PermissionGate(
                     module: 'TABLE',
                     child: _SidebarItem(
                       icon: Icons.table_restaurant_rounded,
                       label: 'Mesas',
                       isSelected: currentIndex == 3,
                       onTap: () => _navigateTo(context, 3),
+                    ),
+                  ),
+                  PermissionGate(
+                    module: 'TABLE',
+                    child: _SidebarItem(
+                      icon: Icons.map_rounded,
+                      label: 'Mapa de Salão',
+                      isSelected: currentIndex == 12,
+                      onTap: () => _navigateTo(context, 12),
                     ),
                   ),
                   PermissionGate(

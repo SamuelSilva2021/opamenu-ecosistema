@@ -8,5 +8,15 @@ public record CreateTableRequestDto(
     string Name,
 
     [Range(1, 100, ErrorMessage = "A capacidade deve ser entre 1 e 100")]
-    int Capacity
+    int Capacity,
+
+    double? LayoutX = 50.0,
+
+    double? LayoutY = 50.0,
+
+    double? LayoutWidth = 80.0,
+
+    double? LayoutHeight = 80.0,
+
+    string? Floor = null
 );

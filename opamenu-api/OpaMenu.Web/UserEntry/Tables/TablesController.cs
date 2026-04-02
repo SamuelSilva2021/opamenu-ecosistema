@@ -108,5 +108,16 @@ namespace OpaMenu.Web.UserEntry.Tables
             var result = await _tableService.GenerateQrCodeAsync(id);
             return BuildResponse(result);
         }
+
+        /// <summary>
+        /// Atualiza o layout de múltiplas mesas em lote (usado pelo mapa de salão)
+        /// </summary>
+        [HttpPut("layout")]
+        [MapPermission(MODULE_TABLE, OPERATION_UPDATE)]
+        public async Task<ActionResult<ResponseDTO<bool>>> UpdateLayouts([FromBody] List<UpdateTableLayoutRequestDto> dtos)
+        {
+            var result = await _tableService.UpdateLayoutsAsync(dtos);
+            return BuildResponse(result);
+        }
     }
 }

@@ -14,7 +14,8 @@ public class OrderMappingProfile : Profile
     {
         // Mapeamento de OrderEntity para OrderResponseDto
         CreateMap<OrderEntity, OrderResponseDto>()
-            .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.Items));
+            .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.Items))
+            .ForMember(dest => dest.DriverName, opt => opt.MapFrom(src => src.Driver != null ? src.Driver.Name : null));
 
         // Mapeamento de CreateOrderRequestDto para OrderEntity
         CreateMap<CreateOrderRequestDto, OrderEntity>()

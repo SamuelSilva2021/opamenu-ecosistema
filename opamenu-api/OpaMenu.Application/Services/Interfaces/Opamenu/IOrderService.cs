@@ -14,6 +14,7 @@ namespace OpaMenu.Application.Services.Interfaces.Opamenu
     public interface IOrderService
     {
         Task<ResponseDTO<IEnumerable<OrderResponseDto>>> GetOrdersAsync(DateTime? date = null);
+        Task<ResponseDTO<IEnumerable<OrderResponseDto>>> GetDeliveryBoardOrdersAsync(DateTime? date = null);
         Task<PagedResponseDTO<OrderResponseDto>> GetOrdersPagedAsync(int pageNumber, int pageSize);
         Task<ResponseDTO<OrderResponseDto>> GetOrderByIdAsync(Guid id);
         Task<ResponseDTO<OrderResponseDto>> GetPublicOrderByIdAsync(string slug, Guid id);

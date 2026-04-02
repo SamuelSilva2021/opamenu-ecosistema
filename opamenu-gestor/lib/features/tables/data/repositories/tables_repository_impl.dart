@@ -45,6 +45,11 @@ class TablesRepositoryImpl implements ITablesRepository {
   }
 
   @override
+  Future<bool> updateLayouts(List<Map<String, dynamic>> dtos) {
+    return _dataSource.updateLayouts(dtos);
+  }
+
+  @override
   Future<String> generateQrCode(String id) {
     return _dataSource.generateQrCode(id);
   }

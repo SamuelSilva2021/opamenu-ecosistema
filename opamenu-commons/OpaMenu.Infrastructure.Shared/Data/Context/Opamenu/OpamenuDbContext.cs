@@ -706,6 +706,19 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
             entity.HasIndex(e => e.Type);
         });
 
+        // WhatsApp config configuration
+        modelBuilder.Entity<TenantWhatsAppConfigEntity>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Provider).HasConversion<string>().IsRequired();
+            entity.Property(e => e.InstanceId).HasMaxLength(100);
+            entity.Property(e => e.ApiKey).HasMaxLength(500);
+            entity.Property(e => e.BaseUrl).HasMaxLength(500);
+            entity.Property(e => e.WelcomeMessage).HasMaxLength(1000);
+
+            entity.HasIndex(e => e.TenantId).IsUnique();
+        });
+
         modelBuilder.OpamenuSeed();
     }
 }

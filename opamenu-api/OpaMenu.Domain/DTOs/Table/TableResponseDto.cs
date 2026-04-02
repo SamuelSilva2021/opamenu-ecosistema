@@ -5,5 +5,10 @@ public record TableResponseDto(
     string Name,
     int Capacity,
     bool IsActive,
-    string? QrCodeUrl
+    string? QrCodeUrl,
+    double LayoutX,
+    double LayoutY,
+    double LayoutWidth,
+    double LayoutHeight,
+    string? Floor
 );

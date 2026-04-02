@@ -38,6 +38,17 @@ public class OrdersController(IOrderService orderService, ILogger<OrdersControll
     }
 
     /// <summary>
+    /// Obtém pedidos ativos e de hoje para o kanban de delivery
+    /// </summary>
+    [HttpGet("delivery-board")]
+    [MapPermission([ORDER, MODULE_PDV], OPERATION_SELECT)]
+    public async Task<ActionResult<ApiResponse<IEnumerable<OrderResponseDto>>>> GetDeliveryBoardOrders([FromQuery] DateTime? date = null)
+    {
+        var serviceResponse = await _orderService.GetDeliveryBoardOrdersAsync(date);
+        return BuildResponse(serviceResponse);
+    }
+
+    /// <summary>
     /// Obtém o próximo número de pedido disponível
     /// </summary>
     [HttpGet("next-number")]

@@ -114,6 +114,50 @@ public class OrderService(
             return StaticResponseBuilder<IEnumerable<OrderResponseDto>>.BuildErrorResponse(ex);
         }
     }
+
+    /// <summary>
+    /// Obtém pedidos para o Board de Delivery (inclui todos os ativos e os finalizados da data)
+    /// </summary>
+    public async Task<ResponseDTO<IEnumerable<OrderResponseDto>>> GetDeliveryBoardOrdersAsync(DateTime? date = null)
+    {
+        try
+        {
+            IEnumerable<OrderEntity> orders;
+            var tenantGuid = _currentUserService.GetTenantGuid();
+
+            if (!tenantGuid.HasValue)
+            {
+                _logger.LogWarning("Tentativa de buscar pedidos de delivery sem TenantId no contexto.");
+                return StaticResponseBuilder<IEnumerable<OrderResponseDto>>.BuildError("Estabelecimento não identificado. Por favor, faça login novamente.");
+            }
+
+            var tenantId = tenantGuid.Value;
+            var timeZoneOffset = TimeSpan.FromHours(-3); // TODO: Config
+
+            DateTime targetDate;
+            if (date.HasValue)
+                targetDate = date.Value.Date;
+            else
+                targetDate = DateTime.UtcNow.Add(timeZoneOffset).Date;
+
+            var startDate = DateTime.SpecifyKind(targetDate.Add(-timeZoneOffset), DateTimeKind.Utc);
+            var endDate = startDate.AddDays(1).AddTicks(-1);
+
+            _logger.LogInformation("Buscando pedidos de delivery (Board) para o Tenant {TenantId} na data {Date}", 
+                tenantId, targetDate.ToShortDateString());
+            
+            orders = await _orderRepository.GetDeliveryBoardOrdersAsync(tenantId, startDate, endDate);
+
+            var orderDtos = _mapper.Map<IEnumerable<OrderResponseDto>>(orders);
+
+            return StaticResponseBuilder<IEnumerable<OrderResponseDto>>.BuildOk(orderDtos);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao obter pedidos de delivery (Board)");
+            return StaticResponseBuilder<IEnumerable<OrderResponseDto>>.BuildErrorResponse(ex);
+        }
+    }
     /// <summary>
     /// ObtÃ©m um pedido por ID
     /// </summary>

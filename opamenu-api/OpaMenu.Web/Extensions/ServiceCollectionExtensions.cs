@@ -99,6 +99,10 @@ public static class ServiceCollectionExtensions
         // Registrar NotificationService com Hub especÃ­fico (substitui o registro do Scrutor)
         services.AddScoped<INotificationService, SignalRNotificationServiceWrapper>();
 
+        // WhatsApp Service
+        services.AddHttpClient();
+        services.AddScoped<IWhatsAppService, WhatsAppService>();
+
         // Registrar serviços de autenticação e usuário atual
         services.AddScoped<IAuthenticationService, ExternalAuthenticationService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();

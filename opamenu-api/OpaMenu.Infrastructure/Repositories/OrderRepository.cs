@@ -100,6 +100,26 @@ public class OrderRepository(OpamenuDbContext context) : OpamenuRepository<Order
     }
     
     /// <summary>
+    /// Obtém pedidos de delivery do board (ativos e os finalizados hoje)
+    /// </summary>
+    public async Task<IEnumerable<OrderEntity>> GetDeliveryBoardOrdersAsync(Guid tenantId, DateTime todayStart, DateTime todayEnd)
+    {
+        return await _dbSet
+            .Where(o => o.TenantId == tenantId && 
+                        o.OrderType == EOrderType.Delivery &&
+                        (
+                            (o.Status != EOrderStatus.Delivered && o.Status != EOrderStatus.Cancelled && o.Status != EOrderStatus.Rejected) ||
+                            (o.CreatedAt >= todayStart && o.CreatedAt <= todayEnd)
+                        ))
+            .Include(o => o.Items)
+                .ThenInclude(i => i.Product)
+            .Include(o => o.StatusHistory)
+            .Include(o => o.Driver)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
+    }
+    
+    /// <summary>
     /// Obtém pedidos ativos que contêm um ProductAditionalGroup específico
     /// </summary>
     /// <param name="productAditionalGroupId">ID do ProductAditionalGroup</param>

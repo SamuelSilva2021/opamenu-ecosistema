@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.SignalR;
 using OpaMenu.Application.Services.Interfaces.Opamenu;
 using OpaMenu.Domain.DTOs;
 using OpaMenu.Domain.DTOs.Product;
@@ -16,13 +16,16 @@ public class SignalRNotificationServiceWrapper : INotificationService
 {
     private readonly IHubContext<OrderNotificationHub> _hubContext;
     private readonly ILogger<SignalRNotificationServiceWrapper> _logger;
+    private readonly IWhatsAppService _whatsAppService;
 
     public SignalRNotificationServiceWrapper(
         IHubContext<OrderNotificationHub> hubContext,
-        ILogger<SignalRNotificationServiceWrapper> logger)
+        ILogger<SignalRNotificationServiceWrapper> logger,
+        IWhatsAppService whatsAppService)
     {
         _hubContext = hubContext;
         _logger = logger;
+        _whatsAppService = whatsAppService;
     }
 
     public async Task NotifyNewOrderAsync(OrderResponseDto order)

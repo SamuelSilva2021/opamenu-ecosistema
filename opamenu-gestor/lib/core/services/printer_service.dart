@@ -1,6 +1,7 @@
 import 'package:flutter_pos_printer_platform_image_3/flutter_pos_printer_platform_image_3.dart';
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart' as esc;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../models/print_job_dto.dart';
 
 part 'printer_service.g.dart';
 
@@ -102,6 +103,55 @@ class PrinterService extends _$PrinterService {
     bytes += generator.text('OPAMENU GESTOR',
         styles: const esc.PosStyles(align: esc.PosAlign.center, bold: true, height: esc.PosTextSize.size2, width: esc.PosTextSize.size2));
     bytes += generator.text('Teste de Impressao', styles: const esc.PosStyles(align: esc.PosAlign.center));
+    bytes += generator.feed(2);
+    bytes += generator.cut();
+
+    return bytes;
+  }
+
+  Future<List<int>> generateOrderTicket(
+    PrintJobDto job,
+    PaperSize paperSize,
+  ) async {
+    final profile = await esc.CapabilityProfile.load();
+    final generator = esc.Generator(paperSize.posSize, profile);
+    List<int> bytes = [];
+
+    bytes += generator.text('*** COZINHA ***',
+        styles: const esc.PosStyles(
+          align: esc.PosAlign.center,
+          bold: true,
+          height: esc.PosTextSize.size2,
+        ));
+    bytes += generator.text('Mesa: ${job.tableNumber}',
+        styles: const esc.PosStyles(align: esc.PosAlign.center));
+    bytes += generator.hr();
+
+    for (final item in job.items) {
+      bytes += generator.row([
+        esc.PosColumn(text: '${item.qty}x ${item.name}', width: 9),
+        esc.PosColumn(
+          text: 'R\$ ${item.price.toStringAsFixed(2)}',
+          width: 3,
+          styles: const esc.PosStyles(align: esc.PosAlign.right),
+        ),
+      ]);
+      if (item.notes != null) {
+        bytes += generator.text('  * ${item.notes}');
+      }
+    }
+
+    bytes += generator.hr();
+
+    if (job.notes != null && job.notes!.isNotEmpty) {
+      bytes += generator.text('OBS: ${job.notes}',
+          styles: const esc.PosStyles(bold: true));
+      bytes += generator.hr();
+    }
+
+    final time = "${job.createdAt.hour.toString().padLeft(2, '0')}:${job.createdAt.minute.toString().padLeft(2, '0')}";
+    bytes += generator.text('Pedido: $time',
+        styles: const esc.PosStyles(align: esc.PosAlign.right));
     bytes += generator.feed(2);
     bytes += generator.cut();
 
