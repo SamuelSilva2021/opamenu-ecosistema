@@ -10,7 +10,8 @@ namespace OpaMenu.Infrastructure.Shared.Enums.Opamenu
     {
         MercadoPago,
         PagarMe,
-        Gerencianet
+        Gerencianet,
+        None
     }
     public static class EPaymentProviderHelper
     {
@@ -20,6 +21,7 @@ namespace OpaMenu.Infrastructure.Shared.Enums.Opamenu
                 EPaymentProvider.MercadoPago => "Mercado Pago",
                 EPaymentProvider.PagarMe => "Pagar me",
                 EPaymentProvider.Gerencianet => "Gerencia net",
+                EPaymentProvider.None => "None",
                 _ => "Sem provedor de pagamento"
             };
     }

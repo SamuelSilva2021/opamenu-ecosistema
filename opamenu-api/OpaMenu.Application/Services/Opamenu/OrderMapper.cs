@@ -34,7 +34,6 @@ public class OrderMapper : IOrderMapper
             QueuePosition = order.QueuePosition,
             EstimatedPreparationMinutes = order.EstimatedPreparationMinutes,
             EstimatedDeliveryTime = order.EstimatedDeliveryTime,
-            // Propriedades removidas pois nÃ£o existem na entidade Order
             Items = order.Items?.Select(MapToOrderItemDto).ToList() ?? new List<OrderItemResponseDto>()
         };
     }

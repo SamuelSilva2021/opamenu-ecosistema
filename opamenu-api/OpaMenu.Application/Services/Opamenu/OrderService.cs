@@ -493,8 +493,10 @@ public class OrderService(
                             Amount = order.Total,
                             Method = requestDto.PaymentMethod.Value,
                             Status = EPaymentStatus.Pending,
+                            Provider = EPaymentProvider.None,
                             CreatedAt = DateTime.UtcNow,
-                            UpdatedAt = DateTime.UtcNow
+                            UpdatedAt = DateTime.UtcNow,
+                            TenantId = tenantId
                         };
                         order.Payments.Add(payment);
                     }

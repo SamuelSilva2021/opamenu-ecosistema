@@ -1,95 +1,178 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OpaMenu.Desktop.Models;
+using OpaMenu.Desktop.Models.DTOs.Requests;
+using OpaMenu.Desktop.Models.Enums;
 using System;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace OpaMenu.Desktop.Services;
 
-/// <summary>
-/// Serviço que roda em segundo plano (BackgroundService).
-/// Sua responsabilidade é verificar os pedidos não sincronizados no banco SQLite e 
-/// enviá-los para a `opamenu-api` sempre que houver conexão.
-/// </summary>
 public class SyncBackgroundService : BackgroundService
 {
+    private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<SyncBackgroundService> _logger;
-
-    public SyncBackgroundService(ILogger<SyncBackgroundService> logger)
+    private static readonly JsonSerializerOptions SyncJsonOptions = new(JsonSerializerDefaults.Web)
     {
+        Converters = { new JsonStringEnumConverter() }
+    };
+
+    public SyncBackgroundService(IServiceProvider serviceProvider, ILogger<SyncBackgroundService> logger)
+    {
+        _serviceProvider = serviceProvider;
         _logger = logger;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Serviço de Sincronização em Background (SyncBackgroundService) iniciado.");
+        _logger.LogInformation("SyncBackgroundService iniciado.");
 
-        // Executa enquanto o aplicativo não for fechado
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
-                // TODO: 1. Checar conexão com a internet
-                // Se offline, pula o ciclo
-                bool isOnline = true; // Simulação
-
-                if (isOnline)
-                {
-                    await SyncPendingOrdersAsync();
-                }
+                await SyncPendingOrdersAsync();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro no loop principal do SyncBackgroundService.");
             }
 
-            // Aguarda 30 segundos antes da próxima checagem (mesma lógica do opamenu-gestor Flutter)
+            // Tenta sincronizar a cada 30 segundos
             await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
         }
     }
 
     private async Task SyncPendingOrdersAsync()
     {
-        // Usa um novo contexto a cada execução para não travar a UI (Thread-Safety)
-        using var dbContext = new AppDbContext();
+        // Precisamos criar um escopo porque BackgroundService é Singleton
+        // e o AppDbContext geralmente é Scoped.
+        using var scope = _serviceProvider.CreateScope();
+        
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
+        
+        // Pega o token atual do usuário logado
+        var token = authService.GetCurrentToken();
+        if (string.IsNullOrEmpty(token))
+        {
+            // Se não tem token, não tem como enviar. O usuário precisa estar logado.
+            return;
+        }
 
-        // Busca todos os pedidos que ainda não foram pra nuvem
+        // Buscar todos os pedidos pendentes de sincronização
         var pendingOrders = dbContext.LocalOrders
-            .Where(o => o.SyncStatus == SyncStatus.PendingSync || o.SyncStatus == SyncStatus.Error)
+            .Where(o => o.SyncStatus == ESyncStatus.PendingSync || o.SyncStatus == ESyncStatus.Error)
             .ToList();
 
         if (!pendingOrders.Any())
             return;
 
-        _logger.LogInformation($"Sincronizando {pendingOrders.Count} pedidos pendentes para a nuvem...");
+        _logger.LogInformation($"Encontrados {pendingOrders.Count} pedidos pendentes de sincronização.");
 
-        foreach (var order in pendingOrders)
+        var httpClientFactory = scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
+        // Usamos o httpClient configurado para o CatalogService que já aponta para a API correta
+        // Ou podemos criar um client nomeado "CoreApi" no App.xaml.cs
+        var httpClient = httpClientFactory.CreateClient("CoreApi");
+        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        foreach (var localOrder in pendingOrders)
         {
             try
             {
-                order.LastSyncAttempt = DateTime.UtcNow;
+                localOrder.LastSyncAttempt = DateTime.UtcNow;
 
-                // TODO: Enviar o order.PayloadJson para a opamenu-api (ex: via HttpClient POST api/orders)
-                // Se sucesso, atualizar o CloudId e o SyncStatus.
+                if (string.IsNullOrWhiteSpace(localOrder.PayloadJson))
+                {
+                    localOrder.SyncStatus = ESyncStatus.Error;
+                    localOrder.SyncErrorMessage = "PayloadJson vazio.";
+                    continue;
+                }
+
+                var payloadJson = NormalizePayloadJson(localOrder.PayloadJson);
+                if (!string.Equals(payloadJson, localOrder.PayloadJson, StringComparison.Ordinal))
+                {
+                    localOrder.PayloadJson = payloadJson;
+                }
+
+                var content = new StringContent(payloadJson, Encoding.UTF8, "application/json");
                 
-                // Simulação de sucesso
-                order.SyncStatus = SyncStatus.Synced;
-                order.CloudId = new Random().Next(1000, 9999);
-                order.SyncErrorMessage = null;
+                var response = await httpClient.PostAsync("/api/orders", content);
 
-                _logger.LogInformation($"Pedido Local {order.LocalId} sincronizado com sucesso. ID Nuvem: {order.CloudId}");
+                if (response.IsSuccessStatusCode)
+                {
+                    // Pedido sincronizado com sucesso
+                    localOrder.SyncStatus = ESyncStatus.Synced;
+                    localOrder.SyncErrorMessage = null;
+                    
+                    // Opcional: Ler a resposta para pegar o CloudId gerado pelo servidor
+                    // var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<OrderResponseDto>>();
+                    // if (apiResponse?.Data != null) localOrder.CloudId = apiResponse.Data.Id;
+                    
+                    _logger.LogInformation($"Pedido LocalId: {localOrder.LocalId} sincronizado com sucesso.");
+                }
+                else
+                {
+                    // Erro ao enviar (ex: 400 Bad Request, 500 Internal Server Error)
+                    var errorResponse = await response.Content.ReadAsStringAsync();
+                    localOrder.SyncStatus = ESyncStatus.Error;
+                    localOrder.SyncErrorMessage = $"HTTP {(int)response.StatusCode} - {errorResponse}";
+                    _logger.LogWarning($"Falha ao sincronizar pedido LocalId: {localOrder.LocalId}. Erro: {localOrder.SyncErrorMessage}");
+                }
             }
             catch (Exception ex)
             {
-                order.SyncStatus = SyncStatus.Error;
-                order.SyncErrorMessage = ex.Message;
-                _logger.LogError($"Erro ao sincronizar o pedido {order.LocalId}: {ex.Message}");
+                // Erro de rede (ex: sem internet, API fora do ar)
+                localOrder.SyncStatus = ESyncStatus.Error;
+                localOrder.SyncErrorMessage = ex.Message;
+                _logger.LogWarning(ex, $"Exceção ao sincronizar pedido LocalId: {localOrder.LocalId}");
             }
         }
 
-        // Salva as alterações do status no banco SQLite
         await dbContext.SaveChangesAsync();
+    }
+
+    private static string NormalizePayloadJson(string payloadJson)
+    {
+        try
+        {
+            var requestDto = JsonSerializer.Deserialize<CreateOrderRequestDto>(payloadJson, SyncJsonOptions);
+            if (requestDto is null)
+                return payloadJson;
+
+            var changed = false;
+
+            if (string.IsNullOrWhiteSpace(requestDto.CustomerName))
+            {
+                requestDto.CustomerName = "Cliente Balcão";
+                changed = true;
+            }
+
+            if (string.IsNullOrWhiteSpace(requestDto.CustomerPhone))
+            {
+                requestDto.CustomerPhone = "11999999999";
+                changed = true;
+            }
+
+            if (requestDto.Items is null)
+            {
+                requestDto.Items = new();
+                changed = true;
+            }
+
+            return changed ? JsonSerializer.Serialize(requestDto, SyncJsonOptions) : payloadJson;
+        }
+        catch
+        {
+            return payloadJson;
+        }
     }
 }

@@ -32,9 +32,10 @@ public class AuthService : IAuthService
         {
             var payload = new
             {
-                usernameOrEmail = "admin@opamenu.com.br",
+                usernameOrEmail = "teste@teste.com",
                 password = "Abc@123"
             };
+
 
             var response = await _httpClient.PostAsJsonAsync("/api/auth/login", payload);
 

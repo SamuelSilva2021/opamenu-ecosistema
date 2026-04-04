@@ -52,7 +52,7 @@ namespace OpamenuApp.Tests.Services
             var pageSize = 10;
             var tableId = Guid.NewGuid();
             var tables = new List<TableEntity> { new TableEntity { Id = tableId, Name = "Mesa 1", TenantId = _tenantId } };
-            var tableDtos = new List<TableResponseDto> { new TableResponseDto(tableId, "Mesa 1", 4, true, null) };
+            var tableDtos = new List<TableResponseDto> { new TableResponseDto(tableId, "Mesa 1", 4, true, null, 0, 0, 0, 0, null) };
 
             _mockTableRepository.Setup(x => x.GetPagedByTenantIdAsync(_tenantId, pageNumber, pageSize))
                 .ReturnsAsync(tables);
@@ -77,7 +77,7 @@ namespace OpamenuApp.Tests.Services
             var tableId = Guid.NewGuid();
             var createDto = new CreateTableRequestDto("Mesa 1", 4);
             var tableEntity = new TableEntity { Id = tableId, Name = "Mesa 1", Capacity = 4, TenantId = _tenantId };
-            var tableResponse = new TableResponseDto(tableId, "Mesa 1", 4, true, null);
+            var tableResponse = new TableResponseDto(tableId, "Mesa 1", 4, true, null, 0, 0, 0, 0, null);
 
             _mockTableRepository.Setup(x => x.ExistsByNameAsync(createDto.Name, _tenantId))
                 .ReturnsAsync(false);
@@ -118,7 +118,7 @@ namespace OpamenuApp.Tests.Services
         {
             // Arrange
             var id = Guid.NewGuid();
-            var updateDto = new UpdateTableRequestDto("Mesa Atualizada", 6, true);
+            var updateDto = new UpdateTableRequestDto("Mesa Atualizada", 6, true, 0, 0, 0, 0, null);
             var existingTable = new TableEntity { Id = id, Name = "Mesa 1", Capacity = 4, TenantId = _tenantId };
             
             _mockTableRepository.Setup(x => x.GetByIdAsync(id, _tenantId))

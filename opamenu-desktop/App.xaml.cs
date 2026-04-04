@@ -1,4 +1,4 @@
-﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Windows;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -41,22 +41,33 @@ public partial class App : Application
                 services.AddHttpClient<IAuthService, AuthService>();
                 services.AddHttpClient<ICatalogService, CatalogService>();
 
+                // Client nomeado para o Background Service (apontando para a API principal)
+                services.AddHttpClient("CoreApi", (sp, client) =>
+                {
+                    var config = sp.GetRequiredService<IConfiguration>();
+                    var coreUrl = config.GetValue<string>("ApiSettings:CoreApiUrl") 
+                        ?? throw new InvalidOperationException("ApiSettings:CoreApiUrl não configurado");
+                    client.BaseAddress = new Uri(coreUrl);
+                });
+
+                // Registrar o serviço de background para sincronização (Offline-First)
+                services.AddHostedService<SyncBackgroundService>();
+
                 // Banco de Dados Local (SQLite + Entity Framework)
                 services.AddDbContext<AppDbContext>();
-
-                // Serviço de Sincronização rodando em Background
-                services.AddHostedService<SyncBackgroundService>();
             })
             .Build();
     }
 
     protected override async void OnStartup(StartupEventArgs e)
     {
-        // Garante que o banco de dados local SQLite seja criado caso não exista
+        // Garante que o banco de dados local SQLite seja atualizado com a última Migration
         using (var scope = _host.Services.CreateScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            dbContext.Database.EnsureCreated();
+            
+            // Aplica a migration e cria o banco, se necessário
+            dbContext.Database.Migrate();
         }
 
         await _host.StartAsync();

@@ -18,13 +18,91 @@
         Background="{DynamicResource OpaMenuBackgroundBrush}"
         FontFamily="{DynamicResource OpaMenuBaseFontFamily}">
 
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </Window.Resources>
+
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
             <i:InvokeCommandAction Command="{Binding LoadStorefrontCommand}" />
         </i:EventTrigger>
     </i:Interaction.Triggers>
 
-    <materialDesign:DialogHost DialogTheme="Inherit">
+    <materialDesign:DialogHost DialogTheme="Inherit" IsOpen="{Binding IsAnyModalOpen}">
+        <materialDesign:DialogHost.DialogContent>
+            <Grid Margin="16">
+                <!-- Modal de Identificação do Cliente -->
+                <Border Width="400" Background="{StaticResource OpaMenuSurfaceBrush}" CornerRadius="12" Padding="24"
+                        Visibility="{Binding IsCustomerModalOpen, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <TextBlock Text="Identificação do Cliente" FontSize="{StaticResource OpaMenuFontSizeH4}" FontWeight="Bold" Margin="0,0,0,24"/>
+
+                        <TextBox Style="{StaticResource OpaMenuTextBox}" 
+                                 materialDesign:HintAssist.Hint="Número da Mesa" 
+                                 Text="{Binding TableNumber, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,16"/>
+
+                        <TextBox Style="{StaticResource OpaMenuTextBox}" 
+                                 materialDesign:HintAssist.Hint="Nome do Cliente (Para Chamar)" 
+                                 Text="{Binding CustomerName, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,16"/>
+
+                        <TextBox Style="{StaticResource OpaMenuTextBox}" 
+                                 materialDesign:HintAssist.Hint="CPF na Nota (Opcional)" 
+                                 Text="{Binding CustomerDocument, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,16"/>
+
+                        <TextBox Style="{StaticResource OpaMenuTextBox}" 
+                                 materialDesign:HintAssist.Hint="Observações do Pedido (Opcional)" 
+                                 Text="{Binding OrderObservation, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,24" AcceptsReturn="True" Height="60" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Style="{StaticResource MaterialDesignFlatButton}" 
+                                    Content="CANCELAR" 
+                                    Command="{Binding CloseModalsCommand}" 
+                                    Margin="0,0,8,0" />
+                            <Button Style="{StaticResource OpaMenuPrimaryButton}" 
+                                    Content="SALVAR" 
+                                    Command="{Binding CloseModalsCommand}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Modal de Checkout -->
+                <Border Width="500" Background="{StaticResource OpaMenuSurfaceBrush}" CornerRadius="12" Padding="24"
+                        Visibility="{Binding IsCheckoutModalOpen, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <TextBlock Text="Finalizar Venda" FontSize="{StaticResource OpaMenuFontSizeH4}" FontWeight="Bold" Margin="0,0,0,24"/>
+                        
+                        <TextBlock Text="{Binding CartTotal, StringFormat='Total a Pagar: {0:C}'}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource OpaMenuPrimaryBrush}" Margin="0,0,0,16"/>
+
+                        <ComboBox materialDesign:HintAssist.Hint="Forma de Pagamento" Style="{StaticResource MaterialDesignFloatingHintComboBox}" Margin="0,0,0,16" SelectedValuePath="Content" SelectedValue="{Binding PaymentMethod}">
+                            <ComboBoxItem Content="Dinheiro"/>
+                            <ComboBoxItem Content="Pix"/>
+                            <ComboBoxItem Content="Cartão de Crédito"/>
+                            <ComboBoxItem Content="Cartão de Débito"/>
+                        </ComboBox>
+
+                        <TextBox Style="{StaticResource OpaMenuTextBox}" materialDesign:HintAssist.Hint="Valor Recebido (R$)" Text="{Binding AmountPaid, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,16">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="TextChanged">
+                                    <i:InvokeCommandAction Command="{Binding CalculateChangeCommand}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </TextBox>
+
+                        <TextBlock Text="{Binding ChangeAmount, StringFormat='Troco: {0:C}'}" FontSize="18" FontWeight="Medium" Margin="0,0,0,24" Foreground="#4CAF50"/>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Style="{StaticResource MaterialDesignFlatButton}" Content="CANCELAR" Command="{Binding CloseModalsCommand}" Margin="0,0,8,0" />
+                            <Button Style="{StaticResource OpaMenuPrimaryButton}" Content="CONFIRMAR PAGAMENTO" Command="{Binding ConfirmPaymentCommand}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </materialDesign:DialogHost.DialogContent>
+
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -168,8 +246,22 @@
                         </DockPanel>
 
                         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,16">
-                            <Button Style="{StaticResource OpaMenuOutlineButton}" Content="Mesa 05" Margin="0,0,8,0" Height="40" Padding="12,0"/>
-                            <Button Style="{StaticResource OpaMenuOutlineButton}" Content="João (Cliente)" Height="40" Padding="12,0"/>
+                            <Button Style="{StaticResource OpaMenuOutlineButton}" 
+                                    Margin="0,0,8,0" Height="40" Padding="12,0"
+                                    Command="{Binding OpenCustomerModalCommand}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Mesa "/>
+                                    <TextBlock Text="{Binding TableNumber}"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource OpaMenuOutlineButton}" 
+                                    Height="40" Padding="12,0"
+                                    Command="{Binding OpenCustomerModalCommand}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Account" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding CustomerName}" MaxWidth="150" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                            </Button>
                         </StackPanel>
 
                         <!-- Itens do Carrinho -->
@@ -216,7 +308,7 @@
                                 <TextBlock Text="{Binding CartTotal, StringFormat=C}" FontSize="{StaticResource OpaMenuFontSizeH3}" FontWeight="Bold" Foreground="{StaticResource OpaMenuPrimaryBrush}" HorizontalAlignment="Right" DockPanel.Dock="Right"/>
                             </DockPanel>
                             
-                            <Button Style="{StaticResource OpaMenuPrimaryButton}" Content="COBRAR E ENVIAR" FontSize="{StaticResource OpaMenuFontSizeLarge}"/>
+                            <Button Style="{StaticResource OpaMenuPrimaryButton}" Content="COBRAR E ENVIAR" FontSize="{StaticResource OpaMenuFontSizeLarge}" Command="{Binding OpenCheckoutModalCommand}"/>
                         </StackPanel>
                     </Grid>
                 </materialDesign:Card>

@@ -11,6 +11,7 @@ public class AppDbContext : DbContext
 {
     // Tabelas Offline
     public DbSet<LocalOrder> LocalOrders { get; set; }
+    public DbSet<LocalOrderItem> LocalOrderItems { get; set; }
     // public DbSet<LocalProduct> LocalProducts { get; set; } // Adicionar dps
     // public DbSet<LocalCategory> LocalCategories { get; set; } // Adicionar dps
 
@@ -58,6 +59,15 @@ public class AppDbContext : DbContext
             
             // Índices para facilitar buscas de sincronização
             entity.HasIndex(e => e.SyncStatus);
+        });
+
+        modelBuilder.Entity<LocalOrderItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.LocalOrder)
+                  .WithMany()
+                  .HasForeignKey(e => e.LocalOrderId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

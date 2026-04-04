@@ -43,10 +43,25 @@ public class CatalogService : ICatalogService
 
             if (response.IsSuccessStatusCode)
             {
-                var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<IEnumerable<CategoryDto>>>();
-                if (apiResponse != null && apiResponse.Succeeded && apiResponse.Data != null)
+                var json = await response.Content.ReadAsStringAsync();
+                
+                try 
                 {
-                    return apiResponse.Data;
+                    // Tenta ler como envelope ApiResponse
+                    var apiResponse = System.Text.Json.JsonSerializer.Deserialize<ApiResponse<IEnumerable<CategoryDto>>>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    if (apiResponse != null && apiResponse.Data != null)
+                    {
+                        return apiResponse.Data;
+                    }
+                }
+                catch
+                {
+                    // Se falhar, é porque a API retornou o array diretamente
+                    var directArray = System.Text.Json.JsonSerializer.Deserialize<IEnumerable<CategoryDto>>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    if (directArray != null)
+                    {
+                        return directArray;
+                    }
                 }
             }
             return new List<CategoryDto>();
@@ -67,10 +82,25 @@ public class CatalogService : ICatalogService
 
             if (response.IsSuccessStatusCode)
             {
-                var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<IEnumerable<ProductDto>>>();
-                if (apiResponse != null && apiResponse.Succeeded && apiResponse.Data != null)
+                var json = await response.Content.ReadAsStringAsync();
+                
+                try 
                 {
-                    return apiResponse.Data;
+                    // Tenta ler como envelope ApiResponse
+                    var apiResponse = System.Text.Json.JsonSerializer.Deserialize<ApiResponse<IEnumerable<ProductDto>>>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    if (apiResponse != null && apiResponse.Data != null)
+                    {
+                        return apiResponse.Data;
+                    }
+                }
+                catch
+                {
+                    // Se falhar, é porque a API retornou o array diretamente
+                    var directArray = System.Text.Json.JsonSerializer.Deserialize<IEnumerable<ProductDto>>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    if (directArray != null)
+                    {
+                        return directArray;
+                    }
                 }
             }
             return new List<ProductDto>();
