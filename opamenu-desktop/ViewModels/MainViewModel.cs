@@ -17,12 +17,42 @@ public partial class MainViewModel : ObservableObject
 {
     private readonly ICatalogService _catalogService;
     private readonly AppDbContext _dbContext;
+    private readonly ICashRegisterService _cashRegisterService;
+    private readonly UserStore _userStore;
 
     [ObservableProperty]
     private string _title = "Opamenu - Frente de Caixa (PDV)";
 
     [ObservableProperty]
-    private string _operatorName = "Caixa 01 - João";
+    private string _operatorName = "Operador";
+
+    [ObservableProperty]
+    private bool _isCashModalOpen;
+
+    [ObservableProperty]
+    private bool _isCashShiftOpen;
+
+    [ObservableProperty]
+    private bool _isClosingCashShift;
+
+    [ObservableProperty]
+    private decimal _openingCashBalance;
+
+    [ObservableProperty]
+    private decimal _closingCashBalance;
+
+    [ObservableProperty]
+    private decimal _expectedCashBalance;
+
+    [ObservableProperty]
+    private System.DateTime? _cashOpenedAt;
+
+    [ObservableProperty]
+    private string _cashShiftStatusText = "Caixa: --";
+
+    public bool IsCashShiftClosed => !IsCashShiftOpen;
+
+    public bool IsOpeningCashShift => !IsClosingCashShift;
 
     // Coleções reais vindas da API
     public ObservableCollection<CategoryDto> Categories { get; } = new();
@@ -72,10 +102,12 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string _orderObservation = string.Empty;
 
-    public MainViewModel(ICatalogService catalogService, AppDbContext dbContext)
+    public MainViewModel(ICatalogService catalogService, AppDbContext dbContext, ICashRegisterService cashRegisterService, UserStore userStore)
     {
         _catalogService = catalogService;
         _dbContext = dbContext;
+        _cashRegisterService = cashRegisterService;
+        _userStore = userStore;
     }
 
     /// <summary>
@@ -90,6 +122,8 @@ public partial class MainViewModel : ObservableObject
 
         try
         {
+            UpdateOperatorFromUserStore();
+
             var categoriesTask = _catalogService.GetCategoriesAsync();
             var productsTask = _catalogService.GetProductsAsync();
 
@@ -113,6 +147,8 @@ public partial class MainViewModel : ObservableObject
             {
                 MessageBox.Show("Não foi possível carregar os dados. Verifique a conexão com a API e o login.");
             }
+
+            await LoadCashShiftAsync();
         }
         catch (System.Exception ex)
         {
@@ -219,6 +255,12 @@ public partial class MainViewModel : ObservableObject
     {
         try
         {
+            if (!IsCashShiftOpen)
+            {
+                MessageBox.Show("Abra o caixa antes de realizar vendas.", "Caixa", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             // 1. Preparar o DTO para enviar pra API depois
             var requestDto = new CreateOrderRequestDto
             {
@@ -311,6 +353,105 @@ public partial class MainViewModel : ObservableObject
     {
         IsCustomerModalOpen = false;
         IsCheckoutModalOpen = false;
+        IsCashModalOpen = false;
         IsAnyModalOpen = false;
+    }
+
+    partial void OnIsCashShiftOpenChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsCashShiftClosed));
+    }
+
+    partial void OnIsClosingCashShiftChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsOpeningCashShift));
+    }
+
+    private void UpdateOperatorFromUserStore()
+    {
+        if (!string.IsNullOrWhiteSpace(_userStore.Name))
+        {
+            OperatorName = _userStore.Name;
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(_userStore.Email))
+        {
+            OperatorName = _userStore.Email;
+        }
+    }
+
+    [RelayCommand]
+    private void OpenCashShiftModal()
+    {
+        IsClosingCashShift = false;
+        OpeningCashBalance = 0m;
+        IsCashModalOpen = true;
+        IsAnyModalOpen = true;
+    }
+
+    [RelayCommand]
+    private void OpenCloseCashShiftModal()
+    {
+        IsClosingCashShift = true;
+        ClosingCashBalance = ExpectedCashBalance;
+        IsCashModalOpen = true;
+        IsAnyModalOpen = true;
+    }
+
+    [RelayCommand]
+    private async Task ConfirmCashShiftAsync()
+    {
+        try
+        {
+            if (IsClosingCashShift)
+            {
+                var shift = await _cashRegisterService.CloseShiftAsync(ClosingCashBalance);
+                ApplyCashShiftState(shift);
+            }
+            else
+            {
+                var shift = await _cashRegisterService.OpenShiftAsync(OpeningCashBalance);
+                ApplyCashShiftState(shift);
+            }
+
+            CloseModals();
+        }
+        catch (System.Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Caixa", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    [RelayCommand]
+    private async Task LoadCashShiftAsync()
+    {
+        try
+        {
+            var shift = await _cashRegisterService.GetActiveShiftAsync();
+            ApplyCashShiftState(shift);
+        }
+        catch (System.Exception ex)
+        {
+            CashShiftStatusText = $"Caixa: erro ({ex.Message})";
+            IsCashShiftOpen = false;
+        }
+    }
+
+    private void ApplyCashShiftState(CashShiftDto? shift)
+    {
+        if (shift == null)
+        {
+            IsCashShiftOpen = false;
+            ExpectedCashBalance = 0m;
+            CashOpenedAt = null;
+            CashShiftStatusText = "Caixa: fechado";
+            return;
+        }
+
+        IsCashShiftOpen = shift.Status == ECashShiftStatus.Open;
+        ExpectedCashBalance = shift.ExpectedBalance;
+        CashOpenedAt = shift.OpenedAt;
+        CashShiftStatusText = IsCashShiftOpen ? "Caixa: aberto" : "Caixa: fechado";
     }
 }

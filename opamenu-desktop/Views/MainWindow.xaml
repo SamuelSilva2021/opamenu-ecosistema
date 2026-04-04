@@ -100,6 +100,40 @@
                         </StackPanel>
                     </StackPanel>
                 </Border>
+
+                <Border Width="420" Background="{StaticResource OpaMenuSurfaceBrush}" CornerRadius="12" Padding="24"
+                        Visibility="{Binding IsCashModalOpen, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <TextBlock Text="Caixa" FontSize="{StaticResource OpaMenuFontSizeH4}" FontWeight="Bold" Margin="0,0,0,24"/>
+
+                        <StackPanel Visibility="{Binding IsOpeningCashShift, Converter={StaticResource BoolToVis}}">
+                            <TextBox Style="{StaticResource OpaMenuTextBox}"
+                                     materialDesign:HintAssist.Hint="Saldo inicial (R$)"
+                                     Text="{Binding OpeningCashBalance, UpdateSourceTrigger=PropertyChanged}"
+                                     Margin="0,0,0,16"/>
+                        </StackPanel>
+
+                        <StackPanel Visibility="{Binding IsClosingCashShift, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="{Binding ExpectedCashBalance, StringFormat='Saldo esperado: {0:C}'}"
+                                       FontWeight="SemiBold"
+                                       Margin="0,0,0,8"/>
+                            <TextBox Style="{StaticResource OpaMenuTextBox}"
+                                     materialDesign:HintAssist.Hint="Saldo de fechamento (R$)"
+                                     Text="{Binding ClosingCashBalance, UpdateSourceTrigger=PropertyChanged}"
+                                     Margin="0,0,0,16"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Style="{StaticResource MaterialDesignFlatButton}"
+                                    Content="CANCELAR"
+                                    Command="{Binding CloseModalsCommand}"
+                                    Margin="0,0,8,0" />
+                            <Button Style="{StaticResource OpaMenuPrimaryButton}"
+                                    Content="CONFIRMAR"
+                                    Command="{Binding ConfirmCashShiftCommand}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
             </Grid>
         </materialDesign:DialogHost.DialogContent>
 
@@ -118,7 +152,20 @@
                     </StackPanel>
                     
                     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBlock Text="{Binding CashShiftStatusText}" VerticalAlignment="Center" Margin="0,0,16,0" />
                         <TextBlock Text="{Binding OperatorName}" VerticalAlignment="Center" Margin="0,0,16,0" />
+                        <Button Style="{StaticResource MaterialDesignFlatButton}"
+                                Content="Abrir Caixa"
+                                Command="{Binding OpenCashShiftModalCommand}"
+                                Visibility="{Binding IsCashShiftClosed, Converter={StaticResource BoolToVis}}"
+                                Foreground="White"
+                                Margin="0,0,8,0"/>
+                        <Button Style="{StaticResource MaterialDesignFlatButton}"
+                                Content="Fechar Caixa"
+                                Command="{Binding OpenCloseCashShiftModalCommand}"
+                                Visibility="{Binding IsCashShiftOpen, Converter={StaticResource BoolToVis}}"
+                                Foreground="White"
+                                Margin="0,0,8,0"/>
                         <Button Style="{StaticResource MaterialDesignIconButton}" ToolTip="Atualizar Cardápio" Foreground="White" Margin="0,0,8,0">
                             <materialDesign:PackIcon Kind="CloudSync" />
                         </Button>

@@ -4,15 +4,10 @@ using Microsoft.Extensions.Logging;
 using OpaMenu.Desktop.Models;
 using OpaMenu.Desktop.Models.DTOs.Requests;
 using OpaMenu.Desktop.Models.Enums;
-using System;
-using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace OpaMenu.Desktop.Services;
 
