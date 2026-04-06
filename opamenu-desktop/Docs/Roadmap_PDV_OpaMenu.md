@@ -47,24 +47,39 @@ Este documento detalha o progresso atual do desenvolvimento da aplicação WPF (
 ## 🔄 Fase 3: Gestão de Caixa e Operação Segura
 *Regras e telas para que o dono do restaurante confie no sistema.*
 
-- [ ] **1. Abertura de Caixa:**
-  - Tela que obriga o usuário a informar o "Fundo de Caixa" (troco inicial) antes de realizar a primeira venda.
-- [ ] **2. Movimentações de Caixa:**
-  - **Sangria:** Retirada de dinheiro excessivo por segurança.
-  - **Suprimento:** Entrada de mais troco.
-- [ ] **3. Fechamento de Caixa:**
-  - Tela de fechamento "cego" (o operador diz quanto tem em dinheiro/cartão sem ver o total do sistema).
+- [x] **1. Abertura de Caixa:**
+  - Operação exige informar o saldo inicial (fundo de caixa) antes de realizar vendas.
+- [x] **2. Movimentações de Caixa:**
+  - **Sangria:** retirada de dinheiro (saída).
+  - **Suprimento:** entrada de troco (entrada).
+- [x] **3. Fechamento de Caixa:**
+  - Modal exibe resumo do turno com vendas por forma de pagamento (Dinheiro/Pix/Cartão) e total.
+  - Mostra saldo esperado (somente dinheiro), saldo informado e diferença.
+  - Exige justificativa quando houver divergência (>= R$ 0,01) para trilha de auditoria.
+  - Cálculo do resumo é server-authoritative (o desktop não envia totais para o servidor).
+
+### Integração com a opamenu-api (Caixa)
+- **Resumo do caixa ativo:** `GET /api/cash-register/active/summary`
+- **Fechamento com resumo:** `POST /api/cash-register/close/summary`
+  - Request: `closingBalance` + `discrepancyJustification` (obrigatória se houver diferença)
+  - Response: resumo do turno (vendas por método) + `expectedCashBalance` + `discrepancy`
 
 ---
 
 ## ☁️ Fase 4: Resiliência e Sincronização (Offline-First)
 *Garantir que a operação não pare sem internet.*
 
-- [ ] **1. Job de Sincronização:**
-  - Desenvolver o `SyncBackgroundService` para ler os `LocalOrder` (Pedidos), `Caixa` e `Movimentacoes` que estão com status `PendingSync` e enviar para a `opamenu-api` quando a internet estiver ativa.
+- [x] **1. Job de Sincronização (Pedidos):**
+  - `SyncBackgroundService` envia `LocalOrder` com `PendingSync/Error` para `POST /api/orders`.
+  - Normaliza payload antes do envio e atualiza `SyncStatus` e `SyncErrorMessage`.
+- [x] **2. Sincronização imediata pós-venda (Online-first quando possível):**
+  - Após salvar no SQLite, o PDV tenta sincronizar imediatamente (reduz delay no resumo do caixa).
+  - Se houver pendências de sincronização, o PDV bloqueia o fechamento de caixa para evitar inconsistência.
+- [ ] **3. Sincronização Offline do Caixa/Movimentações:**
+  - Persistir Abertura/Fechamento/Movimentações localmente e sincronizar com idempotência.
 - [ ] **2. Cache de Catálogo:**
   - Salvar as categorias e produtos da nuvem no SQLite local durante o Login, para que o PDV abra mesmo sem internet.
-- [ ] **3. Integração KDS / Impressão Térmica:**
+- [ ] **4. Integração KDS / Impressão Térmica:**
   - Envio do pedido para as impressoras das praças (Cozinha, Bar, Copa).
 
 ---
