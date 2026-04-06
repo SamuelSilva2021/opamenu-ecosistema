@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using OpaMenu.Desktop.Services;
+using OpaMenu.Desktop.Services.Interfaces;
 using System;
 using System.Threading.Tasks;
 using System.Windows.Controls;

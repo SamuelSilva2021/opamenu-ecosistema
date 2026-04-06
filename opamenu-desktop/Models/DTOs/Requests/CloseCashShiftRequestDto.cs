@@ -6,4 +6,7 @@ public class CloseCashShiftRequestDto
 {
     [JsonPropertyName("closingBalance")]
     public decimal ClosingBalance { get; set; }
+
+    [JsonPropertyName("discrepancyJustification")]
+    public string? DiscrepancyJustification { get; set; }
 }

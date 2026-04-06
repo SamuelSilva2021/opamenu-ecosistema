@@ -1,4 +1,4 @@
-﻿using OpaMenu.Desktop.Models.DTOs;
+﻿using OpaMenu.Desktop.Models.DTOs.AccessControl;
 using System;
 using System.Collections.Generic;
 using System.Linq;

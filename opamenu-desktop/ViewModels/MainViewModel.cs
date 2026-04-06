@@ -1,15 +1,26 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using OpaMenu.Desktop.Models;
 using OpaMenu.Desktop.Models.DTOs;
 using OpaMenu.Desktop.Models.DTOs.Requests;
 using OpaMenu.Desktop.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using OpaMenu.Desktop.Services;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows;
+using OpaMenu.Desktop.Services.Interfaces;
+using OpaMenu.Desktop.Models.DTOs.Aditional;
+using OpaMenu.Desktop.Models.DTOs.Product;
+using OpaMenu.Desktop.Models.DTOs.Pdv;
+using OpaMenu.Desktop.Models.Data;
+using OpaMenu.Desktop.Models.Entities;
 
 namespace OpaMenu.Desktop.ViewModels;
 
@@ -18,6 +29,8 @@ public partial class MainViewModel : ObservableObject
     private readonly ICatalogService _catalogService;
     private readonly AppDbContext _dbContext;
     private readonly ICashRegisterService _cashRegisterService;
+    private readonly IAuthService _authService;
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly UserStore _userStore;
 
     [ObservableProperty]
@@ -36,6 +49,18 @@ public partial class MainViewModel : ObservableObject
     private bool _isClosingCashShift;
 
     [ObservableProperty]
+    private bool _isCashMovementModal;
+
+    [ObservableProperty]
+    private ECashMovementType _cashMovementType;
+
+    [ObservableProperty]
+    private decimal _cashMovementAmount;
+
+    [ObservableProperty]
+    private string _cashMovementDescription = string.Empty;
+
+    [ObservableProperty]
     private decimal _openingCashBalance;
 
     [ObservableProperty]
@@ -45,6 +70,27 @@ public partial class MainViewModel : ObservableObject
     private decimal _expectedCashBalance;
 
     [ObservableProperty]
+    private string _closingDiscrepancyJustification = string.Empty;
+
+    [ObservableProperty]
+    private bool _hasClosingDiscrepancy;
+
+    [ObservableProperty]
+    private System.Collections.ObjectModel.ObservableCollection<PaymentMethodSummaryDto> _closingSalesByPaymentMethod = new();
+
+    [ObservableProperty]
+    private decimal _closingTotalSales;
+
+    [ObservableProperty]
+    private decimal _closingTotalInflows;
+
+    [ObservableProperty]
+    private decimal _closingTotalOutflows;
+
+    [ObservableProperty]
+    private decimal _closingDiscrepancy;
+
+    [ObservableProperty]
     private System.DateTime? _cashOpenedAt;
 
     [ObservableProperty]
@@ -52,7 +98,12 @@ public partial class MainViewModel : ObservableObject
 
     public bool IsCashShiftClosed => !IsCashShiftOpen;
 
-    public bool IsOpeningCashShift => !IsClosingCashShift;
+    public bool IsOpeningCashShift => !IsClosingCashShift && !IsCashMovementModal;
+
+    public string CashModalTitle =>
+        IsCashMovementModal
+            ? CashMovementType == ECashMovementType.Inbound ? "Suprimento" : "Sangria"
+            : "Caixa";
 
     // Coleções reais vindas da API
     public ObservableCollection<CategoryDto> Categories { get; } = new();
@@ -89,26 +140,88 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool _isCheckoutModalOpen;
 
+    [ObservableProperty]
+    private bool _isAddonSelectionModalOpen;
+
+    [ObservableProperty]
+    private ProductDto? _productToConfigure;
+
     // --- Propriedades de Checkout ---
     [ObservableProperty]
-    private decimal _amountPaid;
+    private decimal _totalPaid;
 
     [ObservableProperty]
     private decimal _changeAmount;
 
     [ObservableProperty]
-    private string _paymentMethod = "Pix";
+    private decimal _remainingAmount;
+
+    [ObservableProperty]
+    private string _itemNotes = string.Empty;
 
     [ObservableProperty]
     private string _orderObservation = string.Empty;
 
-    public MainViewModel(ICatalogService catalogService, AppDbContext dbContext, ICashRegisterService cashRegisterService, UserStore userStore)
+    public ObservableCollection<SelectableAditionalGroup> AddonGroups { get; } = new();
+
+    public ObservableCollection<PaymentEntry> Payments { get; } = new();
+
+    public IReadOnlyList<string> PaymentMethodOptions { get; } = new[]
+    {
+        "Dinheiro",
+        "Pix",
+        "Cartão de Crédito",
+        "Cartão de Débito"
+    };
+
+    public MainViewModel(
+        ICatalogService catalogService,
+        AppDbContext dbContext,
+        ICashRegisterService cashRegisterService,
+        IAuthService authService,
+        IHttpClientFactory httpClientFactory,
+        UserStore userStore)
     {
         _catalogService = catalogService;
         _dbContext = dbContext;
         _cashRegisterService = cashRegisterService;
+        _authService = authService;
+        _httpClientFactory = httpClientFactory;
         _userStore = userStore;
+
+        Payments.CollectionChanged += Payments_CollectionChanged;
     }
+
+    partial void OnProductToConfigureChanged(ProductDto? value)
+    {
+        AddonGroups.Clear();
+        if (value?.AditionalGroups == null)
+            return;
+
+        var groups = value.AditionalGroups
+            .Where(g => g.AditionalGroup?.IsActive == true)
+            .OrderBy(g => g.DisplayOrder)
+            .ToList();
+
+        foreach (var group in groups)
+        {
+            var groupDto = group.AditionalGroup;
+            if (groupDto == null)
+                continue;
+
+            var effectiveIsRequired = group.IsRequired;
+            var effectiveMin = group.MinSelectionsOverride ?? groupDto.MinSelections;
+            var effectiveMax = group.MaxSelectionsOverride ?? groupDto.MaxSelections;
+
+            var groupVm = new SelectableAditionalGroup(groupDto, effectiveIsRequired, effectiveMin, effectiveMax);
+            foreach (var addon in groupDto.Aditionals.Where(a => a.IsActive).OrderBy(a => a.DisplayOrder))
+            {
+                groupVm.Options.Add(new SelectableAditional(addon, groupVm));
+            }
+            AddonGroups.Add(groupVm);
+        }
+    }
+
 
     /// <summary>
     /// Chamado pela View quando ela termina de carregar.
@@ -176,29 +289,140 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private void AddToCartFromModal()
+    {
+        if (ProductToConfigure == null) return;
+
+        foreach (var group in AddonGroups)
+        {
+            if (!group.IsSelectionValid())
+            {
+                var rangeText = group.GetSelectionRangeText();
+                MessageBox.Show($"Seleção inválida em \"{group.Name}\". {rangeText}", "Adicionais", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+        }
+
+        var selectedAddons = AddonGroups
+            .SelectMany(g => g.Options)
+            .Where(a => a.IsSelected)
+            .Select(a => new AditionalSelectionDto
+            {
+                AditionalId = a.Addon.Id,
+                Name = a.Addon.Name,
+                Quantity = 1,
+                Price = a.Addon.Price
+            })
+            .ToList();
+
+        AddToCartConfirmed(ProductToConfigure, selectedAddons, ItemNotes);
+    }
+
+    [RelayCommand]
     private void AddToCart(ProductDto product)
     {
         if (product == null) return;
 
-        var existingItem = CartItems.FirstOrDefault(c => c.ProductId == product.Id);
+        var hasAddons = product.AditionalGroups != null &&
+                        product.AditionalGroups.Any(g =>
+                            g.AditionalGroup?.IsActive == true &&
+                            g.AditionalGroup.Aditionals != null &&
+                            g.AditionalGroup.Aditionals.Any(a => a.IsActive));
+
+        if (hasAddons)
+        {
+            ProductToConfigure = product;
+            ItemNotes = string.Empty;
+            IsAddonSelectionModalOpen = true;
+            IsAnyModalOpen = true;
+            return;
+        }
+
+        AddToCartConfirmed(product);
+    }
+
+    private void AddToCartConfirmed(ProductDto product, List<AditionalSelectionDto>? selectedAddons = null, string? notes = null)
+    {
+        var normalizedNotes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim();
+        var normalizedAddons = NormalizeSelectedAddons(selectedAddons);
+
+        var existingItem = CartItems.FirstOrDefault(c =>
+            c.ProductId == product.Id &&
+            string.Equals(c.Notes, normalizedNotes, StringComparison.Ordinal) &&
+            AreSameSelections(c.SelectedAditionals, normalizedAddons));
+        
         if (existingItem != null)
         {
             existingItem.Quantity++;
-            existingItem.TotalPrice = existingItem.Quantity * existingItem.UnitPrice;
+            existingItem.TotalPrice = existingItem.Quantity * GetUnitTotal(existingItem.UnitPrice, existingItem.SelectedAditionals);
         }
         else
         {
-            CartItems.Add(new CartItemDto
+            var unitTotal = GetUnitTotal(product.Price, normalizedAddons);
+
+            var item = new CartItemDto
             {
                 ProductId = product.Id,
                 ProductName = product.Name,
                 Quantity = 1,
                 UnitPrice = product.Price,
-                TotalPrice = product.Price
-            });
+                TotalPrice = unitTotal,
+                SelectedAditionals = normalizedAddons,
+                Notes = normalizedNotes
+            };
+            CartItems.Add(item);
         }
 
         UpdateTotal();
+        CloseModals();
+    }
+
+    private static List<AditionalSelectionDto> NormalizeSelectedAddons(List<AditionalSelectionDto>? selectedAddons)
+    {
+        if (selectedAddons == null || selectedAddons.Count == 0)
+            return new();
+
+        return selectedAddons
+            .Where(a => a.Quantity > 0)
+            .GroupBy(a => a.AditionalId)
+            .Select(g =>
+            {
+                var first = g.First();
+                return new AditionalSelectionDto
+                {
+                    AditionalId = first.AditionalId,
+                    Name = first.Name,
+                    Price = first.Price,
+                    Quantity = g.Sum(x => x.Quantity)
+                };
+            })
+            .OrderBy(a => a.AditionalId)
+            .ToList();
+    }
+
+    private static bool AreSameSelections(List<AditionalSelectionDto> left, List<AditionalSelectionDto> right)
+    {
+        if (left.Count != right.Count)
+            return false;
+
+        var leftOrdered = left.OrderBy(a => a.AditionalId).ThenBy(a => a.Quantity).ToList();
+        var rightOrdered = right.OrderBy(a => a.AditionalId).ThenBy(a => a.Quantity).ToList();
+
+        for (var i = 0; i < leftOrdered.Count; i++)
+        {
+            if (leftOrdered[i].AditionalId != rightOrdered[i].AditionalId)
+                return false;
+            if (leftOrdered[i].Quantity != rightOrdered[i].Quantity)
+                return false;
+        }
+
+        return true;
+    }
+
+    private static decimal GetUnitTotal(decimal unitPrice, List<AditionalSelectionDto> addons)
+    {
+        var addonsTotal = addons.Sum(a => a.Price * a.Quantity);
+        return unitPrice + addonsTotal;
     }
 
     [RelayCommand]
@@ -238,16 +462,96 @@ public partial class MainViewModel : ObservableObject
             MessageBox.Show("O carrinho está vazio!");
             return;
         }
-        AmountPaid = CartTotal;
-        CalculateChange();
+        ResetPaymentsForCheckout();
         IsCheckoutModalOpen = true;
         IsAnyModalOpen = true;
     }
 
     [RelayCommand]
-    private void CalculateChange()
+    private void AddPayment()
     {
-        ChangeAmount = AmountPaid >= CartTotal ? AmountPaid - CartTotal : 0;
+        Payments.Add(new PaymentEntry
+        {
+            Method = "Dinheiro",
+            Amount = 0m
+        });
+        RecalculatePaymentSummary();
+    }
+
+    [RelayCommand]
+    private void RemovePayment(PaymentEntry entry)
+    {
+        if (Payments.Count <= 1)
+            return;
+
+        Payments.Remove(entry);
+        RecalculatePaymentSummary();
+    }
+
+    private void ResetPaymentsForCheckout()
+    {
+        foreach (var payment in Payments.ToList())
+        {
+            payment.PropertyChanged -= Payment_PropertyChanged;
+        }
+
+        Payments.Clear();
+        Payments.Add(new PaymentEntry
+        {
+            Method = "Pix",
+            Amount = CartTotal
+        });
+
+        RecalculatePaymentSummary();
+    }
+
+    private void Payments_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.OldItems != null)
+        {
+            foreach (PaymentEntry item in e.OldItems)
+            {
+                item.PropertyChanged -= Payment_PropertyChanged;
+            }
+        }
+
+        if (e.NewItems != null)
+        {
+            foreach (PaymentEntry item in e.NewItems)
+            {
+                item.PropertyChanged += Payment_PropertyChanged;
+            }
+        }
+
+        RecalculatePaymentSummary();
+    }
+
+    private void Payment_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(PaymentEntry.Amount) or nameof(PaymentEntry.Method))
+        {
+            RecalculatePaymentSummary();
+        }
+    }
+
+    private void RecalculatePaymentSummary()
+    {
+        TotalPaid = Payments.Sum(p => p.Amount);
+
+        var change = TotalPaid - CartTotal;
+        var hasCash = Payments.Any(p => string.Equals(p.Method, "Dinheiro", StringComparison.Ordinal));
+
+        if (change > 0m && !hasCash)
+        {
+            ChangeAmount = 0m;
+            RemainingAmount = 0m;
+            return;
+        }
+
+        ChangeAmount = change > 0m ? change : 0m;
+        RemainingAmount = CartTotal - TotalPaid;
+        if (RemainingAmount < 0m)
+            RemainingAmount = 0m;
     }
 
     [RelayCommand]
@@ -261,40 +565,54 @@ public partial class MainViewModel : ObservableObject
                 return;
             }
 
+            var validationError = ValidatePayments();
+            if (!string.IsNullOrWhiteSpace(validationError))
+            {
+                MessageBox.Show(validationError, "Pagamento", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var paymentBreakdownText = BuildPaymentBreakdownText();
+            var notes = string.IsNullOrWhiteSpace(OrderObservation) ? null : OrderObservation.Trim();
+            if (!string.IsNullOrWhiteSpace(paymentBreakdownText))
+            {
+                notes = string.IsNullOrWhiteSpace(notes) ? paymentBreakdownText : $"{notes} | {paymentBreakdownText}";
+            }
+
+            var paymentMethod = ResolvePaymentMethodForApi();
+
             // 1. Preparar o DTO para enviar pra API depois
             var requestDto = new CreateOrderRequestDto
             {
                 CustomerName = CustomerName == "Não Informado" ? "Cliente Balcão" : CustomerName,
-                CustomerPhone = "0000000000", // Preenchimento obrigatório para a API não dar erro 400
+                CustomerPhone = "11999999999",
                 IsDelivery = false,
                 OrderType = EOrderType.Counter, // Venda no balcão
                 TableId = TableNumber == "00" ? null : TableNumber,
-                Notes = string.IsNullOrWhiteSpace(OrderObservation) ? null : OrderObservation,
-                PaymentMethod = PaymentMethod switch
-                {
-                    "Dinheiro" => EPaymentMethod.Cash,
-                    "Cartão de Crédito" => EPaymentMethod.CreditCard,
-                    "Cartão de Débito" => EPaymentMethod.DebitCard,
-                    "Pix" => EPaymentMethod.Pix,
-                    _ => EPaymentMethod.Cash
-                },
+                Notes = notes,
+                PaymentMethod = paymentMethod,
                 Items = CartItems.Select(c => new CreateOrderItemRequestDto
                 {
                     ProductId = c.ProductId,
                     Quantity = c.Quantity,
-                    Notes = null // Observação individual já foi removida
+                    Notes = c.Notes,
+                    Aditionals = c.SelectedAditionals.Select(a => new CreateOrderItemAditionalRequestDto
+                    {
+                        AditionalId = a.AditionalId,
+                        Quantity = a.Quantity
+                    }).ToList()
                 }).ToList()
             };
 
-            var options = new System.Text.Json.JsonSerializerOptions
+            var options = new JsonSerializerOptions
             {
-                Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
+                Converters = { new JsonStringEnumConverter() }
             };
-            var payloadJson = System.Text.Json.JsonSerializer.Serialize(requestDto, options);
+            var payloadJson = JsonSerializer.Serialize(requestDto, options);
 
             // 2. Criar o Pedido Local
             var orderId = Guid.NewGuid();
-            var localOrder = new LocalOrder
+            var localOrder = new LocalOrderEntity
             {
                 Id = orderId,
                 LocalId = Guid.NewGuid(),
@@ -305,9 +623,10 @@ public partial class MainViewModel : ObservableObject
                 TableNumber = requestDto.TableId,
                 OrderObservation = requestDto.Notes,
                 TotalAmount = CartTotal,
-                AmountPaid = AmountPaid,
+                AmountPaid = TotalPaid,
                 ChangeAmount = ChangeAmount,
-                PaymentMethod = PaymentMethod,
+                PaymentMethod = Payments.Count == 1 ? Payments[0].Method : "Dividido",
+                PaymentBreakdownJson = BuildPaymentBreakdownJson(),
                 SyncStatus = Models.Enums.ESyncStatus.PendingSync,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
@@ -317,7 +636,7 @@ public partial class MainViewModel : ObservableObject
             _dbContext.LocalOrders.Add(localOrder);
 
             // 3. Criar os Itens do Pedido no SQLite
-            var localItems = CartItems.Select(c => new LocalOrderItem
+            var localItems = CartItems.Select(c => new LocalOrderItemEntity
             {
                 Id = Guid.NewGuid(),
                 LocalOrderId = orderId,
@@ -325,7 +644,9 @@ public partial class MainViewModel : ObservableObject
                 ProductName = c.ProductName,
                 Quantity = c.Quantity,
                 UnitPrice = c.UnitPrice,
-                TotalPrice = c.TotalPrice
+                TotalPrice = c.TotalPrice,
+                Notes = c.Notes,
+                AditionalsJson = SerializeItemAditionals(c.SelectedAditionals)
             }).ToList();
 
             _dbContext.LocalOrderItems.AddRange(localItems);
@@ -333,8 +654,9 @@ public partial class MainViewModel : ObservableObject
             // 4. Salvar no SQLite
             await _dbContext.SaveChangesAsync();
 
-            MessageBox.Show($"Venda finalizada e salva offline com sucesso!\n\nCliente: {CustomerName}\nTotal: {CartTotal:C}\nPagamento: {PaymentMethod}\nTroco: {ChangeAmount:C}\nObs: {OrderObservation}", "Sucesso", MessageBoxButton.OK, MessageBoxImage.Information);
-            
+            // 5. Já tentar sincronizar imediatamente
+            await TrySyncLocalOrderImmediatelyAsync(localOrder);
+
             ClearCart();
             CustomerName = "Não Informado";
             CustomerDocument = string.Empty;
@@ -348,13 +670,190 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
+    private sealed record SyncAttemptResult(bool Succeeded, string? ErrorMessage);
+
+    private async Task<SyncAttemptResult> TrySyncLocalOrderImmediatelyAsync(LocalOrderEntity localOrder)
+    {
+        var token = _authService.GetCurrentToken();
+        if (string.IsNullOrWhiteSpace(token))
+            return new SyncAttemptResult(false, "Usuário não autenticado.");
+
+        if (string.IsNullOrWhiteSpace(localOrder.PayloadJson))
+            return new SyncAttemptResult(false, "PayloadJson vazio.");
+
+        try
+        {
+            localOrder.LastSyncAttempt = DateTime.UtcNow;
+
+            var payloadJson = NormalizeOrderPayloadJson(localOrder.PayloadJson);
+            if (!string.Equals(payloadJson, localOrder.PayloadJson, StringComparison.Ordinal))
+                localOrder.PayloadJson = payloadJson;
+
+            var httpClient = _httpClientFactory.CreateClient("CoreApi");
+            httpClient.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await httpClient.PostAsync("/api/orders", new StringContent(payloadJson, Encoding.UTF8, "application/json"));
+            if (response.IsSuccessStatusCode)
+            {
+                localOrder.SyncStatus = Models.Enums.ESyncStatus.Synced;
+                localOrder.SyncErrorMessage = null;
+                await _dbContext.SaveChangesAsync();
+                return new SyncAttemptResult(true, null);
+            }
+
+            var errorResponse = await response.Content.ReadAsStringAsync();
+            localOrder.SyncStatus = Models.Enums.ESyncStatus.Error;
+            localOrder.SyncErrorMessage = $"HTTP {(int)response.StatusCode} - {errorResponse}";
+            await _dbContext.SaveChangesAsync();
+            return new SyncAttemptResult(false, localOrder.SyncErrorMessage);
+        }
+        catch (Exception ex)
+        {
+            localOrder.SyncStatus = Models.Enums.ESyncStatus.Error;
+            localOrder.SyncErrorMessage = ex.Message;
+            await _dbContext.SaveChangesAsync();
+            return new SyncAttemptResult(false, ex.Message);
+        }
+    }
+
+    private static string NormalizeOrderPayloadJson(string payloadJson)
+    {
+        try
+        {
+            var requestDto = JsonSerializer.Deserialize<CreateOrderRequestDto>(payloadJson, new JsonSerializerOptions(JsonSerializerDefaults.Web)
+            {
+                Converters = { new JsonStringEnumConverter() }
+            });
+
+            if (requestDto is null)
+                return payloadJson;
+
+            var changed = false;
+
+            if (string.IsNullOrWhiteSpace(requestDto.CustomerName))
+            {
+                requestDto.CustomerName = "Cliente Balcão";
+                changed = true;
+            }
+
+            if (string.IsNullOrWhiteSpace(requestDto.CustomerPhone))
+            {
+                requestDto.CustomerPhone = "11999999999";
+                changed = true;
+            }
+
+            if (requestDto.Items is null)
+            {
+                requestDto.Items = new();
+                changed = true;
+            }
+
+            return changed
+                ? JsonSerializer.Serialize(requestDto, new JsonSerializerOptions(JsonSerializerDefaults.Web)
+                {
+                    Converters = { new JsonStringEnumConverter() }
+                })
+                : payloadJson;
+        }
+        catch
+        {
+            return payloadJson;
+        }
+    }
+
+    private string? ValidatePayments()
+    {
+        if (Payments.Count == 0)
+            return "Informe pelo menos uma forma de pagamento.";
+
+        foreach (var payment in Payments)
+        {
+            if (string.IsNullOrWhiteSpace(payment.Method))
+                return "Selecione a forma de pagamento em todos os lançamentos.";
+
+            if (payment.Amount <= 0m)
+                return "Informe valores maiores que zero para todos os pagamentos.";
+        }
+
+        var total = Payments.Sum(p => p.Amount);
+        if (total < CartTotal)
+            return "O total pago não pode ser menor que o total do pedido.";
+
+        var hasCash = Payments.Any(p => string.Equals(p.Method, "Dinheiro", StringComparison.Ordinal));
+        if (total > CartTotal && !hasCash)
+            return "Troco só é permitido quando houver pagamento em Dinheiro.";
+
+        return null;
+    }
+
+    private string BuildPaymentBreakdownText()
+    {
+        if (Payments.Count == 0)
+            return string.Empty;
+
+        var parts = Payments
+            .Where(p => !string.IsNullOrWhiteSpace(p.Method) && p.Amount > 0m)
+            .Select(p => $"{p.Method} {p.Amount:C}")
+            .ToList();
+
+        return parts.Count == 0 ? string.Empty : string.Join(", ", parts);
+    }
+
+    private string? BuildPaymentBreakdownJson()
+    {
+        if (Payments.Count == 0)
+            return null;
+
+        var items = Payments
+            .Where(p => !string.IsNullOrWhiteSpace(p.Method) && p.Amount > 0m)
+            .Select(p => new PaymentBreakdownItem(p.Method.Trim(), p.Amount))
+            .ToList();
+
+        if (items.Count == 0)
+            return null;
+
+        return JsonSerializer.Serialize(items, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+    }
+
+    private static string? SerializeItemAditionals(List<AditionalSelectionDto> aditionals)
+    {
+        if (aditionals.Count == 0)
+            return null;
+
+        return JsonSerializer.Serialize(
+            aditionals.Select(a => new { a.AditionalId, a.Name, a.Quantity, a.Price }),
+            new JsonSerializerOptions(JsonSerializerDefaults.Web));
+    }
+
+    private EPaymentMethod? ResolvePaymentMethodForApi()
+    {
+        if (Payments.Count != 1)
+            return null;
+
+        return Payments[0].Method switch
+        {
+            "Dinheiro" => EPaymentMethod.Cash,
+            "Cartão de Crédito" => EPaymentMethod.CreditCard,
+            "Cartão de Débito" => EPaymentMethod.DebitCard,
+            "Pix" => EPaymentMethod.Pix,
+            _ => null
+        };
+    }
+
     [RelayCommand]
     private void CloseModals()
     {
         IsCustomerModalOpen = false;
         IsCheckoutModalOpen = false;
         IsCashModalOpen = false;
+        IsCashMovementModal = false;
+        IsAddonSelectionModalOpen = false;
         IsAnyModalOpen = false;
+        ProductToConfigure = null;
+        ItemNotes = string.Empty;
+        CashMovementAmount = 0m;
+        CashMovementDescription = string.Empty;
     }
 
     partial void OnIsCashShiftOpenChanged(bool value)
@@ -365,6 +864,17 @@ public partial class MainViewModel : ObservableObject
     partial void OnIsClosingCashShiftChanged(bool value)
     {
         OnPropertyChanged(nameof(IsOpeningCashShift));
+    }
+
+    partial void OnIsCashMovementModalChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsOpeningCashShift));
+        OnPropertyChanged(nameof(CashModalTitle));
+    }
+
+    partial void OnCashMovementTypeChanged(ECashMovementType value)
+    {
+        OnPropertyChanged(nameof(CashModalTitle));
     }
 
     private void UpdateOperatorFromUserStore()
@@ -384,6 +894,7 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void OpenCashShiftModal()
     {
+        IsCashMovementModal = false;
         IsClosingCashShift = false;
         OpeningCashBalance = 0m;
         IsCashModalOpen = true;
@@ -391,10 +902,58 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void OpenCloseCashShiftModal()
+    private async Task OpenCloseCashShiftModal()
     {
+        var hasPendingOrders = await _dbContext.LocalOrders.AnyAsync(o =>
+            o.SyncStatus == Models.Enums.ESyncStatus.PendingSync || o.SyncStatus == Models.Enums.ESyncStatus.Error);
+
+        if (hasPendingOrders)
+        {
+            MessageBox.Show("Existem vendas pendentes de sincronização. Sincronize antes de fechar o caixa.", "Caixa", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        IsCashMovementModal = false;
         IsClosingCashShift = true;
-        ClosingCashBalance = ExpectedCashBalance;
+        ClosingCashBalance = 0m;
+        ClosingDiscrepancyJustification = string.Empty;
+        IsCashModalOpen = true;
+        IsAnyModalOpen = true;
+        await LoadActiveShiftSummaryIntoModalAsync();
+    }
+
+    [RelayCommand]
+    private void OpenCashInboundMovementModal()
+    {
+        if (!IsCashShiftOpen)
+        {
+            MessageBox.Show("Não é possível registrar suprimento com o caixa fechado.", "Caixa", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        IsClosingCashShift = false;
+        IsCashMovementModal = true;
+        CashMovementType = ECashMovementType.Inbound;
+        CashMovementAmount = 0m;
+        CashMovementDescription = string.Empty;
+        IsCashModalOpen = true;
+        IsAnyModalOpen = true;
+    }
+
+    [RelayCommand]
+    private void OpenCashOutboundMovementModal()
+    {
+        if (!IsCashShiftOpen)
+        {
+            MessageBox.Show("Não é possível registrar sangria com o caixa fechado.", "Caixa", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        IsClosingCashShift = false;
+        IsCashMovementModal = true;
+        CashMovementType = ECashMovementType.Outbound;
+        CashMovementAmount = 0m;
+        CashMovementDescription = string.Empty;
         IsCashModalOpen = true;
         IsAnyModalOpen = true;
     }
@@ -404,10 +963,28 @@ public partial class MainViewModel : ObservableObject
     {
         try
         {
-            if (IsClosingCashShift)
+            if (IsCashMovementModal)
             {
-                var shift = await _cashRegisterService.CloseShiftAsync(ClosingCashBalance);
+                if (CashMovementAmount <= 0m)
+                    throw new InvalidOperationException("Informe um valor maior que zero.");
+
+                var description = CashMovementDescription?.Trim() ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(description))
+                    throw new InvalidOperationException("Informe uma descrição para a movimentação.");
+
+                await _cashRegisterService.AddMovementAsync(CashMovementType, CashMovementAmount, description);
+                var shift = await _cashRegisterService.GetActiveShiftAsync();
                 ApplyCashShiftState(shift);
+            }
+            else if (IsClosingCashShift)
+            {
+                var diff = Math.Abs(ClosingCashBalance - ExpectedCashBalance);
+                if (diff >= 0.01m && string.IsNullOrWhiteSpace(ClosingDiscrepancyJustification))
+                    throw new System.InvalidOperationException("Informe uma justificativa para a diferença no fechamento.");
+
+                var summary = await _cashRegisterService.CloseShiftWithSummaryAsync(ClosingCashBalance, ClosingDiscrepancyJustification?.Trim());
+                //MessageBox.Show(BuildCloseSummaryText(summary), "Fechamento de Caixa", MessageBoxButton.OK, MessageBoxImage.Information);
+                ApplyCashShiftState(summary.Shift);
             }
             else
             {
@@ -454,4 +1031,209 @@ public partial class MainViewModel : ObservableObject
         CashOpenedAt = shift.OpenedAt;
         CashShiftStatusText = IsCashShiftOpen ? "Caixa: aberto" : "Caixa: fechado";
     }
+
+    private static string BuildCloseSummaryText(CashShiftCloseSummaryDto summary)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("Resumo do caixa:");
+        sb.AppendLine();
+
+        if (summary.SalesByPaymentMethod is { Count: > 0 })
+        {
+            sb.AppendLine("Vendas por forma de pagamento:");
+            foreach (var p in summary.SalesByPaymentMethod.OrderBy(p => p.PaymentMethodName))
+                sb.AppendLine($"- {p.PaymentMethodName}: {p.TotalAmount:C}");
+            sb.AppendLine();
+        }
+
+        sb.AppendLine($"Total de vendas: {summary.TotalSales:C}");
+        sb.AppendLine($"Entradas: {summary.TotalInflows:C}");
+        sb.AppendLine($"Saídas: {summary.TotalOutflows:C}");
+        sb.AppendLine();
+        sb.AppendLine($"Saldo esperado (dinheiro): {summary.ExpectedCashBalance:C}");
+        sb.AppendLine($"Saldo informado: {summary.ClosingBalance:C}");
+        sb.AppendLine($"Diferença: {summary.Discrepancy:C}");
+
+        if (!string.IsNullOrWhiteSpace(summary.DiscrepancyJustification))
+        {
+            sb.AppendLine();
+            sb.AppendLine("Justificativa:");
+            sb.AppendLine(summary.DiscrepancyJustification);
+        }
+
+        return sb.ToString();
+    }
+
+    partial void OnClosingCashBalanceChanged(decimal value)
+    {
+        HasClosingDiscrepancy = Math.Abs(value - ExpectedCashBalance) >= 0.01m;
+        ClosingDiscrepancy = value - ExpectedCashBalance;
+    }
+
+    partial void OnExpectedCashBalanceChanged(decimal value)
+    {
+        HasClosingDiscrepancy = Math.Abs(ClosingCashBalance - value) >= 0.01m;
+        ClosingDiscrepancy = ClosingCashBalance - value;
+    }
+
+    private async Task LoadActiveShiftSummaryIntoModalAsync()
+    {
+        try
+        {
+            var summary = await _cashRegisterService.GetActiveShiftSummaryAsync();
+            ClosingSalesByPaymentMethod.Clear();
+            ClosingTotalSales = 0m;
+            ClosingTotalInflows = 0m;
+            ClosingTotalOutflows = 0m;
+
+            if (summary != null)
+            {
+                foreach (var s in summary.SalesByPaymentMethod)
+                    ClosingSalesByPaymentMethod.Add(s);
+                ClosingTotalSales = summary.TotalSales;
+                ClosingTotalInflows = summary.TotalInflows;
+                ClosingTotalOutflows = summary.TotalOutflows;
+                ExpectedCashBalance = summary.Shift.ExpectedBalance;
+            }
+        }
+        catch (System.Exception ex)
+        {
+            MessageBox.Show($"Falha ao carregar resumo do caixa: {ex.Message}", "Caixa", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
 }
+
+public partial class SelectableAditional : ObservableObject
+{
+    public AditionalResponseDto Addon { get; }
+    public SelectableAditionalGroup Group { get; }
+    
+    [ObservableProperty]
+    private bool _isSelected;
+
+    public string DisplayText => Addon.Price > 0m ? $"{Addon.Name} (+{Addon.Price:C})" : Addon.Name;
+
+    public SelectableAditional(AditionalResponseDto addon, SelectableAditionalGroup group)
+    {
+        Addon = addon;
+        Group = group;
+    }
+
+    partial void OnIsSelectedChanged(bool value)
+    {
+        Group.HandleSelectionChanged(this, value);
+    }
+}
+
+public partial class SelectableAditionalGroup : ObservableObject
+{
+    private bool _isHandling;
+
+    public Guid Id { get; }
+    public string Name { get; }
+    public string? Description { get; }
+    public EAditionalGroupType Type { get; }
+    public bool IsRequired { get; }
+    public int? MinSelections { get; }
+    public int? MaxSelections { get; }
+
+    public ObservableCollection<SelectableAditional> Options { get; } = new();
+
+    public SelectableAditionalGroup(AditionalGroupResponseDto dto, bool isRequired, int? minSelections, int? maxSelections)
+    {
+        Id = dto.Id;
+        Name = dto.Name;
+        Description = dto.Description;
+        Type = dto.Type;
+        IsRequired = isRequired;
+        MinSelections = minSelections;
+        MaxSelections = maxSelections;
+    }
+
+    public void HandleSelectionChanged(SelectableAditional option, bool isSelected)
+    {
+        if (_isHandling)
+            return;
+
+        try
+        {
+            _isHandling = true;
+
+            if (Type == EAditionalGroupType.Single && isSelected)
+            {
+                foreach (var other in Options.Where(o => !ReferenceEquals(o, option) && o.IsSelected))
+                {
+                    other.IsSelected = false;
+                }
+                return;
+            }
+
+            var effectiveMax = GetEffectiveMax();
+            if (effectiveMax.HasValue && SelectedCount() > effectiveMax.Value)
+            {
+                option.IsSelected = false;
+            }
+        }
+        finally
+        {
+            _isHandling = false;
+        }
+    }
+
+    public bool IsSelectionValid()
+    {
+        var count = SelectedCount();
+        var min = GetEffectiveMin();
+        var max = GetEffectiveMax();
+
+        if (count < min)
+            return false;
+
+        if (max.HasValue && count > max.Value)
+            return false;
+
+        return true;
+    }
+
+    public string GetSelectionRangeText()
+    {
+        var min = GetEffectiveMin();
+        var max = GetEffectiveMax();
+        if (max.HasValue)
+            return $"Selecione entre {min} e {max.Value}.";
+
+        return min > 0 ? $"Selecione no mínimo {min}." : "Seleção livre.";
+    }
+
+    private int GetEffectiveMin()
+    {
+        if (IsRequired && (!MinSelections.HasValue || MinSelections.Value < 1))
+            return 1;
+
+        if (Type == EAditionalGroupType.Single)
+            return MinSelections.HasValue ? Math.Clamp(MinSelections.Value, 0, 1) : (IsRequired ? 1 : 0);
+
+        return MinSelections ?? 0;
+    }
+
+    private int? GetEffectiveMax()
+    {
+        if (Type == EAditionalGroupType.Single)
+            return 1;
+
+        return MaxSelections;
+    }
+
+    private int SelectedCount() => Options.Count(o => o.IsSelected);
+}
+
+public partial class PaymentEntry : ObservableObject
+{
+    [ObservableProperty]
+    private string _method = "Pix";
+
+    [ObservableProperty]
+    private decimal _amount;
+}
+
+public record PaymentBreakdownItem(string Method, decimal Amount);

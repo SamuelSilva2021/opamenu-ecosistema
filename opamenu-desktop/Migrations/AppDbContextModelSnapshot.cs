@@ -3,7 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using OpaMenu.Desktop.Models;
+using OpaMenu.Desktop.Models.Data;
 
 #nullable disable
 
@@ -58,6 +58,9 @@ namespace OpaMenu.Desktop.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("PaymentBreakdownJson")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("PaymentMethod")
                         .HasColumnType("TEXT");
 
@@ -95,7 +98,13 @@ namespace OpaMenu.Desktop.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("AditionalsJson")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("LocalOrderId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Notes")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("ProductId")

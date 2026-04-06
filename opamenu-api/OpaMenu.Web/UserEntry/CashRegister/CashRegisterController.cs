@@ -19,6 +19,13 @@ public class CashRegisterController(ICashRegisterService cashRegisterService) : 
         return BuildResponse(await _cashRegisterService.GetActiveShiftAsync());
     }
 
+    [HttpGet("active/summary")]
+    [MapPermission(MODULE_PDV, OPERATION_SELECT)]
+    public async Task<ActionResult> GetActiveShiftSummary()
+    {
+        return BuildResponse(await _cashRegisterService.GetActiveShiftSummaryAsync());
+    }
+
     [HttpPost("open")]
     [MapPermission(MODULE_PDV, OPERATION_INSERT)]
     public async Task<ActionResult> OpenShift([FromBody] OpenCashShiftRequestDto request)
@@ -31,6 +38,13 @@ public class CashRegisterController(ICashRegisterService cashRegisterService) : 
     public async Task<ActionResult> CloseShift([FromBody] CloseCashShiftRequestDto request)
     {
         return BuildResponse(await _cashRegisterService.CloseShiftAsync(request));
+    }
+
+    [HttpPost("close/summary")]
+    [MapPermission(MODULE_PDV, OPERATION_INSERT)]
+    public async Task<ActionResult> CloseShiftWithSummary([FromBody] CloseCashShiftRequestDto request)
+    {
+        return BuildResponse(await _cashRegisterService.CloseShiftWithSummaryAsync(request));
     }
 
     [HttpPost("movement")]

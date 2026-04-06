@@ -550,7 +550,8 @@ public class OrderService(
                                     Type = ECashMovementType.OrderPayment,
                                     Amount = createdOrder.Total,
                                     Description = $"Pagamento do pedido #{createdOrder.OrderNumber}",
-                                    PaymentMethod = requestDto.PaymentMethod.Value
+                                    PaymentMethod = requestDto.PaymentMethod.Value,
+                                    OrderId = createdOrder.Id
                                 });
                             }
                             catch (Exception cashEx)

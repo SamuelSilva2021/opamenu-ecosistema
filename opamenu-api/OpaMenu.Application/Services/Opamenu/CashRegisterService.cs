@@ -47,6 +47,23 @@ public class CashRegisterService(
         }
     }
 
+    public async Task<ResponseDTO<CashShiftSummaryResponseDto>> GetActiveShiftSummaryAsync()
+    {
+        try
+        {
+            var (tenantId, userId) = GetContext();
+            var shift = await _cashRegisterRepository.GetActiveShiftAsync(userId, tenantId);
+            if (shift == null) return StaticResponseBuilder<CashShiftSummaryResponseDto>.BuildOk(null!);
+
+            return StaticResponseBuilder<CashShiftSummaryResponseDto>.BuildOk(BuildSummary(shift));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao obter resumo do caixa ativo");
+            return StaticResponseBuilder<CashShiftSummaryResponseDto>.BuildError("Erro ao obter resumo do caixa");
+        }
+    }
+
     public async Task<ResponseDTO<CashShiftResponseDto>> OpenShiftAsync(OpenCashShiftRequestDto request)
     {
         try
@@ -101,6 +118,14 @@ public class CashRegisterService(
             var shift = await _cashRegisterRepository.GetActiveShiftAsync(userId, tenantId);
             if (shift == null) return StaticResponseBuilder<CashShiftResponseDto>.BuildError("Não há caixa aberto para fechar.");
 
+            var expectedCashBalance = shift.ExpectedBalance;
+            var discrepancy = request.ClosingBalance - expectedCashBalance;
+            var discrepancyRequiresJustification = Math.Abs(discrepancy) >= 0.01m;
+            var justification = request.DiscrepancyJustification?.Trim();
+
+            if (discrepancyRequiresJustification && string.IsNullOrWhiteSpace(justification))
+                return StaticResponseBuilder<CashShiftResponseDto>.BuildError("Informe uma justificativa para a diferença no fechamento.");
+
             shift.Status = ECashShiftStatus.Closed;
             shift.ClosedAt = DateTime.UtcNow;
             shift.ClosingBalance = request.ClosingBalance;
@@ -116,7 +141,7 @@ public class CashRegisterService(
                 TenantId = tenantId,
                 Type = ECashMovementType.Closing,
                 Amount = request.ClosingBalance,
-                Description = "Fechamento de caixa",
+                Description = BuildClosingDescription(expectedCashBalance, discrepancy, justification),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             });
@@ -130,6 +155,64 @@ public class CashRegisterService(
         }
     }
 
+    public async Task<ResponseDTO<CashShiftCloseSummaryResponseDto>> CloseShiftWithSummaryAsync(CloseCashShiftRequestDto request)
+    {
+        try
+        {
+            var (tenantId, userId) = GetContext();
+            var shift = await _cashRegisterRepository.GetActiveShiftAsync(userId, tenantId);
+            if (shift == null) return StaticResponseBuilder<CashShiftCloseSummaryResponseDto>.BuildError("Não há caixa aberto para fechar.");
+
+            var expectedCashBalance = shift.ExpectedBalance;
+            var discrepancy = request.ClosingBalance - expectedCashBalance;
+            var discrepancyRequiresJustification = Math.Abs(discrepancy) >= 0.01m;
+            var justification = request.DiscrepancyJustification?.Trim();
+
+            if (discrepancyRequiresJustification && string.IsNullOrWhiteSpace(justification))
+                return StaticResponseBuilder<CashShiftCloseSummaryResponseDto>.BuildError("Informe uma justificativa para a diferença no fechamento.");
+
+            shift.Status = ECashShiftStatus.Closed;
+            shift.ClosedAt = DateTime.UtcNow;
+            shift.ClosingBalance = request.ClosingBalance;
+            shift.UpdatedAt = DateTime.UtcNow;
+
+            await _cashRegisterRepository.UpdateAsync(shift);
+
+            await _cashRegisterRepository.AddMovementAsync(new CashMovementEntity
+            {
+                Id = Guid.NewGuid(),
+                ShiftId = shift.Id,
+                TenantId = tenantId,
+                Type = ECashMovementType.Closing,
+                Amount = request.ClosingBalance,
+                Description = BuildClosingDescription(expectedCashBalance, discrepancy, justification),
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            });
+
+            var summary = BuildSummary(shift);
+            var result = new CashShiftCloseSummaryResponseDto
+            {
+                Shift = summary.Shift,
+                TotalSales = summary.TotalSales,
+                TotalInflows = summary.TotalInflows,
+                TotalOutflows = summary.TotalOutflows,
+                SalesByPaymentMethod = summary.SalesByPaymentMethod,
+                ClosingBalance = request.ClosingBalance,
+                ExpectedCashBalance = expectedCashBalance,
+                Discrepancy = discrepancy,
+                DiscrepancyJustification = justification
+            };
+
+            return StaticResponseBuilder<CashShiftCloseSummaryResponseDto>.BuildOk(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao fechar caixa (resumo)");
+            return StaticResponseBuilder<CashShiftCloseSummaryResponseDto>.BuildError("Erro ao fechar caixa");
+        }
+    }
+
     public async Task<ResponseDTO<CashMovementResponseDto>> AddMovementAsync(AddCashMovementRequestDto request)
     {
         try
@@ -137,6 +220,99 @@ public class CashRegisterService(
             var (tenantId, userId) = GetContext();
             var shift = await _cashRegisterRepository.GetActiveShiftAsync(userId, tenantId);
             if (shift == null) return StaticResponseBuilder<CashMovementResponseDto>.BuildError("Não há caixa aberto para registrar movimentação.");
+
+            if (request.Amount <= 0m)
+                return StaticResponseBuilder<CashMovementResponseDto>.BuildError("Informe um valor maior que zero.");
+
+            if (request.Type is ECashMovementType.Opening or ECashMovementType.Closing)
+                return StaticResponseBuilder<CashMovementResponseDto>.BuildError("Tipo de movimentação inválido.");
+
+            if (request.Type is ECashMovementType.OrderPayment or ECashMovementType.Reversed)
+            {
+                if (!request.OrderId.HasValue)
+                    return StaticResponseBuilder<CashMovementResponseDto>.BuildError("OrderId é obrigatório para este tipo de movimentação.");
+
+                if (!request.PaymentMethod.HasValue)
+                    return StaticResponseBuilder<CashMovementResponseDto>.BuildError("PaymentMethod é obrigatório para este tipo de movimentação.");
+            }
+
+            if (request.Type == ECashMovementType.OrderPayment)
+            {
+                var orderId = request.OrderId!.Value;
+                var existing = await _cashRegisterRepository.GetMovementByOrderAsync(tenantId, shift.Id, orderId, ECashMovementType.OrderPayment);
+                if (existing != null)
+                    return StaticResponseBuilder<CashMovementResponseDto>.BuildOk(MapMovementToDto(existing));
+
+                var order = await _orderRepository.GetByIdAsync(orderId, tenantId);
+                if (order == null)
+                    return StaticResponseBuilder<CashMovementResponseDto>.BuildError("Pedido não encontrado para registrar pagamento.");
+
+                if (Math.Abs(order.Total - request.Amount) >= 0.01m)
+                    return StaticResponseBuilder<CashMovementResponseDto>.BuildError("Valor do pagamento difere do total do pedido.");
+
+                var paymentMovement = new CashMovementEntity
+                {
+                    Id = Guid.NewGuid(),
+                    ShiftId = shift.Id,
+                    TenantId = tenantId,
+                    Type = ECashMovementType.OrderPayment,
+                    Amount = order.Total,
+                    Description = $"Pagamento do pedido #{order.OrderNumber}",
+                    PaymentMethod = request.PaymentMethod,
+                    OrderId = orderId,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                await _cashRegisterRepository.AddMovementAsync(paymentMovement);
+
+                if (request.PaymentMethod == EPaymentMethod.Cash)
+                {
+                    shift.ExpectedBalance += order.Total;
+                    await _cashRegisterRepository.UpdateAsync(shift);
+                }
+
+                return StaticResponseBuilder<CashMovementResponseDto>.BuildOk(MapMovementToDto(paymentMovement));
+            }
+
+            if (request.Type == ECashMovementType.Reversed)
+            {
+                var orderId = request.OrderId!.Value;
+                var reversedExisting = await _cashRegisterRepository.GetMovementByOrderAsync(tenantId, shift.Id, orderId, ECashMovementType.Reversed);
+                if (reversedExisting != null)
+                    return StaticResponseBuilder<CashMovementResponseDto>.BuildOk(MapMovementToDto(reversedExisting));
+
+                var originalPayment = await _cashRegisterRepository.GetMovementByOrderAsync(tenantId, shift.Id, orderId, ECashMovementType.OrderPayment);
+                if (originalPayment == null)
+                    return StaticResponseBuilder<CashMovementResponseDto>.BuildError("Não existe pagamento registrado no caixa para estornar.");
+
+                if (Math.Abs(originalPayment.Amount - request.Amount) >= 0.01m)
+                    return StaticResponseBuilder<CashMovementResponseDto>.BuildError("Valor do estorno difere do pagamento registrado.");
+
+                var reverseMovement = new CashMovementEntity
+                {
+                    Id = Guid.NewGuid(),
+                    ShiftId = shift.Id,
+                    TenantId = tenantId,
+                    Type = ECashMovementType.Reversed,
+                    Amount = originalPayment.Amount,
+                    Description = $"Estorno do pedido #{request.OrderId}",
+                    PaymentMethod = request.PaymentMethod,
+                    OrderId = orderId,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                await _cashRegisterRepository.AddMovementAsync(reverseMovement);
+
+                if (request.PaymentMethod == EPaymentMethod.Cash)
+                {
+                    shift.ExpectedBalance -= originalPayment.Amount;
+                    await _cashRegisterRepository.UpdateAsync(shift);
+                }
+
+                return StaticResponseBuilder<CashMovementResponseDto>.BuildOk(MapMovementToDto(reverseMovement));
+            }
 
             var movement = new CashMovementEntity
             {
@@ -147,6 +323,7 @@ public class CashRegisterService(
                 Amount = request.Amount,
                 Description = request.Description,
                 PaymentMethod = request.PaymentMethod,
+                OrderId = request.OrderId,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -154,10 +331,13 @@ public class CashRegisterService(
             await _cashRegisterRepository.AddMovementAsync(movement);
 
             // Atualizar saldo esperado no shift
-            if (request.Type == ECashMovementType.Inbound || request.Type == ECashMovementType.OrderPayment)
-                shift.ExpectedBalance += request.Amount;
-            else if (request.Type == ECashMovementType.Outbound || request.Type == ECashMovementType.Reversed)
-                shift.ExpectedBalance -= request.Amount;
+            if (AffectsCashDrawer(request))
+            {
+                if (request.Type == ECashMovementType.Inbound || request.Type == ECashMovementType.OrderPayment)
+                    shift.ExpectedBalance += request.Amount;
+                else if (request.Type == ECashMovementType.Outbound || request.Type == ECashMovementType.Reversed)
+                    shift.ExpectedBalance -= request.Amount;
+            }
 
             await _cashRegisterRepository.UpdateAsync(shift);
 
@@ -294,5 +474,86 @@ public class CashRegisterService(
             OrderId = entity.OrderId,
             CreatedAt = entity.CreatedAt
         };
+    }
+
+    private CashShiftSummaryResponseDto BuildSummary(CashShiftEntity shift)
+    {
+        var totalsByMethod = new Dictionary<EPaymentMethod, (decimal total, int count)>();
+        decimal totalSales = 0m;
+        decimal totalInflows = 0m;
+        decimal totalOutflows = 0m;
+
+        foreach (var movement in shift.Movements ?? Array.Empty<CashMovementEntity>())
+        {
+            switch (movement.Type)
+            {
+                case ECashMovementType.OrderPayment:
+                    totalSales += movement.Amount;
+                    if (movement.PaymentMethod.HasValue)
+                    {
+                        var method = movement.PaymentMethod.Value;
+                        if (!totalsByMethod.TryGetValue(method, out var current))
+                            current = (0m, 0);
+
+                        totalsByMethod[method] = (current.total + movement.Amount, current.count + 1);
+                    }
+                    break;
+                case ECashMovementType.Inbound:
+                    totalInflows += movement.Amount;
+                    break;
+                case ECashMovementType.Outbound:
+                    totalOutflows += movement.Amount;
+                    break;
+            }
+        }
+
+        return new CashShiftSummaryResponseDto
+        {
+            Shift = MapToDto(shift),
+            TotalSales = totalSales,
+            TotalInflows = totalInflows,
+            TotalOutflows = totalOutflows,
+            SalesByPaymentMethod = totalsByMethod.Select(p => new PaymentMethodSummaryDto
+            {
+                PaymentMethod = p.Key,
+                PaymentMethodName = GetPaymentMethodDisplayName(p.Key),
+                TotalAmount = p.Value.total,
+                Count = p.Value.count
+            }).ToList()
+        };
+    }
+
+    private static string GetPaymentMethodDisplayName(EPaymentMethod method)
+    {
+        return method switch
+        {
+            EPaymentMethod.Cash => "Dinheiro",
+            EPaymentMethod.Pix => "Pix",
+            EPaymentMethod.CreditCard => "Cartão de Crédito",
+            EPaymentMethod.DebitCard => "Cartão de Débito",
+            EPaymentMethod.BankTransfer => "Transferência",
+            EPaymentMethod.Ticket => "Ticket",
+            _ => method.ToString()
+        };
+    }
+
+    private static bool AffectsCashDrawer(AddCashMovementRequestDto request)
+    {
+        return request.Type switch
+        {
+            ECashMovementType.Inbound => true,
+            ECashMovementType.Outbound => true,
+            ECashMovementType.OrderPayment => request.PaymentMethod == EPaymentMethod.Cash,
+            ECashMovementType.Reversed => request.PaymentMethod == EPaymentMethod.Cash,
+            _ => false
+        };
+    }
+
+    private static string BuildClosingDescription(decimal expectedCashBalance, decimal discrepancy, string? justification)
+    {
+        if (string.IsNullOrWhiteSpace(justification))
+            return $"Fechamento de caixa | Esperado: {expectedCashBalance:0.00} | Diferença: {discrepancy:0.00}";
+
+        return $"Fechamento de caixa | Esperado: {expectedCashBalance:0.00} | Diferença: {discrepancy:0.00} | Justificativa: {justification}";
     }
 }

@@ -69,6 +69,44 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Modal de Seleção de Adicionais -->
+                <Border Width="500" Background="{StaticResource OpaMenuSurfaceBrush}" CornerRadius="12" Padding="24"
+                        Visibility="{Binding IsAddonSelectionModalOpen, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <TextBlock Text="{Binding ProductToConfigure.Name, StringFormat='Personalizar: {0}'}" FontSize="{StaticResource OpaMenuFontSizeH4}" FontWeight="Bold" Margin="0,0,0,24"/>
+
+                        <ScrollViewer MaxHeight="420" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding AddonGroups}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="0,0,0,16">
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                            <TextBlock Text="{Binding Description}" Opacity="0.75" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                            <ItemsControl ItemsSource="{Binding Options}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <CheckBox Content="{Binding DisplayText}" IsChecked="{Binding IsSelected}" Margin="0,2"/>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+
+                        <TextBox Style="{StaticResource OpaMenuTextBox}" 
+                                 materialDesign:HintAssist.Hint="Observação do Item" 
+                                 Text="{Binding ItemNotes, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,16,0,16"/>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Style="{StaticResource MaterialDesignFlatButton}" Content="CANCELAR" Command="{Binding CloseModalsCommand}" Margin="0,0,8,0" />
+                            <Button Style="{StaticResource OpaMenuPrimaryButton}" Content="ADICIONAR" Command="{Binding AddToCartFromModalCommand}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
                 <!-- Modal de Checkout -->
                 <Border Width="500" Background="{StaticResource OpaMenuSurfaceBrush}" CornerRadius="12" Padding="24"
                         Visibility="{Binding IsCheckoutModalOpen, Converter={StaticResource BoolToVis}}">
@@ -77,22 +115,53 @@
                         
                         <TextBlock Text="{Binding CartTotal, StringFormat='Total a Pagar: {0:C}'}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource OpaMenuPrimaryBrush}" Margin="0,0,0,16"/>
 
-                        <ComboBox materialDesign:HintAssist.Hint="Forma de Pagamento" Style="{StaticResource MaterialDesignFloatingHintComboBox}" Margin="0,0,0,16" SelectedValuePath="Content" SelectedValue="{Binding PaymentMethod}">
-                            <ComboBoxItem Content="Dinheiro"/>
-                            <ComboBoxItem Content="Pix"/>
-                            <ComboBoxItem Content="Cartão de Crédito"/>
-                            <ComboBoxItem Content="Cartão de Débito"/>
-                        </ComboBox>
+                        <ScrollViewer MaxHeight="220" VerticalScrollBarVisibility="Auto" Margin="0,0,0,12">
+                            <ItemsControl ItemsSource="{Binding Payments}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,0,0,8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="140"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
 
-                        <TextBox Style="{StaticResource OpaMenuTextBox}" materialDesign:HintAssist.Hint="Valor Recebido (R$)" Text="{Binding AmountPaid, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,16">
-                            <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="TextChanged">
-                                    <i:InvokeCommandAction Command="{Binding CalculateChangeCommand}"/>
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers>
-                        </TextBox>
+                                            <ComboBox Grid.Column="0"
+                                                      ItemsSource="{Binding DataContext.PaymentMethodOptions, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                      SelectedItem="{Binding Method, UpdateSourceTrigger=PropertyChanged}"
+                                                      Style="{StaticResource MaterialDesignFloatingHintComboBox}"
+                                                      materialDesign:HintAssist.Hint="Forma"
+                                                      Margin="0,0,8,0" />
 
-                        <TextBlock Text="{Binding ChangeAmount, StringFormat='Troco: {0:C}'}" FontSize="18" FontWeight="Medium" Margin="0,0,0,24" Foreground="#4CAF50"/>
+                                            <TextBox Grid.Column="1"
+                                                     Style="{StaticResource OpaMenuTextBox}"
+                                                     materialDesign:HintAssist.Hint="Valor (R$)"
+                                                     Text="{Binding Amount, UpdateSourceTrigger=PropertyChanged}"
+                                                     Margin="0,0,8,0" />
+
+                                            <Button Grid.Column="2"
+                                                    Style="{StaticResource MaterialDesignIconButton}"
+                                                    Command="{Binding DataContext.RemovePaymentCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}"
+                                                    ToolTip="Remover">
+                                                <materialDesign:PackIcon Kind="Close" />
+                                            </Button>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+
+                        <Button Style="{StaticResource OpaMenuOutlineButton}"
+                                Content="Adicionar pagamento"
+                                Command="{Binding AddPaymentCommand}"
+                                Margin="0,0,0,16"/>
+
+                        <StackPanel Margin="0,0,0,24">
+                            <TextBlock Text="{Binding TotalPaid, StringFormat='Total pago: {0:C}'}" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                            <TextBlock Text="{Binding RemainingAmount, StringFormat='Restante: {0:C}'}" Margin="0,0,0,4"/>
+                            <TextBlock Text="{Binding ChangeAmount, StringFormat='Troco: {0:C}'}" Foreground="#4CAF50" FontWeight="SemiBold"/>
+                        </StackPanel>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                             <Button Style="{StaticResource MaterialDesignFlatButton}" Content="CANCELAR" Command="{Binding CloseModalsCommand}" Margin="0,0,8,0" />
@@ -104,7 +173,7 @@
                 <Border Width="420" Background="{StaticResource OpaMenuSurfaceBrush}" CornerRadius="12" Padding="24"
                         Visibility="{Binding IsCashModalOpen, Converter={StaticResource BoolToVis}}">
                     <StackPanel>
-                        <TextBlock Text="Caixa" FontSize="{StaticResource OpaMenuFontSizeH4}" FontWeight="Bold" Margin="0,0,0,24"/>
+                        <TextBlock Text="{Binding CashModalTitle}" FontSize="{StaticResource OpaMenuFontSizeH4}" FontWeight="Bold" Margin="0,0,0,24"/>
 
                         <StackPanel Visibility="{Binding IsOpeningCashShift, Converter={StaticResource BoolToVis}}">
                             <TextBox Style="{StaticResource OpaMenuTextBox}"
@@ -114,12 +183,60 @@
                         </StackPanel>
 
                         <StackPanel Visibility="{Binding IsClosingCashShift, Converter={StaticResource BoolToVis}}">
-                            <TextBlock Text="{Binding ExpectedCashBalance, StringFormat='Saldo esperado: {0:C}'}"
-                                       FontWeight="SemiBold"
-                                       Margin="0,0,0,8"/>
+                            <TextBlock Text="Resumo deste caixa" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                            <ItemsControl ItemsSource="{Binding ClosingSalesByPaymentMethod}" Margin="0,0,0,8">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <DockPanel LastChildFill="False" Margin="0,2">
+                                            <TextBlock Text="{Binding PaymentMethodName}" Width="160"/>
+                                            <TextBlock Text="{Binding TotalAmount, StringFormat={}{0:C}}"/>
+                                        </DockPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <TextBlock Text="Vendas:" Width="160"/>
+                                <TextBlock Text="{Binding ClosingTotalSales, StringFormat={}{0:C}}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <TextBlock Text="Entradas:" Width="160"/>
+                                <TextBlock Text="{Binding ClosingTotalInflows, StringFormat={}{0:C}}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <TextBlock Text="Saídas:" Width="160"/>
+                                <TextBlock Text="{Binding ClosingTotalOutflows, StringFormat={}{0:C}}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                <TextBlock Text="Saldo esperado:" Width="160"/>
+                                <TextBlock Text="{Binding ExpectedCashBalance, StringFormat={}{0:C}}" FontWeight="SemiBold"/>
+                            </StackPanel>
+
                             <TextBox Style="{StaticResource OpaMenuTextBox}"
                                      materialDesign:HintAssist.Hint="Saldo de fechamento (R$)"
                                      Text="{Binding ClosingCashBalance, UpdateSourceTrigger=PropertyChanged}"
+                                     Margin="0,0,0,16"/>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                <TextBlock Text="Diferença:" Width="160"/>
+                                <TextBlock Text="{Binding ClosingDiscrepancy, StringFormat={}{0:C}}" FontWeight="SemiBold"/>
+                            </StackPanel>
+
+                            <TextBox Style="{StaticResource OpaMenuTextBox}"
+                                     materialDesign:HintAssist.Hint="Justificativa (obrigatória se houver diferença)"
+                                     Text="{Binding ClosingDiscrepancyJustification, UpdateSourceTrigger=PropertyChanged}"
+                                     Visibility="{Binding HasClosingDiscrepancy, Converter={StaticResource BoolToVis}}"
+                                     Margin="0,0,0,16"/>
+                        </StackPanel>
+
+                        <StackPanel Visibility="{Binding IsCashMovementModal, Converter={StaticResource BoolToVis}}">
+                            <TextBox Style="{StaticResource OpaMenuTextBox}"
+                                     materialDesign:HintAssist.Hint="Valor (R$)"
+                                     Text="{Binding CashMovementAmount, UpdateSourceTrigger=PropertyChanged}"
+                                     Margin="0,0,0,16"/>
+                            <TextBox Style="{StaticResource OpaMenuTextBox}"
+                                     materialDesign:HintAssist.Hint="Descrição"
+                                     Text="{Binding CashMovementDescription, UpdateSourceTrigger=PropertyChanged}"
                                      Margin="0,0,0,16"/>
                         </StackPanel>
 
@@ -163,6 +280,18 @@
                         <Button Style="{StaticResource MaterialDesignFlatButton}"
                                 Content="Fechar Caixa"
                                 Command="{Binding OpenCloseCashShiftModalCommand}"
+                                Visibility="{Binding IsCashShiftOpen, Converter={StaticResource BoolToVis}}"
+                                Foreground="White"
+                                Margin="0,0,8,0"/>
+                        <Button Style="{StaticResource MaterialDesignFlatButton}"
+                                Content="Suprimento"
+                                Command="{Binding OpenCashInboundMovementModalCommand}"
+                                Visibility="{Binding IsCashShiftOpen, Converter={StaticResource BoolToVis}}"
+                                Foreground="White"
+                                Margin="0,0,8,0"/>
+                        <Button Style="{StaticResource MaterialDesignFlatButton}"
+                                Content="Sangria"
+                                Command="{Binding OpenCashOutboundMovementModalCommand}"
                                 Visibility="{Binding IsCashShiftOpen, Converter={StaticResource BoolToVis}}"
                                 Foreground="White"
                                 Margin="0,0,8,0"/>

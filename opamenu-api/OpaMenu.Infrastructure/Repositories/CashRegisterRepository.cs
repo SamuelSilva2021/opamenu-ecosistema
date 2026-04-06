@@ -40,4 +40,15 @@ public class CashRegisterRepository(OpamenuDbContext context) : OpamenuRepositor
         await _context.Set<CashMovementEntity>().AddAsync(movement);
         await _context.SaveChangesAsync();
     }
+
+    public async Task<CashMovementEntity?> GetMovementByOrderAsync(Guid tenantId, Guid shiftId, Guid orderId, ECashMovementType type)
+    {
+        return await _context.Set<CashMovementEntity>()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(m =>
+                m.TenantId == tenantId &&
+                m.ShiftId == shiftId &&
+                m.OrderId == orderId &&
+                m.Type == type);
+    }
 }

@@ -22,20 +22,25 @@ Este documento detalha o progresso atual do desenvolvimento da aplicação WPF (
 
 ---
 
-## 🚀 Fase 2: Checkout e Finalização de Venda (Próximos Passos Imediatos)
-*O foco agora é conseguir concluir uma venda no balcão e enviá-la para o banco de dados.*
+## ✅ Fase 2: Checkout e Finalização de Venda (Concluída)
+*Foco: concluir uma venda no balcão, com personalização, pagamentos e persistência offline.*
 
-- [ ] **1. Identificação do Cliente:**
-  - Input para CPF na Nota e Nome do Cliente (para chamar o pedido no balcão).
-- [ ] **2. Personalização do Produto:**
-  - Ao clicar em um produto, se ele possuir "Adicionais" (ex: Ponto da carne, Borda recheada), abrir um modal para seleção.
-  - Adicionar campo de "Observações" (ex: Sem cebola).
-- [ ] **3. Tela/Modal de Checkout (Pagamento):**
+- [x] **1. Identificação do Cliente:**
+  - Inputs: número da mesa (opcional), nome do cliente (para chamar) e CPF na nota (opcional).
+  - Observações do pedido no fechamento.
+- [x] **2. Personalização do Produto:**
+  - Modal de adicionais ao clicar em produtos que possuem grupos de adicionais.
+  - Validação de regras por grupo: obrigatório, `minSelections`/`maxSelections`, e comportamento Single/Multiple.
+  - Suporte a overrides por vínculo produto↔grupo (`minSelectionsOverride`/`maxSelectionsOverride` e `isRequired` do vínculo).
+  - Campo de observação por item.
+- [x] **3. Tela/Modal de Checkout (Pagamento):**
   - Múltiplas formas de pagamento (Dinheiro, Pix, Cartão de Crédito/Débito).
-  - Cálculo de Troco dinâmico quando a forma for Dinheiro.
-  - Pagamento parcial (ex: Conta R$ 100 -> R$ 50 no PIX, R$ 50 no Cartão).
-- [ ] **4. Geração do Pedido (SQLite):**
-  - Salvar o pedido com status `PendingSync` na tabela `LocalOrder` do banco SQLite.
+  - Pagamento parcial (ex: R$ 50 no Pix + R$ 50 no Cartão).
+  - Troco somente quando existir pagamento em dinheiro.
+  - Persistência do detalhamento de pagamentos (breakdown) no pedido offline.
+- [x] **4. Geração do Pedido (SQLite):**
+  - Salva pedido com status `PendingSync` (offline-first) no SQLite.
+  - Salva itens com observação e adicionais (serializados) para rastreabilidade.
 
 ---
 

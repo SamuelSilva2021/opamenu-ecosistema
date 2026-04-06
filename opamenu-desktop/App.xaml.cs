@@ -1,11 +1,13 @@
-﻿﻿using System;
+﻿using System;
 using System.Windows;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using OpaMenu.Desktop.Models;
+using OpaMenu.Desktop.Models.Data;
 using OpaMenu.Desktop.Services;
+using OpaMenu.Desktop.Services.Implementation;
+using OpaMenu.Desktop.Services.Interfaces;
 using OpaMenu.Desktop.ViewModels;
 using OpaMenu.Desktop.Views;
 
