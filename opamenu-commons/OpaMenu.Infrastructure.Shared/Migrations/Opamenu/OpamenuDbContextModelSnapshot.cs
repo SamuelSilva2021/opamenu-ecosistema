@@ -898,6 +898,10 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .HasColumnType("decimal(10,2)")
                         .HasColumnName("subtotal");
 
+                    b.Property<Guid?>("TabId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tab_id");
+
                     b.Property<Guid?>("TableId")
                         .HasColumnType("uuid")
                         .HasColumnName("table_id");
@@ -931,6 +935,8 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.HasIndex("OrderType");
 
                     b.HasIndex("Status");
+
+                    b.HasIndex("TabId");
 
                     b.HasIndex("TableId");
 
@@ -1762,6 +1768,56 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.ToTable("product_images");
                 });
 
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.TabEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("ClosedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("closed_at");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTime>("OpenedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("opened_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TableId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("table_id");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TableId");
+
+                    b.HasIndex("TenantId", "TableId", "Status");
+
+                    b.ToTable("tabs");
+                });
+
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.TableEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1998,6 +2054,64 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.ToTable("tenant_payment_methods");
                 });
 
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.TenantWhatsAppConfigEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ApiKey")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("BaseUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("InstanceId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("OrderStatusLookupEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<bool>("WelcomeBotEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("WelcomeMessage")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .IsUnique();
+
+                    b.ToTable("TenantWhatsAppConfigEntity");
+                });
+
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.AditionalEntity", b =>
                 {
                     b.HasOne("OpaMenu.Infrastructure.Shared.Entities.Opamenu.AditionalGroupEntity", "AditionalGroup")
@@ -2101,6 +2215,11 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                         .HasForeignKey("DriverId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.Opamenu.TabEntity", "Tab")
+                        .WithMany("Orders")
+                        .HasForeignKey("TabId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("OpaMenu.Infrastructure.Shared.Entities.Opamenu.TableEntity", "Table")
                         .WithMany("Orders")
                         .HasForeignKey("TableId")
@@ -2109,6 +2228,8 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.Navigation("Customer");
 
                     b.Navigation("Driver");
+
+                    b.Navigation("Tab");
 
                     b.Navigation("Table");
                 });
@@ -2272,6 +2393,17 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.TabEntity", b =>
+                {
+                    b.HasOne("OpaMenu.Infrastructure.Shared.Entities.Opamenu.TableEntity", "Table")
+                        .WithMany("Tabs")
+                        .HasForeignKey("TableId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Table");
+                });
+
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.TenantCustomerEntity", b =>
                 {
                     b.HasOne("OpaMenu.Infrastructure.Shared.Entities.Opamenu.CustomerEntity", "Customer")
@@ -2373,9 +2505,16 @@ namespace OpaMenu.Infrastructure.Shared.Migrations.Opamenu
                     b.Navigation("Images");
                 });
 
+            modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.TabEntity", b =>
+                {
+                    b.Navigation("Orders");
+                });
+
             modelBuilder.Entity("OpaMenu.Infrastructure.Shared.Entities.Opamenu.TableEntity", b =>
                 {
                     b.Navigation("Orders");
+
+                    b.Navigation("Tabs");
                 });
 #pragma warning restore 612, 618
         }

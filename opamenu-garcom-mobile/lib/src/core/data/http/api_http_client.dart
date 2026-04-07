@@ -36,6 +36,45 @@ class ApiHttpClient implements ApiHttpClientContract {
     );
   }
 
+  @override
+  Future<Result<ApiHttpResponse>> postJsonList(
+    Uri uri, {
+    required List<Object?> body,
+    Map<String, String>? headers,
+  }) {
+    return _send(
+      'POST',
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        ...?headers,
+      },
+      body: jsonEncode(body),
+    );
+  }
+
+  @override
+  Future<Result<ApiHttpResponse>> putJson(
+    Uri uri, {
+    required Map<String, Object?> body,
+    Map<String, String>? headers,
+  }) {
+    return _send(
+      'PUT',
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        ...?headers,
+      },
+      body: jsonEncode(body),
+    );
+  }
+
+  @override
+  Future<Result<ApiHttpResponse>> delete(Uri uri, {Map<String, String>? headers}) {
+    return _send('DELETE', uri, headers: headers);
+  }
+
   Future<Result<ApiHttpResponse>> _send(
     String method,
     Uri uri, {

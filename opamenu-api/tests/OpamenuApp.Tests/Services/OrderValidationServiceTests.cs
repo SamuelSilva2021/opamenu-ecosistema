@@ -1,4 +1,4 @@
-﻿using Xunit;
+using Xunit;
 using Moq;
 using Microsoft.Extensions.Logging;
 using OpaMenu.Application.Common.Models;
@@ -133,7 +133,7 @@ namespace OpamenuApp.Tests.Services
 
             // Assert
             Assert.False(result.Success);
-            Assert.Equal("Produto com ID 999 não encontrado.", result.Error);
+            Assert.Equal($"Produto com ID {productId} não encontrado.", result.Error);
         }
 
         [Fact]
@@ -250,7 +250,7 @@ namespace OpamenuApp.Tests.Services
             _mockOrderRepository.Setup(x => x.GetByIdAsync(orderId, _tenantId)).ReturnsAsync(order);
 
             // Act
-            var result = await _validationService.ValidateStatusChangeAsync(orderId, EOrderStatus.Preparing);
+            var result = await _validationService.ValidateStatusChangeAsync(orderId, EOrderStatus.Ready);
 
             // Assert
             Assert.True(result.Success);
@@ -294,4 +294,3 @@ namespace OpamenuApp.Tests.Services
         }
     }
 }
-

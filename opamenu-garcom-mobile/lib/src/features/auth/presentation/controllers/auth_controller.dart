@@ -10,6 +10,7 @@ import '../../../../app/auth_di.dart';
 
 class AuthController extends AsyncNotifier<AuthSessionEntity?> {
   Object? _activeSignInRequest;
+  Future<AuthTokensEntity?>? _refreshInFlight;
 
   @override
   Future<AuthSessionEntity?> build() async {
@@ -70,8 +71,48 @@ class AuthController extends AsyncNotifier<AuthSessionEntity?> {
     state = AsyncData(AuthSessionEntity(tokens: tokens, user: user));
   }
 
+  Future<AuthTokensEntity?> refreshSession() async {
+    final session = state.asData?.value;
+    if (session == null) return null;
+
+    final inFlight = _refreshInFlight;
+    if (inFlight != null) return inFlight;
+
+    final refreshToken = session.tokens.refreshToken.trim();
+    if (refreshToken.isEmpty) {
+      signOut();
+      return null;
+    }
+
+    final future = _refreshTokens(refreshToken: refreshToken, user: session.user);
+    _refreshInFlight = future;
+    try {
+      return await future;
+    } finally {
+      if (_refreshInFlight == future) _refreshInFlight = null;
+    }
+  }
+
+  Future<AuthTokensEntity?> _refreshTokens({
+    required String refreshToken,
+    required UserInfoEntity user,
+  }) async {
+    final useCase = ref.read(AuthDi.refreshTokenUseCaseProvider);
+    final result = await useCase(refreshToken: refreshToken);
+
+    if (result is FailureResult<AuthTokensEntity>) {
+      signOut();
+      return null;
+    }
+
+    final tokens = (result as SuccessResult<AuthTokensEntity>).value;
+    state = AsyncData(AuthSessionEntity(tokens: tokens, user: user));
+    return tokens;
+  }
+
   void signOut() {
     _activeSignInRequest = null;
+    _refreshInFlight = null;
     state = const AsyncData(null);
   }
 }

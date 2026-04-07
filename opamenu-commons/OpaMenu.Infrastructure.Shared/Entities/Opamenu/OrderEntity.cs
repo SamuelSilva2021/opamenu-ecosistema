@@ -66,6 +66,11 @@ public class OrderEntity : BaseEntity
 
     public virtual TableEntity? Table { get; set; }
 
+    [Column("tab_id")]
+    public Guid? TabId { get; set; }
+
+    public virtual TabEntity? Tab { get; set; }
+
     [Column("driver_id")]
     public Guid? DriverId { get; set; }
 

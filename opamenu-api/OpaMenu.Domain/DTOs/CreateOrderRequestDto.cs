@@ -27,6 +27,8 @@ namespace OpaMenu.Domain.DTOs
 
         public string? TableId { get; set; }
 
+        public string? TabId { get; set; }
+
         [StringLength(1000)]
         public string? Notes { get; set; }
 

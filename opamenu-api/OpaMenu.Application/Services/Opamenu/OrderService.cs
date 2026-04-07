@@ -35,6 +35,7 @@ public class OrderService(
     ICustomerRepository customerRepository,
     ITenantRepository tenantRepository,
     ITableRepository tableRepository,
+    ITabRepository tabRepository,
     ILoyaltyService loyaltyService,
     ILoyaltyProgramRepository loyaltyProgramRepository,
     ICustomerLoyaltyRepository customerLoyaltyRepository,
@@ -53,6 +54,7 @@ public class OrderService(
     private readonly ICustomerRepository _customerRepository = customerRepository;
     private readonly ITenantRepository _tenantRepository = tenantRepository;
     private readonly ITableRepository _tableRepository = tableRepository;
+    private readonly ITabRepository _tabRepository = tabRepository;
     private readonly ILoyaltyService _loyaltyService = loyaltyService;
     private readonly ILoyaltyProgramRepository _loyaltyProgramRepository = loyaltyProgramRepository;
     private readonly ICustomerLoyaltyRepository _customerLoyaltyRepository = customerLoyaltyRepository;
@@ -245,8 +247,8 @@ public class OrderService(
     /// </summary>
     public async Task<ResponseDTO<OrderResponseDto>> CreateOrderDineInAsync(CreateOrderRequestDto requestDto)
     {
-        if (requestDto.OrderType == EOrderType.Table && string.IsNullOrEmpty(requestDto.TableId))
-            return StaticResponseBuilder<OrderResponseDto>.BuildError("Mesa é obrigatória para pedidos locais.");
+        if (requestDto.OrderType == EOrderType.Table && string.IsNullOrEmpty(requestDto.TableId) && string.IsNullOrEmpty(requestDto.TabId))
+            return StaticResponseBuilder<OrderResponseDto>.BuildError("Mesa ou comanda é obrigatória para pedidos locais.");
 
         return await CreateTenantOrderInternalAsync(requestDto, EOrderType.Table);
     }
@@ -300,25 +302,71 @@ public class OrderService(
                 TenantId = tenantId
             };
 
-            // Identificar mesa se for pedido local
-            if (orderType == EOrderType.Table && !string.IsNullOrEmpty(requestDto.TableId))
+            if (orderType == EOrderType.Table)
             {
-                if (Guid.TryParse(requestDto.TableId, out var tableGuid))
+                Guid? resolvedTableId = null;
+                Guid? resolvedTabId = null;
+
+                if (!string.IsNullOrWhiteSpace(requestDto.TabId))
                 {
-                    order.TableId = tableGuid;
+                    if (!Guid.TryParse(requestDto.TabId, out var tabGuid))
+                        return StaticResponseBuilder<OrderResponseDto>.BuildError("Comanda inválida");
+
+                    var tab = await _tabRepository.GetByIdAsync(tabGuid, tenantId);
+                    if (tab == null)
+                        return StaticResponseBuilder<OrderResponseDto>.BuildError("Comanda não encontrada");
+
+                    if (tab.Status != ETabStatus.Open)
+                        return StaticResponseBuilder<OrderResponseDto>.BuildError("Comanda está fechada");
+
+                    resolvedTabId = tab.Id;
+                    resolvedTableId = tab.TableId;
                 }
-                else
+
+                if (!string.IsNullOrWhiteSpace(requestDto.TableId))
                 {
-                    // Tentar buscar por nome (número da mesa)
-                    var table = await _tableRepository.GetByNameAsync(requestDto.TableId, tenantId);
-                    if (table != null)
+                    TableEntity? table = null;
+                    if (Guid.TryParse(requestDto.TableId, out var tableGuid))
                     {
-                        order.TableId = table.Id;
+                        table = await _tableRepository.GetByIdAsync(tableGuid, tenantId);
                     }
-                    // Se não encontrar mesa cadastrada, podemos decidir se salvamos apenas o nome 
-                    // em um campo de observação ou se retornamos erro. 
-                    // Pelas entidades atuais, TableId é FK para TableEntity.
+                    else
+                    {
+                        table = await _tableRepository.GetByNameAsync(requestDto.TableId, tenantId);
+                    }
+
+                    if (table == null)
+                        return StaticResponseBuilder<OrderResponseDto>.BuildError("Mesa não encontrada");
+
+                    if (resolvedTableId.HasValue && resolvedTableId.Value != table.Id)
+                        return StaticResponseBuilder<OrderResponseDto>.BuildError("Comanda não pertence à mesa informada");
+
+                    resolvedTableId ??= table.Id;
                 }
+
+                if (resolvedTableId.HasValue && !resolvedTabId.HasValue)
+                {
+                    var openTabs = (await _tabRepository.GetByTableIdAsync(tenantId, resolvedTableId.Value, ETabStatus.Open)).ToList();
+                    var tab = openTabs.FirstOrDefault(t => t.Name == "Principal");
+                    if (tab == null)
+                    {
+                        tab = new TabEntity
+                        {
+                            TableId = resolvedTableId.Value,
+                            Name = "Principal",
+                            Status = ETabStatus.Open,
+                            OpenedAt = DateTime.UtcNow,
+                            TenantId = tenantId
+                        };
+
+                        await _tabRepository.AddAsync(tab);
+                    }
+
+                    resolvedTabId = tab.Id;
+                }
+
+                order.TableId = resolvedTableId;
+                order.TabId = resolvedTabId;
             }
 
             // Criar itens do pedido
@@ -364,13 +412,15 @@ public class OrderService(
             order.Subtotal = order.Items.Sum(i => i.Subtotal);
             order.DeliveryFee = orderType == EOrderType.Delivery ? (requestDto.DeliveryFee ?? 0.0m) : 0.0m;
             
-            // Iniciar transação para garantir atomicidade entre atualização do cupom e criação do pedido
-            // Usando ExecutionStrategy para suportar retries configurados no EF Core
+            var isRelational = _context.Database.IsRelational();
             var strategy = _context.Database.CreateExecutionStrategy();
             
             return await strategy.ExecuteAsync(async () =>
             {
-                using var transaction = await _context.Database.BeginTransactionAsync();
+                Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction? transaction = null;
+                if (isRelational)
+                    transaction = await _context.Database.BeginTransactionAsync();
+
                 try
                 {
                     // Processar cupom
@@ -536,7 +586,8 @@ public class OrderService(
                     _logger.LogInformation("Pedido {OrderId} criado com sucesso", createdOrder.Id);
 
                     // Commit da transação
-                    await transaction.CommitAsync();
+                    if (transaction != null)
+                        await transaction.CommitAsync();
 
                     // Registrar movimentação no caixa se for pedido de balcão ou mesa (PDV)
                     if (requestDto.OrderType == EOrderType.Counter || requestDto.OrderType == EOrderType.Table)
@@ -587,8 +638,14 @@ public class OrderService(
                 }
                 catch (Exception)
                 {
-                    await transaction.RollbackAsync();
+                    if (transaction != null)
+                        await transaction.RollbackAsync();
                     throw;
+                }
+                finally
+                {
+                    if (transaction != null)
+                        await transaction.DisposeAsync();
                 }
             });
         }
@@ -693,11 +750,14 @@ public class OrderService(
             order.Subtotal = order.Items.Sum(i => i.Subtotal);
             order.DeliveryFee = requestDto.DeliveryFee ?? 0.0m; // Taxa fixa de entrega
 
-            // Iniciar transação para garantir consistência
+            var isRelational = _context.Database.IsRelational();
             var strategy = _context.Database.CreateExecutionStrategy();
             return await strategy.ExecuteAsync(async () =>
             {
-                using var transaction = await _context.Database.BeginTransactionAsync();
+                Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction? transaction = null;
+                if (isRelational)
+                    transaction = await _context.Database.BeginTransactionAsync();
+
                 try
                 {
                     // Processar cupom
@@ -844,7 +904,8 @@ public class OrderService(
                     var orderDto = _mapper.Map<OrderResponseDto>(createdOrder);
 
                     // Commit da transação
-                    await transaction.CommitAsync();
+                    if (transaction != null)
+                        await transaction.CommitAsync();
 
                     // Processar pontos de fidelidade (GANHO)
                     try
@@ -868,8 +929,14 @@ public class OrderService(
                 }
                 catch (Exception)
                 {
-                    await transaction.RollbackAsync();
+                    if (transaction != null)
+                        await transaction.RollbackAsync();
                     throw;
+                }
+                finally
+                {
+                    if (transaction != null)
+                        await transaction.DisposeAsync();
                 }
             });
         }

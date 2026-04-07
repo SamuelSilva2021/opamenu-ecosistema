@@ -8,8 +8,11 @@ abstract class AuthRepository {
     required String password,
   });
 
+  Future<Result<AuthTokensEntity>> refreshToken({
+    required String refreshToken,
+  });
+
   Future<Result<UserInfoEntity>> fetchMe({
     required String accessToken,
   });
 }
-

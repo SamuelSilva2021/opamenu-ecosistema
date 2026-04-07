@@ -4,11 +4,13 @@ using OpaMenu.Application.DTOs;
 using OpaMenu.Domain.DTOs;
 using OpaMenu.Domain.DTOs.Table;
 using OpaMenu.Domain.DTOs.Order;
+using OpaMenu.Domain.DTOs.Tab;
 using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Infrastructure.Anotations;
 using OpaMenu.Infrastructure.Filters;
 using OpaMenu.Application.Services.Interfaces.Opamenu;
 using OpaMenu.Application.Services.Interfaces;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Web.UserEntry.Tables
 {
@@ -16,10 +18,11 @@ namespace OpaMenu.Web.UserEntry.Tables
     [ApiController]
     [Authorize]
     [ServiceFilter(typeof(PermissionAuthorizationFilter))]
-    public class TablesController(ITableService tableService, IOrderService orderService) : BaseController
+    public class TablesController(ITableService tableService, IOrderService orderService, ITabService tabService) : BaseController
     {
         private readonly ITableService _tableService = tableService;
         private readonly IOrderService _orderService = orderService;
+        private readonly ITabService _tabService = tabService;
 
         /// <summary>
         /// Obtém lista paginada de mesas
@@ -51,6 +54,38 @@ namespace OpaMenu.Web.UserEntry.Tables
         public async Task<ActionResult<ResponseDTO<OrderResponseDto?>>> GetActiveOrder(Guid id)
         {
             var result = await _orderService.GetActiveOrderByTableIdAsync(id);
+            return BuildResponse(result);
+        }
+
+        [HttpGet("{id}/tabs")]
+        [MapPermission(MODULE_TABLE, OPERATION_SELECT)]
+        public async Task<ActionResult<ResponseDTO<IEnumerable<TabResponseDto>>>> GetTabs(Guid id, [FromQuery] ETabStatus? status = null)
+        {
+            var result = await _tabService.GetByTableIdAsync(id, status);
+            return BuildResponse(result);
+        }
+
+        [HttpGet("{id}/tabs/{tabId}")]
+        [MapPermission(MODULE_TABLE, OPERATION_SELECT)]
+        public async Task<ActionResult<ResponseDTO<TabResponseDto>>> GetTab(Guid id, Guid tabId)
+        {
+            var result = await _tabService.GetByIdAsync(id, tabId);
+            return BuildResponse(result);
+        }
+
+        [HttpPost("{id}/tabs")]
+        [MapPermission(MODULE_TABLE, OPERATION_INSERT)]
+        public async Task<ActionResult<ResponseDTO<TabResponseDto>>> OpenTab(Guid id, [FromBody] CreateTabRequestDto dto)
+        {
+            var result = await _tabService.OpenAsync(id, dto);
+            return BuildResponse(result);
+        }
+
+        [HttpPost("{id}/tabs/{tabId}/close")]
+        [MapPermission(MODULE_TABLE, OPERATION_UPDATE)]
+        public async Task<ActionResult<ResponseDTO<TabResponseDto>>> CloseTab(Guid id, Guid tabId)
+        {
+            var result = await _tabService.CloseAsync(id, tabId);
             return BuildResponse(result);
         }
 

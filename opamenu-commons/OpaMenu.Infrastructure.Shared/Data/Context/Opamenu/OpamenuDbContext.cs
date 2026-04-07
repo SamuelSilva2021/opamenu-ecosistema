@@ -30,6 +30,7 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
     public DbSet<TenantCustomerEntity> TenantCustomers { get; set; }
     public DbSet<CustomerEntity> Customers { get; set; }
     public DbSet<TableEntity> Tables { get; set; }
+    public DbSet<TabEntity> Tabs { get; set; }
     public DbSet<LoyaltyProgramEntity> LoyaltyPrograms { get; set; }
     public DbSet<LoyaltyProgramFilterEntity> LoyaltyProgramFilters { get; set; }
     public DbSet<LoyaltyTransactionEntity> LoyaltyTransactions { get; set; }
@@ -201,6 +202,14 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
                 .HasForeignKey(e => e.TableId)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            entity.Property(e => e.TabId)
+                .IsRequired(false);
+
+            entity.HasOne(e => e.Tab)
+                .WithMany(t => t.Orders)
+                .HasForeignKey(e => e.TabId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             entity.Property(e => e.QueuePosition)
                 .HasDefaultValue(0);
 
@@ -258,6 +267,7 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
             entity.HasIndex(e => e.CustomerPhone);
             entity.HasIndex(e => e.OrderType);
             entity.HasIndex(e => e.TableId);
+            entity.HasIndex(e => e.TabId);
         });
 
         // Table configuration
@@ -275,6 +285,24 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
                 .HasMaxLength(500);
             
             entity.HasIndex(e => new { e.TenantId, e.Name }).IsUnique();
+        });
+
+        modelBuilder.Entity<TabEntity>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.TableId).IsRequired();
+            entity.Property(e => e.Name).HasMaxLength(50);
+            entity.Property(e => e.Status).HasConversion<string>().IsRequired();
+            entity.Property(e => e.OpenedAt).IsRequired();
+            entity.Property(e => e.ClosedAt).IsRequired(false);
+
+            entity.HasOne(e => e.Table)
+                .WithMany(t => t.Tabs)
+                .HasForeignKey(e => e.TableId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.TableId);
+            entity.HasIndex(e => new { e.TenantId, e.TableId, e.Status });
         });
 
         // OrderItem configuration

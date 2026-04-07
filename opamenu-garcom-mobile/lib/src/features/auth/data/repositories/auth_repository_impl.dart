@@ -32,6 +32,20 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Result<AuthTokensEntity>> refreshToken({
+    required String refreshToken,
+  }) async {
+    final result = await remoteDataSource.refreshToken(refreshToken: refreshToken);
+
+    if (result is FailureResult<AuthTokensModel>) {
+      return FailureResult(result.failure);
+    }
+
+    final model = (result as SuccessResult<AuthTokensModel>).value;
+    return SuccessResult(model.toEntity());
+  }
+
+  @override
   Future<Result<UserInfoEntity>> fetchMe({required String accessToken}) async {
     final result = await remoteDataSource.me(accessToken: accessToken);
     if (result is FailureResult<UserInfoModel>) {

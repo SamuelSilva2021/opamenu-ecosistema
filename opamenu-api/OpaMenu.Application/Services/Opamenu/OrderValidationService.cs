@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using OpaMenu.Domain.DTOs;
 using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Domain.Interfaces;
@@ -30,12 +30,12 @@ public class OrderValidationService(
     {
         try
         {
-            // Validar informaÃ§Ãµes do cliente
+            // Validar informações do cliente
             var customerValidation = ValidateCustomerInfo(request.CustomerName, request.CustomerPhone);
             if (!customerValidation.Success)
                 return customerValidation;
 
-            // Validar se hÃ¡ itens no pedido
+            // Validar se há itens no pedido
             if (request.Items == null || !request.Items.Any())
             {
                 return ApiResponse<bool>.ErrorResponse("O pedido deve conter pelo menos um item.");
@@ -46,11 +46,11 @@ public class OrderValidationService(
             if (!itemsValidation.Success)
                 return itemsValidation;
 
-            return ApiResponse<bool>.SuccessResponse(true, "Pedido vÃ¡lido para criaÃ§Ã£o.");
+            return ApiResponse<bool>.SuccessResponse(true, "Pedido válido para criação.");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao validar criaÃ§Ã£o de pedido");
+            _logger.LogError(ex, "Erro ao validar criação de pedido");
             return ApiResponse<bool>.ErrorResponse("Erro interno ao validar pedido.");
         }
     }
@@ -65,16 +65,16 @@ public class OrderValidationService(
             var order = await _orderRepository.GetByIdAsync(orderId, _currentUserService.GetTenantGuid()!.Value);
             if (order == null)
             {
-                return ApiResponse<bool>.ErrorResponse("Pedido nÃ£o encontrado.");
+                return ApiResponse<bool>.ErrorResponse("Pedido não encontrado.");
             }
 
             // Verificar se o pedido pode ser atualizado
             if (order.Status == EOrderStatus.Delivered || order.Status == EOrderStatus.Cancelled)
             {
-                return ApiResponse<bool>.ErrorResponse("NÃ£o Ã© possÃ­vel atualizar pedidos finalizados ou cancelados.");
+                return ApiResponse<bool>.ErrorResponse("Não é possível atualizar pedidos finalizados ou cancelados.");
             }
 
-            // Validar informaÃ§Ãµes do cliente se fornecidas
+            // Validar informações do cliente se fornecidas
             if (!string.IsNullOrWhiteSpace(request.CustomerName) || !string.IsNullOrWhiteSpace(request.CustomerPhone))
             {
                 var customerValidation = ValidateCustomerInfo(
@@ -84,17 +84,17 @@ public class OrderValidationService(
                     return customerValidation;
             }
 
-            return ApiResponse<bool>.SuccessResponse(true, "Pedido vÃ¡lido para atualizaÃ§Ã£o.");
+            return ApiResponse<bool>.SuccessResponse(true, "Pedido válido para atualização.");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao validar atualizaÃ§Ã£o de pedido {OrderId}", orderId);
-            return ApiResponse<bool>.ErrorResponse("Erro interno ao validar atualizaÃ§Ã£o.");
+            _logger.LogError(ex, "Erro ao validar atualização de pedido {OrderId}", orderId);
+            return ApiResponse<bool>.ErrorResponse("Erro interno ao validar atualização.");
         }
     }
 
     /// <summary>
-    /// Valida a mudanÃ§a de status de um pedido
+    /// Valida a mudança de status de um pedido
     /// </summary>
     public async Task<ApiResponse<bool>> ValidateStatusChangeAsync(Guid orderId, EOrderStatus newStatus)
     {
@@ -103,20 +103,20 @@ public class OrderValidationService(
             var order = await _orderRepository.GetByIdAsync(orderId, _currentUserService.GetTenantGuid()!.Value);
             if (order == null)
             {
-                return ApiResponse<bool>.ErrorResponse("Pedido nÃ£o encontrado.");
+                return ApiResponse<bool>.ErrorResponse("Pedido não encontrado.");
             }
 
             if (!IsValidStatusTransition(order.Status, newStatus))
             {
-                return ApiResponse<bool>.BadRequest($"TransiÃ§Ã£o de status invÃ¡lida: de '{order.Status}' para '{newStatus}'.");
+                return ApiResponse<bool>.BadRequest($"Transição de status inválida: de '{order.Status}' para '{newStatus}'.");
             }
 
-            return ApiResponse<bool>.SuccessResponse(true, "TransiÃ§Ã£o de status vÃ¡lida.");
+            return ApiResponse<bool>.SuccessResponse(true, "Transição de status válida.");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao validar transiÃ§Ã£o de status do pedido {OrderId}", orderId);
-            return ApiResponse<bool>.ErrorResponse("Erro interno ao validar transiÃ§Ã£o.");
+            _logger.LogError(ex, "Erro ao validar transição de status do pedido {OrderId}", orderId);
+            return ApiResponse<bool>.ErrorResponse("Erro interno ao validar transição.");
         }
     }
 
@@ -130,7 +130,7 @@ public class OrderValidationService(
             var order = await _orderRepository.GetByIdAsync(orderId, _currentUserService.GetTenantGuid()!.Value);
             if (order == null)
             {
-                return ApiResponse<bool>.ErrorResponse("Pedido nÃ£o encontrado.");
+                return ApiResponse<bool>.ErrorResponse("Pedido não encontrado.");
             }
 
             if (order.Status != EOrderStatus.Pending)
@@ -142,8 +142,8 @@ public class OrderValidationService(
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao validar aceitaÃ§Ã£o de pedido {OrderId}", orderId);
-            return ApiResponse<bool>.ErrorResponse("Erro interno ao validar aceitaÃ§Ã£o.");
+            _logger.LogError(ex, "Erro ao validar aceitação de pedido {OrderId}", orderId);
+            return ApiResponse<bool>.ErrorResponse("Erro interno ao validar aceitação.");
         }
     }
 
@@ -157,12 +157,12 @@ public class OrderValidationService(
             var order = await _orderRepository.GetByIdAsync(orderId, _currentUserService.GetTenantGuid()!.Value);
             if (order == null)
             {
-                return ApiResponse<bool>.ErrorResponse("Pedido nÃ£o encontrado.");
+                return ApiResponse<bool>.ErrorResponse("Pedido não encontrado.");
             }
 
             if (string.IsNullOrWhiteSpace(request.Reason))
             {
-                return ApiResponse<bool>.BadRequest("Motivo da rejeiÃ§Ã£o Ã© obrigatÃ³rio.");
+                return ApiResponse<bool>.BadRequest("Motivo da rejeição é obrigatório.");
             }
 
             if (order.Status != EOrderStatus.Pending && order.Status != EOrderStatus.Preparing)
@@ -174,8 +174,8 @@ public class OrderValidationService(
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao validar rejeiÃ§Ã£o de pedido {OrderId}", orderId);
-            return ApiResponse<bool>.ErrorResponse("Erro interno ao validar rejeiÃ§Ã£o.");
+            _logger.LogError(ex, "Erro ao validar rejeição de pedido {OrderId}", orderId);
+            return ApiResponse<bool>.ErrorResponse("Erro interno ao validar rejeição.");
         }
     }
 
@@ -189,12 +189,12 @@ public class OrderValidationService(
             var order = await _orderRepository.GetByIdAsync(orderId, _currentUserService.GetTenantGuid()!.Value);
             if (order == null)
             {
-                return ApiResponse<bool>.ErrorResponse("Pedido nÃ£o encontrado.");
+                return ApiResponse<bool>.ErrorResponse("Pedido não encontrado.");
             }
 
             if (order.Status == EOrderStatus.Delivered || order.Status == EOrderStatus.Cancelled || order.Status == EOrderStatus.Rejected)
             {
-                return ApiResponse<bool>.BadRequest($"NÃ£o Ã© possÃ­vel cancelar um pedido com status '{order.Status}'.");
+                return ApiResponse<bool>.BadRequest($"Não é possível cancelar um pedido com status '{order.Status}'.");
             }
 
             return ApiResponse<bool>.SuccessResponse(true, "Pedido pode ser cancelado.");
@@ -207,7 +207,7 @@ public class OrderValidationService(
     }
 
     /// <summary>
-    /// Valida se um pedido pode ser excluÃ­do
+    /// Valida se um pedido pode ser excluído
     /// </summary>
     public async Task<ApiResponse<bool>> ValidateDeleteOrderAsync(Guid orderId)
     {
@@ -216,21 +216,21 @@ public class OrderValidationService(
             var order = await _orderRepository.GetByIdAsync(orderId, _currentUserService.GetTenantGuid()!.Value);
             if (order == null)
             {
-                return ApiResponse<bool>.ErrorResponse("Pedido nÃ£o encontrado.");
+                return ApiResponse<bool>.ErrorResponse("Pedido não encontrado.");
             }
 
-            // Apenas pedidos pendentes ou cancelados podem ser excluÃ­dos
+            // Apenas pedidos pendentes ou cancelados podem ser excluídos
             if (order.Status != EOrderStatus.Pending && order.Status != EOrderStatus.Cancelled)
             {
-                return ApiResponse<bool>.ErrorResponse("Apenas pedidos pendentes ou cancelados podem ser excluÃ­dos.");
+                return ApiResponse<bool>.ErrorResponse("Apenas pedidos pendentes ou cancelados podem ser excluídos.");
             }
 
-            return ApiResponse<bool>.SuccessResponse(true, "Pedido vÃ¡lido para exclusÃ£o.");
+            return ApiResponse<bool>.SuccessResponse(true, "Pedido válido para exclusão.");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao validar exclusÃ£o do pedido {OrderId}", orderId);
-            return ApiResponse<bool>.ErrorResponse("Erro interno ao validar exclusÃ£o.");
+            _logger.LogError(ex, "Erro ao validar exclusão do pedido {OrderId}", orderId);
+            return ApiResponse<bool>.ErrorResponse("Erro interno ao validar exclusão.");
         }
     }
 
@@ -256,7 +256,7 @@ public class OrderValidationService(
                 }
             }
 
-            return ApiResponse<bool>.SuccessResponse(true, "Todos os itens sÃ£o vÃ¡lidos.");
+            return ApiResponse<bool>.SuccessResponse(true, "Todos os itens são válidos.");
         }
         catch (Exception ex)
         {
@@ -277,20 +277,20 @@ public class OrderValidationService(
                 return ApiResponse<bool>.BadRequest("Quantidade deve ser maior que zero.");
             }
 
-            // O preÃ§o unitÃ¡rio serÃ¡ obtido do produto, nÃ£o do DTO
+            // O preço unitário será obtido do produto, não do DTO
 
             var product = await _productRepository.GetByIdAsync(item.ProductId, _currentUserService.GetTenantGuid()!.Value);
             if (product == null)
             {
-                return ApiResponse<bool>.BadRequest($"Produto com ID {item.ProductId} nÃ£o encontrado.");
+                return ApiResponse<bool>.BadRequest($"Produto com ID {item.ProductId} não encontrado.");
             }
 
             if (!product.IsActive)
             {
-                return ApiResponse<bool>.BadRequest($"Produto '{product.Name}' nÃ£o estÃ¡ disponÃ­vel.");
+                return ApiResponse<bool>.BadRequest($"Produto '{product.Name}' não está disponível.");
             }
 
-            return ApiResponse<bool>.SuccessResponse(true, "Item vÃ¡lido.");
+            return ApiResponse<bool>.SuccessResponse(true, "Item válido.");
         }
         catch (Exception ex)
         {
@@ -300,7 +300,7 @@ public class OrderValidationService(
     }
 
     /// <summary>
-    /// Valida se uma transiÃ§Ã£o de status Ã© vÃ¡lida
+    /// Valida se uma transição de status é válida
     /// </summary>
     public bool IsValidStatusTransition(EOrderStatus currentStatus, EOrderStatus newStatus)
     {
@@ -318,21 +318,21 @@ public class OrderValidationService(
     }
 
     /// <summary>
-    /// Valida informaÃ§Ãµes do cliente
+    /// Valida informações do cliente
     /// </summary>
     public ApiResponse<bool> ValidateCustomerInfo(string? customerName, string? customerPhone, bool isRequired = true)
     {
         try
         {
-            // Se nÃ£o Ã© obrigatÃ³rio e ambos estÃ£o vazios, Ã© vÃ¡lido (cliente anÃ´nimo)
+            // Se não é obrigatório e ambos estão vazios, é válido (cliente anônimo)
             if (!isRequired && string.IsNullOrWhiteSpace(customerName) && string.IsNullOrWhiteSpace(customerPhone))
             {
-                return ApiResponse<bool>.SuccessResponse(true, "Cliente anÃ´nimo vÃ¡lido.");
+                return ApiResponse<bool>.SuccessResponse(true, "Cliente anônimo válido.");
             }
 
             if (isRequired && string.IsNullOrWhiteSpace(customerName))
             {
-                return ApiResponse<bool>.BadRequest("Nome do cliente Ã© obrigatÃ³rio.");
+                return ApiResponse<bool>.BadRequest("Nome do cliente é obrigatório.");
             }
 
             if (!string.IsNullOrWhiteSpace(customerName) && customerName.Length < 2)
@@ -342,20 +342,20 @@ public class OrderValidationService(
 
             if (!string.IsNullOrWhiteSpace(customerPhone))
             {
-                // Validar formato do telefone (apenas nÃºmeros, com 10 ou 11 dÃ­gitos)
+                // Validar formato do telefone (apenas números, com 10 ou 11 dígitos)
                 var phoneRegex = new Regex(@"^\d{10,11}$");
                 var cleanPhone = customerPhone.Replace("[", "").Replace("]", "").Replace("(", "").Replace(")", "").Replace("-", "").Replace(" ", "");
                 if (!phoneRegex.IsMatch(cleanPhone))
                 {
-                    return ApiResponse<bool>.BadRequest("Formato de telefone invÃ¡lido.");
+                    return ApiResponse<bool>.BadRequest("Formato de telefone inválido.");
                 }
             }
 
-            return ApiResponse<bool>.SuccessResponse(true, "InformaÃ§Ãµes do cliente vÃ¡lidas.");
+            return ApiResponse<bool>.SuccessResponse(true, "Informações do cliente válidas.");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao validar informaÃ§Ãµes do cliente");
+            _logger.LogError(ex, "Erro ao validar informações do cliente");
             return ApiResponse<bool>.ErrorResponse("Erro interno ao validar cliente.");
         }
     }

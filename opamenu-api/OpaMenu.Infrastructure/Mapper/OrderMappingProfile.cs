@@ -39,6 +39,7 @@ public class OrderMappingProfile : Profile
         // Mapeamento de OrderItemEntity para OrderItemResponseDto
         CreateMap<OrderItemEntity, OrderItemResponseDto>()
             .ForMember(dest => dest.Aditionals, opt => opt.MapFrom(src => src.Aditionals))
+            .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name))
             .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.Product.ImageUrl));
 
         // Mapeamento de CreateOrderItemRequestDto para OrderItemEntity

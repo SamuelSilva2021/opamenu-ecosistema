@@ -15,6 +15,7 @@ namespace OpaMenu.Domain.Interfaces
         Task<CustomerEntity> CreateAsync(CustomerEntity entity);
         Task<CustomerEntity?> UpdateAsync(CustomerEntity entity);
         Task<CustomerEntity?> GetByIdAsync(Guid id);
+        Task<CustomerEntity?> GetByEmailAsync(Guid tenantId, string email);
     }
 }
 

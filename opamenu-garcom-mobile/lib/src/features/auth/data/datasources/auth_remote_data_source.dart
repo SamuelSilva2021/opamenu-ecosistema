@@ -45,6 +45,25 @@ class AuthRemoteDataSource implements AuthRemoteDataSourceContract {
   }
 
   @override
+  Future<Result<AuthTokensModel>> refreshToken({
+    required String refreshToken,
+  }) async {
+    final uri = environment.authBaseUri.resolve('/api/auth/refresh');
+    final response = await client.postJson(
+      uri,
+      body: {
+        'refreshToken': refreshToken,
+      },
+    );
+
+    if (response is FailureResult<ApiHttpResponse>) {
+      return FailureResult(response.failure);
+    }
+    final http = (response as SuccessResult).value;
+    return _parseApiResponse(http.statusCode, http.body, AuthTokensModel.fromJson);
+  }
+
+  @override
   Future<Result<UserInfoModel>> me({required String accessToken}) async {
     final uri = environment.authBaseUri.resolve('/api/auth/me');
     final response = await client.get(

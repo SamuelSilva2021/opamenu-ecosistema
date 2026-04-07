@@ -170,4 +170,15 @@ public class OrderRepository(OpamenuDbContext context) : OpamenuRepository<Order
                 .ThenInclude(i => i.Product)
             .FirstOrDefaultAsync();
     }
+
+    public async Task<IEnumerable<OrderEntity>> GetByTabIdAsync(Guid tenantId, Guid tabId)
+    {
+        return await _dbSet
+            .Where(o => o.TenantId == tenantId && o.TabId == tabId)
+            .Include(o => o.Items)
+            .ThenInclude(i => i.Product)
+            .Include(o => o.Payments)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
+    }
 }

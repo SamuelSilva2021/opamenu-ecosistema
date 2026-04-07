@@ -8,6 +8,9 @@ abstract class AuthRemoteDataSourceContract {
     required String password,
   });
 
+  Future<Result<AuthTokensModel>> refreshToken({
+    required String refreshToken,
+  });
+
   Future<Result<UserInfoModel>> me({required String accessToken});
 }
-

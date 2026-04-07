@@ -1,4 +1,4 @@
-﻿
+
 using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
@@ -22,5 +22,6 @@ public interface IOrderRepository : IRepository<OrderEntity>
     Task<IEnumerable<OrderEntity>> GetPagedByTenantIdWithDetailsAsync(Guid tenantId, int pageNumber, int pageSize);
     Task<int?> GetLastOrderNumberAsync(Guid tenantId, DateTime date);
     Task<OrderEntity?> GetByIdForLoyaltyAsync(Guid id, Guid tenantId);
+    Task<IEnumerable<OrderEntity>> GetByTabIdAsync(Guid tenantId, Guid tabId);
 }
 

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OpaMenu.Infrastructure.Shared.Entities.Opamenu;
@@ -37,6 +37,7 @@ public class TableEntity : BaseEntity
     [MaxLength(50)]
     public string? Floor { get; set; }
 
+    public virtual ICollection<TabEntity> Tabs { get; set; } = new List<TabEntity>();
+
     public virtual ICollection<OrderEntity> Orders { get; set; } = new List<OrderEntity>();
 }
-

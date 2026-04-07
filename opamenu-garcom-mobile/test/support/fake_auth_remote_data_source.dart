@@ -5,6 +5,7 @@ import 'package:opamenu_garcom_mobile/src/features/auth/data/models/user_info_mo
 
 class FakeAuthRemoteDataSource implements AuthRemoteDataSourceContract {
   Result<AuthTokensModel>? nextLoginResult;
+  Result<AuthTokensModel>? nextRefreshTokenResult;
   Result<UserInfoModel>? nextMeResult;
 
   @override
@@ -16,8 +17,14 @@ class FakeAuthRemoteDataSource implements AuthRemoteDataSourceContract {
   }
 
   @override
+  Future<Result<AuthTokensModel>> refreshToken({
+    required String refreshToken,
+  }) async {
+    return nextRefreshTokenResult as Result<AuthTokensModel>;
+  }
+
+  @override
   Future<Result<UserInfoModel>> me({required String accessToken}) async {
     return nextMeResult as Result<UserInfoModel>;
   }
 }
-

@@ -7,6 +7,7 @@ import '../features/auth/data/repositories/auth_repository_impl.dart';
 import '../features/auth/domain/repositories/auth_repository.dart';
 import '../features/auth/domain/usecases/fetch_current_user_usecase.dart';
 import '../features/auth/domain/usecases/login_usecase.dart';
+import '../features/auth/domain/usecases/refresh_token_usecase.dart';
 import 'app_environment_provider.dart';
 
 class AuthDi {
@@ -33,5 +34,9 @@ class AuthDi {
     final repository = ref.watch(repositoryProvider);
     return FetchCurrentUserUseCase(repository);
   });
-}
 
+  static final Provider<RefreshTokenUseCase> refreshTokenUseCaseProvider = Provider((ref) {
+    final repository = ref.watch(repositoryProvider);
+    return RefreshTokenUseCase(repository);
+  });
+}

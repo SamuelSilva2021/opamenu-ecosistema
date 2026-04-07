@@ -5,6 +5,7 @@ import 'package:opamenu_garcom_mobile/src/features/auth/domain/repositories/auth
 
 class FakeAuthRepository implements AuthRepository {
   Result<AuthTokensEntity>? nextLoginResult;
+  Result<AuthTokensEntity>? nextRefreshTokenResult;
   Result<UserInfoEntity>? nextMeResult;
 
   @override
@@ -16,8 +17,14 @@ class FakeAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<Result<AuthTokensEntity>> refreshToken({
+    required String refreshToken,
+  }) async {
+    return nextRefreshTokenResult as Result<AuthTokensEntity>;
+  }
+
+  @override
   Future<Result<UserInfoEntity>> fetchMe({required String accessToken}) async {
     return nextMeResult as Result<UserInfoEntity>;
   }
 }
-

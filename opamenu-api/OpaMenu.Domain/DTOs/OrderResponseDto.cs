@@ -28,6 +28,7 @@ namespace OpaMenu.Domain.DTOs
         public bool IsDelivery { get; set; }
         public EOrderType OrderType { get; set; }
         public Guid? TableId { get; set; }
+        public Guid? TabId { get; set; }
         public Guid? DriverId { get; set; }
         public string? DriverName { get; set; }
         public string? Notes { get; set; }

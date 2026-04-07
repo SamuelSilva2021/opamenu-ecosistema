@@ -41,6 +41,13 @@ namespace OpaMenu.Infrastructure.Repositories
         }
 
         public async Task<CustomerEntity?> GetByIdAsync(Guid id) => await _context.Customers.FindAsync(id);
+
+        public async Task<CustomerEntity?> GetByEmailAsync(Guid tenantId, string email) =>
+            await _context.Customers
+                .Include(c => c.TenantCustomers)
+                .FirstOrDefaultAsync(c =>
+                    c.Email == email &&
+                    c.TenantCustomers.Any(tc => tc.TenantId == tenantId));
     }
 }
 
