@@ -180,6 +180,27 @@
                     </StackPanel>
                 </Border>
 
+                <Border Width="480" Background="{StaticResource OpaMenuSurfaceBrush}" CornerRadius="12" Padding="24"
+                        Visibility="{Binding IsTabCheckoutModalOpen, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <TextBlock Text="{Binding SelectedTab.Name, StringFormat='Fechar {0}'}" FontSize="{StaticResource OpaMenuFontSizeH4}" FontWeight="Bold" Margin="0,0,0,16"/>
+
+                        <TextBlock Text="{Binding SelectedTabTotal, StringFormat='Total da comanda: {0:C}'}" FontSize="22" FontWeight="Bold" Foreground="{StaticResource OpaMenuPrimaryBrush}" Margin="0,0,0,16"/>
+
+                        <ComboBox ItemsSource="{Binding TabPaymentMethodOptions}"
+                                  SelectedItem="{Binding SelectedTabPaymentMethod, UpdateSourceTrigger=PropertyChanged}"
+                                  DisplayMemberPath="Name"
+                                  Style="{StaticResource MaterialDesignFloatingHintComboBox}"
+                                  materialDesign:HintAssist.Hint="Forma de pagamento"
+                                  Margin="0,0,0,24" />
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Style="{StaticResource MaterialDesignFlatButton}" Content="CANCELAR" Command="{Binding CloseModalsCommand}" Margin="0,0,8,0" />
+                            <Button Style="{StaticResource OpaMenuPrimaryButton}" Content="CONFIRMAR" Command="{Binding ConfirmTabCheckoutCommand}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
                 <Border Width="420" Background="{StaticResource OpaMenuSurfaceBrush}" CornerRadius="12" Padding="24"
                         Visibility="{Binding IsCashModalOpen, Converter={StaticResource BoolToVis}}">
                     <StackPanel>
@@ -512,7 +533,7 @@
                     </materialDesign:Card>
                 </Grid>
 
-                <Grid Visibility="{Binding IsTablesSection, Converter={StaticResource BoolToVis}}">
+                <Grid Visibility="{Binding IsTablesListSection, Converter={StaticResource BoolToVis}}">
                     <materialDesign:Card Style="{StaticResource OpaMenuCard}">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -541,40 +562,167 @@
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Border Width="180" Height="110" CornerRadius="12" BorderThickness="1" Margin="6">
-                                                <Border.Style>
-                                                    <Style TargetType="Border">
-                                                        <Setter Property="Background" Value="{StaticResource OpaMenuSurfaceBrush}" />
-                                                        <Setter Property="BorderBrush" Value="{StaticResource OpaMenuBorderBrush}" />
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding Status}" Value="Livre">
-                                                                <Setter Property="Background" Value="#D1FAE5" />
-                                                                <Setter Property="BorderBrush" Value="#34D399" />
-                                                            </DataTrigger>
-                                                            <DataTrigger Binding="{Binding Status}" Value="Ocupada">
-                                                                <Setter Property="Background" Value="#FEE2E2" />
-                                                                <Setter Property="BorderBrush" Value="#F87171" />
-                                                            </DataTrigger>
-                                                            <DataTrigger Binding="{Binding Status}" Value="Aguardando conta">
-                                                                <Setter Property="Background" Value="#FEF3C7" />
-                                                                <Setter Property="BorderBrush" Value="#F59E0B" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Border.Style>
-                                                <Grid Margin="14">
-                                                    <Grid.RowDefinitions>
-                                                        <RowDefinition Height="Auto"/>
-                                                        <RowDefinition Height="*"/>
-                                                    </Grid.RowDefinitions>
-                                                    <TextBlock Text="{Binding DisplayName}" FontSize="18" FontWeight="Bold"/>
-                                                    <TextBlock Grid.Row="1" Text="{Binding Status}" VerticalAlignment="Bottom" Opacity="0.85" />
-                                                </Grid>
-                                            </Border>
+                                            <Button Style="{StaticResource MaterialDesignFlatButton}"
+                                                    Command="{Binding DataContext.OpenTableDetailsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}"
+                                                    Padding="0"
+                                                    Margin="6"
+                                                    Background="Transparent"
+                                                    Height="Auto"
+                                                    MinHeight="0"
+                                                    VerticalContentAlignment="Stretch"
+                                                    HorizontalContentAlignment="Stretch">
+                                                <Border Width="180" Height="110" CornerRadius="12" BorderThickness="1">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="Background" Value="{StaticResource OpaMenuSurfaceBrush}" />
+                                                            <Setter Property="BorderBrush" Value="{StaticResource OpaMenuBorderBrush}" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Status}" Value="Livre">
+                                                                    <Setter Property="Background" Value="#D1FAE5" />
+                                                                    <Setter Property="BorderBrush" Value="#34D399" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Status}" Value="Ocupada">
+                                                                    <Setter Property="Background" Value="#FEE2E2" />
+                                                                    <Setter Property="BorderBrush" Value="#F87171" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Status}" Value="Aguardando conta">
+                                                                    <Setter Property="Background" Value="#FEF3C7" />
+                                                                    <Setter Property="BorderBrush" Value="#F59E0B" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <Grid Margin="14">
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="*"/>
+                                                        </Grid.RowDefinitions>
+                                                        <TextBlock Text="{Binding DisplayName}" FontSize="18" FontWeight="Bold"/>
+                                                        <TextBlock Grid.Row="1" Text="{Binding Status}" VerticalAlignment="Bottom" Opacity="0.85" />
+                                                    </Grid>
+                                                </Border>
+                                            </Button>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
                             </ScrollViewer>
+                        </Grid>
+                    </materialDesign:Card>
+                </Grid>
+
+                <Grid Visibility="{Binding IsTableDetailsSection, Converter={StaticResource BoolToVis}}">
+                    <materialDesign:Card Style="{StaticResource OpaMenuCard}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <DockPanel Margin="0,0,0,16">
+                                <Button Style="{StaticResource MaterialDesignFlatButton}"
+                                        Content="Voltar"
+                                        Command="{Binding BackToTablesCommand}"
+                                        Margin="0,0,12,0" />
+                                <TextBlock Text="{Binding SelectedTableDetails.Name, StringFormat='Mesa: {0}'}"
+                                           FontSize="{StaticResource OpaMenuFontSizeH4}"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"/>
+                            </DockPanel>
+
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="280"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="320"/>
+                                </Grid.ColumnDefinitions>
+
+                                <materialDesign:Card Style="{StaticResource OpaMenuCard}" Grid.Column="0" Margin="0,0,16,0">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+                                        <TextBlock Text="Comandas" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                                        <ListBox Grid.Row="1"
+                                                 ItemsSource="{Binding SelectedTableTabs}"
+                                                 SelectedItem="{Binding SelectedTab, Mode=TwoWay}"
+                                                 Background="Transparent"
+                                                 BorderThickness="0">
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Margin="0,8">
+                                                        <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                                                        <DockPanel>
+                                                            <TextBlock Text="{Binding StatusText}" Opacity="0.8"/>
+                                                            <TextBlock DockPanel.Dock="Right" Text="{Binding Total, StringFormat={}{0:C}}" FontWeight="SemiBold"/>
+                                                        </DockPanel>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
+                                    </Grid>
+                                </materialDesign:Card>
+
+                                <materialDesign:Card Style="{StaticResource OpaMenuCard}" Grid.Column="1" Margin="0,0,16,0">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+                                        <DockPanel Margin="0,0,0,12">
+                                            <TextBlock Text="{Binding SelectedTab.Name, StringFormat='Consumo - {0}'}" FontWeight="SemiBold"/>
+                                            <TextBlock DockPanel.Dock="Right" Text="{Binding SelectedTabTotal, StringFormat={}{0:C}}" FontWeight="Bold"/>
+                                        </DockPanel>
+
+                                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                            <ItemsControl ItemsSource="{Binding SelectedTab.Orders}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border BorderBrush="{StaticResource OpaMenuBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                                                            <StackPanel>
+                                                                <DockPanel Margin="0,0,0,8">
+                                                                    <TextBlock Text="{Binding OrderNumber, StringFormat='Pedido #{0}'}" FontWeight="Bold"/>
+                                                                    <TextBlock DockPanel.Dock="Right" Text="{Binding Total, StringFormat={}{0:C}}" FontWeight="SemiBold"/>
+                                                                </DockPanel>
+                                                                <ItemsControl ItemsSource="{Binding Items}">
+                                                                    <ItemsControl.ItemTemplate>
+                                                                        <DataTemplate>
+                                                                            <Grid Margin="0,2">
+                                                                                <Grid.ColumnDefinitions>
+                                                                                    <ColumnDefinition Width="Auto"/>
+                                                                                    <ColumnDefinition Width="*"/>
+                                                                                    <ColumnDefinition Width="Auto"/>
+                                                                                </Grid.ColumnDefinitions>
+                                                                                <TextBlock Grid.Column="0" Text="{Binding Quantity}" Width="28" FontWeight="SemiBold"/>
+                                                                                <TextBlock Grid.Column="1" Text="{Binding ProductName}" TextWrapping="Wrap" />
+                                                                                <TextBlock Grid.Column="2" Text="{Binding Subtotal, StringFormat={}{0:C}}" FontWeight="SemiBold"/>
+                                                                            </Grid>
+                                                                        </DataTemplate>
+                                                                    </ItemsControl.ItemTemplate>
+                                                                </ItemsControl>
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
+                                    </Grid>
+                                </materialDesign:Card>
+
+                                <materialDesign:Card Style="{StaticResource OpaMenuCard}" Grid.Column="2">
+                                    <StackPanel>
+                                        <TextBlock Text="Fechamento" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                                        <TextBlock Text="{Binding SelectedTabTotal, StringFormat='Total: {0:C}'}" FontSize="20" FontWeight="Bold" Foreground="{StaticResource OpaMenuPrimaryBrush}" Margin="0,0,0,16"/>
+
+                                        <Button Style="{StaticResource OpaMenuPrimaryButton}"
+                                                Content="FECHAR COMANDA"
+                                                Command="{Binding OpenTabCheckoutModalCommand}"
+                                                IsEnabled="{Binding CanCheckoutSelectedTab}"
+                                                Margin="0,0,0,12"/>
+                                    </StackPanel>
+                                </materialDesign:Card>
+                            </Grid>
                         </Grid>
                     </materialDesign:Card>
                 </Grid>

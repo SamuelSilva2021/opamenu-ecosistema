@@ -42,7 +42,7 @@ namespace OpaMenu.Web.UserEntry.Tables
         [MapPermission(MODULE_TABLE, OPERATION_SELECT)]
         public async Task<ActionResult<PagedResponseDTO<TableFullResponseDto>>> GetPagedFull([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
         {
-            var result = await _tableService.GetPagedWithDetailsAsync(pageNumber, pageSize);
+            var result = await _tableService.GetPagedWithTabsAsync(pageNumber, pageSize);
             return BuildResponse(result);
         }
 
@@ -108,6 +108,14 @@ namespace OpaMenu.Web.UserEntry.Tables
         public async Task<ActionResult<ResponseDTO<TabResponseDto>>> CloseTab(Guid id, Guid tabId)
         {
             var result = await _tabService.CloseAsync(id, tabId);
+            return BuildResponse(result);
+        }
+
+        [HttpPost("{id:guid}/tabs/{tabId:guid}/checkout")]
+        [MapPermission(MODULE_TABLE, OPERATION_UPDATE)]
+        public async Task<ActionResult<ResponseDTO<TabResponseDto>>> CheckoutTab(Guid id, Guid tabId, [FromBody] TabCheckoutRequestDto dto)
+        {
+            var result = await _tabService.CheckoutAsync(id, tabId, dto);
             return BuildResponse(result);
         }
 

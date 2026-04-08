@@ -59,7 +59,7 @@ public class TableService : ITableService
         }
     }
 
-    public async Task<PagedResponseDTO<TableFullResponseDto>> GetPagedWithDetailsAsync(int pageNumber, int pageSize)
+    public async Task<PagedResponseDTO<TableFullResponseDto>> GetPagedWithTabsAsync(int pageNumber, int pageSize)
     {
         try
         {
@@ -67,7 +67,7 @@ public class TableService : ITableService
             if (tenantId == null)
                 return StaticResponseBuilder<TableFullResponseDto>.BuildPagedOk(Enumerable.Empty<TableFullResponseDto>(), 0, pageNumber, pageSize);
 
-            var tables = await _tableRepository.GetPagedByTenantIdWithDetailsAsync(tenantId.Value, pageNumber, pageSize);
+            var tables = await _tableRepository.GetPagedWithTabsAsync(tenantId.Value, pageNumber, pageSize);
             var total = await _tableRepository.CountByTenantIdAsync(tenantId.Value);
 
             var dtos = _mapper.Map<IEnumerable<TableFullResponseDto>>(tables);

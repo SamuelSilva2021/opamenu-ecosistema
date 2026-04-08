@@ -4,6 +4,7 @@ using OpaMenu.Application.Services.Interfaces.Opamenu;
 using OpaMenu.Commons.Api.Commons;
 using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Domain.DTOs;
+using OpaMenu.Domain.DTOs.CashRegister;
 using OpaMenu.Domain.DTOs.Tab;
 using OpaMenu.Domain.Interfaces;
 using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
@@ -17,6 +18,7 @@ public class TabService(
     IOrderRepository orderRepository,
     IProductRepository productRepository,
     IAditionalRepository aditionalRepository,
+    ICashRegisterService cashRegisterService,
     ICurrentUserService currentUserService,
     ICustomerRepository customerRepository,
     ITenantCustomerRepository tenantCustomerRepository,
@@ -28,6 +30,7 @@ public class TabService(
     private readonly IOrderRepository _orderRepository = orderRepository;
     private readonly IProductRepository _productRepository = productRepository;
     private readonly IAditionalRepository _aditionalRepository = aditionalRepository;
+    private readonly ICashRegisterService _cashRegisterService = cashRegisterService;
     private readonly ICurrentUserService _currentUserService = currentUserService;
     private readonly ICustomerRepository _customerRepository = customerRepository;
     private readonly ITenantCustomerRepository _tenantCustomerRepository = tenantCustomerRepository;
@@ -150,6 +153,80 @@ public class TabService(
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao fechar comanda {TabId} da mesa {TableId}", tabId, tableId);
+            return StaticResponseBuilder<TabResponseDto>.BuildError("Erro ao fechar comanda");
+        }
+    }
+
+    public async Task<ResponseDTO<TabResponseDto>> CheckoutAsync(Guid tableId, Guid tabId, TabCheckoutRequestDto dto)
+    {
+        try
+        {
+            var tenantId = _currentUserService.GetTenantGuid();
+            if (tenantId == null || tenantId == Guid.Empty)
+                return StaticResponseBuilder<TabResponseDto>.BuildError("Tenant não identificado");
+
+            var tab = await _tabRepository.GetByIdAsync(tabId, tenantId.Value);
+            if (tab == null || tab.TableId != tableId)
+                return StaticResponseBuilder<TabResponseDto>.BuildError("Comanda não encontrada");
+
+            if (tab.Status == ETabStatus.Closed)
+                return StaticResponseBuilder<TabResponseDto>.BuildError("Comanda já está fechada");
+
+            var orders = (await _orderRepository.GetByTabIdAsync(tenantId.Value, tabId))
+                .Where(o => o.Status != EOrderStatus.Cancelled && o.Status != EOrderStatus.Rejected)
+                .OrderBy(o => o.CreatedAt)
+                .ToList();
+
+            if (orders.Count == 0)
+                return StaticResponseBuilder<TabResponseDto>.BuildError("Não existem pedidos para fechar esta comanda");
+
+            foreach (var order in orders)
+            {
+                var paid = order.Payments
+                    .Where(p => p.Status == EPaymentStatus.Paid)
+                    .Sum(p => p.Amount);
+
+                if (paid >= order.Total - 0.01m)
+                    continue;
+
+                if (paid > 0.01m)
+                    return StaticResponseBuilder<TabResponseDto>.BuildError($"Pedido #{order.OrderNumber} possui pagamento parcial. Não é possível fechar por comanda.");
+
+                var cashMovementResult = await _cashRegisterService.AddMovementAsync(new AddCashMovementRequestDto
+                {
+                    Type = ECashMovementType.OrderPayment,
+                    Amount = order.Total,
+                    Description = $"Pagamento do pedido #{order.OrderNumber} (Comanda)",
+                    PaymentMethod = dto.PaymentMethod,
+                    OrderId = order.Id
+                });
+
+                if (!cashMovementResult.Succeeded)
+                {
+                    var message = cashMovementResult.Errors.FirstOrDefault()?.Message ?? "Erro ao registrar pagamento no caixa";
+                    return StaticResponseBuilder<TabResponseDto>.BuildError(message);
+                }
+
+                order.Payments.Add(new PaymentEntity
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = tenantId.Value,
+                    OrderId = order.Id,
+                    Amount = order.Total,
+                    Method = dto.PaymentMethod,
+                    Status = EPaymentStatus.Paid,
+                    PaidAt = DateTime.UtcNow,
+                    Notes = "Pagamento realizado no fechamento de comanda (PDV)"
+                });
+
+                await _orderRepository.UpdateAsync(order);
+            }
+
+            return await CloseAsync(tableId, tabId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao realizar checkout da comanda {TabId} da mesa {TableId}", tabId, tableId);
             return StaticResponseBuilder<TabResponseDto>.BuildError("Erro ao fechar comanda");
         }
     }

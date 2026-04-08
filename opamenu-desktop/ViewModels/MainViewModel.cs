@@ -30,7 +30,8 @@ public partial class MainViewModel : ObservableObject
     public enum MainSection
     {
         Pdv = 0,
-        Mesas = 1
+        Mesas = 1,
+        MesaDetalhe = 2
     }
 
     private readonly ICatalogService _catalogService;
@@ -51,7 +52,9 @@ public partial class MainViewModel : ObservableObject
     private MainSection _currentSection = MainSection.Pdv;
 
     public bool IsPdvSection => CurrentSection == MainSection.Pdv;
-    public bool IsTablesSection => CurrentSection == MainSection.Mesas;
+    public bool IsTablesSection => CurrentSection is MainSection.Mesas or MainSection.MesaDetalhe;
+    public bool IsTablesListSection => CurrentSection == MainSection.Mesas;
+    public bool IsTableDetailsSection => CurrentSection == MainSection.MesaDetalhe;
 
     [ObservableProperty]
     private bool _isCashModalOpen;
@@ -146,6 +149,63 @@ public partial class MainViewModel : ObservableObject
     public ObservableCollection<TableListItem> Tables { get; } = new();
 
     [ObservableProperty]
+    private TableFullDto? _selectedTableDetails;
+
+    public sealed class TabSummaryItem
+    {
+        public TabSummaryItem(TabDto tab, decimal total, int ordersCount)
+        {
+            Tab = tab;
+            Total = total;
+            OrdersCount = ordersCount;
+        }
+
+        public TabDto Tab { get; }
+        public Guid Id => Tab.Id;
+        public string Name => string.IsNullOrWhiteSpace(Tab.Name) ? "Comanda" : Tab.Name!;
+        public int Status => Tab.Status;
+        public bool IsOpen => Status == 1;
+        public string StatusText => IsOpen ? "Aberta" : "Fechada";
+        public decimal Total { get; }
+        public int OrdersCount { get; }
+        public IReadOnlyList<OrderDto> Orders => (Tab.Orders ?? new List<OrderDto>()).AsReadOnly();
+    }
+
+    public ObservableCollection<TabSummaryItem> SelectedTableTabs { get; } = new();
+
+    [ObservableProperty]
+    private TabSummaryItem? _selectedTab;
+
+    public decimal SelectedTabTotal => SelectedTab?.Total ?? 0m;
+    public bool CanCheckoutSelectedTab => SelectedTab?.IsOpen == true;
+
+    public sealed class PaymentMethodOption
+    {
+        public PaymentMethodOption(EPaymentMethod method, string name)
+        {
+            Method = method;
+            Name = name;
+        }
+
+        public EPaymentMethod Method { get; }
+        public string Name { get; }
+    }
+
+    public IReadOnlyList<PaymentMethodOption> TabPaymentMethodOptions { get; } = new[]
+    {
+        new PaymentMethodOption(EPaymentMethod.Pix, "Pix"),
+        new PaymentMethodOption(EPaymentMethod.CreditCard, "Cartão de Crédito"),
+        new PaymentMethodOption(EPaymentMethod.DebitCard, "Cartão de Débito"),
+        new PaymentMethodOption(EPaymentMethod.Cash, "Dinheiro")
+    };
+
+    [ObservableProperty]
+    private PaymentMethodOption? _selectedTabPaymentMethod;
+
+    [ObservableProperty]
+    private bool _isTabCheckoutModalOpen;
+
+    [ObservableProperty]
     private decimal _cartTotal;
 
     [ObservableProperty]
@@ -223,12 +283,16 @@ public partial class MainViewModel : ObservableObject
         _tablesService = tablesService;
 
         Payments.CollectionChanged += Payments_CollectionChanged;
+
+        SelectedTabPaymentMethod = TabPaymentMethodOptions.FirstOrDefault();
     }
 
     partial void OnCurrentSectionChanged(MainSection value)
     {
         OnPropertyChanged(nameof(IsPdvSection));
         OnPropertyChanged(nameof(IsTablesSection));
+        OnPropertyChanged(nameof(IsTablesListSection));
+        OnPropertyChanged(nameof(IsTableDetailsSection));
     }
 
     [RelayCommand]
@@ -241,10 +305,106 @@ public partial class MainViewModel : ObservableObject
     private async Task NavigateToTablesAsync()
     {
         CurrentSection = MainSection.Mesas;
+        await LoadTablesAsync();
+    }
 
-        if (Tables.Count == 0)
+    [RelayCommand]
+    private async Task OpenTableDetailsAsync(TableListItem table)
+    {
+        try
         {
-            await LoadTablesAsync();
+            var details = await _tablesService.GetTableFullByIdAsync(table.Id);
+            if (details == null)
+            {
+                MessageBox.Show("Não foi possível carregar os detalhes da mesa.", "Mesas", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            SelectedTableDetails = details;
+            BuildSelectedTableTabs(details);
+            CurrentSection = MainSection.MesaDetalhe;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Mesas", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    [RelayCommand]
+    private void BackToTables()
+    {
+        SelectedTableDetails = null;
+        SelectedTableTabs.Clear();
+        SelectedTab = null;
+        CurrentSection = MainSection.Mesas;
+    }
+
+    private void BuildSelectedTableTabs(TableFullDto details)
+    {
+        SelectedTableTabs.Clear();
+
+        foreach (var tab in details.Tabs.OrderByDescending(t => t.OpenedAt))
+        {
+            var orders = (tab.Orders ?? new List<OrderDto>())
+                .Where(o => o.Status is not 5 and not 6)
+                .ToList();
+
+            var total = orders.Sum(o => o.Total);
+            SelectedTableTabs.Add(new TabSummaryItem(tab, total, orders.Count));
+        }
+
+        SelectedTab = SelectedTableTabs.FirstOrDefault(t => t.IsOpen) ?? SelectedTableTabs.FirstOrDefault();
+    }
+
+    partial void OnSelectedTabChanged(TabSummaryItem? value)
+    {
+        OnPropertyChanged(nameof(SelectedTabTotal));
+        OnPropertyChanged(nameof(CanCheckoutSelectedTab));
+    }
+
+    [RelayCommand]
+    private void OpenTabCheckoutModal()
+    {
+        if (SelectedTableDetails == null || SelectedTab == null)
+            return;
+
+        if (!IsCashShiftOpen)
+        {
+            MessageBox.Show("Não é possível fechar comanda com o caixa fechado.", "Mesas", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        if (!CanCheckoutSelectedTab)
+        {
+            MessageBox.Show("Selecione uma comanda aberta para fechar.", "Mesas", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        IsTabCheckoutModalOpen = true;
+        IsAnyModalOpen = true;
+    }
+
+    [RelayCommand]
+    private async Task ConfirmTabCheckoutAsync()
+    {
+        try
+        {
+            if (SelectedTableDetails == null || SelectedTab == null || SelectedTabPaymentMethod == null)
+                return;
+
+            await _tablesService.CheckoutTabAsync(SelectedTableDetails.Id, SelectedTab.Id, SelectedTabPaymentMethod.Method);
+            CloseModals();
+
+            var details = await _tablesService.GetTableFullByIdAsync(SelectedTableDetails.Id);
+            if (details != null)
+            {
+                SelectedTableDetails = details;
+                BuildSelectedTableTabs(details);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Fechamento de Comanda", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -933,6 +1093,7 @@ public partial class MainViewModel : ObservableObject
     {
         IsCustomerModalOpen = false;
         IsCheckoutModalOpen = false;
+        IsTabCheckoutModalOpen = false;
         IsCashModalOpen = false;
         IsCashMovementModal = false;
         IsAddonSelectionModalOpen = false;

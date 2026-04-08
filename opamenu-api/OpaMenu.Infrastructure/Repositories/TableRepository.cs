@@ -32,24 +32,14 @@ public class TableRepository : BaseRepository<TableEntity>, ITableRepository
             .Take(pageSize)
             .ToListAsync();
     }
-
-    public async Task<IEnumerable<TableEntity>> GetPagedByTenantIdWithDetailsAsync(Guid tenantId, int pageNumber, int pageSize)
-    {
-        return await _dbSet
+    public async Task<IEnumerable<TableEntity>> GetPagedWithTabsAsync(Guid tenantId, int pageNumber, int pageSize) =>
+        await _dbSet
             .Where(t => t.TenantId == tenantId)
             .Include(t => t.Tabs)
-                .ThenInclude(tab => tab.Orders)
-                    .ThenInclude(o => o.Items)
-                        .ThenInclude(i => i.Product)
-            .Include(t => t.Tabs)
-                .ThenInclude(tab => tab.Orders)
-                    .ThenInclude(o => o.Items)
-                        .ThenInclude(i => i.Aditionals)
             .OrderBy(t => t.Name)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
-    }
 
     public async Task<TableEntity?> GetByIdWithDetailsAsync(Guid tenantId, Guid tableId)
     {
