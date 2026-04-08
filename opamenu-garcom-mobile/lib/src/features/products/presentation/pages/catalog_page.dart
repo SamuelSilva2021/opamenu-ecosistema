@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/app_colors.dart';
+import '../../../../app/opamenu_garcom_app.dart';
 import '../../../../core/domain/failures/failure.dart';
 import '../../../tables/domain/entities/table_entity.dart';
 import '../../../tabs/domain/entities/tab_entity.dart';
@@ -25,32 +26,6 @@ class CatalogPage extends ConsumerWidget {
     final searchNotifier = ref.watch(CatalogSearchQueryProvider.provider);
     final productsAsync = ref.watch(CatalogControllerProvider.provider);
     final addItemsState = ref.watch(AddTabItemsControllerProvider.provider);
-
-    ref.listen(AddTabItemsControllerProvider.provider, (previous, next) {
-      if (next.isLoading) return;
-      if (next.hasError) {
-        final error = next.error;
-        final message = error is Failure ? error.message : 'Falha ao adicionar item';
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message)),
-        );
-
-        ref.read(AddTabItemsControllerProvider.provider.notifier).clear();
-        return;
-      }
-
-      if (next.hasValue) {
-        final succeeded = next.value;
-        if (succeeded != true) return;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Item adicionado na comanda')),
-        );
-
-        ref.read(AddTabItemsControllerProvider.provider.notifier).clear();
-      }
-    });
 
     final title = tab.name?.trim().isNotEmpty == true
         ? '${table.name} • ${tab.name}'
@@ -155,12 +130,40 @@ class CatalogPage extends ConsumerWidget {
                     if (item == null) return;
 
                     final (quantity, notes) = item;
-                    await ref.read(AddTabItemsControllerProvider.provider.notifier).addItem(
-                          productId: product.id,
-                          tabId: tab.id,
-                          quantity: quantity,
-                          notes: notes,
-                        );
+                    final controller = ref.read(
+                      AddTabItemsControllerProvider.provider.notifier,
+                    );
+                    await controller.addItem(
+                      productId: product.id,
+                      tabId: tab.id,
+                      quantity: quantity,
+                      notes: notes,
+                    );
+
+                    final state =
+                        ref.read(AddTabItemsControllerProvider.provider);
+                    final messenger =
+                        OpaMenuGarcomApp.scaffoldMessengerKey.currentState;
+                    if (state.hasError) {
+                      final error = state.error;
+                      final message = error is Failure
+                          ? error.message
+                          : 'Falha ao adicionar item';
+                      messenger?.showSnackBar(
+                        SnackBar(content: Text(message)),
+                      );
+                      controller.clear();
+                      return;
+                    }
+
+                    if (state.value == true) {
+                      messenger?.showSnackBar(
+                        const SnackBar(
+                          content: Text('Item adicionado na comanda'),
+                        ),
+                      );
+                      controller.clear();
+                    }
                   },
           ),
         );
@@ -169,32 +172,36 @@ class CatalogPage extends ConsumerWidget {
   }
 
   Future<(int, String?)?> _askItemDetails(BuildContext context) async {
-    final quantityController = TextEditingController(text: '1');
-    final notesController = TextEditingController();
+    var quantityText = '1';
+    var notesText = '';
     final result = await showDialog<(int, String?)?>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Adicionar item'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: quantityController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Quantidade',
-                border: OutlineInputBorder(),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                initialValue: quantityText,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Quantidade',
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (value) => quantityText = value,
               ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: notesController,
-              decoration: const InputDecoration(
-                labelText: 'Observações (opcional)',
-                border: OutlineInputBorder(),
+              const SizedBox(height: 12),
+              TextFormField(
+                initialValue: notesText,
+                decoration: const InputDecoration(
+                  labelText: 'Observações (opcional)',
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (value) => notesText = value,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -203,13 +210,15 @@ class CatalogPage extends ConsumerWidget {
           ),
           FilledButton(
             onPressed: () {
-              final quantity = int.tryParse(quantityController.text.trim()) ?? 0;
+              final quantity = int.tryParse(quantityText.trim()) ?? 0;
               if (quantity < 1 || quantity > 99) {
-                Navigator.of(context).pop(null);
+                OpaMenuGarcomApp.scaffoldMessengerKey.currentState?.showSnackBar(
+                  const SnackBar(content: Text('Quantidade inválida')),
+                );
                 return;
               }
 
-              final notes = notesController.text.trim();
+              final notes = notesText.trim();
               Navigator.of(context).pop((quantity, notes.isEmpty ? null : notes));
             },
             child: const Text('Adicionar'),
@@ -217,8 +226,6 @@ class CatalogPage extends ConsumerWidget {
         ],
       ),
     );
-    quantityController.dispose();
-    notesController.dispose();
     return result;
   }
 }

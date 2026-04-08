@@ -7,6 +7,8 @@ import 'app_theme.dart';
 
 class OpaMenuGarcomApp extends ConsumerWidget {
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  static final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+      GlobalKey<ScaffoldMessengerState>();
 
   const OpaMenuGarcomApp({super.key});
 
@@ -25,6 +27,7 @@ class OpaMenuGarcomApp extends ConsumerWidget {
       theme: AppTheme.light(),
       home: const AuthGate(),
       navigatorKey: navigatorKey,
+      scaffoldMessengerKey: scaffoldMessengerKey,
       debugShowCheckedModeBanner: false,
     );
   }
