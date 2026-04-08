@@ -36,20 +36,42 @@ namespace OpaMenu.Web.UserEntry.Tables
         }
 
         /// <summary>
+        /// Obtém lista paginada de mesas com todas as comandas, pedidos e itens/produtos (visão completa)
+        /// </summary>
+        [HttpGet("full")]
+        [MapPermission(MODULE_TABLE, OPERATION_SELECT)]
+        public async Task<ActionResult<PagedResponseDTO<TableFullResponseDto>>> GetPagedFull([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
+        {
+            var result = await _tableService.GetPagedWithDetailsAsync(pageNumber, pageSize);
+            return BuildResponse(result);
+        }
+
+        /// <summary>
         /// Obtém uma mesa pelo ID
         /// </summary>
-        [HttpGet("{id}")]
+        [HttpGet("{id:guid}")]
         [MapPermission(MODULE_TABLE, OPERATION_SELECT)]
         public async Task<ActionResult<ResponseDTO<TableResponseDto>>> GetById(Guid id)
         {
             var result = await _tableService.GetByIdAsync(id);
             return BuildResponse(result);
         }
+
+        /// <summary>
+        /// Obtém uma mesa completa pelo ID (comandas + pedidos + itens/produtos)
+        /// </summary>
+        [HttpGet("{id:guid}/full")]
+        [MapPermission(MODULE_TABLE, OPERATION_SELECT)]
+        public async Task<ActionResult<ResponseDTO<TableFullResponseDto>>> GetByIdFull(Guid id)
+        {
+            var result = await _tableService.GetByIdWithDetailsAsync(id);
+            return BuildResponse(result);
+        }
         
         /// <summary>
         /// Obtém o pedido ativo da mesa
         /// </summary>
-        [HttpGet("{id}/order")]
+        [HttpGet("{id:guid}/order")]
         [MapPermission(MODULE_TABLE, OPERATION_SELECT)]
         public async Task<ActionResult<ResponseDTO<OrderResponseDto?>>> GetActiveOrder(Guid id)
         {
@@ -57,7 +79,7 @@ namespace OpaMenu.Web.UserEntry.Tables
             return BuildResponse(result);
         }
 
-        [HttpGet("{id}/tabs")]
+        [HttpGet("{id:guid}/tabs")]
         [MapPermission(MODULE_TABLE, OPERATION_SELECT)]
         public async Task<ActionResult<ResponseDTO<IEnumerable<TabResponseDto>>>> GetTabs(Guid id, [FromQuery] ETabStatus? status = null)
         {
@@ -65,7 +87,7 @@ namespace OpaMenu.Web.UserEntry.Tables
             return BuildResponse(result);
         }
 
-        [HttpGet("{id}/tabs/{tabId}")]
+        [HttpGet("{id:guid}/tabs/{tabId:guid}")]
         [MapPermission(MODULE_TABLE, OPERATION_SELECT)]
         public async Task<ActionResult<ResponseDTO<TabResponseDto>>> GetTab(Guid id, Guid tabId)
         {
@@ -73,7 +95,7 @@ namespace OpaMenu.Web.UserEntry.Tables
             return BuildResponse(result);
         }
 
-        [HttpPost("{id}/tabs")]
+        [HttpPost("{id:guid}/tabs")]
         [MapPermission(MODULE_TABLE, OPERATION_INSERT)]
         public async Task<ActionResult<ResponseDTO<TabResponseDto>>> OpenTab(Guid id, [FromBody] CreateTabRequestDto dto)
         {
@@ -81,7 +103,7 @@ namespace OpaMenu.Web.UserEntry.Tables
             return BuildResponse(result);
         }
 
-        [HttpPost("{id}/tabs/{tabId}/close")]
+        [HttpPost("{id:guid}/tabs/{tabId:guid}/close")]
         [MapPermission(MODULE_TABLE, OPERATION_UPDATE)]
         public async Task<ActionResult<ResponseDTO<TabResponseDto>>> CloseTab(Guid id, Guid tabId)
         {
@@ -103,7 +125,7 @@ namespace OpaMenu.Web.UserEntry.Tables
         /// <summary>
         /// Fecha a conta da mesa
         /// </summary>
-        [HttpPost("{id}/close")]
+        [HttpPost("{id:guid}/close")]
         [MapPermission(MODULE_TABLE, OPERATION_UPDATE)]
         public async Task<ActionResult<ResponseDTO<OrderResponseDto>>> CloseAccount(Guid id)
         {
@@ -114,7 +136,7 @@ namespace OpaMenu.Web.UserEntry.Tables
         /// <summary>
         /// Atualiza uma mesa existente
         /// </summary>
-        [HttpPut("{id}")]
+        [HttpPut("{id:guid}")]
         [MapPermission(MODULE_TABLE, OPERATION_UPDATE)]
         public async Task<ActionResult<ResponseDTO<TableResponseDto>>> Update(Guid id, [FromBody] UpdateTableRequestDto dto)
         {
@@ -125,7 +147,7 @@ namespace OpaMenu.Web.UserEntry.Tables
         /// <summary>
         /// Remove uma mesa
         /// </summary>
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:guid}")]
         [MapPermission(MODULE_TABLE, OPERATION_DELETE)]
         public async Task<ActionResult<ResponseDTO<bool>>> Delete(Guid id)
         {
@@ -136,7 +158,7 @@ namespace OpaMenu.Web.UserEntry.Tables
         /// <summary>
         /// Gera o QR Code para uma mesa
         /// </summary>
-        [HttpPost("{id}/qrcode")]
+        [HttpPost("{id:guid}/qrcode")]
         [MapPermission(MODULE_TABLE, OPERATION_UPDATE)]
         public async Task<ActionResult<ResponseDTO<string>>> GenerateQrCode(Guid id)
         {

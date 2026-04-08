@@ -33,9 +33,41 @@ public class TableRepository : BaseRepository<TableEntity>, ITableRepository
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<TableEntity>> GetPagedByTenantIdWithDetailsAsync(Guid tenantId, int pageNumber, int pageSize)
+    {
+        return await _dbSet
+            .Where(t => t.TenantId == tenantId)
+            .Include(t => t.Tabs)
+                .ThenInclude(tab => tab.Orders)
+                    .ThenInclude(o => o.Items)
+                        .ThenInclude(i => i.Product)
+            .Include(t => t.Tabs)
+                .ThenInclude(tab => tab.Orders)
+                    .ThenInclude(o => o.Items)
+                        .ThenInclude(i => i.Aditionals)
+            .OrderBy(t => t.Name)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    public async Task<TableEntity?> GetByIdWithDetailsAsync(Guid tenantId, Guid tableId)
+    {
+        return await _dbSet
+            .Where(t => t.TenantId == tenantId && t.Id == tableId)
+            .Include(t => t.Tabs)
+                .ThenInclude(tab => tab.Orders)
+                    .ThenInclude(o => o.Items)
+                        .ThenInclude(i => i.Product)
+            .Include(t => t.Tabs)
+                .ThenInclude(tab => tab.Orders)
+                    .ThenInclude(o => o.Items)
+                        .ThenInclude(i => i.Aditionals)
+            .FirstOrDefaultAsync();
+    }
+
     public override async Task<int> CountByTenantIdAsync(Guid tenantId)
     {
         return await _dbSet.CountAsync(t => t.TenantId == tenantId);
     }
 }
-

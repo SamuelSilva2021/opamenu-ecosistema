@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Microsoft.Extensions.Logging;
 using OpaMenu.Application.Services.Interfaces;
 using OpaMenu.Application.Services.Interfaces.Opamenu;
@@ -59,6 +59,32 @@ public class TableService : ITableService
         }
     }
 
+    public async Task<PagedResponseDTO<TableFullResponseDto>> GetPagedWithDetailsAsync(int pageNumber, int pageSize)
+    {
+        try
+        {
+            var tenantId = _currentUserService.GetTenantGuid();
+            if (tenantId == null)
+                return StaticResponseBuilder<TableFullResponseDto>.BuildPagedOk(Enumerable.Empty<TableFullResponseDto>(), 0, pageNumber, pageSize);
+
+            var tables = await _tableRepository.GetPagedByTenantIdWithDetailsAsync(tenantId.Value, pageNumber, pageSize);
+            var total = await _tableRepository.CountByTenantIdAsync(tenantId.Value);
+
+            var dtos = _mapper.Map<IEnumerable<TableFullResponseDto>>(tables);
+            return StaticResponseBuilder<TableFullResponseDto>.BuildPagedOk(dtos, total, pageNumber, pageSize);
+        }
+        catch (Exception ex)
+        {
+            var response = StaticResponseBuilder<TableFullResponseDto>.BuildErrorResponse(ex);
+            return new PagedResponseDTO<TableFullResponseDto>
+            {
+                Succeeded = false,
+                Errors = response.Errors,
+                Code = response.Code
+            };
+        }
+    }
+
     public async Task<ResponseDTO<TableResponseDto>> GetByIdAsync(Guid id)
     {
         try
@@ -75,6 +101,25 @@ public class TableService : ITableService
         catch (Exception ex)
         {
             return StaticResponseBuilder<TableResponseDto>.BuildErrorResponse(ex);
+        }
+    }
+
+    public async Task<ResponseDTO<TableFullResponseDto>> GetByIdWithDetailsAsync(Guid id)
+    {
+        try
+        {
+            var tenantId = _currentUserService.GetTenantGuid();
+            if (tenantId == null) return StaticResponseBuilder<TableFullResponseDto>.BuildError("Tenant não identificado");
+
+            var table = await _tableRepository.GetByIdWithDetailsAsync(tenantId.Value, id);
+            if (table == null)
+                return StaticResponseBuilder<TableFullResponseDto>.BuildError("Mesa não encontrada");
+
+            return StaticResponseBuilder<TableFullResponseDto>.BuildOk(_mapper.Map<TableFullResponseDto>(table));
+        }
+        catch (Exception ex)
+        {
+            return StaticResponseBuilder<TableFullResponseDto>.BuildErrorResponse(ex);
         }
     }
 

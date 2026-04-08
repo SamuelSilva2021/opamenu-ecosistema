@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -44,6 +44,7 @@ public partial class App : Application
                 services.AddHttpClient<IAuthService, AuthService>();
                 services.AddHttpClient<ICatalogService, CatalogService>();
                 services.AddHttpClient<ICashRegisterService, CashRegisterService>();
+                services.AddHttpClient<ITablesService, TablesService>();
 
                 // Client nomeado para o Background Service (apontando para a API principal)
                 services.AddHttpClient("CoreApi", (sp, client) =>

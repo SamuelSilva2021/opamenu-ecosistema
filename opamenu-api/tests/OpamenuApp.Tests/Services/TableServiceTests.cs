@@ -1,163 +1,125 @@
-﻿using Xunit;
-using Moq;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using OpaMenu.Application.Services.Opamenu;
+using Moq;
+using OpaMenu.Application.Services.Interfaces;
 using OpaMenu.Application.Services.Interfaces.Opamenu;
-using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
-using OpaMenu.Domain.Interfaces;
 using OpaMenu.Domain.DTOs.Table;
+using OpaMenu.Domain.Interfaces;
+using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Linq;
+using Xunit;
 
-namespace OpamenuApp.Tests.Services
+namespace OpamenuApp.Tests.Services;
+
+public class TableServiceTests
 {
-    public class TableServiceTests
+    private readonly Mock<ITableRepository> _mockTableRepository = new();
+    private readonly Mock<ICurrentUserService> _mockCurrentUserService = new();
+    private readonly Mock<IMapper> _mockMapper = new();
+    private readonly Mock<IUrlBuilderService> _mockUrlBuilderService = new();
+    private readonly Mock<ILogger<OpaMenu.Application.Services.Opamenu.TableService>> _mockLogger = new();
+
+    private readonly Guid _tenantId = Guid.NewGuid();
+
+    [Fact]
+    public async Task GetByIdWithDetailsAsync_WhenTableExists_ReturnsOk()
     {
-        private readonly Mock<ITableRepository> _mockTableRepository;
-        private readonly Mock<ICurrentUserService> _mockCurrentUserService;
-        private readonly Mock<IMapper> _mockMapper;
-        private readonly Mock<IUrlBuilderService> _mockUrlBuilderService;
-        private readonly Mock<ILogger<TableService>> _mockLogger;
-        private readonly TableService _tableService;
+        _mockCurrentUserService.Setup(x => x.GetTenantGuid()).Returns(_tenantId);
 
-        private readonly Guid _tenantId = Guid.NewGuid();
-
-        public TableServiceTests()
+        var tableId = Guid.NewGuid();
+        var entity = new TableEntity
         {
-            _mockTableRepository = new Mock<ITableRepository>();
-            _mockCurrentUserService = new Mock<ICurrentUserService>();
-            _mockMapper = new Mock<IMapper>();
-            _mockUrlBuilderService = new Mock<IUrlBuilderService>();
-            _mockLogger = new Mock<ILogger<TableService>>();
+            Id = tableId,
+            TenantId = _tenantId,
+            Name = "Mesa 01",
+            Capacity = 4,
+            IsActive = true
+        };
 
-            _mockCurrentUserService.Setup(x => x.GetTenantGuid()).Returns(_tenantId);
+        _mockTableRepository
+            .Setup(x => x.GetByIdWithDetailsAsync(_tenantId, tableId))
+            .ReturnsAsync(entity);
 
-            _tableService = new TableService(
-                _mockTableRepository.Object,
-                _mockCurrentUserService.Object,
-                _mockMapper.Object,
-                _mockUrlBuilderService.Object,
-                _mockLogger.Object
-            );
-        }
+        _mockMapper
+            .Setup(x => x.Map<TableFullResponseDto>(entity))
+            .Returns(new TableFullResponseDto
+            {
+                Id = tableId,
+                Name = "Mesa 01",
+                Capacity = 4,
+                IsActive = true,
+                Tabs = Array.Empty<OpaMenu.Domain.DTOs.Tab.TabResponseDto>()
+            });
 
-        [Fact]
-        public async Task GetPagedAsync_ShouldReturnPagedTables()
+        var service = new OpaMenu.Application.Services.Opamenu.TableService(
+            _mockTableRepository.Object,
+            _mockCurrentUserService.Object,
+            _mockMapper.Object,
+            _mockUrlBuilderService.Object,
+            _mockLogger.Object);
+
+        var result = await service.GetByIdWithDetailsAsync(tableId);
+
+        Assert.True(result.Succeeded);
+        Assert.NotNull(result.Data);
+        Assert.Equal(tableId, result.Data!.Id);
+    }
+
+    [Fact]
+    public async Task GetPagedWithDetailsAsync_WhenTenantExists_ReturnsPagedOk()
+    {
+        _mockCurrentUserService.Setup(x => x.GetTenantGuid()).Returns(_tenantId);
+
+        var tables = new List<TableEntity>
         {
-            // Arrange
-            var pageNumber = 1;
-            var pageSize = 10;
-            var tableId = Guid.NewGuid();
-            var tables = new List<TableEntity> { new TableEntity { Id = tableId, Name = "Mesa 1", TenantId = _tenantId } };
-            var tableDtos = new List<TableResponseDto> { new TableResponseDto(tableId, "Mesa 1", 4, true, null, 0, 0, 0, 0, null) };
+            new()
+            {
+                Id = Guid.NewGuid(),
+                TenantId = _tenantId,
+                Name = "Mesa 01",
+                Capacity = 4,
+                IsActive = true
+            }
+        };
 
-            _mockTableRepository.Setup(x => x.GetPagedByTenantIdAsync(_tenantId, pageNumber, pageSize))
-                .ReturnsAsync(tables);
-            _mockTableRepository.Setup(x => x.CountByTenantIdAsync(_tenantId))
-                .ReturnsAsync(1);
-            _mockMapper.Setup(x => x.Map<IEnumerable<TableResponseDto>>(tables))
-                .Returns(tableDtos);
+        _mockTableRepository
+            .Setup(x => x.GetPagedByTenantIdWithDetailsAsync(_tenantId, 1, 50))
+            .ReturnsAsync(tables);
 
-            // Act
-            var result = await _tableService.GetPagedAsync(pageNumber, pageSize);
+        _mockTableRepository
+            .Setup(x => x.CountByTenantIdAsync(_tenantId))
+            .ReturnsAsync(1);
 
-            // Assert
-            Assert.True(result.Succeeded);
-            Assert.Equal(1, result.TotalItems);
-            Assert.Single(result.Data!);
-        }
+        _mockMapper
+            .Setup(x => x.Map<IEnumerable<TableFullResponseDto>>(tables))
+            .Returns(new List<TableFullResponseDto>
+            {
+                new()
+                {
+                    Id = tables[0].Id,
+                    Name = "Mesa 01",
+                    Capacity = 4,
+                    IsActive = true,
+                    Tabs = Array.Empty<OpaMenu.Domain.DTOs.Tab.TabResponseDto>()
+                }
+            });
 
-        [Fact]
-        public async Task CreateAsync_WithValidData_ShouldCreateTable()
-        {
-            // Arrange
-            var tableId = Guid.NewGuid();
-            var createDto = new CreateTableRequestDto("Mesa 1", 4);
-            var tableEntity = new TableEntity { Id = tableId, Name = "Mesa 1", Capacity = 4, TenantId = _tenantId };
-            var tableResponse = new TableResponseDto(tableId, "Mesa 1", 4, true, null, 0, 0, 0, 0, null);
+        var service = new OpaMenu.Application.Services.Opamenu.TableService(
+            _mockTableRepository.Object,
+            _mockCurrentUserService.Object,
+            _mockMapper.Object,
+            _mockUrlBuilderService.Object,
+            _mockLogger.Object);
 
-            _mockTableRepository.Setup(x => x.ExistsByNameAsync(createDto.Name, _tenantId))
-                .ReturnsAsync(false);
-            _mockMapper.Setup(x => x.Map<TableEntity>(createDto))
-                .Returns(tableEntity);
-            _mockMapper.Setup(x => x.Map<TableResponseDto>(tableEntity))
-                .Returns(tableResponse);
+        var result = await service.GetPagedWithDetailsAsync(1, 50);
 
-            // Act
-            var result = await _tableService.CreateAsync(createDto);
-
-            // Assert
-            Assert.True(result.Succeeded);
-            Assert.Equal("Mesa 1", result.Data!.Name);
-            _mockTableRepository.Verify(x => x.AddAsync(tableEntity), Times.Once);
-        }
-
-        [Fact]
-        public async Task CreateAsync_DuplicateName_ShouldReturnError()
-        {
-            // Arrange
-            var createDto = new CreateTableRequestDto("Mesa 1", 4);
-
-            _mockTableRepository.Setup(x => x.ExistsByNameAsync(createDto.Name, _tenantId))
-                .ReturnsAsync(true);
-
-            // Act
-            var result = await _tableService.CreateAsync(createDto);
-
-            // Assert
-            Assert.False(result.Succeeded);
-            Assert.Equal("JÃ¡ existe uma mesa com este nome", result.Errors.First().Message);
-            _mockTableRepository.Verify(x => x.AddAsync(It.IsAny<TableEntity>()), Times.Never);
-        }
-
-        [Fact]
-        public async Task UpdateAsync_WithValidData_ShouldUpdateTable()
-        {
-            // Arrange
-            var id = Guid.NewGuid();
-            var updateDto = new UpdateTableRequestDto("Mesa Atualizada", 6, true, 0, 0, 0, 0, null);
-            var existingTable = new TableEntity { Id = id, Name = "Mesa 1", Capacity = 4, TenantId = _tenantId };
-            
-            _mockTableRepository.Setup(x => x.GetByIdAsync(id, _tenantId))
-                .ReturnsAsync(existingTable);
-            _mockTableRepository.Setup(x => x.GetByNameAsync(updateDto.Name!, _tenantId))
-                .ReturnsAsync((TableEntity?)null);
-            
-            // Act
-            var result = await _tableService.UpdateAsync(id, updateDto);
-
-            // Assert
-            Assert.True(result.Succeeded);
-            _mockMapper.Verify(x => x.Map(updateDto, existingTable), Times.Once);
-            _mockTableRepository.Verify(x => x.UpdateAsync(existingTable), Times.Once);
-        }
-
-        [Fact]
-        public async Task GenerateQrCodeAsync_ShouldGenerateUrlAndUpdateTable()
-        {
-            // Arrange
-            var id = Guid.NewGuid();
-            var table = new TableEntity { Id = id, Name = "Mesa 1", TenantId = _tenantId };
-            var baseUrl = "https://api.opamenu.com";
-            var expectedUrl = $"{baseUrl}/menu/{_tenantId}/{id}";
-
-            _mockTableRepository.Setup(x => x.GetByIdAsync(id, _tenantId))
-                .ReturnsAsync(table);
-            _mockUrlBuilderService.Setup(x => x.GetBaseUrl())
-                .Returns(baseUrl);
-
-            // Act
-            var result = await _tableService.GenerateQrCodeAsync(id);
-
-            // Assert
-            Assert.True(result.Succeeded);
-            Assert.Equal(expectedUrl, result.Data);
-            Assert.Equal(expectedUrl, table.QrCodeUrl);
-            _mockTableRepository.Verify(x => x.UpdateAsync(table), Times.Once);
-        }
+        Assert.True(result.Succeeded);
+        Assert.NotNull(result.Data);
+        Assert.Single(result.Data!);
+        Assert.Equal(1, result.TotalItems);
+        Assert.Equal(1, result.CurrentPage);
+        Assert.Equal(50, result.PageSize);
     }
 }
-

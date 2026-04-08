@@ -21,23 +21,37 @@ using OpaMenu.Desktop.Models.DTOs.Product;
 using OpaMenu.Desktop.Models.DTOs.Pdv;
 using OpaMenu.Desktop.Models.Data;
 using OpaMenu.Desktop.Models.Entities;
+using OpaMenu.Desktop.Models.DTOs.Tables;
 
 namespace OpaMenu.Desktop.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
+    public enum MainSection
+    {
+        Pdv = 0,
+        Mesas = 1
+    }
+
     private readonly ICatalogService _catalogService;
     private readonly AppDbContext _dbContext;
     private readonly ICashRegisterService _cashRegisterService;
     private readonly IAuthService _authService;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly UserStore _userStore;
+    private readonly ITablesService _tablesService;
 
     [ObservableProperty]
     private string _title = "Opamenu - Frente de Caixa (PDV)";
 
     [ObservableProperty]
     private string _operatorName = "Operador";
+
+    [ObservableProperty]
+    private MainSection _currentSection = MainSection.Pdv;
+
+    public bool IsPdvSection => CurrentSection == MainSection.Pdv;
+    public bool IsTablesSection => CurrentSection == MainSection.Mesas;
 
     [ObservableProperty]
     private bool _isCashModalOpen;
@@ -114,6 +128,23 @@ public partial class MainViewModel : ObservableObject
 
     public ObservableCollection<CartItemDto> CartItems { get; } = new();
 
+    public sealed class TableListItem
+    {
+        public TableListItem(Guid id, string name, string status)
+        {
+            Id = id;
+            Name = name;
+            Status = status;
+        }
+
+        public Guid Id { get; }
+        public string Name { get; }
+        public string Status { get; }
+        public string DisplayName => Name;
+    }
+
+    public ObservableCollection<TableListItem> Tables { get; } = new();
+
     [ObservableProperty]
     private decimal _cartTotal;
 
@@ -180,7 +211,8 @@ public partial class MainViewModel : ObservableObject
         ICashRegisterService cashRegisterService,
         IAuthService authService,
         IHttpClientFactory httpClientFactory,
-        UserStore userStore)
+        UserStore userStore,
+        ITablesService tablesService)
     {
         _catalogService = catalogService;
         _dbContext = dbContext;
@@ -188,8 +220,63 @@ public partial class MainViewModel : ObservableObject
         _authService = authService;
         _httpClientFactory = httpClientFactory;
         _userStore = userStore;
+        _tablesService = tablesService;
 
         Payments.CollectionChanged += Payments_CollectionChanged;
+    }
+
+    partial void OnCurrentSectionChanged(MainSection value)
+    {
+        OnPropertyChanged(nameof(IsPdvSection));
+        OnPropertyChanged(nameof(IsTablesSection));
+    }
+
+    [RelayCommand]
+    private void NavigateToPdv()
+    {
+        CurrentSection = MainSection.Pdv;
+    }
+
+    [RelayCommand]
+    private async Task NavigateToTablesAsync()
+    {
+        CurrentSection = MainSection.Mesas;
+
+        if (Tables.Count == 0)
+        {
+            await LoadTablesAsync();
+        }
+    }
+
+    [RelayCommand]
+    private async Task LoadTablesAsync()
+    {
+        Tables.Clear();
+
+        var tables = await _tablesService.GetTablesFullAsync();
+
+        foreach (var table in tables.OrderBy(t => t.Name))
+        {
+            var status = GetTableStatus(table);
+            Tables.Add(new TableListItem(table.Id, table.Name, status));
+        }
+    }
+
+    private static string GetTableStatus(TableFullDto table)
+    {
+        var openTabs = table.Tabs.Where(t => t.Status == 1).ToList();
+        if (openTabs.Count == 0)
+            return "Livre";
+
+        var orders = openTabs
+            .SelectMany(t => t.Orders ?? Enumerable.Empty<OrderDto>())
+            .ToList();
+
+        if (orders.Count == 0)
+            return "Ocupada";
+
+        var anyNonDelivered = orders.Any(o => o.Status is not 4 and not 5 and not 6);
+        return anyNonDelivered ? "Ocupada" : "Aguardando conta";
     }
 
     partial void OnProductToConfigureChanged(ProductDto? value)
