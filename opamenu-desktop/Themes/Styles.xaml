@@ -52,4 +52,83 @@
         <Setter Property="BorderBrush" Value="{StaticResource OpaMenuBorderBrush}" />
     </Style>
 
+    <DataTemplate x:Key="OpaMenuProductTileTemplate">
+        <Button Style="{StaticResource MaterialDesignFlatButton}" 
+                Command="{Binding DataContext.AddToCartCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                CommandParameter="{Binding}"
+                Padding="0" Margin="4" Width="180" Height="190"
+                Background="White" BorderBrush="{StaticResource OpaMenuBorderBrush}" BorderThickness="1"
+                materialDesign:ButtonAssist.CornerRadius="12">
+            <Grid Width="180" Height="190">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="110"/>
+                    <RowDefinition Height="52"/>
+                    <RowDefinition Height="28"/>
+                </Grid.RowDefinitions>
+                <Border Grid.Row="0" Background="#EEEEEE" CornerRadius="12,12,0,0" ClipToBounds="True">
+                    <Image Source="{Binding ImageUrl}" Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                </Border>
+
+                <TextBlock Grid.Row="1"
+                           Margin="10,8,10,0"
+                           Text="{Binding Name}"
+                           TextWrapping="Wrap"
+                           FontWeight="SemiBold"
+                           FontSize="13"
+                           MaxHeight="44" />
+
+                <TextBlock Grid.Row="2"
+                           Margin="10,0,10,8"
+                           Text="{Binding Price, StringFormat=C}"
+                           Foreground="{StaticResource OpaMenuPrimaryBrush}"
+                           FontWeight="Bold"
+                           VerticalAlignment="Bottom" />
+            </Grid>
+        </Button>
+    </DataTemplate>
+
+    <DataTemplate x:Key="OpaMenuTableTileTemplate">
+        <Button Style="{StaticResource MaterialDesignFlatButton}"
+                Command="{Binding DataContext.OpenTableDetailsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                CommandParameter="{Binding}"
+                Padding="0"
+                Margin="6"
+                Background="Transparent"
+                Height="Auto"
+                MinHeight="0"
+                VerticalContentAlignment="Stretch"
+                HorizontalContentAlignment="Stretch">
+            <Border Width="180" Height="110" CornerRadius="12" BorderThickness="1">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Background" Value="{StaticResource OpaMenuSurfaceBrush}" />
+                        <Setter Property="BorderBrush" Value="{StaticResource OpaMenuBorderBrush}" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Status}" Value="Livre">
+                                <Setter Property="Background" Value="#D1FAE5" />
+                                <Setter Property="BorderBrush" Value="#34D399" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Status}" Value="Ocupada">
+                                <Setter Property="Background" Value="#FEE2E2" />
+                                <Setter Property="BorderBrush" Value="#F87171" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Status}" Value="Aguardando conta">
+                                <Setter Property="Background" Value="#FEF3C7" />
+                                <Setter Property="BorderBrush" Value="#F59E0B" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <Grid Margin="14">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="{Binding DisplayName}" FontSize="18" FontWeight="Bold"/>
+                    <TextBlock Grid.Row="1" Text="{Binding Status}" VerticalAlignment="Bottom" Opacity="0.85" />
+                </Grid>
+            </Border>
+        </Button>
+    </DataTemplate>
+
 </ResourceDictionary>

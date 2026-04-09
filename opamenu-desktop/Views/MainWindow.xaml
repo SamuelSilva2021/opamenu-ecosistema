@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:local="clr-namespace:OpaMenu.Desktop.Views"
+        xmlns:vm="clr-namespace:OpaMenu.Desktop.ViewModels.Screens"
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
         Title="{Binding Title}" Height="800" Width="1280"
@@ -30,6 +31,18 @@
             <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="20" />
             <Setter Property="Height" Value="36" />
         </Style>
+
+        <DataTemplate DataType="{x:Type vm:PdvScreenViewModel}">
+            <local:PdvView />
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:TablesScreenViewModel}">
+            <local:TablesView />
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:TableDetailsScreenViewModel}">
+            <local:TableDetailsView />
+        </DataTemplate>
     </Window.Resources>
 
     <i:Interaction.Triggers>
@@ -362,9 +375,7 @@
 
             <!-- Corpo Principal -->
             <Grid Grid.Row="1" Margin="16">
-                <local:PdvView Visibility="{Binding IsPdvSection, Converter={StaticResource BoolToVis}}" />
-                <local:TablesView Visibility="{Binding IsTablesListSection, Converter={StaticResource BoolToVis}}" />
-                <local:TableDetailsView Visibility="{Binding IsTableDetailsSection, Converter={StaticResource BoolToVis}}" />
+                <ContentControl Content="{Binding CurrentScreen}" />
             </Grid>
         </Grid>
     </materialDesign:DialogHost>

@@ -22,6 +22,7 @@ using OpaMenu.Desktop.Models.DTOs.Pdv;
 using OpaMenu.Desktop.Models.Data;
 using OpaMenu.Desktop.Models.Entities;
 using OpaMenu.Desktop.Models.DTOs.Tables;
+using OpaMenu.Desktop.ViewModels.Screens;
 
 namespace OpaMenu.Desktop.ViewModels;
 
@@ -210,6 +211,18 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool _isTabCheckoutModalOpen;
 
+    public PdvScreenViewModel PdvScreen { get; }
+    public TablesScreenViewModel TablesScreen { get; }
+    public TableDetailsScreenViewModel TableDetailsScreen { get; }
+
+    public object CurrentScreen =>
+        CurrentSection switch
+        {
+            MainSection.Mesas => TablesScreen,
+            MainSection.MesaDetalhe => TableDetailsScreen,
+            _ => PdvScreen
+        };
+
     [ObservableProperty]
     private decimal _cartTotal;
 
@@ -290,6 +303,10 @@ public partial class MainViewModel : ObservableObject
         Payments.CollectionChanged += Payments_CollectionChanged;
 
         SelectedTabPaymentMethod = TabPaymentMethodOptions.FirstOrDefault();
+
+        PdvScreen = new PdvScreenViewModel(this);
+        TablesScreen = new TablesScreenViewModel(this);
+        TableDetailsScreen = new TableDetailsScreenViewModel(this);
     }
 
     partial void OnCurrentSectionChanged(MainSection value)
@@ -298,6 +315,7 @@ public partial class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(IsTablesSection));
         OnPropertyChanged(nameof(IsTablesListSection));
         OnPropertyChanged(nameof(IsTableDetailsSection));
+        OnPropertyChanged(nameof(CurrentScreen));
     }
 
     [RelayCommand]
