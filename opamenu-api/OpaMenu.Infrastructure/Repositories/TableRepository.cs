@@ -4,6 +4,7 @@ using OpaMenu.Domain.Interfaces;
 using OpaMenu.Infrastructure.Shared.Data.Context;
 using OpaMenu.Infrastructure.Shared.Data.Context.Opamenu;
 using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Infrastructure.Repositories;
 
@@ -45,11 +46,11 @@ public class TableRepository : BaseRepository<TableEntity>, ITableRepository
     {
         return await _dbSet
             .Where(t => t.TenantId == tenantId && t.Id == tableId)
-            .Include(t => t.Tabs)
+            .Include(t => t.Tabs.Where(t => t.Status == ETabStatus.Open))
                 .ThenInclude(tab => tab.Orders)
                     .ThenInclude(o => o.Items)
                         .ThenInclude(i => i.Product)
-            .Include(t => t.Tabs)
+            .Include(t => t.Tabs.Where(t => t.Status == ETabStatus.Open))
                 .ThenInclude(tab => tab.Orders)
                     .ThenInclude(o => o.Items)
                         .ThenInclude(i => i.Aditionals)

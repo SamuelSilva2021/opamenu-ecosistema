@@ -43,7 +43,7 @@ public partial class MainViewModel : ObservableObject
     private readonly ITablesService _tablesService;
 
     [ObservableProperty]
-    private string _title = "Opamenu - Frente de Caixa (PDV)";
+    private string _title = "Opamenu";
 
     [ObservableProperty]
     private string _operatorName = "Operador";
@@ -125,6 +125,11 @@ public partial class MainViewModel : ObservableObject
     // Coleções reais vindas da API
     public ObservableCollection<CategoryDto> Categories { get; } = new();
     public ObservableCollection<ProductDto> Products { get; } = new();
+
+    [ObservableProperty]
+    private CategoryDto? _selectedCategory;
+
+    public string CurrentCategoryTitle => SelectedCategory?.Name ?? "Todos";
     
     // Todos os produtos salvos em memória para filtrar rapidamente ao clicar nas categorias
     private List<ProductDto> _allProducts = new();
@@ -501,7 +506,11 @@ public partial class MainViewModel : ObservableObject
                 }
 
                 _allProducts = products.ToList();
-                FilterProductsByCategory(null); // Mostra todos inicialmente
+                SelectedCategory = Categories.FirstOrDefault();
+                if (SelectedCategory == null)
+                {
+                    ApplyCategoryFilter(null);
+                }
             }
             else
             {
@@ -523,6 +532,17 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void FilterProductsByCategory(CategoryDto? category)
     {
+        if (!ReferenceEquals(SelectedCategory, category))
+        {
+            SelectedCategory = category;
+            return;
+        }
+
+        ApplyCategoryFilter(category);
+    }
+
+    private void ApplyCategoryFilter(CategoryDto? category)
+    {
         Products.Clear();
         
         var filtered = category == null 
@@ -533,6 +553,12 @@ public partial class MainViewModel : ObservableObject
         {
             Products.Add(p);
         }
+    }
+
+    partial void OnSelectedCategoryChanged(CategoryDto? value)
+    {
+        ApplyCategoryFilter(value);
+        OnPropertyChanged(nameof(CurrentCategoryTitle));
     }
 
     [RelayCommand]

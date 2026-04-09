@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OpaMenu.Application.Services.Interfaces.Opamenu;
 using OpaMenu.Commons.Api.Commons;
@@ -7,6 +8,7 @@ using OpaMenu.Domain.DTOs;
 using OpaMenu.Domain.DTOs.CashRegister;
 using OpaMenu.Domain.DTOs.Tab;
 using OpaMenu.Domain.Interfaces;
+using OpaMenu.Infrastructure.Shared.Data.Context.Opamenu;
 using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
@@ -23,6 +25,7 @@ public class TabService(
     ICustomerRepository customerRepository,
     ITenantCustomerRepository tenantCustomerRepository,
     IMapper mapper,
+    OpamenuDbContext context,
     ILogger<TabService> logger) : ITabService
 {
     private readonly ITabRepository _tabRepository = tabRepository;
@@ -35,6 +38,7 @@ public class TabService(
     private readonly ICustomerRepository _customerRepository = customerRepository;
     private readonly ITenantCustomerRepository _tenantCustomerRepository = tenantCustomerRepository;
     private readonly IMapper _mapper = mapper;
+    private readonly OpamenuDbContext _context = context;
     private readonly ILogger<TabService> _logger = logger;
 
     public async Task<ResponseDTO<IEnumerable<TabResponseDto>>> GetByTableIdAsync(Guid tableId, ETabStatus? status = null)
@@ -172,24 +176,37 @@ public class TabService(
             if (tab.Status == ETabStatus.Closed)
                 return StaticResponseBuilder<TabResponseDto>.BuildError("Comanda já está fechada");
 
-            var orders = (await _orderRepository.GetByTabIdAsync(tenantId.Value, tabId))
-                .Where(o => o.Status != EOrderStatus.Cancelled && o.Status != EOrderStatus.Rejected)
+            var orders = await _context.Orders
+                .AsNoTracking()
+                .Where(o =>
+                    o.TenantId == tenantId.Value &&
+                    o.TabId == tabId &&
+                    o.Status != EOrderStatus.Cancelled &&
+                    o.Status != EOrderStatus.Rejected)
+                .Select(o => new
+                {
+                    o.Id,
+                    o.OrderNumber,
+                    o.Total,
+                    o.CreatedAt,
+                    Paid = o.Payments
+                        .Where(p => p.Status == EPaymentStatus.Paid)
+                        .Sum(p => p.Amount)
+                })
                 .OrderBy(o => o.CreatedAt)
-                .ToList();
+                .ToListAsync();
 
             if (orders.Count == 0)
-                return StaticResponseBuilder<TabResponseDto>.BuildError("Não existem pedidos para fechar esta comanda");
+                return await CloseAsync(tableId, tabId);
+
+            var paymentsToCreate = new List<PaymentEntity>();
 
             foreach (var order in orders)
             {
-                var paid = order.Payments
-                    .Where(p => p.Status == EPaymentStatus.Paid)
-                    .Sum(p => p.Amount);
-
-                if (paid >= order.Total - 0.01m)
+                if (order.Paid >= order.Total - 0.01m)
                     continue;
 
-                if (paid > 0.01m)
+                if (order.Paid > 0.01m)
                     return StaticResponseBuilder<TabResponseDto>.BuildError($"Pedido #{order.OrderNumber} possui pagamento parcial. Não é possível fechar por comanda.");
 
                 var cashMovementResult = await _cashRegisterService.AddMovementAsync(new AddCashMovementRequestDto
@@ -207,21 +224,29 @@ public class TabService(
                     return StaticResponseBuilder<TabResponseDto>.BuildError(message);
                 }
 
-                order.Payments.Add(new PaymentEntity
+                var now = DateTime.UtcNow;
+                paymentsToCreate.Add(new PaymentEntity
                 {
                     Id = Guid.NewGuid(),
                     TenantId = tenantId.Value,
                     OrderId = order.Id,
                     Amount = order.Total,
                     Method = dto.PaymentMethod,
+                    Provider = EPaymentProvider.None,
                     Status = EPaymentStatus.Paid,
-                    PaidAt = DateTime.UtcNow,
+                    CreatedAt = now,
+                    UpdatedAt = now,
+                    PaidAt = now,
                     Notes = "Pagamento realizado no fechamento de comanda (PDV)"
                 });
-
-                await _orderRepository.UpdateAsync(order);
             }
 
+            if (paymentsToCreate.Count == 0)
+                return await CloseAsync(tableId, tabId);
+
+            _context.ChangeTracker.Clear();
+            _context.Payments.AddRange(paymentsToCreate);
+            await _context.SaveChangesAsync();
             return await CloseAsync(tableId, tabId);
         }
         catch (Exception ex)

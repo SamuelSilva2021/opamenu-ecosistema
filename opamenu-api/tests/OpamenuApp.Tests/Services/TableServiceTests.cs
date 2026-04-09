@@ -68,7 +68,7 @@ public class TableServiceTests
     }
 
     [Fact]
-    public async Task GetPagedWithDetailsAsync_WhenTenantExists_ReturnsPagedOk()
+    public async Task GetPagedWithTabsAsync_WhenTenantExists_ReturnsPagedOk()
     {
         _mockCurrentUserService.Setup(x => x.GetTenantGuid()).Returns(_tenantId);
 
@@ -85,7 +85,7 @@ public class TableServiceTests
         };
 
         _mockTableRepository
-            .Setup(x => x.GetPagedByTenantIdWithDetailsAsync(_tenantId, 1, 50))
+            .Setup(x => x.GetPagedWithTabsAsync(_tenantId, 1, 50))
             .ReturnsAsync(tables);
 
         _mockTableRepository
@@ -113,7 +113,7 @@ public class TableServiceTests
             _mockUrlBuilderService.Object,
             _mockLogger.Object);
 
-        var result = await service.GetPagedWithDetailsAsync(1, 50);
+        var result = await service.GetPagedWithTabsAsync(1, 50);
 
         Assert.True(result.Succeeded);
         Assert.NotNull(result.Data);
