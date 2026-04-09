@@ -23,6 +23,8 @@ using OpaMenu.Desktop.Models.Data;
 using OpaMenu.Desktop.Models.Entities;
 using OpaMenu.Desktop.Models.DTOs.Tables;
 using OpaMenu.Desktop.ViewModels.Screens;
+using OpaMenu.Desktop.ViewModels.Components;
+using OpaMenu.Desktop.ViewModels.Dialogs;
 
 namespace OpaMenu.Desktop.ViewModels;
 
@@ -42,6 +44,7 @@ public partial class MainViewModel : ObservableObject
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly UserStore _userStore;
     private readonly ITablesService _tablesService;
+    private readonly IDialogService _dialogService;
 
     [ObservableProperty]
     private string _title = "Opamenu";
@@ -215,6 +218,8 @@ public partial class MainViewModel : ObservableObject
     public TablesScreenViewModel TablesScreen { get; }
     public TableDetailsScreenViewModel TableDetailsScreen { get; }
 
+    public DialogHostViewModel DialogHost => _dialogService.Host;
+
     public object CurrentScreen =>
         CurrentSection switch
         {
@@ -290,7 +295,8 @@ public partial class MainViewModel : ObservableObject
         IAuthService authService,
         IHttpClientFactory httpClientFactory,
         UserStore userStore,
-        ITablesService tablesService)
+        ITablesService tablesService,
+        IDialogService dialogService)
     {
         _catalogService = catalogService;
         _dbContext = dbContext;
@@ -299,14 +305,15 @@ public partial class MainViewModel : ObservableObject
         _httpClientFactory = httpClientFactory;
         _userStore = userStore;
         _tablesService = tablesService;
+        _dialogService = dialogService;
 
         Payments.CollectionChanged += Payments_CollectionChanged;
 
         SelectedTabPaymentMethod = TabPaymentMethodOptions.FirstOrDefault();
 
-        PdvScreen = new PdvScreenViewModel(this);
-        TablesScreen = new TablesScreenViewModel(this);
-        TableDetailsScreen = new TableDetailsScreenViewModel(this);
+        PdvScreen = new PdvScreenViewModel(_catalogService, _dbContext, _authService, _httpClientFactory, () => IsCashShiftOpen, _dialogService);
+        TablesScreen = new TablesScreenViewModel(_tablesService, OpenTableDetailsFromTablesAsync);
+        TableDetailsScreen = new TableDetailsScreenViewModel(_tablesService, () => IsCashShiftOpen, NavigateBackToTablesFromDetails, _dialogService);
     }
 
     partial void OnCurrentSectionChanged(MainSection value)
@@ -328,7 +335,32 @@ public partial class MainViewModel : ObservableObject
     private async Task NavigateToTablesAsync()
     {
         CurrentSection = MainSection.Mesas;
-        await LoadTablesAsync();
+        try
+        {
+            await TablesScreen.LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowMessageAsync("Mesas", ex.Message);
+        }
+    }
+
+    private async Task OpenTableDetailsFromTablesAsync(Guid tableId)
+    {
+        try
+        {
+            await TableDetailsScreen.LoadTableAsync(tableId);
+            CurrentSection = MainSection.MesaDetalhe;
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowMessageAsync("Mesas", ex.Message);
+        }
+    }
+
+    private void NavigateBackToTablesFromDetails()
+    {
+        CurrentSection = MainSection.Mesas;
     }
 
     [RelayCommand]
@@ -339,7 +371,7 @@ public partial class MainViewModel : ObservableObject
             var details = await _tablesService.GetTableFullByIdAsync(table.Id);
             if (details == null)
             {
-                MessageBox.Show("Não foi possível carregar os detalhes da mesa.", "Mesas", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await _dialogService.ShowMessageAsync("Mesas", "Não foi possível carregar os detalhes da mesa.");
                 return;
             }
 
@@ -349,7 +381,7 @@ public partial class MainViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message, "Mesas", MessageBoxButton.OK, MessageBoxImage.Error);
+            await _dialogService.ShowMessageAsync("Mesas", ex.Message);
         }
     }
 
@@ -393,13 +425,13 @@ public partial class MainViewModel : ObservableObject
 
         if (!IsCashShiftOpen)
         {
-            MessageBox.Show("Não é possível fechar comanda com o caixa fechado.", "Mesas", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _ = _dialogService.ShowMessageAsync("Mesas", "Não é possível fechar comanda com o caixa fechado.");
             return;
         }
 
         if (!CanCheckoutSelectedTab)
         {
-            MessageBox.Show("Selecione uma comanda aberta para fechar.", "Mesas", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _ = _dialogService.ShowMessageAsync("Mesas", "Selecione uma comanda aberta para fechar.");
             return;
         }
 
@@ -427,7 +459,7 @@ public partial class MainViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message, "Fechamento de Comanda", MessageBoxButton.OK, MessageBoxImage.Error);
+            await _dialogService.ShowMessageAsync("Fechamento de Comanda", ex.Message);
         }
     }
 
@@ -506,40 +538,13 @@ public partial class MainViewModel : ObservableObject
         try
         {
             UpdateOperatorFromUserStore();
-
-            var categoriesTask = _catalogService.GetCategoriesAsync();
-            var productsTask = _catalogService.GetProductsAsync();
-
-            await Task.WhenAll(categoriesTask, productsTask);
-
-            var categories = await categoriesTask;
-            var products = await productsTask;
-
-            if (categories != null && products != null)
-            {
-                Categories.Clear();
-                foreach (var cat in categories.OrderBy(c => c.DisplayOrder))
-                {
-                    Categories.Add(cat);
-                }
-
-                _allProducts = products.ToList();
-                SelectedCategory = Categories.FirstOrDefault();
-                if (SelectedCategory == null)
-                {
-                    ApplyCategoryFilter(null);
-                }
-            }
-            else
-            {
-                MessageBox.Show("Não foi possível carregar os dados. Verifique a conexão com a API e o login.");
-            }
+            await PdvScreen.LoadStorefrontAsync();
 
             await LoadCashShiftAsync();
         }
         catch (System.Exception ex)
         {
-            MessageBox.Show($"Erro ao carregar dados: {ex.Message}");
+            await _dialogService.ShowMessageAsync("Erro", $"Erro ao carregar dados: {ex.Message}");
         }
         finally
         {
@@ -589,7 +594,7 @@ public partial class MainViewModel : ObservableObject
             if (!group.IsSelectionValid())
             {
                 var rangeText = group.GetSelectionRangeText();
-                MessageBox.Show($"Seleção inválida em \"{group.Name}\". {rangeText}", "Adicionais", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _ = _dialogService.ShowMessageAsync("Adicionais", $"Seleção inválida em \"{group.Name}\". {rangeText}");
                 return;
             }
         }
@@ -750,7 +755,7 @@ public partial class MainViewModel : ObservableObject
     {
         if (CartItems.Count == 0)
         {
-            MessageBox.Show("O carrinho está vazio!");
+            _ = _dialogService.ShowMessageAsync("PDV", "O carrinho está vazio!");
             return;
         }
         ResetPaymentsForCheckout();
@@ -852,14 +857,14 @@ public partial class MainViewModel : ObservableObject
         {
             if (!IsCashShiftOpen)
             {
-                MessageBox.Show("Abra o caixa antes de realizar vendas.", "Caixa", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await _dialogService.ShowMessageAsync("Caixa", "Abra o caixa antes de realizar vendas.");
                 return;
             }
 
             var validationError = ValidatePayments();
             if (!string.IsNullOrWhiteSpace(validationError))
             {
-                MessageBox.Show(validationError, "Pagamento", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await _dialogService.ShowMessageAsync("Pagamento", validationError);
                 return;
             }
 
@@ -957,7 +962,7 @@ public partial class MainViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Erro ao salvar a venda: {ex.Message}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+            await _dialogService.ShowMessageAsync("Erro", $"Erro ao salvar a venda: {ex.Message}");
         }
     }
 
@@ -1184,13 +1189,12 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void OpenCashShiftModal()
+    private async Task OpenCashShiftModalAsync()
     {
         IsCashMovementModal = false;
         IsClosingCashShift = false;
         OpeningCashBalance = 0m;
-        IsCashModalOpen = true;
-        IsAnyModalOpen = true;
+        await _dialogService.ShowAsync(new CashDialogViewModel(this, _dialogService));
     }
 
     [RelayCommand]
@@ -1201,7 +1205,7 @@ public partial class MainViewModel : ObservableObject
 
         if (hasPendingOrders)
         {
-            MessageBox.Show("Existem vendas pendentes de sincronização. Sincronize antes de fechar o caixa.", "Caixa", MessageBoxButton.OK, MessageBoxImage.Warning);
+            await _dialogService.ShowMessageAsync("Caixa", "Existem vendas pendentes de sincronização. Sincronize antes de fechar o caixa.");
             return;
         }
 
@@ -1209,17 +1213,16 @@ public partial class MainViewModel : ObservableObject
         IsClosingCashShift = true;
         ClosingCashBalance = 0m;
         ClosingDiscrepancyJustification = string.Empty;
-        IsCashModalOpen = true;
-        IsAnyModalOpen = true;
         await LoadActiveShiftSummaryIntoModalAsync();
+        await _dialogService.ShowAsync(new CashDialogViewModel(this, _dialogService));
     }
 
     [RelayCommand]
-    private void OpenCashInboundMovementModal()
+    private async Task OpenCashInboundMovementModalAsync()
     {
         if (!IsCashShiftOpen)
         {
-            MessageBox.Show("Não é possível registrar suprimento com o caixa fechado.", "Caixa", MessageBoxButton.OK, MessageBoxImage.Warning);
+            await _dialogService.ShowMessageAsync("Caixa", "Não é possível registrar suprimento com o caixa fechado.");
             return;
         }
 
@@ -1228,16 +1231,15 @@ public partial class MainViewModel : ObservableObject
         CashMovementType = ECashMovementType.Inbound;
         CashMovementAmount = 0m;
         CashMovementDescription = string.Empty;
-        IsCashModalOpen = true;
-        IsAnyModalOpen = true;
+        await _dialogService.ShowAsync(new CashDialogViewModel(this, _dialogService));
     }
 
     [RelayCommand]
-    private void OpenCashOutboundMovementModal()
+    private async Task OpenCashOutboundMovementModalAsync()
     {
         if (!IsCashShiftOpen)
         {
-            MessageBox.Show("Não é possível registrar sangria com o caixa fechado.", "Caixa", MessageBoxButton.OK, MessageBoxImage.Warning);
+            await _dialogService.ShowMessageAsync("Caixa", "Não é possível registrar sangria com o caixa fechado.");
             return;
         }
 
@@ -1246,50 +1248,41 @@ public partial class MainViewModel : ObservableObject
         CashMovementType = ECashMovementType.Outbound;
         CashMovementAmount = 0m;
         CashMovementDescription = string.Empty;
-        IsCashModalOpen = true;
-        IsAnyModalOpen = true;
+        await _dialogService.ShowAsync(new CashDialogViewModel(this, _dialogService));
     }
 
     [RelayCommand]
     private async Task ConfirmCashShiftAsync()
     {
-        try
+        if (IsCashMovementModal)
         {
-            if (IsCashMovementModal)
-            {
-                if (CashMovementAmount <= 0m)
-                    throw new InvalidOperationException("Informe um valor maior que zero.");
+            if (CashMovementAmount <= 0m)
+                throw new InvalidOperationException("Informe um valor maior que zero.");
 
-                var description = CashMovementDescription?.Trim() ?? string.Empty;
-                if (string.IsNullOrWhiteSpace(description))
-                    throw new InvalidOperationException("Informe uma descrição para a movimentação.");
+            var description = CashMovementDescription?.Trim() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(description))
+                throw new InvalidOperationException("Informe uma descrição para a movimentação.");
 
-                await _cashRegisterService.AddMovementAsync(CashMovementType, CashMovementAmount, description);
-                var shift = await _cashRegisterService.GetActiveShiftAsync();
-                ApplyCashShiftState(shift);
-            }
-            else if (IsClosingCashShift)
-            {
-                var diff = Math.Abs(ClosingCashBalance - ExpectedCashBalance);
-                if (diff >= 0.01m && string.IsNullOrWhiteSpace(ClosingDiscrepancyJustification))
-                    throw new System.InvalidOperationException("Informe uma justificativa para a diferença no fechamento.");
-
-                var summary = await _cashRegisterService.CloseShiftWithSummaryAsync(ClosingCashBalance, ClosingDiscrepancyJustification?.Trim());
-                //MessageBox.Show(BuildCloseSummaryText(summary), "Fechamento de Caixa", MessageBoxButton.OK, MessageBoxImage.Information);
-                ApplyCashShiftState(summary.Shift);
-            }
-            else
-            {
-                var shift = await _cashRegisterService.OpenShiftAsync(OpeningCashBalance);
-                ApplyCashShiftState(shift);
-            }
-
-            CloseModals();
+            await _cashRegisterService.AddMovementAsync(CashMovementType, CashMovementAmount, description);
+            var shift = await _cashRegisterService.GetActiveShiftAsync();
+            ApplyCashShiftState(shift);
         }
-        catch (System.Exception ex)
+        else if (IsClosingCashShift)
         {
-            MessageBox.Show(ex.Message, "Caixa", MessageBoxButton.OK, MessageBoxImage.Error);
+            var diff = Math.Abs(ClosingCashBalance - ExpectedCashBalance);
+            if (diff >= 0.01m && string.IsNullOrWhiteSpace(ClosingDiscrepancyJustification))
+                throw new System.InvalidOperationException("Informe uma justificativa para a diferença no fechamento.");
+
+            var summary = await _cashRegisterService.CloseShiftWithSummaryAsync(ClosingCashBalance, ClosingDiscrepancyJustification?.Trim());
+            ApplyCashShiftState(summary.Shift);
         }
+        else
+        {
+            var shift = await _cashRegisterService.OpenShiftAsync(OpeningCashBalance);
+            ApplyCashShiftState(shift);
+        }
+
+        CloseModals();
     }
 
     [RelayCommand]
@@ -1390,142 +1383,7 @@ public partial class MainViewModel : ObservableObject
         }
         catch (System.Exception ex)
         {
-            MessageBox.Show($"Falha ao carregar resumo do caixa: {ex.Message}", "Caixa", MessageBoxButton.OK, MessageBoxImage.Warning);
+            await _dialogService.ShowMessageAsync("Caixa", $"Falha ao carregar resumo do caixa: {ex.Message}");
         }
     }
 }
-
-public partial class SelectableAditional : ObservableObject
-{
-    public AditionalResponseDto Addon { get; }
-    public SelectableAditionalGroup Group { get; }
-    
-    [ObservableProperty]
-    private bool _isSelected;
-
-    public string DisplayText => Addon.Price > 0m ? $"{Addon.Name} (+{Addon.Price:C})" : Addon.Name;
-
-    public SelectableAditional(AditionalResponseDto addon, SelectableAditionalGroup group)
-    {
-        Addon = addon;
-        Group = group;
-    }
-
-    partial void OnIsSelectedChanged(bool value)
-    {
-        Group.HandleSelectionChanged(this, value);
-    }
-}
-
-public partial class SelectableAditionalGroup : ObservableObject
-{
-    private bool _isHandling;
-
-    public Guid Id { get; }
-    public string Name { get; }
-    public string? Description { get; }
-    public EAditionalGroupType Type { get; }
-    public bool IsRequired { get; }
-    public int? MinSelections { get; }
-    public int? MaxSelections { get; }
-
-    public ObservableCollection<SelectableAditional> Options { get; } = new();
-
-    public SelectableAditionalGroup(AditionalGroupResponseDto dto, bool isRequired, int? minSelections, int? maxSelections)
-    {
-        Id = dto.Id;
-        Name = dto.Name;
-        Description = dto.Description;
-        Type = dto.Type;
-        IsRequired = isRequired;
-        MinSelections = minSelections;
-        MaxSelections = maxSelections;
-    }
-
-    public void HandleSelectionChanged(SelectableAditional option, bool isSelected)
-    {
-        if (_isHandling)
-            return;
-
-        try
-        {
-            _isHandling = true;
-
-            if (Type == EAditionalGroupType.Single && isSelected)
-            {
-                foreach (var other in Options.Where(o => !ReferenceEquals(o, option) && o.IsSelected))
-                {
-                    other.IsSelected = false;
-                }
-                return;
-            }
-
-            var effectiveMax = GetEffectiveMax();
-            if (effectiveMax.HasValue && SelectedCount() > effectiveMax.Value)
-            {
-                option.IsSelected = false;
-            }
-        }
-        finally
-        {
-            _isHandling = false;
-        }
-    }
-
-    public bool IsSelectionValid()
-    {
-        var count = SelectedCount();
-        var min = GetEffectiveMin();
-        var max = GetEffectiveMax();
-
-        if (count < min)
-            return false;
-
-        if (max.HasValue && count > max.Value)
-            return false;
-
-        return true;
-    }
-
-    public string GetSelectionRangeText()
-    {
-        var min = GetEffectiveMin();
-        var max = GetEffectiveMax();
-        if (max.HasValue)
-            return $"Selecione entre {min} e {max.Value}.";
-
-        return min > 0 ? $"Selecione no mínimo {min}." : "Seleção livre.";
-    }
-
-    private int GetEffectiveMin()
-    {
-        if (IsRequired && (!MinSelections.HasValue || MinSelections.Value < 1))
-            return 1;
-
-        if (Type == EAditionalGroupType.Single)
-            return MinSelections.HasValue ? Math.Clamp(MinSelections.Value, 0, 1) : (IsRequired ? 1 : 0);
-
-        return MinSelections ?? 0;
-    }
-
-    private int? GetEffectiveMax()
-    {
-        if (Type == EAditionalGroupType.Single)
-            return 1;
-
-        return MaxSelections;
-    }
-
-    private int SelectedCount() => Options.Count(o => o.IsSelected);
-}
-
-public partial class PaymentEntry : ObservableObject
-{
-    [ObservableProperty]
-    private string _method = "Pix";
-
-    [ObservableProperty]
-    private decimal _amount;
-}
-
-public record PaymentBreakdownItem(string Method, decimal Amount);

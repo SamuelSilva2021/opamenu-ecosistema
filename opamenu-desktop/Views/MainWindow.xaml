@@ -6,6 +6,7 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:local="clr-namespace:OpaMenu.Desktop.Views"
         xmlns:vm="clr-namespace:OpaMenu.Desktop.ViewModels.Screens"
+        xmlns:dlgvm="clr-namespace:OpaMenu.Desktop.ViewModels.Dialogs"
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
         Title="{Binding Title}" Height="800" Width="1280"
@@ -43,6 +44,254 @@
         <DataTemplate DataType="{x:Type vm:TableDetailsScreenViewModel}">
             <local:TableDetailsView />
         </DataTemplate>
+
+        <DataTemplate DataType="{x:Type dlgvm:MessageDialogViewModel}">
+            <Border Width="420" Background="{StaticResource OpaMenuSurfaceBrush}" CornerRadius="12" Padding="24">
+                <StackPanel>
+                    <TextBlock Text="{Binding Title}" FontSize="{StaticResource OpaMenuFontSizeH4}" FontWeight="Bold" Margin="0,0,0,16"/>
+                    <TextBlock Text="{Binding Message}" TextWrapping="Wrap" Margin="0,0,0,24"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Style="{StaticResource OpaMenuPrimaryButton}" Content="OK" Command="{Binding OkCommand}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type dlgvm:CashDialogViewModel}">
+            <Border Width="420" Background="{StaticResource OpaMenuSurfaceBrush}" CornerRadius="12" Padding="24">
+                <StackPanel>
+                    <TextBlock Text="{Binding Title}" FontSize="{StaticResource OpaMenuFontSizeH4}" FontWeight="Bold" Margin="0,0,0,24"/>
+
+                    <StackPanel Visibility="{Binding IsOpeningCashShift, Converter={StaticResource BoolToVis}}">
+                        <TextBox Style="{StaticResource OpaMenuTextBox}"
+                                 materialDesign:HintAssist.Hint="Saldo inicial (R$)"
+                                 Text="{Binding OpeningCashBalance, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,16"/>
+                    </StackPanel>
+
+                    <StackPanel Visibility="{Binding IsClosingCashShift, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Text="Resumo deste caixa" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <ItemsControl ItemsSource="{Binding ClosingSalesByPaymentMethod}" Margin="0,0,0,8">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <DockPanel LastChildFill="False" Margin="0,2">
+                                        <TextBlock Text="{Binding PaymentMethodName}" Width="160"/>
+                                        <TextBlock Text="{Binding TotalAmount, StringFormat={}{0:C}}"/>
+                                    </DockPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <TextBlock Text="Vendas:" Width="160"/>
+                            <TextBlock Text="{Binding ClosingTotalSales, StringFormat={}{0:C}}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <TextBlock Text="Entradas:" Width="160"/>
+                            <TextBlock Text="{Binding ClosingTotalInflows, StringFormat={}{0:C}}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <TextBlock Text="Saídas:" Width="160"/>
+                            <TextBlock Text="{Binding ClosingTotalOutflows, StringFormat={}{0:C}}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                            <TextBlock Text="Saldo esperado:" Width="160"/>
+                            <TextBlock Text="{Binding ExpectedCashBalance, StringFormat={}{0:C}}" FontWeight="SemiBold"/>
+                        </StackPanel>
+
+                        <TextBox Style="{StaticResource OpaMenuTextBox}"
+                                 materialDesign:HintAssist.Hint="Saldo de fechamento (R$)"
+                                 Text="{Binding ClosingCashBalance, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,16"/>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                            <TextBlock Text="Diferença:" Width="160"/>
+                            <TextBlock Text="{Binding ClosingDiscrepancy, StringFormat={}{0:C}}" FontWeight="SemiBold"/>
+                        </StackPanel>
+
+                        <TextBox Style="{StaticResource OpaMenuTextBox}"
+                                 materialDesign:HintAssist.Hint="Justificativa (obrigatória se houver diferença)"
+                                 Text="{Binding ClosingDiscrepancyJustification, UpdateSourceTrigger=PropertyChanged}"
+                                 Visibility="{Binding HasClosingDiscrepancy, Converter={StaticResource BoolToVis}}"
+                                 Margin="0,0,0,16"/>
+                    </StackPanel>
+
+                    <StackPanel Visibility="{Binding IsCashMovementModal, Converter={StaticResource BoolToVis}}">
+                        <TextBox Style="{StaticResource OpaMenuTextBox}"
+                                 materialDesign:HintAssist.Hint="Valor (R$)"
+                                 Text="{Binding CashMovementAmount, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,16"/>
+
+                        <TextBox Style="{StaticResource OpaMenuTextBox}"
+                                 materialDesign:HintAssist.Hint="Descrição"
+                                 Text="{Binding CashMovementDescription, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,24"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Style="{StaticResource MaterialDesignFlatButton}" Content="CANCELAR" Command="{Binding CancelCommand}" Margin="0,0,8,0" />
+                        <Button Style="{StaticResource OpaMenuPrimaryButton}" Content="CONFIRMAR" Command="{Binding ConfirmCommand}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type dlgvm:PdvCustomerDialogViewModel}">
+            <Border Width="400" Background="{StaticResource OpaMenuSurfaceBrush}" CornerRadius="12" Padding="24">
+                <StackPanel>
+                    <TextBlock Text="{Binding Title}" FontSize="{StaticResource OpaMenuFontSizeH4}" FontWeight="Bold" Margin="0,0,0,24"/>
+
+                    <TextBox Style="{StaticResource OpaMenuTextBox}" 
+                             materialDesign:HintAssist.Hint="Número da Mesa" 
+                             Text="{Binding TableNumber, UpdateSourceTrigger=PropertyChanged}"
+                             Margin="0,0,0,16"/>
+
+                    <TextBox Style="{StaticResource OpaMenuTextBox}" 
+                             materialDesign:HintAssist.Hint="Nome do Cliente (Para Chamar)" 
+                             Text="{Binding CustomerName, UpdateSourceTrigger=PropertyChanged}"
+                             Margin="0,0,0,16"/>
+
+                    <TextBox Style="{StaticResource OpaMenuTextBox}" 
+                             materialDesign:HintAssist.Hint="CPF na Nota (Opcional)" 
+                             Text="{Binding CustomerDocument, UpdateSourceTrigger=PropertyChanged}"
+                             Margin="0,0,0,16"/>
+
+                    <TextBox Style="{StaticResource OpaMenuTextBox}" 
+                             materialDesign:HintAssist.Hint="Observações do Pedido (Opcional)" 
+                             Text="{Binding OrderObservation, UpdateSourceTrigger=PropertyChanged}"
+                             Margin="0,0,0,24"
+                             AcceptsReturn="True" Height="60" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Style="{StaticResource MaterialDesignFlatButton}" Content="CANCELAR" Command="{Binding CancelCommand}" Margin="0,0,8,0" />
+                        <Button Style="{StaticResource OpaMenuPrimaryButton}" Content="SALVAR" Command="{Binding SaveCommand}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type dlgvm:PdvAddonsDialogViewModel}">
+            <Border Width="500" Background="{StaticResource OpaMenuSurfaceBrush}" CornerRadius="12" Padding="24">
+                <StackPanel>
+                    <TextBlock Text="{Binding Title}" FontSize="{StaticResource OpaMenuFontSizeH4}" FontWeight="Bold" Margin="0,0,0,24"/>
+
+                    <ScrollViewer MaxHeight="420" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding AddonGroups}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,0,0,16">
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                        <TextBlock Text="{Binding Description}" Opacity="0.75" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                        <ItemsControl ItemsSource="{Binding Options}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <CheckBox Content="{Binding DisplayText}" IsChecked="{Binding IsSelected}" Margin="0,2"/>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <TextBox Style="{StaticResource OpaMenuTextBox}" 
+                             materialDesign:HintAssist.Hint="Observação do Item" 
+                             Text="{Binding ItemNotes, UpdateSourceTrigger=PropertyChanged}"
+                             Margin="0,16,0,16"/>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Style="{StaticResource MaterialDesignFlatButton}" Content="CANCELAR" Command="{Binding CancelCommand}" Margin="0,0,8,0" />
+                        <Button Style="{StaticResource OpaMenuPrimaryButton}" Content="ADICIONAR" Command="{Binding AddCommand}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type dlgvm:PdvCheckoutDialogViewModel}">
+            <Border Width="500" Background="{StaticResource OpaMenuSurfaceBrush}" CornerRadius="12" Padding="24">
+                <StackPanel>
+                    <TextBlock Text="{Binding Title}" FontSize="{StaticResource OpaMenuFontSizeH4}" FontWeight="Bold" Margin="0,0,0,24"/>
+
+                    <TextBlock Text="{Binding CartTotal, StringFormat='Total a Pagar: {0:C}'}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource OpaMenuPrimaryBrush}" Margin="0,0,0,16"/>
+
+                    <ScrollViewer MaxHeight="220" VerticalScrollBarVisibility="Auto" Margin="0,0,0,12">
+                        <ItemsControl ItemsSource="{Binding Payments}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="140"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <ComboBox Grid.Column="0"
+                                                  ItemsSource="{Binding DataContext.PaymentMethodOptions, RelativeSource={RelativeSource AncestorType=ContentControl}}"
+                                                  SelectedItem="{Binding Method, UpdateSourceTrigger=PropertyChanged}"
+                                                  Style="{StaticResource MaterialDesignFloatingHintComboBox}"
+                                                  materialDesign:HintAssist.Hint="Forma"
+                                                  Margin="0,0,8,0" />
+
+                                        <TextBox Grid.Column="1"
+                                                 Style="{StaticResource OpaMenuTextBox}"
+                                                 materialDesign:HintAssist.Hint="Valor (R$)"
+                                                 Text="{Binding Amount, UpdateSourceTrigger=PropertyChanged}"
+                                                 Margin="0,0,8,0" />
+
+                                        <Button Grid.Column="2"
+                                                Style="{StaticResource MaterialDesignIconButton}"
+                                                Command="{Binding DataContext.RemovePaymentCommand, RelativeSource={RelativeSource AncestorType=ContentControl}}"
+                                                CommandParameter="{Binding}"
+                                                ToolTip="Remover">
+                                            <materialDesign:PackIcon Kind="Close" />
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <Button Style="{StaticResource OpaMenuOutlineButton}"
+                            Content="Adicionar pagamento"
+                            Command="{Binding AddPaymentCommand}"
+                            Margin="0,0,0,16"/>
+
+                    <StackPanel Margin="0,0,0,24">
+                        <TextBlock Text="{Binding TotalPaid, StringFormat='Total pago: {0:C}'}" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <TextBlock Text="{Binding RemainingAmount, StringFormat='Restante: {0:C}'}" Margin="0,0,0,4"/>
+                        <TextBlock Text="{Binding ChangeAmount, StringFormat='Troco: {0:C}'}" Foreground="#4CAF50" FontWeight="SemiBold"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Style="{StaticResource MaterialDesignFlatButton}" Content="CANCELAR" Command="{Binding CancelCommand}" Margin="0,0,8,0" />
+                        <Button Style="{StaticResource OpaMenuPrimaryButton}" Content="CONFIRMAR PAGAMENTO" Command="{Binding ConfirmCommand}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type dlgvm:TabCheckoutDialogViewModel}">
+            <Border Width="480" Background="{StaticResource OpaMenuSurfaceBrush}" CornerRadius="12" Padding="24">
+                <StackPanel>
+                    <TextBlock Text="{Binding Title}" FontSize="{StaticResource OpaMenuFontSizeH4}" FontWeight="Bold" Margin="0,0,0,16"/>
+
+                    <TextBlock Text="{Binding SelectedTabTotal, StringFormat='Total da comanda: {0:C}'}" FontSize="22" FontWeight="Bold" Foreground="{StaticResource OpaMenuPrimaryBrush}" Margin="0,0,0,16"/>
+
+                    <ComboBox ItemsSource="{Binding TabPaymentMethodOptions}"
+                              SelectedItem="{Binding SelectedTabPaymentMethod, UpdateSourceTrigger=PropertyChanged}"
+                              DisplayMemberPath="Name"
+                              Style="{StaticResource MaterialDesignFloatingHintComboBox}"
+                              materialDesign:HintAssist.Hint="Forma de pagamento"
+                              Margin="0,0,0,24" />
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Style="{StaticResource MaterialDesignFlatButton}" Content="CANCELAR" Command="{Binding CancelCommand}" Margin="0,0,8,0" />
+                        <Button Style="{StaticResource OpaMenuPrimaryButton}" Content="CONFIRMAR" Command="{Binding ConfirmCommand}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
     </Window.Resources>
 
     <i:Interaction.Triggers>
@@ -51,253 +300,14 @@
         </i:EventTrigger>
     </i:Interaction.Triggers>
 
-    <materialDesign:DialogHost DialogTheme="Inherit" IsOpen="{Binding IsAnyModalOpen}">
+    <materialDesign:DialogHost DialogTheme="Inherit" IsOpen="{Binding DialogHost.IsOpen}">
         <materialDesign:DialogHost.DialogContent>
             <Grid Margin="16">
-                <!-- Modal de Identificação do Cliente -->
-                <Border Width="400" Background="{StaticResource OpaMenuSurfaceBrush}" CornerRadius="12" Padding="24"
-                        Visibility="{Binding IsCustomerModalOpen, Converter={StaticResource BoolToVis}}">
-                    <StackPanel>
-                        <TextBlock Text="Identificação do Cliente" FontSize="{StaticResource OpaMenuFontSizeH4}" FontWeight="Bold" Margin="0,0,0,24"/>
-
-                        <TextBox Style="{StaticResource OpaMenuTextBox}" 
-                                 materialDesign:HintAssist.Hint="Número da Mesa" 
-                                 Text="{Binding TableNumber, UpdateSourceTrigger=PropertyChanged}"
-                                 Margin="0,0,0,16"/>
-
-                        <TextBox Style="{StaticResource OpaMenuTextBox}" 
-                                 materialDesign:HintAssist.Hint="Nome do Cliente (Para Chamar)" 
-                                 Text="{Binding CustomerName, UpdateSourceTrigger=PropertyChanged}"
-                                 Margin="0,0,0,16"/>
-
-                        <TextBox Style="{StaticResource OpaMenuTextBox}" 
-                                 materialDesign:HintAssist.Hint="CPF na Nota (Opcional)" 
-                                 Text="{Binding CustomerDocument, UpdateSourceTrigger=PropertyChanged}"
-                                 Margin="0,0,0,16"/>
-
-                        <TextBox Style="{StaticResource OpaMenuTextBox}" 
-                                 materialDesign:HintAssist.Hint="Observações do Pedido (Opcional)" 
-                                 Text="{Binding OrderObservation, UpdateSourceTrigger=PropertyChanged}"
-                                 Margin="0,0,0,24" AcceptsReturn="True" Height="60" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
-
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Style="{StaticResource MaterialDesignFlatButton}" 
-                                    Content="CANCELAR" 
-                                    Command="{Binding CloseModalsCommand}" 
-                                    Margin="0,0,8,0" />
-                            <Button Style="{StaticResource OpaMenuPrimaryButton}" 
-                                    Content="SALVAR" 
-                                    Command="{Binding CloseModalsCommand}" />
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-
-                <!-- Modal de Seleção de Adicionais -->
-                <Border Width="500" Background="{StaticResource OpaMenuSurfaceBrush}" CornerRadius="12" Padding="24"
-                        Visibility="{Binding IsAddonSelectionModalOpen, Converter={StaticResource BoolToVis}}">
-                    <StackPanel>
-                        <TextBlock Text="{Binding ProductToConfigure.Name, StringFormat='Personalizar: {0}'}" FontSize="{StaticResource OpaMenuFontSizeH4}" FontWeight="Bold" Margin="0,0,0,24"/>
-
-                        <ScrollViewer MaxHeight="420" VerticalScrollBarVisibility="Auto">
-                            <ItemsControl ItemsSource="{Binding AddonGroups}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Margin="0,0,0,16">
-                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                                            <TextBlock Text="{Binding Description}" Opacity="0.75" TextWrapping="Wrap" Margin="0,0,0,8"/>
-                                            <ItemsControl ItemsSource="{Binding Options}">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <CheckBox Content="{Binding DisplayText}" IsChecked="{Binding IsSelected}" Margin="0,2"/>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
-
-                        <TextBox Style="{StaticResource OpaMenuTextBox}" 
-                                 materialDesign:HintAssist.Hint="Observação do Item" 
-                                 Text="{Binding ItemNotes, UpdateSourceTrigger=PropertyChanged}"
-                                 Margin="0,16,0,16"/>
-
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Style="{StaticResource MaterialDesignFlatButton}" Content="CANCELAR" Command="{Binding CloseModalsCommand}" Margin="0,0,8,0" />
-                            <Button Style="{StaticResource OpaMenuPrimaryButton}" Content="ADICIONAR" Command="{Binding AddToCartFromModalCommand}" />
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-
-                <!-- Modal de Checkout -->
-                <Border Width="500" Background="{StaticResource OpaMenuSurfaceBrush}" CornerRadius="12" Padding="24"
-                        Visibility="{Binding IsCheckoutModalOpen, Converter={StaticResource BoolToVis}}">
-                    <StackPanel>
-                        <TextBlock Text="Finalizar Venda" FontSize="{StaticResource OpaMenuFontSizeH4}" FontWeight="Bold" Margin="0,0,0,24"/>
-                        
-                        <TextBlock Text="{Binding CartTotal, StringFormat='Total a Pagar: {0:C}'}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource OpaMenuPrimaryBrush}" Margin="0,0,0,16"/>
-
-                        <ScrollViewer MaxHeight="220" VerticalScrollBarVisibility="Auto" Margin="0,0,0,12">
-                            <ItemsControl ItemsSource="{Binding Payments}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid Margin="0,0,0,8">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="140"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-
-                                            <ComboBox Grid.Column="0"
-                                                      ItemsSource="{Binding DataContext.PaymentMethodOptions, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                      SelectedItem="{Binding Method, UpdateSourceTrigger=PropertyChanged}"
-                                                      Style="{StaticResource MaterialDesignFloatingHintComboBox}"
-                                                      materialDesign:HintAssist.Hint="Forma"
-                                                      Margin="0,0,8,0" />
-
-                                            <TextBox Grid.Column="1"
-                                                     Style="{StaticResource OpaMenuTextBox}"
-                                                     materialDesign:HintAssist.Hint="Valor (R$)"
-                                                     Text="{Binding Amount, UpdateSourceTrigger=PropertyChanged}"
-                                                     Margin="0,0,8,0" />
-
-                                            <Button Grid.Column="2"
-                                                    Style="{StaticResource MaterialDesignIconButton}"
-                                                    Command="{Binding DataContext.RemovePaymentCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                    CommandParameter="{Binding}"
-                                                    ToolTip="Remover">
-                                                <materialDesign:PackIcon Kind="Close" />
-                                            </Button>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
-
-                        <Button Style="{StaticResource OpaMenuOutlineButton}"
-                                Content="Adicionar pagamento"
-                                Command="{Binding AddPaymentCommand}"
-                                Margin="0,0,0,16"/>
-
-                        <StackPanel Margin="0,0,0,24">
-                            <TextBlock Text="{Binding TotalPaid, StringFormat='Total pago: {0:C}'}" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                            <TextBlock Text="{Binding RemainingAmount, StringFormat='Restante: {0:C}'}" Margin="0,0,0,4"/>
-                            <TextBlock Text="{Binding ChangeAmount, StringFormat='Troco: {0:C}'}" Foreground="#4CAF50" FontWeight="SemiBold"/>
-                        </StackPanel>
-
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Style="{StaticResource MaterialDesignFlatButton}" Content="CANCELAR" Command="{Binding CloseModalsCommand}" Margin="0,0,8,0" />
-                            <Button Style="{StaticResource OpaMenuPrimaryButton}" Content="CONFIRMAR PAGAMENTO" Command="{Binding ConfirmPaymentCommand}" />
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-
-                <Border Width="480" Background="{StaticResource OpaMenuSurfaceBrush}" CornerRadius="12" Padding="24"
-                        Visibility="{Binding IsTabCheckoutModalOpen, Converter={StaticResource BoolToVis}}">
-                    <StackPanel>
-                        <TextBlock Text="{Binding SelectedTab.Name, StringFormat='Fechar {0}'}" FontSize="{StaticResource OpaMenuFontSizeH4}" FontWeight="Bold" Margin="0,0,0,16"/>
-
-                        <TextBlock Text="{Binding SelectedTabTotal, StringFormat='Total da comanda: {0:C}'}" FontSize="22" FontWeight="Bold" Foreground="{StaticResource OpaMenuPrimaryBrush}" Margin="0,0,0,16"/>
-
-                        <ComboBox ItemsSource="{Binding TabPaymentMethodOptions}"
-                                  SelectedItem="{Binding SelectedTabPaymentMethod, UpdateSourceTrigger=PropertyChanged}"
-                                  DisplayMemberPath="Name"
-                                  Style="{StaticResource MaterialDesignFloatingHintComboBox}"
-                                  materialDesign:HintAssist.Hint="Forma de pagamento"
-                                  Margin="0,0,0,24" />
-
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Style="{StaticResource MaterialDesignFlatButton}" Content="CANCELAR" Command="{Binding CloseModalsCommand}" Margin="0,0,8,0" />
-                            <Button Style="{StaticResource OpaMenuPrimaryButton}" Content="CONFIRMAR" Command="{Binding ConfirmTabCheckoutCommand}" />
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-
-                <Border Width="420" Background="{StaticResource OpaMenuSurfaceBrush}" CornerRadius="12" Padding="24"
-                        Visibility="{Binding IsCashModalOpen, Converter={StaticResource BoolToVis}}">
-                    <StackPanel>
-                        <TextBlock Text="{Binding CashModalTitle}" FontSize="{StaticResource OpaMenuFontSizeH4}" FontWeight="Bold" Margin="0,0,0,24"/>
-
-                        <StackPanel Visibility="{Binding IsOpeningCashShift, Converter={StaticResource BoolToVis}}">
-                            <TextBox Style="{StaticResource OpaMenuTextBox}"
-                                     materialDesign:HintAssist.Hint="Saldo inicial (R$)"
-                                     Text="{Binding OpeningCashBalance, UpdateSourceTrigger=PropertyChanged}"
-                                     Margin="0,0,0,16"/>
-                        </StackPanel>
-
-                        <StackPanel Visibility="{Binding IsClosingCashShift, Converter={StaticResource BoolToVis}}">
-                            <TextBlock Text="Resumo deste caixa" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                            <ItemsControl ItemsSource="{Binding ClosingSalesByPaymentMethod}" Margin="0,0,0,8">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <DockPanel LastChildFill="False" Margin="0,2">
-                                            <TextBlock Text="{Binding PaymentMethodName}" Width="160"/>
-                                            <TextBlock Text="{Binding TotalAmount, StringFormat={}{0:C}}"/>
-                                        </DockPanel>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                <TextBlock Text="Vendas:" Width="160"/>
-                                <TextBlock Text="{Binding ClosingTotalSales, StringFormat={}{0:C}}"/>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                <TextBlock Text="Entradas:" Width="160"/>
-                                <TextBlock Text="{Binding ClosingTotalInflows, StringFormat={}{0:C}}"/>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                <TextBlock Text="Saídas:" Width="160"/>
-                                <TextBlock Text="{Binding ClosingTotalOutflows, StringFormat={}{0:C}}"/>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                                <TextBlock Text="Saldo esperado:" Width="160"/>
-                                <TextBlock Text="{Binding ExpectedCashBalance, StringFormat={}{0:C}}" FontWeight="SemiBold"/>
-                            </StackPanel>
-
-                            <TextBox Style="{StaticResource OpaMenuTextBox}"
-                                     materialDesign:HintAssist.Hint="Saldo de fechamento (R$)"
-                                     Text="{Binding ClosingCashBalance, UpdateSourceTrigger=PropertyChanged}"
-                                     Margin="0,0,0,16"/>
-
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                                <TextBlock Text="Diferença:" Width="160"/>
-                                <TextBlock Text="{Binding ClosingDiscrepancy, StringFormat={}{0:C}}" FontWeight="SemiBold"/>
-                            </StackPanel>
-
-                            <TextBox Style="{StaticResource OpaMenuTextBox}"
-                                     materialDesign:HintAssist.Hint="Justificativa (obrigatória se houver diferença)"
-                                     Text="{Binding ClosingDiscrepancyJustification, UpdateSourceTrigger=PropertyChanged}"
-                                     Visibility="{Binding HasClosingDiscrepancy, Converter={StaticResource BoolToVis}}"
-                                     Margin="0,0,0,16"/>
-                        </StackPanel>
-
-                        <StackPanel Visibility="{Binding IsCashMovementModal, Converter={StaticResource BoolToVis}}">
-                            <TextBox Style="{StaticResource OpaMenuTextBox}"
-                                     materialDesign:HintAssist.Hint="Valor (R$)"
-                                     Text="{Binding CashMovementAmount, UpdateSourceTrigger=PropertyChanged}"
-                                     Margin="0,0,0,16"/>
-                            <TextBox Style="{StaticResource OpaMenuTextBox}"
-                                     materialDesign:HintAssist.Hint="Descrição"
-                                     Text="{Binding CashMovementDescription, UpdateSourceTrigger=PropertyChanged}"
-                                     Margin="0,0,0,16"/>
-                        </StackPanel>
-
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Style="{StaticResource MaterialDesignFlatButton}"
-                                    Content="CANCELAR"
-                                    Command="{Binding CloseModalsCommand}"
-                                    Margin="0,0,8,0" />
-                            <Button Style="{StaticResource OpaMenuPrimaryButton}"
-                                    Content="CONFIRMAR"
-                                    Command="{Binding ConfirmCashShiftCommand}" />
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
+                <ContentControl Content="{Binding DialogHost.CurrentDialog}" />
             </Grid>
         </materialDesign:DialogHost.DialogContent>
 
+        <!-- Layout Principal -->
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>

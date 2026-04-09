@@ -130,7 +130,7 @@
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock Text="{Binding ProductName}" FontWeight="Medium" TextWrapping="Wrap"/>
                                         <Button Style="{StaticResource MaterialDesignFlatButton}" Foreground="Red" Padding="0" Height="20" HorizontalAlignment="Left"
-                                                Command="{Binding DataContext.RemoveFromCartCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                Command="{Binding DataContext.RemoveFromCartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 CommandParameter="{Binding}">
                                             <TextBlock Text="Remover item" FontSize="11"/>
                                         </Button>

@@ -54,7 +54,7 @@
 
     <DataTemplate x:Key="OpaMenuProductTileTemplate">
         <Button Style="{StaticResource MaterialDesignFlatButton}" 
-                Command="{Binding DataContext.AddToCartCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                Command="{Binding DataContext.AddToCartCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                 CommandParameter="{Binding}"
                 Padding="0" Margin="4" Width="180" Height="190"
                 Background="White" BorderBrush="{StaticResource OpaMenuBorderBrush}" BorderThickness="1"
@@ -89,7 +89,7 @@
 
     <DataTemplate x:Key="OpaMenuTableTileTemplate">
         <Button Style="{StaticResource MaterialDesignFlatButton}"
-                Command="{Binding DataContext.OpenTableDetailsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                Command="{Binding DataContext.OpenTableDetailsCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                 CommandParameter="{Binding}"
                 Padding="0"
                 Margin="6"

@@ -40,6 +40,8 @@ public partial class App : Application
                 services.AddSingleton<TokenStore>();
                 services.AddSingleton<UserStore>();
 
+                services.AddSingleton<IDialogService, DialogService>();
+
                 // HTTP Clients e Serviços de API
                 services.AddHttpClient<IAuthService, AuthService>();
                 services.AddHttpClient<ICatalogService, CatalogService>();
