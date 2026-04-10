@@ -12,6 +12,7 @@ class TablesController extends AsyncNotifier<List<TableEntity>> {
   Future<List<TableEntity>> build() async {
     final session = await ref.watch(AuthControllerProvider.provider.future);
     if (session == null) return const <TableEntity>[];
+
     final useCase = ref.read(TablesDi.fetchTablesUseCaseProvider);
     final result = await useCase(accessToken: session.tokens.accessToken);
     if (result is FailureResult<List<TableEntity>>) {

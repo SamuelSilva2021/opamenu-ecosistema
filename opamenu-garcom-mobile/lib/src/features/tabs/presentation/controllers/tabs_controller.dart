@@ -125,6 +125,9 @@ class TabsController extends AsyncNotifier<List<TabEntity>> {
           return;
         }
 
+        final created = (retryResult as SuccessResult<TabEntity>).value;
+        final current = state.asData?.value ?? const <TabEntity>[];
+        state = AsyncData([...current, created]);
         await load(tableId: tableId, force: true);
         return;
       }
@@ -133,7 +136,10 @@ class TabsController extends AsyncNotifier<List<TabEntity>> {
       return;
     }
 
-    await load(tableId: tableId);
+    final created = (result as SuccessResult<TabEntity>).value;
+    final current = state.asData?.value ?? const <TabEntity>[];
+    state = AsyncData([...current, created]);
+    await load(tableId: tableId, force: true);
   }
 
   Future<bool> updateTab({

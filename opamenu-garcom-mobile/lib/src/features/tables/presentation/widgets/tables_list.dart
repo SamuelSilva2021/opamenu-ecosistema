@@ -19,8 +19,10 @@ class TablesList extends StatelessWidget {
     }
 
     final active = tables.where((t) => t.isActive).toList(growable: false);
+    final occupied = active.where((t) => t.isOccupied).toList(growable: false);
+    final free = active.where((t) => !t.isOccupied).toList(growable: false);
     final inactive = tables.where((t) => !t.isActive).toList(growable: false);
-    final display = [...active, ...inactive];
+    final display = [...occupied, ...free, ...inactive];
 
     return ListView.separated(
       padding: const EdgeInsets.all(16),
@@ -31,7 +33,11 @@ class TablesList extends StatelessWidget {
         return Card(
           child: ListTile(
             title: Text(table.name),
-            subtitle: Text(table.isActive ? 'Disponível' : 'Inativa'),
+            subtitle: Text(
+              table.isActive
+                  ? (table.isOccupied ? 'Ocupada' : 'Livre')
+                  : 'Inativa',
+            ),
             trailing: const Icon(Icons.chevron_right),
             onTap: table.isActive
                 ? () {

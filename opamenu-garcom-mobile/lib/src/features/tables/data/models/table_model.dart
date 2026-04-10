@@ -24,7 +24,7 @@ class TableModel {
       id: id,
       name: name,
       isActive: isActive,
+      openTabsCount: 0,
     );
   }
 }
-

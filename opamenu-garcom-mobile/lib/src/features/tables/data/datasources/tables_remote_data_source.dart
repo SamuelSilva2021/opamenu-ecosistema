@@ -9,7 +9,7 @@ import '../../../../core/domain/failures/validation_failure.dart';
 import '../../../../core/domain/result/failure_result.dart';
 import '../../../../core/domain/result/result.dart';
 import '../../../../core/domain/result/success_result.dart';
-import '../models/table_model.dart';
+import '../models/table_status_model.dart';
 import 'tables_remote_data_source_contract.dart';
 
 class TablesRemoteDataSource implements TablesRemoteDataSourceContract {
@@ -22,8 +22,8 @@ class TablesRemoteDataSource implements TablesRemoteDataSourceContract {
   });
 
   @override
-  Future<Result<List<TableModel>>> getTables({required String accessToken}) async {
-    final uri = environment.coreBaseUri.resolve('/api/tables?pageNumber=1&pageSize=200');
+  Future<Result<List<TableStatusModel>>> getTables({required String accessToken}) async {
+    final uri = environment.coreBaseUri.resolve('/api/tables/full?pageNumber=1&pageSize=200');
     final response = await client.get(
       uri,
       headers: {
@@ -40,7 +40,7 @@ class TablesRemoteDataSource implements TablesRemoteDataSourceContract {
       return const FailureResult(UnauthorizedFailure('Não autorizado'));
     }
     if (http.statusCode == 204) {
-      return const SuccessResult(<TableModel>[]);
+      return const SuccessResult(<TableStatusModel>[]);
     }
 
     final decoded = _decodeJson(http.body);
@@ -53,10 +53,11 @@ class TablesRemoteDataSource implements TablesRemoteDataSourceContract {
       return FailureResult(UnexpectedFailure('Resposta inválida do servidor'));
     }
 
-    if (decoded is List) {
-      final models = decoded
+    final list = _extractList(decoded);
+    if (list != null) {
+      final models = list
           .whereType<Map>()
-          .map((e) => TableModel.fromJson(e.cast<String, Object?>()))
+          .map((e) => TableStatusModel.fromJson(e.cast<String, Object?>()))
           .toList(growable: false);
       return SuccessResult(models);
     }
@@ -70,16 +71,30 @@ class TablesRemoteDataSource implements TablesRemoteDataSourceContract {
       return FailureResult(ValidationFailure(_extractErrors(map) ?? 'Falha ao carregar mesas'));
     }
 
-    final data = map['data'];
-    if (data is List) {
-      final models = data
-          .whereType<Map>()
-          .map((e) => TableModel.fromJson(e.cast<String, Object?>()))
-          .toList(growable: false);
-      return SuccessResult(models);
+    return FailureResult(UnexpectedFailure('Formato de resposta inesperado'));
+  }
+
+  List<Object?>? _extractList(Object decoded) {
+    if (decoded is List) return decoded;
+    if (decoded is! Map) return null;
+
+    final values = decoded[r'$values'];
+    if (values is List) return values;
+
+    final data = decoded['data'] ?? decoded['Data'];
+    if (data is List) return data;
+    if (data is Map) {
+      final dataValues = data[r'$values'];
+      if (dataValues is List) return dataValues;
+      final items = data['items'] ?? data['Items'];
+      if (items is List) return items;
+      if (items is Map) {
+        final itemsValues = items[r'$values'];
+        if (itemsValues is List) return itemsValues;
+      }
     }
 
-    return FailureResult(UnexpectedFailure('Formato de resposta inesperado'));
+    return null;
   }
 
   Object? _decodeJson(String body) {

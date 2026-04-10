@@ -29,13 +29,8 @@ class TabsRemoteDataSource implements TabsRemoteDataSourceContract {
     required String accessToken,
     required String tableId,
   }) async {
-    final uri = environment.coreBaseUri.resolve('/api/tables/$tableId/tabs');
-    final response = await client.get(
-      uri,
-      headers: {
-        'Authorization': 'Bearer $accessToken',
-      },
-    );
+    final uriFull = environment.coreBaseUri.resolve('/api/tables/$tableId/full');
+    final response = await client.get(uriFull, headers: {'Authorization': 'Bearer $accessToken'});
 
     if (response is FailureResult<ApiHttpResponse>) {
       return FailureResult(response.failure);
@@ -51,17 +46,12 @@ class TabsRemoteDataSource implements TabsRemoteDataSourceContract {
 
     final decoded = _decodeJson(http.body);
     if (decoded == null) {
-      if (http.statusCode < 200 || http.statusCode >= 300) {
-        return FailureResult(
-          UnexpectedFailure('Erro HTTP ${http.statusCode} ao carregar comandas'),
-        );
-      }
-      return FailureResult(UnexpectedFailure('Resposta inválida do servidor'));
+      return await _getTabsFallback(accessToken: accessToken, tableId: tableId);
     }
 
-    final list = _extractList(decoded);
-    if (list != null) {
-      final models = list
+    final tabs = _extractTabsList(decoded);
+    if (tabs != null) {
+      final models = tabs
           .whereType<Map>()
           .map((e) => TabModel.fromJson(e.cast<String, Object?>()))
           .toList(growable: false);
@@ -70,10 +60,7 @@ class TabsRemoteDataSource implements TabsRemoteDataSourceContract {
 
     final map = decoded is Map ? decoded.cast<String, Object?>() : null;
     if (map == null) {
-      final bodySnippet = http.body.length > 300 ? http.body.substring(0, 300) : http.body;
-      return FailureResult(
-        UnexpectedFailure('Formato de resposta inesperado (HTTP ${http.statusCode}): $bodySnippet'),
-      );
+      return await _getTabsFallback(accessToken: accessToken, tableId: tableId);
     }
 
     final succeeded = map['succeeded'] ?? map['Succeeded'];
@@ -82,14 +69,35 @@ class TabsRemoteDataSource implements TabsRemoteDataSourceContract {
     }
 
     final rawData = map['data'] ?? map['Data'];
+    if (rawData is Map) {
+      final tabs = rawData['tabs'] ?? rawData['Tabs'];
+      if (tabs is List) {
+        final models = tabs
+            .whereType<Map>()
+            .map((e) => TabModel.fromJson(e.cast<String, Object?>()))
+            .toList(growable: false);
+        return SuccessResult(models);
+      }
+      if (tabs is Map) {
+        final inner = tabs[r'$values'];
+        if (inner is List) {
+          final models = inner
+              .whereType<Map>()
+              .map((e) => TabModel.fromJson(e.cast<String, Object?>()))
+              .toList(growable: false);
+          return SuccessResult(models);
+        }
+      }
+      if (succeeded is bool && succeeded && tabs == null) {
+        return const SuccessResult(<TabModel>[]);
+      }
+    }
+
     if (succeeded is bool && succeeded && rawData == null) {
       return const SuccessResult(<TabModel>[]);
     }
 
-    final bodySnippet = http.body.length > 300 ? http.body.substring(0, 300) : http.body;
-    return FailureResult(
-      UnexpectedFailure('Formato de resposta inesperado (HTTP ${http.statusCode}): $bodySnippet'),
-    );
+    return await _getTabsFallback(accessToken: accessToken, tableId: tableId);
   }
 
   @override
@@ -126,14 +134,19 @@ class TabsRemoteDataSource implements TabsRemoteDataSourceContract {
     final map = decoded is Map ? decoded.cast<String, Object?>() : null;
     if (map == null) return FailureResult(UnexpectedFailure('Formato de resposta inesperado'));
 
+    final data = map['data'] ?? map['Data'];
+    if (data is Map) {
+      return SuccessResult(TabModel.fromJson(data.cast<String, Object?>()));
+    }
+
     final succeeded = map['succeeded'] ?? map['Succeeded'];
     if (succeeded is bool && !succeeded) {
       return FailureResult(ValidationFailure(_extractErrors(map) ?? 'Falha ao abrir comanda'));
     }
 
-    final data = map['data'] ?? map['Data'];
-    if (data is Map) {
-      return SuccessResult(TabModel.fromJson(data.cast<String, Object?>()));
+    final looksLikeTab = (map['id'] ?? map['Id']) != null && (map['tableId'] ?? map['TableId']) != null;
+    if (looksLikeTab) {
+      return SuccessResult(TabModel.fromJson(map));
     }
 
     return FailureResult(UnexpectedFailure('Formato de resposta inesperado'));
@@ -370,6 +383,90 @@ class TabsRemoteDataSource implements TabsRemoteDataSourceContract {
     }
 
     return null;
+  }
+
+  List<Object?>? _extractTabsList(Object decoded) {
+    if (decoded is! Map) return null;
+    final root = decoded.cast<String, Object?>();
+    final data = root['data'] ?? root['Data'];
+    if (data is Map) {
+      final tabs = data['tabs'] ?? data['Tabs'];
+      if (tabs is List) return tabs;
+      if (tabs is Map) {
+        final innerValues = tabs[r'$values'];
+        if (innerValues is List) return innerValues;
+      }
+      final values = data[r'$values'];
+      if (values is Map) {
+        final nestedTabs = values['tabs'] ?? values['Tabs'];
+        if (nestedTabs is List) return nestedTabs;
+        if (nestedTabs is Map) {
+          final inner = nestedTabs[r'$values'];
+          if (inner is List) return inner;
+        }
+      }
+    }
+    final tabs = root['tabs'] ?? root['Tabs'];
+    if (tabs is List) return tabs;
+    if (tabs is Map) {
+      final innerValues = tabs[r'$values'];
+      if (innerValues is List) return innerValues;
+    }
+    return null;
+  }
+
+  Future<Result<List<TabModel>>> _getTabsFallback({
+    required String accessToken,
+    required String tableId,
+  }) async {
+    final uri = environment.coreBaseUri.resolve('/api/tables/$tableId/tabs');
+    final response = await client.get(uri, headers: {'Authorization': 'Bearer $accessToken'});
+    if (response is FailureResult<ApiHttpResponse>) {
+      return FailureResult(response.failure);
+    }
+    final http = (response as SuccessResult<ApiHttpResponse>).value;
+    if (http.statusCode == 401 || http.statusCode == 403) {
+      return const FailureResult(UnauthorizedFailure('Não autorizado'));
+    }
+    if (http.statusCode == 204) {
+      return const SuccessResult(<TabModel>[]);
+    }
+    final decoded = _decodeJson(http.body);
+    if (decoded == null) {
+      if (http.statusCode < 200 || http.statusCode >= 300) {
+        return FailureResult(
+          UnexpectedFailure('Erro HTTP ${http.statusCode} ao carregar comandas'),
+        );
+      }
+      return FailureResult(UnexpectedFailure('Resposta inválida do servidor'));
+    }
+    final list = _extractList(decoded);
+    if (list != null) {
+      final models = list
+          .whereType<Map>()
+          .map((e) => TabModel.fromJson(e.cast<String, Object?>()))
+          .toList(growable: false);
+      return SuccessResult(models);
+    }
+    final map = decoded is Map ? decoded.cast<String, Object?>() : null;
+    if (map == null) {
+      final bodySnippet = http.body.length > 300 ? http.body.substring(0, 300) : http.body;
+      return FailureResult(
+        UnexpectedFailure('Formato de resposta inesperado (HTTP ${http.statusCode}): $bodySnippet'),
+      );
+    }
+    final succeeded = map['succeeded'] ?? map['Succeeded'];
+    if (succeeded is bool && !succeeded) {
+      return FailureResult(ValidationFailure(_extractErrors(map) ?? 'Falha ao carregar comandas'));
+    }
+    final rawData = map['data'] ?? map['Data'];
+    if (succeeded is bool && succeeded && rawData == null) {
+      return const SuccessResult(<TabModel>[]);
+    }
+    final bodySnippet = http.body.length > 300 ? http.body.substring(0, 300) : http.body;
+    return FailureResult(
+      UnexpectedFailure('Formato de resposta inesperado (HTTP ${http.statusCode}): $bodySnippet'),
+    );
   }
 
   Object? _decodeJson(String body) {

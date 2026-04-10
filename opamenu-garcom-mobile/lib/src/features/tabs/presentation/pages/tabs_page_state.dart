@@ -13,7 +13,10 @@ class TabsPageState extends ConsumerState<TabsPage> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      ref.read(TabsControllerProvider.provider.notifier).load(tableId: widget.table.id);
+      ref.read(TabsControllerProvider.provider.notifier).load(
+            tableId: widget.table.id,
+            force: true,
+          );
     });
   }
 
@@ -28,7 +31,7 @@ class TabsPageState extends ConsumerState<TabsPage> {
           IconButton(
             onPressed: () => ref
                 .read(TabsControllerProvider.provider.notifier)
-                .load(tableId: widget.table.id),
+                .load(tableId: widget.table.id, force: true),
             icon: const Icon(Icons.refresh),
           ),
         ],
