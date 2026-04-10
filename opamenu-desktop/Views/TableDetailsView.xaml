@@ -115,6 +115,11 @@
                             <TextBlock Text="Fechamento" FontWeight="SemiBold" Margin="0,0,0,12"/>
                             <TextBlock Text="{Binding SelectedTabTotal, StringFormat='Total: {0:C}'}" FontSize="20" FontWeight="Bold" Foreground="{StaticResource OpaMenuPrimaryBrush}" Margin="0,0,0,16"/>
 
+                            <Button Style="{StaticResource OpaMenuOutlineButton}"
+                                    Content="IMPRIMIR CONTA"
+                                    Command="{Binding PrintSelectedTabCommand}"
+                                    Margin="0,0,0,12"/>
+
                             <Button Style="{StaticResource OpaMenuPrimaryButton}"
                                     Content="FECHAR COMANDA"
                                     Command="{Binding OpenTabCheckoutModalCommand}"

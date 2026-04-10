@@ -1,13 +1,17 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
+using OpaMenu.Desktop.Models.DTOs.Printing;
 using OpaMenu.Desktop.Models.DTOs.Tables;
 using OpaMenu.Desktop.Models.Enums;
+using OpaMenu.Desktop.Models.Printing;
 using OpaMenu.Desktop.Services.Interfaces;
 using OpaMenu.Desktop.ViewModels.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace OpaMenu.Desktop.ViewModels.Screens;
@@ -18,17 +22,20 @@ public sealed partial class TableDetailsScreenViewModel : ObservableObject
     private readonly Func<bool> _isCashShiftOpen;
     private readonly Action _navigateBackToTables;
     private readonly IDialogService _dialogService;
+    private readonly IServiceProvider _serviceProvider;
 
     public TableDetailsScreenViewModel(
         ITablesService tablesService,
         Func<bool> isCashShiftOpen,
         Action navigateBackToTables,
-        IDialogService dialogService)
+        IDialogService dialogService,
+        IServiceProvider serviceProvider)
     {
         _tablesService = tablesService;
         _isCashShiftOpen = isCashShiftOpen;
         _navigateBackToTables = navigateBackToTables;
         _dialogService = dialogService;
+        _serviceProvider = serviceProvider;
 
         SelectedTabPaymentMethod = TabPaymentMethodOptions.FirstOrDefault();
     }
@@ -93,6 +100,44 @@ public sealed partial class TableDetailsScreenViewModel : ObservableObject
         }
 
         await _dialogService.ShowAsync(new TabCheckoutDialogViewModel(this));
+    }
+
+    [RelayCommand]
+    private async Task PrintSelectedTabAsync()
+    {
+        try
+        {
+            if (SelectedTableDetails == null || SelectedTab == null)
+                return;
+
+            using var scope = _serviceProvider.CreateScope();
+            var printerConfigurationService = scope.ServiceProvider.GetRequiredService<IPrinterConfigurationService>();
+            var printService = scope.ServiceProvider.GetRequiredService<IPrintService>();
+
+            var mapping = await printerConfigurationService.GetMappingAsync(EPrintDestination.TableBill);
+            if (mapping == null)
+            {
+                await _dialogService.ShowMessageAsync("Impressão", "Configure a impressora de Conta (Mesa/Comanda) em Impressoras.");
+                return;
+            }
+
+            var payload = new TabBillPrintPayload
+            {
+                TableName = SelectedTableDetails.Name,
+                TabName = SelectedTab.Name,
+                Total = SelectedTabTotal,
+                Orders = SelectedTab.Orders.ToList()
+            };
+
+            var payloadJson = JsonSerializer.Serialize(payload, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            await printService.EnqueueAsync(new PrintJobCreateRequest(EPrintDestination.TableBill, "TabBill", payloadJson));
+
+            await _dialogService.ShowMessageAsync("Impressão", "Conta enviada para a fila de impressão.");
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowMessageAsync("Impressão", ex.Message);
+        }
     }
 
     internal async Task<bool> TryCheckoutSelectedTabAsync()

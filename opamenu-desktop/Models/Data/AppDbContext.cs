@@ -13,6 +13,8 @@ public class AppDbContext : DbContext
     // Tabelas Offline
     public DbSet<LocalOrderEntity> LocalOrders { get; set; }
     public DbSet<LocalOrderItemEntity> LocalOrderItems { get; set; }
+    public DbSet<PrinterMappingEntity> PrinterMappings { get; set; }
+    public DbSet<PrintJobEntity> PrintJobs { get; set; }
     // public DbSet<LocalProduct> LocalProducts { get; set; } // Adicionar dps
     // public DbSet<LocalCategory> LocalCategories { get; set; } // Adicionar dps
 
@@ -69,6 +71,19 @@ public class AppDbContext : DbContext
                   .WithMany()
                   .HasForeignKey(e => e.LocalOrderId)
                   .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<PrinterMappingEntity>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Destination).IsUnique();
+        });
+
+        modelBuilder.Entity<PrintJobEntity>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => new { e.Status, e.CreatedAt });
         });
     }
 }

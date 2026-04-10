@@ -16,6 +16,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows;
 using OpaMenu.Desktop.Services.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using OpaMenu.Desktop.Models.DTOs.Aditional;
 using OpaMenu.Desktop.Models.DTOs.Product;
 using OpaMenu.Desktop.Models.DTOs.Pdv;
@@ -45,6 +46,7 @@ public partial class MainViewModel : ObservableObject
     private readonly UserStore _userStore;
     private readonly ITablesService _tablesService;
     private readonly IDialogService _dialogService;
+    private readonly IServiceProvider _serviceProvider;
 
     [ObservableProperty]
     private string _title = "Opamenu";
@@ -296,7 +298,8 @@ public partial class MainViewModel : ObservableObject
         IHttpClientFactory httpClientFactory,
         UserStore userStore,
         ITablesService tablesService,
-        IDialogService dialogService)
+        IDialogService dialogService,
+        IServiceProvider serviceProvider)
     {
         _catalogService = catalogService;
         _dbContext = dbContext;
@@ -306,6 +309,7 @@ public partial class MainViewModel : ObservableObject
         _userStore = userStore;
         _tablesService = tablesService;
         _dialogService = dialogService;
+        _serviceProvider = serviceProvider;
 
         Payments.CollectionChanged += Payments_CollectionChanged;
 
@@ -313,7 +317,7 @@ public partial class MainViewModel : ObservableObject
 
         PdvScreen = new PdvScreenViewModel(_catalogService, _dbContext, _authService, _httpClientFactory, () => IsCashShiftOpen, _dialogService);
         TablesScreen = new TablesScreenViewModel(_tablesService, OpenTableDetailsFromTablesAsync);
-        TableDetailsScreen = new TableDetailsScreenViewModel(_tablesService, () => IsCashShiftOpen, NavigateBackToTablesFromDetails, _dialogService);
+        TableDetailsScreen = new TableDetailsScreenViewModel(_tablesService, () => IsCashShiftOpen, NavigateBackToTablesFromDetails, _dialogService, _serviceProvider);
     }
 
     partial void OnCurrentSectionChanged(MainSection value)
@@ -329,6 +333,18 @@ public partial class MainViewModel : ObservableObject
     private void NavigateToPdv()
     {
         CurrentSection = MainSection.Pdv;
+    }
+
+    [RelayCommand]
+    private async Task OpenPrinterSettingsAsync()
+    {
+        using var scope = _serviceProvider.CreateScope();
+        var printerConfigurationService = scope.ServiceProvider.GetRequiredService<IPrinterConfigurationService>();
+        var printService = scope.ServiceProvider.GetRequiredService<IPrintService>();
+
+        var dialog = new PrinterSettingsDialogViewModel(printerConfigurationService, printService, _dialogService);
+        await dialog.InitializeAsync();
+        await _dialogService.ShowAsync(dialog);
     }
 
     [RelayCommand]

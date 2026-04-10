@@ -57,6 +57,56 @@
             </Border>
         </DataTemplate>
 
+        <DataTemplate DataType="{x:Type dlgvm:PrinterSettingsDialogViewModel}">
+            <Border Width="520" Background="{StaticResource OpaMenuSurfaceBrush}" CornerRadius="12" Padding="24">
+                <StackPanel>
+                    <TextBlock Text="{Binding Title}" FontSize="{StaticResource OpaMenuFontSizeH4}" FontWeight="Bold" Margin="0,0,0,24"/>
+
+                    <ComboBox ItemsSource="{Binding Destinations}"
+                              SelectedItem="{Binding SelectedDestination, Mode=TwoWay}"
+                              DisplayMemberPath="Name"
+                              Style="{StaticResource MaterialDesignFloatingHintComboBox}"
+                              materialDesign:HintAssist.Hint="Destino"
+                              Margin="0,0,0,16"/>
+
+                    <ComboBox ItemsSource="{Binding ConnectionTypeOptions}"
+                              SelectedItem="{Binding ConnectionType, Mode=TwoWay}"
+                              Style="{StaticResource MaterialDesignFloatingHintComboBox}"
+                              materialDesign:HintAssist.Hint="Conexão"
+                              Margin="0,0,0,16"/>
+
+                    <StackPanel Visibility="{Binding IsWindowsSpooler, Converter={StaticResource BoolToVis}}" Margin="0,0,0,16">
+                        <ComboBox ItemsSource="{Binding InstalledPrinters}"
+                                  SelectedItem="{Binding WindowsPrinterName, Mode=TwoWay}"
+                                  Style="{StaticResource MaterialDesignFloatingHintComboBox}"
+                                  materialDesign:HintAssist.Hint="Impressora do Windows"/>
+                    </StackPanel>
+
+                    <StackPanel Visibility="{Binding IsTcp, Converter={StaticResource BoolToVis}}" Margin="0,0,0,16">
+                        <TextBox Style="{StaticResource OpaMenuTextBox}"
+                                 materialDesign:HintAssist.Hint="IP"
+                                 Text="{Binding IpAddress, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,12"/>
+                        <TextBox Style="{StaticResource OpaMenuTextBox}"
+                                 materialDesign:HintAssist.Hint="Porta (9100)"
+                                 Text="{Binding PortText, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
+
+                    <ComboBox ItemsSource="{Binding PaperSizeOptions}"
+                              SelectedItem="{Binding PaperSize, Mode=TwoWay}"
+                              Style="{StaticResource MaterialDesignFloatingHintComboBox}"
+                              materialDesign:HintAssist.Hint="Papel"
+                              Margin="0,0,0,24"/>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Style="{StaticResource MaterialDesignFlatButton}" Content="CANCELAR" Command="{Binding CancelCommand}" Margin="0,0,8,0" />
+                        <Button Style="{StaticResource OpaMenuOutlineButton}" Content="TESTE" Command="{Binding TestCommand}" Margin="0,0,8,0" />
+                        <Button Style="{StaticResource OpaMenuPrimaryButton}" Content="SALVAR" Command="{Binding SaveCommand}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
         <DataTemplate DataType="{x:Type dlgvm:CashDialogViewModel}">
             <Border Width="420" Background="{StaticResource OpaMenuSurfaceBrush}" CornerRadius="12" Padding="24">
                 <StackPanel>
@@ -373,6 +423,10 @@
                                 Visibility="{Binding IsCashShiftOpen, Converter={StaticResource BoolToVis}}"
                                 Foreground="White"
                                 Margin="0,0,8,0"/>
+                        <Button Style="{StaticResource MaterialDesignIconButton}" ToolTip="Impressoras" Foreground="White" Margin="0,0,8,0"
+                                Command="{Binding OpenPrinterSettingsCommand}">
+                            <materialDesign:PackIcon Kind="Printer" />
+                        </Button>
                         <Button Style="{StaticResource MaterialDesignIconButton}" ToolTip="Atualizar Cardápio" Foreground="White" Margin="0,0,8,0">
                             <materialDesign:PackIcon Kind="CloudSync" />
                         </Button>

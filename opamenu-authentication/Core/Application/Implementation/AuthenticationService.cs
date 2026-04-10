@@ -244,9 +244,7 @@ public class AuthenticationService(
             // Verificar assinatura
             SubscriptionEntity? subscription = null;
             if (tenant != null)
-            {
                 subscription = await _subscriptionRepository.GetActiveByTenantIdAsync(tenant.Id);
-            }
 
             var loginResponse = new LoginResponse
             {

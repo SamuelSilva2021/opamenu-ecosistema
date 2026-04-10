@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using System.Windows;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -16,9 +17,12 @@ namespace OpaMenu.Desktop;
 public partial class App : Application
 {
     private readonly IHost _host;
+    private IServiceScope? _uiScope;
 
     public App()
     {
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
         _host = Host.CreateDefaultBuilder()
             .ConfigureAppConfiguration((context, config) =>
             {
@@ -29,12 +33,12 @@ public partial class App : Application
             {
                 var configuration = context.Configuration;
                 // Register Views
-                services.AddTransient<LoginWindow>();
-                services.AddSingleton<MainWindow>();
+                services.AddScoped<LoginWindow>();
+                services.AddScoped<MainWindow>();
 
                 // Register ViewModels
-                services.AddTransient<LoginViewModel>();
-                services.AddSingleton<MainViewModel>();
+                services.AddScoped<LoginViewModel>();
+                services.AddScoped<MainViewModel>();
 
                 // Store para manter o token em memória (Singleton)
                 services.AddSingleton<TokenStore>();
@@ -60,6 +64,11 @@ public partial class App : Application
                 // Registrar o serviço de background para sincronização (Offline-First)
                 services.AddHostedService<SyncBackgroundService>();
 
+                services.AddScoped<IPrinterConfigurationService, PrinterConfigurationService>();
+                services.AddScoped<IPrintService, PrintService>();
+                services.AddScoped<IPrintJobProcessor, PrintJobProcessor>();
+                services.AddHostedService<PrintBackgroundService>();
+
                 // Banco de Dados Local (SQLite + Entity Framework)
                 services.AddDbContext<AppDbContext>();
             })
@@ -79,7 +88,8 @@ public partial class App : Application
 
         await _host.StartAsync();
 
-        var loginWindow = _host.Services.GetRequiredService<LoginWindow>();
+        _uiScope = _host.Services.CreateScope();
+        var loginWindow = _uiScope.ServiceProvider.GetRequiredService<LoginWindow>();
         loginWindow.Show();
 
         base.OnStartup(e);
@@ -88,6 +98,7 @@ public partial class App : Application
     protected override async void OnExit(ExitEventArgs e)
     {
         await _host.StopAsync();
+        _uiScope?.Dispose();
         _host.Dispose();
 
         base.OnExit(e);
