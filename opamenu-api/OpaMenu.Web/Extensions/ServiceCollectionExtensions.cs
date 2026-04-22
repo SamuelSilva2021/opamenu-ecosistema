@@ -15,6 +15,7 @@ using OpaMenu.Infrastructure.Shared.Data.Context.Opamenu;
 using OpaMenu.Infrastructure.Shared.Data.Context.AccessControl;
 using OpaMenu.Infrastructure.Shared.Data.Context.MultTenant;
 using OpaMenu.Application.Services.Interfaces.Opamenu;
+using OpaMenu.Application.Services.Interfaces.Auth;
 
 
 namespace OpaMenu.Web.Extensions;
@@ -103,8 +104,8 @@ public static class ServiceCollectionExtensions
         services.AddHttpClient();
         //services.AddScoped<IWhatsAppService, WhatsAppService>();
 
-        // Registrar serviços de autenticação e usuário atual
-        services.AddScoped<IAuthenticationService, ExternalAuthenticationService>();
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IAuthenticationService, LocalAuthenticationService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         
         return services;
