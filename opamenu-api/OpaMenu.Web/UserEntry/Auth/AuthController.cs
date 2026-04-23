@@ -33,6 +33,20 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("login-access-control")]
+    [AllowAnonymous]
+    public async Task<IActionResult> LoginAccessControl([FromBody] LoginRequestDto request)
+    {
+        var result = await _authService.LoginAsync(request);
+
+        if (!result.Succeeded || result.Data == null)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
     [HttpPost("refresh-token")]
     [AllowAnonymous]
     public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto request)
@@ -123,5 +137,12 @@ public class AuthController : ControllerBase
         }
 
         return Ok(result);
+    }
+
+    [HttpGet("validate")]
+    [Authorize]
+    public IActionResult Validate()
+    {
+        return Ok(true);
     }
 }

@@ -1,26 +1,25 @@
-# Implementação de Autenticação JWT - Pedeja API
+# Implementação de Autenticação JWT - OpaMenu API
 
 ## 📋 Resumo
 
-Foi implementada a autenticação JWT na API Pedeja utilizando tokens provindos do `saas-authentication-api`. A implementação segue os princípios SOLID e Clean Architecture, oferecendo uma solução robusta e escalável.
+Foi implementada a autenticação JWT na API, com emissão e validação de tokens **na própria `opamenu-api`** (login/refresh/logout e contexto do usuário). A implementação mantém o modelo de claims (tenant/roles/permissões) para suportar RBAC e multi-tenant.
 
 ## 🔐 Fluxo de Autenticação
 
 ```mermaid
 sequenceDiagram
     participant Cliente as Frontend/Cliente
-    participant Auth as saas-authentication-api
-    participant Pedeja as pedeja-api
+    participant API as opamenu-api
     
-    Cliente->>Auth: POST /api/auth/login (email, password)
-    Auth->>Auth: Validar credenciais
-    Auth->>Auth: Gerar JWT Token
-    Auth->>Cliente: { accessToken, refreshToken, user }
+    Cliente->>API: POST /api/auth/login (usernameOrEmail, password)
+    API->>API: Validar credenciais
+    API->>API: Gerar JWT Token + Refresh Token
+    API->>Cliente: { accessToken, refreshToken, ... }
     
-    Cliente->>Pedeja: Request com Authorization: Bearer {token}
-    Pedeja->>Pedeja: Validar JWT Token
-    Pedeja->>Pedeja: Extrair claims do usuário
-    Pedeja->>Cliente: Response autorizada
+    Cliente->>API: Request com Authorization: Bearer {token}
+    API->>API: Validar JWT Token
+    API->>API: Extrair claims do usuário
+    API->>Cliente: Response autorizada
 ```
 
 ## 🛠️ Componentes Implementados
@@ -31,10 +30,9 @@ sequenceDiagram
   ```json
   {
     "Authentication": {
-      "ExternalAuthUrl": "http://localhost:5001/api",
       "JwtSecret": "S2B7aeyc4VTzaqFWeELDygnSD92PdVna5uSkdnkP3FFHUcmGgMENuUkQPMNJ9WGA",
       "JwtIssuer": "Authenticator.API",
-      "JwtAudience": "pedeja-ecosystem"
+      "JwtAudience": "opamenu-ecosystem"
     }
   }
   ```
@@ -51,10 +49,10 @@ public interface IAuthenticationService
 }
 ```
 
-#### **ExternalAuthenticationService**
+#### **LocalAuthenticationService**
 - Valida tokens JWT localmente
 - Extrai claims dos tokens
-- Compatível com tokens do `saas-authentication-api`
+- Refresh token delega para o serviço interno de autenticação
 
 #### **ICurrentUserService**
 ```csharp
@@ -93,13 +91,13 @@ public interface ICurrentUserService
 
 ### 1. **Obter Token de Acesso**
 
-Faça login no `saas-authentication-api`:
+Faça login na própria API:
 ```bash
-POST http://localhost:5001/api/auth/login
+POST http://localhost:5072/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "admin@teste.com",
+  "usernameOrEmail": "admin@teste.com",
   "password": "senha123"
 }
 ```
@@ -109,11 +107,11 @@ Resposta:
 {
   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "refreshToken": "base64refreshtoken...",
-  "user": { ... }
+  "expiresIn": 1800
 }
 ```
 
-### 2. **Usar Token na Pedeja API**
+### 2. **Usar Token na API**
 
 Incluir o token no header Authorization:
 ```bash
@@ -215,8 +213,7 @@ public class ProductsController : ControllerBase
 ## ⚙️ Configuração de Desenvolvimento
 
 ### URLs dos Serviços
-- **saas-authentication-api**: http://localhost:5001
-- **pedeja-api**: http://localhost:5072
+- **opamenu-api**: http://localhost:5072
 - **Swagger UI**: http://localhost:5072/swagger
 
 ### Variáveis de Ambiente
@@ -224,34 +221,32 @@ public class ProductsController : ControllerBase
 # Para produção, configure via environment variables
 Authentication__JwtSecret=sua-chave-secreta-aqui
 Authentication__JwtIssuer=Authenticator.API
-Authentication__JwtAudience=pedeja-ecosystem
+Authentication__JwtAudience=opamenu-ecosystem
 ```
 
 ## 🧪 Teste Completo
 
-1. **Inicie o saas-authentication-api** (porta 5001)
-2. **Inicie a pedeja-api** (porta 5072)
-3. **Faça login** no authentication service
-4. **Use o token** na pedeja-api
-5. **Verifique** no Swagger UI
+1. **Inicie a opamenu-api** (porta 5072)
+2. **Faça login** em `/api/auth/login`
+3. **Use o token** no header `Authorization: Bearer {token}`
+4. **Verifique** no Swagger UI
 
 ## 📚 Arquivos Modificados
 
 ### Criados/Modificados:
-- `PedejaApp.Web/appsettings.json` - Configuração JWT
-- `PedejaApp.Web/appsettings.Development.json` - Configuração JWT dev
-- `PedejaApp.Web/Program.cs` - Pipeline de autenticação
-- `PedejaApp.Web/Extensions/ServiceCollectionExtensions.cs` - Extensões JWT
-- `PedejaApp.Domain/Interfaces/IAuthenticationService.cs` - Interface atualizada
-- `PedejaApp.Infrastructure/Authentication/ExternalAuthenticationService.cs` - Implementação
-- `PedejaApp.Infrastructure/Authentication/CurrentUserService.cs` - Serviço de usuário
-- `PedejaApp.Web/Controllers/AuthTestController.cs` - Controller de teste
-- `PedejaApp.Web/Controllers/ProductsController.cs` - Exemplo com [Authorize]
+- `OpaMenu.Web/appsettings.json` - Configuração JWT
+- `OpaMenu.Web/appsettings.Development.json` - Configuração JWT dev
+- `OpaMenu.Web/Program.cs` - Pipeline de autenticação
+- `OpaMenu.Web/Extensions/ServiceCollectionExtensions.cs` - Extensões JWT
+- `OpaMenu.Domain/Interfaces/IAuthenticationService.cs` - Interface
+- `OpaMenu.Infrastructure/Authentication/LocalAuthenticationService.cs` - Implementação
+- `OpaMenu.Infrastructure/Authentication/AuthService.cs` - Emissão de tokens e refresh tokens
+- `OpaMenu.Infrastructure/Authentication/CurrentUserService.cs` - Serviço de usuário
 
 ## ✅ Status da Implementação
 
 - [x] Configuração JWT Bearer Authentication
-- [x] Validação local de tokens do saas-authentication-api
+- [x] Emissão e validação de tokens JWT na própria API
 - [x] Extração de claims e contexto do usuário
 - [x] Suporte a multi-tenancy via claims
 - [x] Middleware de autenticação e autorização
@@ -320,14 +315,14 @@ public async Task<IActionResult> GetFileUrl()
 
 ## 🎯 Próximos Passos
 
-1. **Implementar autorização baseada em permissões**
-2. **Adicionar filtros de tenant automáticos**
-3. **Implementar refresh token via API externa**
-4. **Adicionar logs de auditoria de autenticação**
-5. **Configurar rate limiting por usuário/tenant**
+1. **Aplicar enforcement de permissões e módulos por tenant em todos os endpoints sensíveis**
+2. **Adicionar logs de auditoria para login/refresh/logout (sem registrar dados sensíveis)**
+3. **Configurar rate limiting por usuário/tenant**
+4. **Migrar segredos para variáveis de ambiente/secret store**
+5. **Formalizar contrato de eventos (SignalR) e permissões**
 
 ---
 
-**Implementação concluída com sucesso!** 🚀
+**Implementação concluída com sucesso!**
 
-A API Pedeja agora está totalmente integrada com o sistema de autenticação JWT do `saas-authentication-api`, proporcionando segurança robusta e funcionalidades multi-tenant.
+A `opamenu-api` emite e valida tokens JWT internamente, mantendo o contexto multi-tenant e suporte a RBAC.

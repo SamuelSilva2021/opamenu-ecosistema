@@ -38,7 +38,8 @@ builder.Services.AddSwaggerGen(c =>
         Description = "API do sistema Opa Menu integrada com autenticação JWT"
     });
 
-    // ConfiguraÃ§Ã£o para autenticaÃ§Ã£o JWT no Swagger
+    c.CustomSchemaIds(type => type.FullName ?? type.Name);
+
     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -49,7 +50,7 @@ builder.Services.AddSwaggerGen(c =>
         Description = @"Autenticação JWT usando o esquema Bearer.
         
             **Como usar:**
-            1.Faça login no saas-authentication-api
+            1. Faça login na própria API (`/api/auth/login`)
             2. Copie o `accessToken` da resposta
             3. Cole o token no campo abaixo (apenas o token, sem 'Bearer ')
             4. Clique em 'Authorize' e teste os endpoints protegidos"
