@@ -5,14 +5,6 @@ using System.Text.Json;
 
 namespace OpaMenu.Infrastructure.Services
 {
-    public interface IStripeService
-    {
-        Task<StripePaymentResult> ProcessPayment(StripePaymentRequest request);
-        Task<StripeRefundResult> ProcessRefund(string paymentIntentId, decimal amount, string reason);
-        Task<StripePaymentStatus> GetPaymentStatus(string paymentIntentId);
-        Task<string> CreatePaymentIntent(decimal amount, string currency = "brl");
-    }
-
     public class StripeService : IStripeService
     {
         private readonly IConfiguration _configuration;
@@ -180,52 +172,4 @@ namespace OpaMenu.Infrastructure.Services
 
         #endregion
     }
-
-    #region DTOs
-
-    public class StripePaymentRequest
-    {
-        public decimal Amount { get; set; }
-        public string Currency { get; set; } = "brl";
-        public string CardToken { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public string CustomerEmail { get; set; } = string.Empty;
-        public Dictionary<string, string> Metadata { get; set; } = new();
-    }
-
-    public class StripePaymentResult
-    {
-        public bool Success { get; set; }
-        public string PaymentIntentId { get; set; } = string.Empty;
-        public string Status { get; set; } = string.Empty;
-        public decimal Amount { get; set; }
-        public string Currency { get; set; } = string.Empty;
-        public DateTime ProcessedAt { get; set; }
-        public string? FailureCode { get; set; }
-        public string? FailureMessage { get; set; }
-    }
-
-    public class StripeRefundResult
-    {
-        public bool Success { get; set; }
-        public string RefundId { get; set; } = string.Empty;
-        public string PaymentIntentId { get; set; } = string.Empty;
-        public decimal Amount { get; set; }
-        public string Status { get; set; } = string.Empty;
-        public string Reason { get; set; } = string.Empty;
-        public DateTime ProcessedAt { get; set; }
-        public string? FailureMessage { get; set; }
-    }
-
-    public class StripePaymentStatus
-    {
-        public string PaymentIntentId { get; set; } = string.Empty;
-        public string Status { get; set; } = string.Empty;
-        public decimal Amount { get; set; }
-        public string Currency { get; set; } = string.Empty;
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
-    }
-
-    #endregion
 }

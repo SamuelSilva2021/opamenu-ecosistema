@@ -13,12 +13,4 @@ namespace OpaMenu.Application.Models
         
         public object? Value { get; set; } // Price for price updates, CategoryId for category changes
     }
-
-    public class BulkOperationResult
-    {
-        public int SuccessCount { get; set; }
-        public int FailureCount { get; set; }
-        public List<int> ProcessedIds { get; set; } = new();
-        public List<int> FailedIds { get; set; } = new();
-    }
 }

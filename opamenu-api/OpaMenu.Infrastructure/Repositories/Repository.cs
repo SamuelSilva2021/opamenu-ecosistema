@@ -1,10 +1,6 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
-using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Domain.Interfaces;
-using OpaMenu.Infrastructure.Shared.Data.Context.Opamenu;
-using OpaMenu.Infrastructure.Shared.Data.Context.MultTenant;
-using OpaMenu.Infrastructure.Shared.Data.Context.AccessControl;
 using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
 
 namespace OpaMenu.Infrastructure.Repositories;
@@ -207,41 +203,6 @@ public abstract class BaseRepository<T>(DbContext context) : IRepository<T> wher
     public virtual async Task<double> AverageAsync(Expression<Func<T, decimal>> selector)
     {
         return (double)await _dbSet.AverageAsync(selector);
-    }
-}
-
-/// <summary>
-/// Repositório específico para OpamenuDbContext
-/// </summary>
-public class OpamenuRepository<T> : BaseRepository<T> where T : BaseEntity
-{
-    public OpamenuRepository(OpamenuDbContext context) : base(context)
-    {
-    }
-}
-
-/// <summary>
-/// Repositório específico para MultiTenantDbContext
-/// </summary>
-public class MultiTenantRepository<T> where T : class
-{
-    protected readonly MultiTenantDbContext _context;
-    protected readonly DbSet<T> _dbSet;
-
-    public MultiTenantRepository(MultiTenantDbContext context)
-    {
-        _context = context;
-        _dbSet = context.Set<T>();
-    }
-}
-
-/// <summary>
-/// Repositório específico para AccessControlDbContext
-/// </summary>
-public class AccessControlRepository<T> : BaseRepository<T> where T : BaseEntity
-{
-    public AccessControlRepository(AccessControlDbContext context) : base(context)
-    {
     }
 }
 

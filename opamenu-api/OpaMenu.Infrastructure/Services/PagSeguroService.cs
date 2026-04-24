@@ -5,14 +5,6 @@ using System.Text.Json;
 
 namespace OpaMenu.Infrastructure.Services
 {
-    public interface IPagSeguroService
-    {
-        Task<PagSeguroPaymentResult> ProcessPayment(PagSeguroPaymentRequest request);
-        Task<PagSeguroRefundResult> ProcessRefund(string transactionId, decimal amount);
-        Task<PagSeguroPaymentStatus> GetPaymentStatus(string transactionId);
-        Task<PagSeguroPixResult> GeneratePixPayment(decimal amount, string description);
-    }
-
     public class PagSeguroService : IPagSeguroService
     {
         private readonly IConfiguration _configuration;
@@ -198,62 +190,4 @@ namespace OpaMenu.Infrastructure.Services
 
         #endregion
     }
-
-    #region DTOs
-
-    public class PagSeguroPaymentRequest
-    {
-        public decimal Amount { get; set; }
-        public string CardToken { get; set; } = string.Empty;
-        public string CardHolderName { get; set; } = string.Empty;
-        public string CardHolderDocument { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public int Installments { get; set; } = 1;
-        public Dictionary<string, string> Customer { get; set; } = new();
-    }
-
-    public class PagSeguroPaymentResult
-    {
-        public bool Success { get; set; }
-        public string TransactionId { get; set; } = string.Empty;
-        public string Status { get; set; } = string.Empty;
-        public decimal Amount { get; set; }
-        public DateTime ProcessedAt { get; set; }
-        public string? AuthorizationCode { get; set; }
-        public string? FailureReason { get; set; }
-    }
-
-    public class PagSeguroRefundResult
-    {
-        public bool Success { get; set; }
-        public string RefundId { get; set; } = string.Empty;
-        public string OriginalTransactionId { get; set; } = string.Empty;
-        public decimal Amount { get; set; }
-        public string Status { get; set; } = string.Empty;
-        public DateTime ProcessedAt { get; set; }
-        public string? FailureReason { get; set; }
-    }
-
-    public class PagSeguroPaymentStatus
-    {
-        public string TransactionId { get; set; } = string.Empty;
-        public string Status { get; set; } = string.Empty;
-        public decimal Amount { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
-    }
-
-    public class PagSeguroPixResult
-    {
-        public bool Success { get; set; }
-        public string TransactionId { get; set; } = string.Empty;
-        public string QRCode { get; set; } = string.Empty;
-        public string QRCodeImage { get; set; } = string.Empty;
-        public decimal Amount { get; set; }
-        public DateTime ExpiresAt { get; set; }
-        public string Status { get; set; } = string.Empty;
-        public string? FailureReason { get; set; }
-    }
-
-    #endregion
 }

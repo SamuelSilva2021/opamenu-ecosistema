@@ -5,13 +5,6 @@ using Microsoft.Extensions.Logging;
 
 namespace OpaMenu.Infrastructure.Services
 {
-    public interface IPixService
-    {
-        Task<PixQRCodeResponse> GenerateQRCode(decimal amount, string description, string orderId);
-        Task<PixValidationResult> ValidatePixPayment(string transactionId);
-        string GeneratePixPayload(decimal amount, string description, string merchantKey, string? transactionId = null);
-    }
-
     public class PixService : IPixService
     {
         private readonly IConfiguration _configuration;
@@ -188,28 +181,4 @@ namespace OpaMenu.Infrastructure.Services
             return (ushort)(crc & 0xFFFF);
         }
     }
-
-    #region DTOs
-
-    public class PixQRCodeResponse
-    {
-        public string QRCode { get; set; } = string.Empty;
-        public string QRCodeImage { get; set; } = string.Empty;
-        public string TransactionId { get; set; } = string.Empty;
-        public decimal Amount { get; set; }
-        public string MerchantName { get; set; } = string.Empty;
-        public DateTime ExpiresAt { get; set; }
-    }
-
-    public class PixValidationResult
-    {
-        public bool IsValid { get; set; }
-        public string Status { get; set; } = string.Empty;
-        public string TransactionId { get; set; } = string.Empty;
-        public DateTime ValidatedAt { get; set; }
-        public decimal Amount { get; set; }
-        public string PayerDocument { get; set; } = string.Empty;
-    }
-
-    #endregion
 }

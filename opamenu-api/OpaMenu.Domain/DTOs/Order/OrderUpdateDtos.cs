@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using OpaMenu.Infrastructure.Shared.Entities;
+using System.ComponentModel.DataAnnotations;
 using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Domain.DTOs
@@ -9,21 +8,6 @@ namespace OpaMenu.Domain.DTOs
         [Required]
         [MaxLength(500)]
         public string Reason { get; set; } = string.Empty;
-    }
-
-    public class UpdateOrderPaymentRequestDto
-    {
-        [Required]
-        public EPaymentMethod PaymentMethod { get; set; }
-    }
-
-    public class UpdateOrderDeliveryTypeRequestDto
-    {
-        [Required]
-        public bool IsDelivery { get; set; }
-        
-        [MaxLength(500)]
-        public string? DeliveryAddress { get; set; }
     }
 }
 

@@ -8,9 +8,4 @@ namespace OpaMenu.Domain.DTOs.Subscription
         [Required]
         public Guid NewPlanId { get; set; }
     }
-
-    public class CancelSubscriptionRequestDto
-    {
-        public string? Reason { get; set; }
-    }
 }

@@ -111,11 +111,3 @@ public class AuthTestController : ControllerBase
         }
     }
 }
-
-/// <summary>
-/// Request para validação de token
-/// </summary>
-public class ValidateTokenRequest
-{
-    public string Token { get; set; } = string.Empty;
-}
