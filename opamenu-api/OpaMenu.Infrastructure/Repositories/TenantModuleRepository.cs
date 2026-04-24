@@ -18,6 +18,9 @@ public sealed class TenantModuleRepository(MultiTenantDbContext dbContext) : ITe
             .ToListAsync();
     }
 
+    public Task<List<TenantModuleEntity>> GetByTenantTrackedAsync(Guid tenantId) =>
+        _dbContext.Set<TenantModuleEntity>().Where(tm => tm.TenantId == tenantId).ToListAsync();
+
     public Task<TenantModuleEntity?> GetByTenantAndModuleTrackedAsync(Guid tenantId, Guid moduleId) =>
         _dbContext.Set<TenantModuleEntity>().FirstOrDefaultAsync(tm => tm.TenantId == tenantId && tm.ModuleId == moduleId);
 
@@ -27,6 +30,17 @@ public sealed class TenantModuleRepository(MultiTenantDbContext dbContext) : ITe
         return Task.CompletedTask;
     }
 
+    public Task AddRangeAsync(IEnumerable<TenantModuleEntity> entities)
+    {
+        _dbContext.Set<TenantModuleEntity>().AddRange(entities);
+        return Task.CompletedTask;
+    }
+
+    public Task RemoveRangeAsync(IEnumerable<TenantModuleEntity> entities)
+    {
+        _dbContext.Set<TenantModuleEntity>().RemoveRange(entities);
+        return Task.CompletedTask;
+    }
+
     public Task SaveChangesAsync() => _dbContext.SaveChangesAsync();
 }
-
