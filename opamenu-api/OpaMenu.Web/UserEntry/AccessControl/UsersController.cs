@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using OpaMenu.Commons.Api.Commons;
 using OpaMenu.Domain.DTOs.AccessControl;
+using OpaMenu.Domain.Interfaces;
 using OpaMenu.Infrastructure.Shared.Data.Context.AccessControl;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts;
@@ -13,9 +15,10 @@ namespace OpaMenu.Web.UserEntry.AccessControl;
 [ApiController]
 [Route("api/users")]
 [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
-public sealed class UsersController(AccessControlDbContext dbContext) : ControllerBase
+public sealed class UsersController(AccessControlDbContext dbContext, ICurrentUserService currentUserService) : ControllerBase
 {
     private readonly AccessControlDbContext _dbContext = dbContext;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
 
     [HttpGet]
     public async Task<ActionResult<PagedResultDto<UserAccountDto>>> GetUsers(
@@ -356,6 +359,377 @@ public sealed class UsersController(AccessControlDbContext dbContext) : Controll
         return NoContent();
     }
 
+    [HttpGet("/api/user-accounts-painel")]
+    public async Task<IActionResult> GetEmployeesPainel(
+        [FromQuery] int page = 1,
+        [FromQuery] int limit = 10,
+        [FromQuery] string? search = null)
+    {
+        var tenantId = _currentUserService.GetTenantGuid();
+        if (!tenantId.HasValue || tenantId.Value == Guid.Empty)
+        {
+            return BadRequest(StaticResponseBuilder<PagedResultDto<UserAccountDto>>.BuildError("Tenant não identificado."));
+        }
+
+        page = page <= 0 ? 1 : page;
+        limit = limit <= 0 ? 10 : limit;
+
+        var query = _dbContext.UserAccounts
+            .AsNoTracking()
+            .Include(u => u.Role)
+            .Where(u => u.DeletedAt == null && u.TenantId == tenantId.Value)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var s = search.Trim();
+            query = query.Where(u =>
+                u.Username.Contains(s) ||
+                u.Email.Contains(s) ||
+                u.FirstName.Contains(s) ||
+                u.LastName.Contains(s));
+        }
+
+        var total = await query.CountAsync();
+        var totalPages = (int)Math.Ceiling(total / (double)limit);
+
+        var items = await query
+            .OrderByDescending(u => u.CreatedAt)
+            .Skip((page - 1) * limit)
+            .Take(limit)
+            .Select(u => new UserAccountDto
+            {
+                Id = u.Id,
+                TenantId = u.TenantId,
+                Username = u.Username,
+                Email = u.Email,
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                PhoneNumber = u.PhoneNumber,
+                Status = u.Status.ToString(),
+                IsEmailVerified = u.IsEmailVerified,
+                CreatedAt = u.CreatedAt,
+                UpdatedAt = u.UpdatedAt,
+                LastLoginAt = u.LastLoginAt,
+                FullName = (u.FirstName + " " + u.LastName).Trim(),
+                RoleId = u.RoleId,
+                RoleName = u.Role != null ? (u.Role.Code ?? u.Role.Name) : null
+            })
+            .ToListAsync();
+
+        return Ok(StaticResponseBuilder<PagedResultDto<UserAccountDto>>.BuildOk(new PagedResultDto<UserAccountDto>
+        {
+            Items = items,
+            Page = page,
+            Limit = limit,
+            Total = total,
+            TotalPages = totalPages
+        }));
+    }
+
+    [HttpGet("/api/user-accounts-painel/{id:guid}")]
+    public async Task<IActionResult> GetEmployeePainelById([FromRoute] Guid id)
+    {
+        var tenantId = _currentUserService.GetTenantGuid();
+        if (!tenantId.HasValue || tenantId.Value == Guid.Empty)
+        {
+            return BadRequest(StaticResponseBuilder<UserAccountDto>.BuildError("Tenant não identificado."));
+        }
+
+        var user = await _dbContext.UserAccounts.AsNoTracking()
+            .Include(u => u.Role)
+            .FirstOrDefaultAsync(u => u.Id == id && u.DeletedAt == null && u.TenantId == tenantId.Value);
+
+        if (user == null)
+        {
+            return NotFound(StaticResponseBuilder<UserAccountDto>.BuildNotFound(new UserAccountDto()));
+        }
+
+        return Ok(StaticResponseBuilder<UserAccountDto>.BuildOk(new UserAccountDto
+        {
+            Id = user.Id,
+            TenantId = user.TenantId,
+            Username = user.Username,
+            Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            PhoneNumber = user.PhoneNumber,
+            Status = user.Status.ToString(),
+            IsEmailVerified = user.IsEmailVerified,
+            CreatedAt = user.CreatedAt,
+            UpdatedAt = user.UpdatedAt,
+            LastLoginAt = user.LastLoginAt,
+            FullName = (user.FirstName + " " + user.LastName).Trim(),
+            RoleId = user.RoleId,
+            RoleName = user.Role != null ? (user.Role.Code ?? user.Role.Name) : null
+        }));
+    }
+
+    [HttpPost("/api/user-accounts-painel")]
+    public async Task<IActionResult> CreateEmployeePainel([FromBody] CreateUserAccountRequestDto request)
+    {
+        var tenantId = _currentUserService.GetTenantGuid();
+        if (!tenantId.HasValue || tenantId.Value == Guid.Empty)
+        {
+            return BadRequest(StaticResponseBuilder<UserAccountDto>.BuildError("Tenant não identificado."));
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Email) ||
+            string.IsNullOrWhiteSpace(request.Password) ||
+            string.IsNullOrWhiteSpace(request.ConfirmPassword) ||
+            string.IsNullOrWhiteSpace(request.FirstName) ||
+            string.IsNullOrWhiteSpace(request.LastName))
+        {
+            return BadRequest(StaticResponseBuilder<UserAccountDto>.BuildError("Dados inválidos."));
+        }
+
+        if (!string.Equals(request.Password, request.ConfirmPassword, StringComparison.Ordinal))
+        {
+            return BadRequest(StaticResponseBuilder<UserAccountDto>.BuildError("As senhas não coincidem."));
+        }
+
+        var email = request.Email.Trim().ToLowerInvariant();
+        var existsEmail = await _dbContext.UserAccounts.AsNoTracking()
+            .AnyAsync(u => u.Email.ToLower() == email && u.DeletedAt == null);
+
+        if (existsEmail)
+        {
+            return BadRequest(StaticResponseBuilder<UserAccountDto>.BuildError("Email já cadastrado."));
+        }
+
+        if (request.RoleId.HasValue)
+        {
+            var roleExists = await _dbContext.Roles.AsNoTracking()
+                .AnyAsync(r => r.Id == request.RoleId.Value && (r.TenantId == tenantId.Value || (r.TenantId == null && r.IsSystem)));
+            if (!roleExists)
+            {
+                return BadRequest(StaticResponseBuilder<UserAccountDto>.BuildError("Role inválida."));
+            }
+        }
+
+        var usernameBase = email.Split('@')[0];
+        var username = await GenerateUniqueUsernameAsync(usernameBase);
+        var now = DateTime.UtcNow;
+
+        var entity = new UserAccountEntity
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId.Value,
+            Username = username,
+            Email = email,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+            FirstName = request.FirstName.Trim(),
+            LastName = request.LastName.Trim(),
+            PhoneNumber = request.PhoneNumber,
+            Status = EUserAccountStatus.Ativo,
+            IsEmailVerified = false,
+            RoleId = request.RoleId,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
+
+        _dbContext.UserAccounts.Add(entity);
+        await _dbContext.SaveChangesAsync();
+
+        var roleName = entity.RoleId.HasValue
+            ? await _dbContext.Roles.AsNoTracking().Where(r => r.Id == entity.RoleId.Value).Select(r => r.Code ?? r.Name).FirstOrDefaultAsync()
+            : null;
+
+        return Ok(StaticResponseBuilder<UserAccountDto>.BuildOk(new UserAccountDto
+        {
+            Id = entity.Id,
+            TenantId = entity.TenantId,
+            Username = entity.Username,
+            Email = entity.Email,
+            FirstName = entity.FirstName,
+            LastName = entity.LastName,
+            PhoneNumber = entity.PhoneNumber,
+            Status = entity.Status.ToString(),
+            IsEmailVerified = entity.IsEmailVerified,
+            CreatedAt = entity.CreatedAt,
+            UpdatedAt = entity.UpdatedAt,
+            LastLoginAt = entity.LastLoginAt,
+            FullName = (entity.FirstName + " " + entity.LastName).Trim(),
+            RoleId = entity.RoleId,
+            RoleName = roleName
+        }));
+    }
+
+    [HttpPut("/api/user-accounts-painel/{id:guid}")]
+    public async Task<IActionResult> UpdateEmployeePainel([FromRoute] Guid id, [FromBody] UpdateUserAccountRequestDto request)
+    {
+        var tenantId = _currentUserService.GetTenantGuid();
+        if (!tenantId.HasValue || tenantId.Value == Guid.Empty)
+        {
+            return BadRequest(StaticResponseBuilder<UserAccountDto>.BuildError("Tenant não identificado."));
+        }
+
+        var entity = await _dbContext.UserAccounts.Include(u => u.Role)
+            .FirstOrDefaultAsync(u => u.Id == id && u.DeletedAt == null && u.TenantId == tenantId.Value);
+
+        if (entity == null)
+        {
+            return NotFound(StaticResponseBuilder<UserAccountDto>.BuildNotFound(new UserAccountDto()));
+        }
+
+        if (request.Email != null)
+        {
+            if (string.IsNullOrWhiteSpace(request.Email))
+            {
+                return BadRequest(StaticResponseBuilder<UserAccountDto>.BuildError("Email inválido."));
+            }
+
+            var newEmail = request.Email.Trim().ToLowerInvariant();
+            var exists = await _dbContext.UserAccounts.AsNoTracking()
+                .AnyAsync(u => u.Id != id && u.Email.ToLower() == newEmail && u.DeletedAt == null);
+            if (exists)
+            {
+                return BadRequest(StaticResponseBuilder<UserAccountDto>.BuildError("Email já cadastrado."));
+            }
+
+            entity.Email = newEmail;
+        }
+
+        if (request.FirstName != null)
+        {
+            if (string.IsNullOrWhiteSpace(request.FirstName))
+            {
+                return BadRequest(StaticResponseBuilder<UserAccountDto>.BuildError("Nome inválido."));
+            }
+            entity.FirstName = request.FirstName.Trim();
+        }
+
+        if (request.LastName != null)
+        {
+            if (string.IsNullOrWhiteSpace(request.LastName))
+            {
+                return BadRequest(StaticResponseBuilder<UserAccountDto>.BuildError("Sobrenome inválido."));
+            }
+            entity.LastName = request.LastName.Trim();
+        }
+
+        if (request.PhoneNumber != null)
+        {
+            entity.PhoneNumber = request.PhoneNumber;
+        }
+
+        if (request.RoleId.HasValue)
+        {
+            var roleExists = await _dbContext.Roles.AsNoTracking()
+                .AnyAsync(r => r.Id == request.RoleId.Value && (r.TenantId == tenantId.Value || (r.TenantId == null && r.IsSystem)));
+            if (!roleExists)
+            {
+                return BadRequest(StaticResponseBuilder<UserAccountDto>.BuildError("Role inválida."));
+            }
+
+            entity.RoleId = request.RoleId;
+        }
+
+        if (request.Status != null)
+        {
+            if (!Enum.TryParse<EUserAccountStatus>(request.Status, ignoreCase: true, out var status))
+            {
+                return BadRequest(StaticResponseBuilder<UserAccountDto>.BuildError("Status inválido."));
+            }
+
+            entity.Status = status;
+        }
+
+        entity.UpdatedAt = DateTime.UtcNow;
+        await _dbContext.SaveChangesAsync();
+
+        var roleName = entity.RoleId.HasValue
+            ? await _dbContext.Roles.AsNoTracking().Where(r => r.Id == entity.RoleId.Value).Select(r => r.Code ?? r.Name).FirstOrDefaultAsync()
+            : null;
+
+        return Ok(StaticResponseBuilder<UserAccountDto>.BuildOk(new UserAccountDto
+        {
+            Id = entity.Id,
+            TenantId = entity.TenantId,
+            Username = entity.Username,
+            Email = entity.Email,
+            FirstName = entity.FirstName,
+            LastName = entity.LastName,
+            PhoneNumber = entity.PhoneNumber,
+            Status = entity.Status.ToString(),
+            IsEmailVerified = entity.IsEmailVerified,
+            CreatedAt = entity.CreatedAt,
+            UpdatedAt = entity.UpdatedAt,
+            LastLoginAt = entity.LastLoginAt,
+            FullName = (entity.FirstName + " " + entity.LastName).Trim(),
+            RoleId = entity.RoleId,
+            RoleName = roleName
+        }));
+    }
+
+    [HttpPatch("/api/user-accounts-painel/{id:guid}/toggle-status")]
+    public async Task<IActionResult> ToggleEmployeeStatusPainel([FromRoute] Guid id)
+    {
+        var tenantId = _currentUserService.GetTenantGuid();
+        if (!tenantId.HasValue || tenantId.Value == Guid.Empty)
+        {
+            return BadRequest(StaticResponseBuilder<UserAccountDto>.BuildError("Tenant não identificado."));
+        }
+
+        var entity = await _dbContext.UserAccounts.Include(u => u.Role)
+            .FirstOrDefaultAsync(u => u.Id == id && u.DeletedAt == null && u.TenantId == tenantId.Value);
+
+        if (entity == null)
+        {
+            return NotFound(StaticResponseBuilder<UserAccountDto>.BuildNotFound(new UserAccountDto()));
+        }
+
+        entity.Status = entity.Status == EUserAccountStatus.Ativo ? EUserAccountStatus.Inativo : EUserAccountStatus.Ativo;
+        entity.UpdatedAt = DateTime.UtcNow;
+        await _dbContext.SaveChangesAsync();
+
+        var roleName = entity.RoleId.HasValue
+            ? await _dbContext.Roles.AsNoTracking().Where(r => r.Id == entity.RoleId.Value).Select(r => r.Code ?? r.Name).FirstOrDefaultAsync()
+            : null;
+
+        return Ok(StaticResponseBuilder<UserAccountDto>.BuildOk(new UserAccountDto
+        {
+            Id = entity.Id,
+            TenantId = entity.TenantId,
+            Username = entity.Username,
+            Email = entity.Email,
+            FirstName = entity.FirstName,
+            LastName = entity.LastName,
+            PhoneNumber = entity.PhoneNumber,
+            Status = entity.Status.ToString(),
+            IsEmailVerified = entity.IsEmailVerified,
+            CreatedAt = entity.CreatedAt,
+            UpdatedAt = entity.UpdatedAt,
+            LastLoginAt = entity.LastLoginAt,
+            FullName = (entity.FirstName + " " + entity.LastName).Trim(),
+            RoleId = entity.RoleId,
+            RoleName = roleName
+        }));
+    }
+
+    [HttpDelete("/api/user-accounts-painel/{id:guid}")]
+    public async Task<IActionResult> DeleteEmployeePainel([FromRoute] Guid id)
+    {
+        var tenantId = _currentUserService.GetTenantGuid();
+        if (!tenantId.HasValue || tenantId.Value == Guid.Empty)
+        {
+            return BadRequest(StaticResponseBuilder<bool>.BuildError("Tenant não identificado."));
+        }
+
+        var entity = await _dbContext.UserAccounts.FirstOrDefaultAsync(u => u.Id == id && u.DeletedAt == null && u.TenantId == tenantId.Value);
+        if (entity == null)
+        {
+            return Ok(StaticResponseBuilder<bool>.BuildOk(true));
+        }
+
+        entity.DeletedAt = DateTime.UtcNow;
+        entity.Status = EUserAccountStatus.Deletado;
+        entity.UpdatedAt = DateTime.UtcNow;
+        await _dbContext.SaveChangesAsync();
+
+        return Ok(StaticResponseBuilder<bool>.BuildOk(true));
+    }
+
     [HttpPost("forgot-password")]
     [AllowAnonymous]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto request)
@@ -547,4 +921,3 @@ public sealed class UsersController(AccessControlDbContext dbContext) : Controll
         return $"{baseValue}{Guid.NewGuid():N}";
     }
 }
-

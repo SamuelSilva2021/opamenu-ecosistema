@@ -1,22 +1,146 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using OpaMenu.Application.Services.Interfaces.Auth;
+using OpaMenu.Commons.Api.Commons;
+using OpaMenu.Domain.DTOs.Auth;
 using OpaMenu.Domain.DTOs.AccessControl;
 using OpaMenu.Domain.DTOs.MultiTenant;
 using OpaMenu.Infrastructure.Shared.Data.Context.AccessControl;
 using OpaMenu.Infrastructure.Shared.Data.Context.MultTenant;
+using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
+using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts;
+using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts.Enum;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.TenantModule;
+using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace OpaMenu.Web.UserEntry.AccessControl;
 
 [ApiController]
 [Route("api/tenants")]
 [Authorize(Roles = "SUPER_ADMIN")]
-public sealed class TenantsController(MultiTenantDbContext multiTenantDbContext, AccessControlDbContext accessControlDbContext) : ControllerBase
+public sealed class TenantsController(
+    MultiTenantDbContext multiTenantDbContext,
+    AccessControlDbContext accessControlDbContext,
+    IAuthService authService) : ControllerBase
 {
     private readonly MultiTenantDbContext _multiTenantDbContext = multiTenantDbContext;
     private readonly AccessControlDbContext _accessControlDbContext = accessControlDbContext;
+    private readonly IAuthService _authService = authService;
+
+    [HttpPost("/api/register")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Register([FromBody] RegisterTenantRequestDto request)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(request.CompanyName) ||
+                string.IsNullOrWhiteSpace(request.FirstName) ||
+                string.IsNullOrWhiteSpace(request.LastName) ||
+                string.IsNullOrWhiteSpace(request.Email) ||
+                string.IsNullOrWhiteSpace(request.Password) ||
+                string.IsNullOrWhiteSpace(request.ConfirmPassword))
+            {
+                return BadRequest(StaticResponseBuilder<RegisterTenantResponseDto>.BuildError("Dados inválidos."));
+            }
+
+            if (!string.Equals(request.Password, request.ConfirmPassword, StringComparison.Ordinal))
+            {
+                return BadRequest(StaticResponseBuilder<RegisterTenantResponseDto>.BuildError("As senhas não coincidem."));
+            }
+
+            var email = request.Email.Trim().ToLowerInvariant();
+            var emailExists = await _accessControlDbContext.UserAccounts
+                .AsNoTracking()
+                .AnyAsync(u => u.DeletedAt == null && u.Email.ToLower() == email);
+
+            if (emailExists)
+            {
+                return BadRequest(StaticResponseBuilder<RegisterTenantResponseDto>.BuildError("Email já cadastrado."));
+            }
+
+            var slug = await GenerateUniqueTenantSlugAsync(request.CompanyName);
+            var now = DateTime.UtcNow;
+
+            var tenant = new TenantEntity
+            {
+                Id = Guid.NewGuid(),
+                Name = request.CompanyName.Trim(),
+                Slug = slug,
+                Domain = null,
+                Document = request.Document,
+                Status = ETenantStatus.Pendente,
+                Email = email,
+                Phone = null,
+                CreatedAt = now,
+                UpdatedAt = null
+            };
+
+            _multiTenantDbContext.Tenants.Add(tenant);
+            await _multiTenantDbContext.SaveChangesAsync();
+
+            var role = await ResolveOrCreateAdminRoleAsync(tenant.Id);
+
+            var usernameBase = email.Split('@')[0];
+            var username = await GenerateUniqueUsernameAsync(usernameBase);
+
+            var user = new UserAccountEntity
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenant.Id,
+                Username = username,
+                Email = email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                FirstName = request.FirstName.Trim(),
+                LastName = request.LastName.Trim(),
+                PhoneNumber = null,
+                Status = EUserAccountStatus.Ativo,
+                IsEmailVerified = false,
+                RoleId = role?.Id,
+                CreatedAt = now,
+                UpdatedAt = now
+            };
+
+            _accessControlDbContext.UserAccounts.Add(user);
+            await _accessControlDbContext.SaveChangesAsync();
+
+            var login = await _authService.LoginAsync(new LoginRequestDto
+            {
+                UsernameOrEmail = email,
+                Password = request.Password
+            });
+
+            if (!login.Succeeded || login.Data == null)
+            {
+                return StatusCode(500, StaticResponseBuilder<RegisterTenantResponseDto>.BuildError("Falha ao gerar token de acesso."));
+            }
+
+            var response = new RegisterTenantResponseDto
+            {
+                TenantId = tenant.Id,
+                UserId = user.Id,
+                CompanyName = tenant.Name,
+                Slug = tenant.Slug,
+                Email = user.Email,
+                FullName = (user.FirstName + " " + user.LastName).Trim(),
+                AccessToken = login.Data.AccessToken,
+                RefreshToken = login.Data.RefreshToken,
+                ExpiresIn = login.Data.ExpiresIn,
+                CreatedAt = now,
+                Message = "Tenant cadastrado com sucesso!",
+                RedirectToPlanSelection = login?.Data?.RedirectToPlanSelection ?? false
+            };
+
+            return Ok(StaticResponseBuilder<RegisterTenantResponseDto>.BuildOk(response));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, StaticResponseBuilder<RegisterTenantResponseDto>.BuildErrorResponse(ex));
+        }
+    }
 
     [HttpGet]
     public async Task<ActionResult<PagedResultDto<TenantSummaryDto>>> GetTenants([FromQuery] int page = 1, [FromQuery] int limit = 10)
@@ -341,5 +465,140 @@ public sealed class TenantsController(MultiTenantDbContext multiTenantDbContext,
             Settings = tenant.Settings
         };
     }
-}
 
+    private async Task<string> GenerateUniqueTenantSlugAsync(string companyName)
+    {
+        var baseSlug = Slugify(companyName);
+        if (string.IsNullOrWhiteSpace(baseSlug))
+        {
+            baseSlug = "tenant";
+        }
+
+        var slug = baseSlug;
+        var exists = await _multiTenantDbContext.Tenants.AsNoTracking().AnyAsync(t => t.Slug == slug);
+        if (!exists)
+        {
+            return slug;
+        }
+
+        for (var i = 2; i <= 200; i++)
+        {
+            slug = $"{baseSlug}-{i}";
+            exists = await _multiTenantDbContext.Tenants.AsNoTracking().AnyAsync(t => t.Slug == slug);
+            if (!exists)
+            {
+                return slug;
+            }
+        }
+
+        return $"{baseSlug}-{Guid.NewGuid():N}";
+    }
+
+    private static string Slugify(string value)
+    {
+        var normalized = value.Trim().ToLowerInvariant().Normalize(NormalizationForm.FormD);
+        var sb = new StringBuilder(normalized.Length);
+
+        foreach (var ch in normalized)
+        {
+            var uc = CharUnicodeInfo.GetUnicodeCategory(ch);
+            if (uc == UnicodeCategory.NonSpacingMark)
+            {
+                continue;
+            }
+
+            if (char.IsLetterOrDigit(ch))
+            {
+                sb.Append(ch);
+                continue;
+            }
+
+            if (ch is ' ' or '-' or '_' or '.')
+            {
+                sb.Append('-');
+            }
+        }
+
+        var slug = sb.ToString().Normalize(NormalizationForm.FormC);
+        slug = string.Join("-", slug.Split('-', StringSplitOptions.RemoveEmptyEntries));
+        return slug;
+    }
+
+    private async Task<RoleEntity?> ResolveOrCreateAdminRoleAsync(Guid tenantId)
+    {
+        var adminRole = await _accessControlDbContext.Roles
+            .AsNoTracking()
+            .Where(r => r.IsActive && (r.TenantId == null || r.TenantId == tenantId) && r.Code != null && r.Code.ToUpper() == "ADMIN")
+            .OrderByDescending(r => r.IsSystem)
+            .FirstOrDefaultAsync();
+
+        if (adminRole != null)
+        {
+            return adminRole;
+        }
+
+        var now = DateTime.UtcNow;
+        var role = new RoleEntity
+        {
+            Id = Guid.NewGuid(),
+            Name = "Administrador",
+            Description = "Role administrativo do tenant",
+            Code = "ADMIN",
+            TenantId = tenantId,
+            ApplicationId = null,
+            IsActive = true,
+            IsSystem = false,
+            CreatedAt = now,
+            UpdatedAt = null
+        };
+
+        _accessControlDbContext.Roles.Add(role);
+
+        var moduleKeys = await _accessControlDbContext.Modules.AsNoTracking()
+            .Where(m => m.IsActive && m.Key != null)
+            .Select(m => m.Key!)
+            .ToListAsync();
+
+        var defaultActions = new List<string> { "CREATE", "READ", "UPDATE", "DELETE" };
+        foreach (var moduleKey in moduleKeys.Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            _accessControlDbContext.RolePermissions.Add(new RolePermissionEntity
+            {
+                Id = Guid.NewGuid(),
+                RoleId = role.Id,
+                ModuleKey = moduleKey,
+                Actions = defaultActions,
+                IsActive = true,
+                CreatedAt = now,
+                UpdatedAt = null
+            });
+        }
+
+        await _accessControlDbContext.SaveChangesAsync();
+        return role;
+    }
+
+    private async Task<string> GenerateUniqueUsernameAsync(string usernameBase)
+    {
+        var baseValue = string.IsNullOrWhiteSpace(usernameBase) ? "user" : usernameBase.Trim();
+        var candidate = baseValue;
+
+        var exists = await _accessControlDbContext.UserAccounts.AsNoTracking().AnyAsync(u => u.Username == candidate && u.DeletedAt == null);
+        if (!exists)
+        {
+            return candidate;
+        }
+
+        for (var i = 0; i < 50; i++)
+        {
+            candidate = $"{baseValue}{RandomNumberGenerator.GetInt32(1000, 9999)}";
+            exists = await _accessControlDbContext.UserAccounts.AsNoTracking().AnyAsync(u => u.Username == candidate && u.DeletedAt == null);
+            if (!exists)
+            {
+                return candidate;
+            }
+        }
+
+        return $"{baseValue}{Guid.NewGuid():N}";
+    }
+}

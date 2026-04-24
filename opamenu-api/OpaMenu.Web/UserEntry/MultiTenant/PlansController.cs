@@ -15,6 +15,30 @@ public sealed class PlansController(MultiTenantDbContext dbContext) : Controller
 {
     private readonly MultiTenantDbContext _dbContext = dbContext;
 
+    [HttpGet("active")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetActive()
+    {
+        var plans = await _dbContext.Plans
+            .AsNoTracking()
+            .Where(p => p.Status == EPlanStatus.Ativo)
+            .OrderBy(p => p.SortOrder)
+            .ThenBy(p => p.Name)
+            .Select(p => new
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description,
+                Price = p.Price,
+                BillingCycle = p.BillingCycle.ToString(),
+                Features = p.Features,
+                IsActive = true
+            })
+            .ToListAsync();
+
+        return Ok(plans);
+    }
+
     [HttpGet]
     public async Task<ActionResult<PlanListResponseDto>> GetAll(
         [FromQuery] int page = 1,
@@ -364,4 +388,3 @@ public sealed class PlansController(MultiTenantDbContext dbContext) : Controller
         };
     }
 }
-

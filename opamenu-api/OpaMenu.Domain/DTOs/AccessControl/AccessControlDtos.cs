@@ -215,3 +215,21 @@ public sealed class ResetPasswordRequestDto
     public string NewPassword { get; set; } = string.Empty;
 }
 
+public sealed class RolePainelDto
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public string? Code { get; set; }
+    public bool IsDefault { get; set; }
+    public bool IsActive { get; set; }
+    public List<SimplifiedPermissionDto> Permissions { get; set; } = [];
+}
+
+public sealed class AvailableModuleDto
+{
+    public string Key { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public List<string> AvailableActions { get; set; } = [];
+}
