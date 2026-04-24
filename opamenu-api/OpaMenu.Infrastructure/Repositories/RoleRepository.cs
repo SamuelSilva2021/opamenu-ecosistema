@@ -75,6 +75,13 @@ public sealed class RoleRepository(AccessControlDbContext dbContext) : IRoleRepo
     public Task<RoleEntity?> GetByIdForTenantTrackedAsync(Guid tenantId, Guid id) =>
         _dbContext.Roles.FirstOrDefaultAsync(r => r.Id == id && r.TenantId == tenantId);
 
+    public Task<RoleEntity?> GetActiveAdminRoleForTenantAsync(Guid tenantId) =>
+        _dbContext.Roles
+            .AsNoTracking()
+            .Where(r => r.IsActive && (r.TenantId == null || r.TenantId == tenantId) && r.Code != null && r.Code.Equals("ADMIN", StringComparison.CurrentCultureIgnoreCase))
+            .OrderByDescending(r => r.IsSystem)
+            .FirstOrDefaultAsync();
+
     public async Task<bool> CodeExistsAsync(string code, Guid? excludeRoleId = null, Guid? tenantId = null, bool includeNullTenant = true)
     {
         var query = _dbContext.Roles.AsNoTracking().Where(r => r.Code != null && r.Code == code);

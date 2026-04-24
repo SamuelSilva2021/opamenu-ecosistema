@@ -10,6 +10,7 @@ public interface IRoleRepository
     Task<RoleEntity?> GetByIdForTenantAsync(Guid tenantId, Guid id);
     Task<RoleEntity?> GetByIdTrackedAsync(Guid id);
     Task<RoleEntity?> GetByIdForTenantTrackedAsync(Guid tenantId, Guid id);
+    Task<RoleEntity?> GetActiveAdminRoleForTenantAsync(Guid tenantId);
     Task<bool> CodeExistsAsync(string code, Guid? excludeRoleId = null, Guid? tenantId = null, bool includeNullTenant = true);
     Task AddAsync(RoleEntity role);
     Task UpdateAsync(RoleEntity role);

@@ -1,8 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Domain.Interfaces;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
-using OpaMenu.Infrastructure.Shared.Data.Context;
 using OpaMenu.Infrastructure.Shared.Data.Context.MultTenant;
 
 namespace OpaMenu.Infrastructure.Repositories;
@@ -29,5 +27,85 @@ public class TenantRepository(MultiTenantDbContext context) : MultiTenantReposit
         _dbSet.Update(entity);
         await _context.SaveChangesAsync();
     }
+
+    public async Task<(IReadOnlyList<TenantEntity> Items, int Total)> GetPagedAsync(
+        int page,
+        int limit,
+        string? filterName,
+        string? filterSlug,
+        string? filterDomain,
+        string? filterEmail,
+        string? filterPhone,
+        string? filterStatus)
+    {
+        page = page <= 0 ? 1 : page;
+        limit = limit <= 0 ? 10 : limit;
+
+        var query = _dbSet.AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(filterName))
+        {
+            query = query.Where(t => t.Name.Contains(filterName));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filterSlug))
+        {
+            query = query.Where(t => t.Slug.Contains(filterSlug));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filterDomain))
+        {
+            query = query.Where(t => t.Domain != null && t.Domain.Contains(filterDomain));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filterEmail))
+        {
+            query = query.Where(t => t.Email != null && t.Email.Contains(filterEmail));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filterPhone))
+        {
+            query = query.Where(t => t.Phone != null && t.Phone.Contains(filterPhone));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filterStatus))
+        {
+            query = query.Where(t => t.Status.ToString() == filterStatus);
+        }
+
+        var total = await query.CountAsync();
+        var items = await query
+            .OrderByDescending(t => t.CreatedAt)
+            .Skip((page - 1) * limit)
+            .Take(limit)
+            .ToListAsync();
+
+        return (items, total);
+    }
+
+    public Task<TenantEntity?> GetByIdTrackedAsync(Guid id) =>
+        _dbSet.FirstOrDefaultAsync(t => t.Id == id);
+
+    public Task<bool> ExistsAsync(Guid id) =>
+        _dbSet.AsNoTracking().AnyAsync(t => t.Id == id);
+
+    public async Task<bool> SlugExistsAsync(string slug, Guid? excludeId = null)
+    {
+        var query = _dbSet.AsNoTracking().Where(t => t.Slug == slug);
+        if (excludeId.HasValue)
+        {
+            query = query.Where(t => t.Id != excludeId.Value);
+        }
+
+        return await query.AnyAsync();
+    }
+
+    public Task AddAsync(TenantEntity entity)
+    {
+        _dbSet.Add(entity);
+        return Task.CompletedTask;
+    }
+
+    public Task SaveChangesAsync() => _context.SaveChangesAsync();
 }
 
