@@ -42,6 +42,7 @@ namespace OpaMenu.Infrastructure.Configurations
                     .InNamespaces(
                         "OpaMenu.Application.Services",
                         "OpaMenu.Application.Features.Categories",
+                        "OpaMenu.Application.Services.AccessControl",
                         "OpaMenu.Application.Services.Opamenu")
                     .Where(type => (type.Name.EndsWith("Service") || type.Name.EndsWith("Mapper")) && !type.IsAbstract))
                 .AsImplementedInterfaces()
