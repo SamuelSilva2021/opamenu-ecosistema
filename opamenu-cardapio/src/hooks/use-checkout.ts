@@ -126,6 +126,7 @@ export const useCheckout = (): CheckoutHookReturn => {
         loyaltyPointsUsed: loyaltyPointsUsed > 0 ? loyaltyPointsUsed : undefined,
         loyaltyProgramId: loyaltyPointsUsed > 0 ? loyaltyProgramId : undefined,
         loyaltyDiscount: loyaltyDiscount && loyaltyDiscount > 0 ? loyaltyDiscount : undefined,
+        deliveryFee: checkoutData.isDelivery ? 5.00 : 0,
         items: cartItems.map(item => ({
           productId: item.product.id,
           quantity: item.quantity,
@@ -193,7 +194,9 @@ export const useCheckout = (): CheckoutHookReturn => {
       setShowPixPayment(true);
     } catch (error) {
       console.error('Error generating PIX:', error);
-      setError('Erro ao gerar QR Code do PIX. Tente novamente.');
+      // Se não houver integração PIX ou ocorrer erro na geração, avançamos para a confirmação
+      // O lojista receberá o pedido com método PIX e poderá tratar manualmente
+      setCurrentStep(CheckoutSteps.CONFIRMATION);
     } finally {
       setIsProcessing(false);
     }

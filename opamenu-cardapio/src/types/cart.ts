@@ -41,6 +41,7 @@ export interface OrderRequest {
   loyaltyPointsUsed?: number;
   loyaltyProgramId?: string;
   loyaltyDiscount?: number;
+  deliveryFee?: number;
   items: {
     productId: string;
     quantity: number;

@@ -42,6 +42,7 @@ import { categoriesService } from "@/features/categories/categories.service";
 import { aditionalsService } from "@/features/aditionals/aditionals.service";
 import { filesService } from "@/services/files.service";
 import { useToast } from "@/hooks/use-toast";
+import { getErrorMessage } from "@/lib/utils";
 
 const productAditionalGroupSchema = z.object({
   aditionalGroupId: z.string().min(1, "Selecione um grupo"),
@@ -205,11 +206,11 @@ export function ProductForm({
         form.setValue("imageUrl", result.fileUrl);
         toast({ title: "Sucesso", description: "Imagem enviada com sucesso", variant: "success" });
       } else {
-        toast({ title: "Erro", description: "Falha ao enviar imagem", variant: "destructive" });
+        toast({ title: "Erro", description: result.errorMessage || "Falha ao enviar imagem", variant: "destructive" });
       }
     } catch (error) {
       console.error(error);
-      toast({ title: "Erro", description: "Erro ao enviar imagem", variant: "destructive" });
+      toast({ title: "Erro", description: getErrorMessage(error) || "Erro ao enviar imagem", variant: "destructive" });
     } finally {
       setIsUploading(false);
       e.target.value = "";

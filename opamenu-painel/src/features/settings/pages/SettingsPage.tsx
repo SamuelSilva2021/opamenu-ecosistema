@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
+import { cn, getErrorMessage } from "@/lib/utils";
 import { usePermission } from "@/hooks/usePermission";
 import { PermissionGate } from "@/components/auth/PermissionGate";
 
@@ -139,10 +139,10 @@ export default function SettingsPage() {
       });
       queryClient.invalidateQueries({ queryKey: ["settings"] });
     },
-    onError: () => {
+    onError: (error) => {
       toast({
         title: "Erro",
-        description: "Falha ao atualizar configurações.",
+        description: getErrorMessage(error) || "Falha ao atualizar configurações.",
         variant: "destructive",
       });
     },
@@ -181,7 +181,7 @@ export default function SettingsPage() {
         toast({ title: "Logo atualizada", description: "Imagem enviada com sucesso." });
       }
     } catch (error) {
-      toast({ title: "Erro no upload", description: "Não foi possível enviar a imagem.", variant: "destructive" });
+      toast({ title: "Erro no upload", description: getErrorMessage(error) || "Não foi possível enviar a imagem.", variant: "destructive" });
     } finally {
       setIsUploadingLogo(false);
     }

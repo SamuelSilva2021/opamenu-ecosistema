@@ -16,6 +16,7 @@ interface PaymentMethodSelectorProps {
   subtotal?: number;
   discount?: number;
   totalPrice?: number;
+  deliveryFee?: number;
   availableMethods?: string[];
   hasPixIntegration?: boolean;
 }
@@ -55,6 +56,7 @@ const PaymentMethodSelector = ({
   subtotal,
   discount,
   totalPrice,
+  deliveryFee,
   availableMethods,
   hasPixIntegration = false
 }: PaymentMethodSelectorProps) => {
@@ -76,8 +78,8 @@ const PaymentMethodSelector = ({
     }
     setValidationError('');
 
-    // Se for PIX, mostrar tela de pagamento PIX
-    if (selectedMethod === 'pix' && onPixPayment) {
+    // Se for PIX e tiver integração, mostrar tela de pagamento PIX
+    if (selectedMethod === 'pix' && hasPixIntegration && onPixPayment) {
       onPixPayment();
     } else {
       onNext();
@@ -137,10 +139,17 @@ const PaymentMethodSelector = ({
                     <span className="font-mono text-base">- {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(discount)}</span>
                   </div>
                 ) : null}
+
+                {(deliveryFee !== undefined && deliveryFee > 0) ? (
+                  <div className="flex justify-between text-sm font-medium">
+                    <span className="text-muted-foreground uppercase tracking-wider text-xs font-bold">Taxa de entrega</span>
+                    <span className="font-mono text-base">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(deliveryFee)}</span>
+                  </div>
+                ) : null}
                 
                 <div className="flex justify-between items-end border-t border-border/50 pt-4 mt-2">
                   <span className="font-black text-xl uppercase italic tracking-tighter">Total</span>
-                  <span className="font-black text-2xl text-primary">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPrice)}</span>
+                  <span className="font-black text-2xl text-primary">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((totalPrice || 0) + (deliveryFee || 0))}</span>
                 </div>
               </div>
             </div>

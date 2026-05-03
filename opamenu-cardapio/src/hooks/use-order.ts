@@ -39,14 +39,15 @@ export const useOrder = (): OrderHookReturn => {
         loyaltyPointsUsed: orderData.loyaltyPointsUsed,
         loyaltyProgramId: orderData.loyaltyProgramId,
         loyaltyDiscount: orderData.loyaltyDiscount,
+        deliveryFee: orderData.deliveryFee,
         orderType: orderData.orderType,
         isDelivery: orderData.orderType === EOrderType.Delivery,
         items: orderData.items.map(item => ({
           productId: item.productId,
           quantity: item.quantity,
           notes: item.notes || '',
-          addons: item.selectedAddons ? item.selectedAddons.map(addon => ({
-            addonId: addon.addonId,
+          aditionals: item.selectedAddons ? item.selectedAddons.map(addon => ({
+            aditionalId: addon.addonId,
             quantity: addon.quantity
           })) : []
         }))

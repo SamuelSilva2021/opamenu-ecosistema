@@ -83,13 +83,9 @@ const InlineCart = ({
             <span>Subtotal</span>
             <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)}</span>
           </div>
-          <div className="flex justify-between text-sm text-gray-600">
-            <span>Taxa de entrega</span>
-            <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(5.00)}</span>
-          </div>
           <div className="flex justify-between font-bold text-lg text-gray-900 pt-2">
             <span>Total</span>
-            <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total + 5)}</span>
+            <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)}</span>
           </div>
         </div>
 

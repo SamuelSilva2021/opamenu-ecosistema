@@ -236,8 +236,8 @@ export interface AddressDto {
   state: string;
 }
 
-export interface CreateOrderItemAddonRequest {
-  addonId: string;
+export interface CreateOrderItemAditionalRequest {
+  aditionalId: string;
   quantity: number;
 }
 
@@ -251,6 +251,7 @@ export interface CreateOrderRequest {
   loyaltyPointsUsed?: number;
   loyaltyProgramId?: string;
   loyaltyDiscount?: number;
+  deliveryFee?: number;
   orderType: EOrderType;
   isDelivery: boolean;
   items: CreateOrderItemRequest[];
@@ -266,7 +267,7 @@ export interface CreateOrderItemRequest {
   productId: string;
   quantity: number;
   notes?: string;
-  addons: CreateOrderItemAddonRequest[];
+  aditionals: CreateOrderItemAditionalRequest[];
 }
 
 export enum PaymentMethod {
