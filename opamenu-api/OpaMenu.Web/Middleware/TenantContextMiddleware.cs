@@ -7,6 +7,7 @@ using OpaMenu.Infrastructure.Shared.Data.Context.AccessControl;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Subscription;
 using System.Security.Claims;
 using System.Text.Json;
+using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.PlanModule;
 
 namespace OpaMenu.Web.Middleware
 {
@@ -44,22 +45,32 @@ namespace OpaMenu.Web.Middleware
                     else
                     {
                         // 2. Se não estiver no cache, buscar do Banco
-                        var subscription = await multiTenantDb.Subscriptions
+                        // A. Status da assinatura
+                        var activeSubscriptions = await multiTenantDb.Subscriptions
                             .AsNoTracking()
-                            .Where(s => s.TenantId == tenantId)
-                            .OrderByDescending(s => s.CreatedAt)
-                            .Select(s => new { s.Status })
-                            .FirstOrDefaultAsync();
+                            .Where(s => s.TenantId == tenantId && (s.Status == ESubscriptionStatus.Ativo || s.Status == ESubscriptionStatus.Trial))
+                            .Select(s => new { s.PlanId, s.Status })
+                            .ToListAsync();
 
-                        var isActive = subscription != null && 
-                                     (subscription.Status == ESubscriptionStatus.Ativo || 
-                                      subscription.Status == ESubscriptionStatus.Trial);
+                        var isActive = activeSubscriptions.Any();
 
-                        var enabledModuleIds = await multiTenantDb.Set<OpaMenu.Infrastructure.Shared.Entities.MultiTenant.TenantModule.TenantModuleEntity>()
+                        // B. Módulos do Plano (Dinâmico)
+                        var activePlanIds = activeSubscriptions.Select(s => s.PlanId).ToList();
+                        var planModuleIds = await multiTenantDb.Set<PlanModuleEntity>()
+                            .AsNoTracking()
+                            .Where(pm => activePlanIds.Contains(pm.PlanId))
+                            .Select(pm => pm.ModuleId)
+                            .ToListAsync();
+
+                        // C. Módulos habilitados explicitamente (TenantModuleEntity)
+                        var tenantModuleIds = await multiTenantDb.Set<OpaMenu.Infrastructure.Shared.Entities.MultiTenant.TenantModule.TenantModuleEntity>()
                             .AsNoTracking()
                             .Where(tm => tm.TenantId == tenantId && tm.IsEnabled)
                             .Select(tm => tm.ModuleId)
                             .ToListAsync();
+
+                        // D. Unir e buscar chaves
+                        var enabledModuleIds = planModuleIds.Union(tenantModuleIds).Distinct().ToList();
 
                         var enabledModuleKeys = await accessControlDb.Modules
                             .AsNoTracking()

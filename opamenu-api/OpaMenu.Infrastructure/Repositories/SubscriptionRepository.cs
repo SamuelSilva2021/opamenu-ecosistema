@@ -47,5 +47,10 @@ public class SubscriptionRepository(MultiTenantDbContext context) : ISubscriptio
         _context.Set<SubscriptionEntity>().Update(subscription);
         await _context.SaveChangesAsync();
     }
+
+    public async Task<IEnumerable<SubscriptionEntity>> GetAllAsync()
+    {
+        return await _context.Set<SubscriptionEntity>().AsNoTracking().ToListAsync();
+    }
 }
 

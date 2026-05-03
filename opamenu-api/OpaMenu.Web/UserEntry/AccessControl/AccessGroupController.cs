@@ -27,9 +27,7 @@ public sealed class AccessGroupController(IAccessGroupService accessGroupService
     {
         var group = await _accessGroupService.GetGroupByIdAsync(id);
         if (group == null)
-        {
             return NotFound();
-        }
 
         return Ok(group);
     }
@@ -46,14 +44,10 @@ public sealed class AccessGroupController(IAccessGroupService accessGroupService
     {
         var (group, notFound, badRequest) = await _accessGroupService.UpdateGroupAsync(id, request);
         if (notFound)
-        {
             return NotFound();
-        }
 
         if (badRequest || group == null)
-        {
             return BadRequest();
-        }
 
         return Ok(group);
     }
@@ -77,9 +71,7 @@ public sealed class AccessGroupController(IAccessGroupService accessGroupService
     {
         var gt = await _accessGroupService.GetGroupTypeByIdAsync(id);
         if (gt == null)
-        {
             return NotFound();
-        }
 
         return Ok(gt);
     }
@@ -96,14 +88,10 @@ public sealed class AccessGroupController(IAccessGroupService accessGroupService
     {
         var (gt, notFound, badRequest) = await _accessGroupService.UpdateGroupTypeAsync(id, request);
         if (notFound)
-        {
             return NotFound();
-        }
 
         if (badRequest || gt == null)
-        {
             return BadRequest();
-        }
 
         return Ok(gt);
     }

@@ -107,15 +107,11 @@ public class AuthController : ControllerBase
     {
         var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("user_id");
         if (!Guid.TryParse(userIdValue, out var userId))
-        {
             return Unauthorized();
-        }
 
         var result = await _authService.GetMeAsync(userId, tenantSlug: null);
         if (!result.Succeeded || result.Data == null)
-        {
             return NotFound(result);
-        }
 
         return Ok(result);
     }

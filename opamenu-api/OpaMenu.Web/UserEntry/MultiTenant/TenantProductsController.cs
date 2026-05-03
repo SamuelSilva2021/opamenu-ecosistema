@@ -100,33 +100,24 @@ public sealed class TenantProductsController(MultiTenantDbContext dbContext) : C
     public async Task<ActionResult<TenantProductDto>> Create([FromBody] CreateTenantProductRequestDto request)
     {
         if (string.IsNullOrWhiteSpace(request.Name) || string.IsNullOrWhiteSpace(request.Slug) || string.IsNullOrWhiteSpace(request.Category))
-        {
             return BadRequest();
-        }
+        
 
         if (!Enum.TryParse<ETenantProductCategory>(request.Category, ignoreCase: true, out var category))
-        {
             return BadRequest();
-        }
 
         var status = EProductStatus.Ativo;
         if (request.Status != null && !Enum.TryParse<EProductStatus>(request.Status, ignoreCase: true, out status))
-        {
             return BadRequest();
-        }
 
         var pricing = ETenantProductPricingModel.Assinatura;
         if (request.PricingModel != null && !Enum.TryParse<ETenantProductPricingModel>(request.PricingModel, ignoreCase: true, out pricing))
-        {
             return BadRequest();
-        }
 
         var slug = request.Slug.Trim();
         var exists = await _dbContext.Products.AsNoTracking().AnyAsync(p => p.Slug == slug);
         if (exists)
-        {
             return BadRequest();
-        }
 
         var entity = new TenantProductEntity
         {
@@ -173,25 +164,20 @@ public sealed class TenantProductsController(MultiTenantDbContext dbContext) : C
     {
         var entity = await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == id);
         if (entity == null)
-        {
             return NotFound();
-        }
 
         if (request.Name != null)
         {
             if (string.IsNullOrWhiteSpace(request.Name))
-            {
                 return BadRequest();
-            }
+
             entity.Name = request.Name.Trim();
         }
 
         if (request.Slug != null)
         {
             if (string.IsNullOrWhiteSpace(request.Slug))
-            {
                 return BadRequest();
-            }
 
             var slug = request.Slug.Trim();
             var exists = await _dbContext.Products.AsNoTracking().AnyAsync(p => p.Id != id && p.Slug == slug);

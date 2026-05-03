@@ -10,5 +10,6 @@ public interface ISubscriptionRepository
     Task AddAsync(SubscriptionEntity entity);
     Task SaveChangesAsync();
     Task UpdateAsync(SubscriptionEntity subscription);
+    Task<IEnumerable<SubscriptionEntity>> GetAllAsync();
 }
 
