@@ -80,6 +80,13 @@ export const Sidebar = ({ open, onClose, onToggle }: SidebarProps) => {
       // Dashboard não precisa de permissão específica - sempre visível
     },
     {
+      id: 'plans',
+      title: 'Planos',
+      icon: <BusinessIcon />,
+      path: '/plans',
+      // Planos restrito via rota
+    },
+    {
       id: 'access-control',
       title: 'Controle de Acesso',
       icon: <SecurityIcon />,
@@ -223,8 +230,8 @@ export const Sidebar = ({ open, onClose, onToggle }: SidebarProps) => {
           borderBottom: `1px solid ${theme.palette.divider}`,
         }}
       >
-        <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
-          🔐 Access Control
+        <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
+          🛡️ Central de Comando
         </Typography>
         {!isMobile && (
           <IconButton onClick={onToggle} size="small">

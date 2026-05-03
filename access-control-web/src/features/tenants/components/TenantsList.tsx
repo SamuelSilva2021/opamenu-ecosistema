@@ -85,6 +85,8 @@ export function TenantsList({
               <TableCell>Nome</TableCell>
               <TableCell>Slug</TableCell>
               <TableCell>Domínio</TableCell>
+              <TableCell>Plano</TableCell>
+              <TableCell>Assinatura</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>Telefone</TableCell>
@@ -105,6 +107,20 @@ export function TenantsList({
                 <TableCell>{tenant.name}</TableCell>
                 <TableCell>{tenant.slug}</TableCell>
                 <TableCell>{tenant.domain || '-'}</TableCell>
+                <TableCell>{tenant.planName || 'Sem plano'}</TableCell>
+                <TableCell>
+                  {tenant.subscriptionStatus ? (
+                    <Chip
+                      label={tenant.subscriptionStatus}
+                      size="small"
+                      color={
+                        tenant.subscriptionStatus === 'Ativo' ? 'success' : 
+                        tenant.subscriptionStatus === 'Vencido' ? 'error' : 
+                        tenant.subscriptionStatus === 'Trial' ? 'info' : 'default'
+                      }
+                    />
+                  ) : '-'}
+                </TableCell>
                 <TableCell>
                   <Chip
                     label={tenant.status}

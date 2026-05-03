@@ -61,6 +61,8 @@ export interface TenantSummary {
   createdAt: string;
   updatedAt?: string;
   activeSubscriptionId?: string;
+  planName?: string;
+  subscriptionStatus?: string;
 }
 
 export interface CreateTenantRequest {

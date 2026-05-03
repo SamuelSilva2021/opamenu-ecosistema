@@ -1,11 +1,12 @@
-import { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Container,
   Box,
   Paper,
   Typography,
   useTheme,
+  Alert,
 } from '@mui/material';
 import { AdminPanelSettings } from '@mui/icons-material';
 import { useAuth } from '../../shared/hooks';
@@ -15,8 +16,20 @@ import { LoginForm } from './LoginForm';
 export const LoginPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated, isLoading } = useAuth();
   const hasRedirected = useRef(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Captura erro vindo do ProtectedRoute (ex: falta de role SUPER_ADMIN)
+  useEffect(() => {
+    const state = location.state as { error?: string };
+    if (state?.error) {
+      setErrorMessage(state.error);
+      // Limpa o estado para não mostrar o erro novamente em refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   useEffect(() => {
     if (isAuthenticated && !isLoading && !hasRedirected.current) {
@@ -72,11 +85,11 @@ export const LoginPage = () => {
             }}
           >
             <AdminPanelSettings sx={{ fontSize: 80, mb: 2 }} />
-            <Typography variant="h3" component="h1" gutterBottom align="center">
-              Access Control
+            <Typography variant="h3" component="h1" gutterBottom align="center" sx={{ fontWeight: 800 }}>
+              Central de Comando
             </Typography>
             <Typography variant="h6" align="center" sx={{ opacity: 0.9, mb: 4 }}>
-              Sistema de Gerenciamento de Usuários, Grupos e Permissões
+              Gestão Estratégica do Ecossistema OpaMenu
             </Typography>
     
           </Box>
@@ -97,6 +110,11 @@ export const LoginPage = () => {
               }}
             >
               <Box sx={{ width: '100%', maxWidth: 400 }}>
+                {errorMessage && (
+                  <Alert severity="warning" sx={{ mb: 3 }}>
+                    {errorMessage}
+                  </Alert>
+                )}
                 <LoginForm onSuccess={handleLoginSuccess} />
               </Box>
 

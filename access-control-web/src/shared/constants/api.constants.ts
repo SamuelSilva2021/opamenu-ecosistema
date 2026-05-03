@@ -53,6 +53,10 @@ export const API_ENDPOINTS = {
   // Subscriptions
   SUBSCRIPTIONS: '/subscription',
   SUBSCRIPTION_BY_TENANT: (tenantId: string) => `/subscription/tenant/${tenantId}`,
+
+  // Plans
+  PLANS: '/plans',
+  PLAN_BY_ID: (id: string) => `/plans/${id}`,
 } as const;
 
 export const HTTP_STATUS = {

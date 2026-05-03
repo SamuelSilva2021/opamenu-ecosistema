@@ -3,6 +3,7 @@ export const ROUTES = {
   HOME: '/',
   LOGIN: '/login',
   DASHBOARD: '/dashboard',
+  PLANS: '/plans',
 
   // Test/Debug
   OPERATIONS_TEST: '/operations-test',

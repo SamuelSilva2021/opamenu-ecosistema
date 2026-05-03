@@ -6,3 +6,4 @@ export { TenantService } from './tenant.service';
 export { SubscriptionService } from './subscription.service';
 export { AccessGroupService } from './access-group.service';
 export { PermissionService } from './permission.service';
+export { PlanService } from './plan.service';
