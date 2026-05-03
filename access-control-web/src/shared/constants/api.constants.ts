@@ -58,6 +58,10 @@ export const API_ENDPOINTS = {
   // Plans
   PLANS: '/plans',
   PLAN_BY_ID: (id: string) => `/plans/${id}`,
+
+  // Tenant Products
+  TENANT_PRODUCTS: '/tenant-products',
+  TENANT_PRODUCT_BY_ID: (id: string) => `/tenant-products/${id}`,
 } as const;
 
 export const HTTP_STATUS = {

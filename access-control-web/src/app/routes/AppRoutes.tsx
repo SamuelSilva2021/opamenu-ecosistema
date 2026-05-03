@@ -6,6 +6,7 @@ import { ModulesPage } from '../../features/modules';
 import { RolesPage } from '../../features/roles';
 import { UsersPage } from '../../features/users';
 import { TenantsPage } from '../../features/tenants';
+import { ProductsPage } from '../../features/products/ProductsPage';
 import { ProtectedRoute } from './ProtectedRoute';
 import { MainLayout } from '../../shared/components';
 import { ROUTES } from '../../shared/constants';
@@ -30,6 +31,18 @@ export const AppRoutes = () => {
           <ProtectedRoute requiredRoles={['SUPER_ADMIN']}>
             <MainLayout>
               <DashboardPage />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Rotas de Produtos */}
+      <Route
+        path={ROUTES.PRODUCTS}
+        element={
+          <ProtectedRoute requiredRoles={['SUPER_ADMIN']}>
+            <MainLayout>
+              <ProductsPage />
             </MainLayout>
           </ProtectedRoute>
         }

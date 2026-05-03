@@ -7,3 +7,4 @@ export * from './permission.types';
 export * from './api.types';
 export * from './auth.types';
 export * from './subscription.types';
+export * from './product.types';

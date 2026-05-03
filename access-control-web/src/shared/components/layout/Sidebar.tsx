@@ -24,6 +24,8 @@ import {
   ExpandLess,
   ExpandMore,
   ChevronLeft as ChevronLeftIcon,
+  History as HistoryIcon,
+  Inventory as InventoryIcon,
   ListAlt as ListIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -92,6 +94,12 @@ export const Sidebar = ({ open, onClose, onToggle }: SidebarProps) => {
           title: 'Planos e Preços',
           icon: <ListIcon />,
           path: '/plans',
+        },
+        {
+          id: 'products',
+          title: 'Produtos',
+          icon: <InventoryIcon />,
+          path: '/products',
         },
       ],
     },

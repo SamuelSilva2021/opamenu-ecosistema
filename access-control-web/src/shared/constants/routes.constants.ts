@@ -4,6 +4,7 @@ export const ROUTES = {
   LOGIN: '/login',
   DASHBOARD: '/dashboard',
   PLANS: '/plans',
+  PRODUCTS: '/products',
 
   // Test/Debug
   OPERATIONS_TEST: '/operations-test',

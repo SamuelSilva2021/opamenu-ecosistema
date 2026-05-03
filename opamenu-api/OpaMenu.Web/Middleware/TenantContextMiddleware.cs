@@ -55,13 +55,16 @@ namespace OpaMenu.Web.Middleware
                                      (subscription.Status == ESubscriptionStatus.Ativo || 
                                       subscription.Status == ESubscriptionStatus.Trial);
 
-                        var enabledModuleKeys = await multiTenantDb.Set<OpaMenu.Infrastructure.Shared.Entities.MultiTenant.TenantModule.TenantModuleEntity>()
+                        var enabledModuleIds = await multiTenantDb.Set<OpaMenu.Infrastructure.Shared.Entities.MultiTenant.TenantModule.TenantModuleEntity>()
                             .AsNoTracking()
                             .Where(tm => tm.TenantId == tenantId && tm.IsEnabled)
-                            .Join(accessControlDb.Modules.AsNoTracking(), 
-                                tm => tm.ModuleId, 
-                                m => m.Id, 
-                                (tm, m) => m.Key)
+                            .Select(tm => tm.ModuleId)
+                            .ToListAsync();
+
+                        var enabledModuleKeys = await accessControlDb.Modules
+                            .AsNoTracking()
+                            .Where(m => enabledModuleIds.Contains(m.Id))
+                            .Select(m => m.Key)
                             .Where(k => k != null)
                             .ToListAsync();
 
