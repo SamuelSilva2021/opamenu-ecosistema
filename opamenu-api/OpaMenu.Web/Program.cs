@@ -21,7 +21,10 @@ builder.Host.UseSerilog();
 
 
 // Add services to the container
-builder.Services.AddControllers()
+builder.Services.AddControllers(options => 
+{
+    options.Filters.Add<OpaMenu.Infrastructure.Filters.SubscriptionStatusFilter>();
+})
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
@@ -102,6 +105,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
 
 builder.Services.AddScoped<PermissionAuthorizationFilter>();
+builder.Services.AddScoped<OpaMenu.Infrastructure.Filters.SubscriptionStatusFilter>();
 
 builder.Services.AddDatabaseServices(builder.Configuration);
 
@@ -163,6 +167,7 @@ if (!app.Environment.IsProduction())
 app.UseCors("CorsPolicy");
 // Enable authentication and authorization
 app.UseAuthentication();
+app.UseMiddleware<OpaMenu.Web.Middleware.TenantContextMiddleware>();
 app.UseAuthorization();
 
 // Serve static files

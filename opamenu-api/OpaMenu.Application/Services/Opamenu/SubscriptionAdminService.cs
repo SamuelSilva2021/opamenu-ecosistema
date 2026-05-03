@@ -128,6 +128,7 @@ public sealed class SubscriptionAdminService(
 
             await _tenantModuleRepository.SaveChangesAsync();
             await InvalidatePermissionsCacheAsync(tenantId.Value, _currentUserService.UserId);
+            await InvalidateTenantContextCacheAsync(tenantId.Value);
 
             return (StaticResponseBuilder<string>.BuildOk("Plano ativado com sucesso"), 200);
         }
@@ -234,5 +235,10 @@ public sealed class SubscriptionAdminService(
         }
 
         await _cache.RemoveAsync($"auth:permissions:{userId}:{tenantId}");
+    }
+
+    private async Task InvalidateTenantContextCacheAsync(Guid tenantId)
+    {
+        await _cache.RemoveAsync($"tenant:context:{tenantId}");
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -32,12 +32,23 @@ namespace OpaMenu.Infrastructure.Shared.Interfaces
         bool HasTenant { get; }
 
         /// <summary>
+        /// Indica se a assinatura do tenant está ativa (Ativo ou Trial)
+        /// </summary>
+        bool IsSubscriptionActive { get; }
+
+        /// <summary>
+        /// Lista de chaves de módulos habilitados para este tenant baseados no plano
+        /// </summary>
+        IEnumerable<string> EnabledModules { get; }
+
+        /// <summary>
         /// Define o tenant no contexto atual
         /// </summary>
-        /// <param name="tenantId">ID do tenant</param>
-        /// <param name="tenantSlug">Slug do tenant</param>
-        /// <param name="tenantName">Nome do tenant</param>
         void SetTenant(Guid? tenantId, string? tenantSlug, string? tenantName);
+
+        /// <summary>
+        /// Define as informações de assinatura e módulos
+        /// </summary>
+        void SetSubscriptionInfo(bool isActive, IEnumerable<string> enabledModules);
     }
 }
-

@@ -10,16 +10,19 @@ using OpaMenu.Infrastructure.Shared.Data.Context;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
 using OpaMenu.Infrastructure.Shared.Data.Context.AccessControl;
+using OpaMenu.Infrastructure.Shared.Interfaces;
 
 namespace OpaMenu.Infrastructure.Filters
 {
     public class PermissionAuthorizationFilter(
         ICurrentUserService currentUserService,
+        ITenantContext tenantContext,
         ILogger<PermissionAuthorizationFilter> logger,
         AccessControlDbContext dbContext,
         IDistributedCache cache) : IAsyncActionFilter
     {
         private readonly ICurrentUserService _currentUserService = currentUserService;
+        private readonly ITenantContext _tenantContext = tenantContext;
         private readonly ILogger<PermissionAuthorizationFilter> _logger = logger;
         private readonly AccessControlDbContext _dbContext = dbContext;
         private readonly IDistributedCache _cache = cache;
@@ -68,6 +71,30 @@ namespace OpaMenu.Infrastructure.Filters
             {
                 await next();
                 return;
+            }
+
+            // --- CONTROLE TOTAL: Verificação de Módulos do Plano (TenantModuleEntity) ---
+            // Se o tenant tem um ID (não é uma operação global de super admin), verificamos se o módulo está habilitado no plano.
+            if (_tenantContext.HasTenant)
+            {
+                var isModuleEnabled = _tenantContext.EnabledModules.Any(em => 
+                    requiredModules.Any(rm => string.Equals(em, rm, StringComparison.OrdinalIgnoreCase)));
+
+                if (!isModuleEnabled)
+                {
+                    _logger.LogWarning("Tenant {TenantId} tentou acessar módulos {Modules} que não estão inclusos em seu plano.", 
+                        _tenantContext.TenantId, string.Join(",", requiredModules));
+                    
+                    context.Result = new ObjectResult(new 
+                    { 
+                        message = "Este recurso não está disponível no seu plano atual.",
+                        code = "PLAN_FEATURE_RESTRICTED"
+                    })
+                    {
+                        StatusCode = StatusCodes.Status403Forbidden
+                    };
+                    return;
+                }
             }
 
             var permissions = _currentUserService.Permissions
