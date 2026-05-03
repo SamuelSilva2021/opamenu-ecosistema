@@ -1,11 +1,6 @@
-import type { PaginatedResponse, ApiResponse, SubscriptionPlan } from '../types';
+import type { PaginatedResponse, ApiResponse, SubscriptionPlan, PlanFilters } from '../types';
 import { httpClient } from '../utils';
 import { API_ENDPOINTS } from '../constants';
-
-export interface PlanFilters {
-  name?: string;
-  isActive?: boolean;
-}
 
 interface GetPlansParams {
   page?: number;

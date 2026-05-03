@@ -11,8 +11,18 @@ import {
   Box,
   TablePagination,
   Chip,
+  Paper,
+  Avatar,
+  Stack,
 } from '@mui/material';
-import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { 
+  Edit as EditIcon, 
+  Delete as DeleteIcon,
+  LocalOffer as LocalOfferIcon,
+  Schedule as ScheduleIcon,
+  CheckCircle as CheckCircleIcon,
+  PauseCircle as PauseCircleIcon,
+} from '@mui/icons-material';
 import type { SubscriptionPlan } from '../../../shared/types';
 
 interface PlansListProps {
@@ -47,50 +57,115 @@ export function PlansList({
   };
 
   if (loading && plans.length === 0) {
-    return <Typography sx={{ p: 3, textAlign: 'center' }}>Carregando planos...</Typography>;
+    return (
+      <Box sx={{ p: 6, textAlign: 'center' }}>
+        <Typography color="text.secondary">Carregando planos...</Typography>
+      </Box>
+    );
   }
 
+  const getStatusChip = (status?: string) => {
+    const s = status || 'Ativo';
+    switch (s) {
+      case 'Ativo':
+        return <Chip label="Ativo" size="small" color="success" icon={<CheckCircleIcon />} />;
+      case 'Inativo':
+        return <Chip label="Inativo" size="small" color="warning" icon={<PauseCircleIcon />} />;
+      default:
+        return <Chip label={s} size="small" />;
+    }
+  };
+
+  const getCycleLabel = (cycle: string) => {
+    switch (cycle) {
+      case 'Monthly': return 'Mensal';
+      case 'Yearly': return 'Anual';
+      case 'Weekly': return 'Semanal';
+      case 'Daily': return 'Diário';
+      default: return cycle;
+    }
+  };
+
   return (
-    <>
+    <Box>
       <TableContainer>
-        <Table>
-          <TableHead>
+        <Table sx={{ minWidth: 650 }}>
+          <TableHead sx={{ bgcolor: 'grey.50' }}>
             <TableRow>
-              <TableCell>Nome</TableCell>
-              <TableCell>Preço</TableCell>
-              <TableCell>Ciclo</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell align="center">Ações</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Plano</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Preço</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Ciclo</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Trial</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+              <TableCell align="center" sx={{ fontWeight: 700 }}>Ações</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {plans.map((plan) => (
-              <TableRow key={plan.id} hover>
+              <TableRow key={plan.id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                 <TableCell>
-                  <Typography variant="subtitle2">{plan.name}</Typography>
-                  <Typography variant="caption" color="textSecondary">{plan.slug}</Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Avatar sx={{ bgcolor: 'primary.light', width: 40, height: 40 }}>
+                      <LocalOfferIcon />
+                    </Avatar>
+                    <Box>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                        {plan.name}
+                      </Typography>
+                      <Typography variant="caption" color="textSecondary" sx={{ display: 'block' }}>
+                        {plan.slug}
+                      </Typography>
+                    </Box>
+                  </Box>
                 </TableCell>
                 <TableCell>
-                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(plan.price)}
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(plan.price)}
+                  </Typography>
                 </TableCell>
-                <TableCell>{plan.billingCycle === 'Monthly' ? 'Mensal' : 'Anual'}</TableCell>
                 <TableCell>
-                  <Chip 
-                    label="Ativo" 
-                    size="small" 
-                    color="success" 
-                    variant="outlined" 
-                  />
+                  <Stack direction="row" alignItems="center" spacing={0.5}>
+                    <ScheduleIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                    <Typography variant="body2">{getCycleLabel(plan.billingCycle)}</Typography>
+                  </Stack>
+                </TableCell>
+                <TableCell>
+                  {plan.isTrial ? (
+                    <Tooltip title={`${plan.trialPeriodDays} dias de teste`}>
+                      <Chip label={`${plan.trialPeriodDays}d`} size="small" variant="outlined" color="info" />
+                    </Tooltip>
+                  ) : (
+                    <Typography variant="caption" color="text.disabled">Sem trial</Typography>
+                  )}
+                </TableCell>
+                <TableCell>
+                  {getStatusChip(plan.status)}
                 </TableCell>
                 <TableCell align="center">
                   <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
-                    <Tooltip title="Editar">
-                      <IconButton size="small" onClick={() => onEdit(plan)}>
+                    <Tooltip title="Editar Configurações">
+                      <IconButton 
+                        size="small" 
+                        onClick={() => onEdit(plan)}
+                        sx={{ 
+                          color: 'primary.main',
+                          bgcolor: 'primary.50',
+                          '&:hover': { bgcolor: 'primary.100' }
+                        }}
+                      >
                         <EditIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title="Remover">
-                      <IconButton size="small" color="error" onClick={() => onDelete(plan)}>
+                    <Tooltip title="Excluir Plano">
+                      <IconButton 
+                        size="small" 
+                        color="error" 
+                        onClick={() => onDelete(plan)}
+                        sx={{ 
+                          bgcolor: 'error.50',
+                          '&:hover': { bgcolor: 'error.100' }
+                        }}
+                      >
                         <DeleteIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
@@ -98,6 +173,13 @@ export function PlansList({
                 </TableCell>
               </TableRow>
             ))}
+            {plans.length === 0 && !loading && (
+              <TableRow>
+                <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
+                  <Typography color="text.secondary">Nenhum plano configurado no momento.</Typography>
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>
@@ -108,9 +190,10 @@ export function PlansList({
         onPageChange={handlePageChange}
         rowsPerPage={pageSize}
         onRowsPerPageChange={handlePageSizeChange}
-        rowsPerPageOptions={[5, 10, 25]}
+        rowsPerPageOptions={[5, 10, 25, 50]}
         labelRowsPerPage="Itens por página:"
+        sx={{ borderTop: 1, borderColor: 'divider' }}
       />
-    </>
+    </Box>
   );
 }

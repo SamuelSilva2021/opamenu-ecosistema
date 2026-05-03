@@ -30,11 +30,13 @@ public sealed class SubscriptionAdminService(
     private readonly ICurrentUserService _currentUserService = currentUserService;
     private readonly IDistributedCache _cache = cache;
 
-    public async Task<(ResponseDTO<string> Body, int StatusCode)> ActivatePlanAsync(Guid planId)
+    public async Task<(ResponseDTO<string> Body, int StatusCode)> ActivatePlanAsync(Guid planId, Guid? tenantId = null)
     {
         try
         {
-            var tenantId = _currentUserService.GetTenantGuid();
+            // Se tenantId for fornecido (via Admin), usa ele. Caso contrário, pega do contexto do usuário logado.
+            tenantId ??= _currentUserService.GetTenantGuid();
+
             if (!tenantId.HasValue || tenantId.Value == Guid.Empty)
             {
                 return (StaticResponseBuilder<string>.BuildError("Tenant não identificado."), 400);

@@ -13,10 +13,14 @@ import {
   CircularProgress,
   Alert,
   MenuItem,
+  FormControl,
+  InputLabel,
+  Select,
+  Divider,
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
-import type { Tenant, Subscription } from '../../../shared/types';
-import { SubscriptionService } from '../../../shared/services';
+import type { Tenant, Subscription, SubscriptionPlan } from '../../../shared/types';
+import { SubscriptionService, PlanService } from '../../../shared/services';
 
 interface TenantEditDialogProps {
   open: boolean;
@@ -41,6 +45,8 @@ export function TenantEditDialog({
   const [error, setError] = useState<string | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [subscriptionError, setSubscriptionError] = useState<string | null>(null);
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+  const [selectedPlanId, setSelectedPlanId] = useState<string>('');
 
   useEffect(() => {
     if (!open || !tenantId) {
@@ -50,6 +56,7 @@ export function TenantEditDialog({
       setSubscriptionError(null);
       setLoading(false);
       setSaving(false);
+      setSelectedPlanId('');
       return;
     }
 
@@ -59,13 +66,18 @@ export function TenantEditDialog({
       setSubscriptionError(null);
 
       try {
-        const tenant = await loadTenant(tenantId);
+        const [tenant, plansRes] = await Promise.all([
+          loadTenant(tenantId),
+          PlanService.getPlans({ limit: 100 })
+        ]);
+        
         setFormValues(tenant);
+        setPlans(plansRes.data);
       } catch (err: unknown) {
         const message =
           typeof err === 'object' && err !== null && 'message' in err
-            ? String((err as { message?: unknown }).message || 'Erro ao carregar tenant')
-            : 'Erro ao carregar tenant';
+            ? String((err as { message?: unknown }).message || 'Erro ao carregar dados')
+            : 'Erro ao carregar dados';
         setError(message);
       } finally {
         setLoading(false);
@@ -75,11 +87,8 @@ export function TenantEditDialog({
         const sub = await SubscriptionService.getByTenantId(tenantId);
         setSubscription(sub);
       } catch (err: unknown) {
-        const message =
-          typeof err === 'object' && err !== null && 'message' in err
-            ? String((err as { message?: unknown }).message || 'Erro ao carregar assinatura')
-            : 'Erro ao carregar assinatura';
-        setSubscriptionError(message);
+        // Ignora erro de assinatura se for apenas "não encontrado"
+        console.warn('Assinatura não encontrada para o tenant');
       }
     };
 
@@ -142,13 +151,23 @@ export function TenantEditDialog({
         legalRepresentativePhone: formValues.legalRepresentativePhone,
       };
 
+      // 1. Atualiza dados do tenant
       await onSubmit(tenantId, data);
+
+      // 2. Se selecionou um plano e não tinha assinatura, cria agora
+      if (selectedPlanId && !subscription) {
+        await SubscriptionService.create({
+          tenantId,
+          planId: selectedPlanId
+        });
+      }
+
       onClose();
     } catch (err: unknown) {
       const message =
         typeof err === 'object' && err !== null && 'message' in err
-          ? String((err as { message?: unknown }).message || 'Erro ao salvar tenant')
-          : 'Erro ao salvar tenant';
+          ? String((err as { message?: unknown }).message || 'Erro ao salvar alterações')
+          : 'Erro ao salvar alterações';
       setError(message);
     } finally {
       setSaving(false);
@@ -244,9 +263,26 @@ export function TenantEditDialog({
                   />
                 </Box>
               ) : (
-                <Typography variant="body2" color="text.secondary">
-                  Nenhuma assinatura ativa para este tenant.
-                </Typography>
+                <Box display="flex" flexDirection="column" gap={2}>
+                  <Typography variant="body2" color="text.secondary">
+                    Nenhuma assinatura ativa para este tenant. Vincule um plano abaixo:
+                  </Typography>
+                  <FormControl fullWidth>
+                    <InputLabel id="plan-select-label">Selecione um Plano</InputLabel>
+                    <Select
+                      labelId="plan-select-label"
+                      value={selectedPlanId}
+                      label="Selecione um Plano"
+                      onChange={(e) => setSelectedPlanId(e.target.value)}
+                    >
+                      {plans.map((plan) => (
+                        <MenuItem key={plan.id} value={plan.id}>
+                          {plan.name} - R$ {plan.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
               )}
               {subscriptionError && (
                 <Typography variant="body2" color="error">
@@ -254,6 +290,7 @@ export function TenantEditDialog({
                 </Typography>
               )}
             </Box>
+            <Divider />
 
             <Box display="flex" flexDirection="column" gap={2}>
               <TextField

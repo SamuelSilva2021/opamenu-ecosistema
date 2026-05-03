@@ -7,6 +7,16 @@ export interface SubscriptionPlan {
   description?: string | null;
   price: number;
   billingCycle: string;
+  features?: string | null;
+  status?: string;
+  isTrial?: boolean;
+  trialPeriodDays?: number;
+  sortOrder?: number;
+}
+
+export interface PlanFilters {
+  name?: string;
+  isActive?: boolean;
 }
 
 export type SubscriptionStatus =

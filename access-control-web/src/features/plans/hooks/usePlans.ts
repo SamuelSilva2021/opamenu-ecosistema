@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { SubscriptionPlan } from '../../../shared/types';
-import { PlanService, PlanFilters } from '../../../shared/services/plan.service';
+import type { SubscriptionPlan, PlanFilters } from '../../../shared/types';
+import { PlanService } from '../../../shared/services/plan.service';
 
 interface UsePlansOptions {
   autoLoad?: boolean;

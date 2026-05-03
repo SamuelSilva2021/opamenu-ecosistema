@@ -23,4 +23,9 @@ export class SubscriptionService {
 
     return dto;
   }
+
+  static async create(data: { tenantId: string; planId: string }): Promise<Subscription> {
+    const response = await httpClient.post<Subscription>(API_ENDPOINTS.ACTIVATE_PLAN_FOR_TENANT(data.planId, data.tenantId));
+    return response;
+  }
 }

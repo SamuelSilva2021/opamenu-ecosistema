@@ -35,6 +35,19 @@ namespace OpaMenu.Web.UserEntry.Subscription
             };
         }
 
+        [HttpPost("activate/{planId:guid}/tenant/{tenantId:guid}")]
+        [Authorize(Roles = "SUPER_ADMIN")]
+        public async Task<IActionResult> ActivatePlanForTenant([FromRoute] Guid planId, [FromRoute] Guid tenantId)
+        {
+            var (body, statusCode) = await _subscriptionAdminService.ActivatePlanAsync(planId, tenantId);
+            return statusCode switch
+            {
+                200 => Ok(body),
+                400 => BadRequest(body),
+                _ => StatusCode(statusCode, body)
+            };
+        }
+
         [HttpPost("activate-trial/{planId:guid}")]
         public Task<IActionResult> ActivateTrial(
             [FromRoute] Guid planId)

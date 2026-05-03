@@ -29,6 +29,10 @@ export const usePermissionStore = create<PermissionState>((set, get) => ({
   hasModuleAccess: (moduleKey: string): boolean => {
     const { role, permissions } = get();
 
+    // 0. Super Admin bypass
+    const roleName = role?.name?.toUpperCase().replace(/\s+/g, '_');
+    if (roleName === 'SUPER_ADMIN') return true;
+
     // 1. Nova estrutura simplificada
     if (role && role.permissions) {
       return role.permissions.some(p => p.module === moduleKey);
@@ -48,6 +52,11 @@ export const usePermissionStore = create<PermissionState>((set, get) => ({
 
   canPerformOperation: (moduleKey: string, operation: string): boolean => {
     const { role, permissions } = get();
+    
+    // 0. Super Admin bypass
+    const roleName = role?.name?.toUpperCase().replace(/\s+/g, '_');
+    if (roleName === 'SUPER_ADMIN') return true;
+
     const normalizedOp = operation.toUpperCase();
 
     // 1. Nova estrutura simplificada

@@ -63,6 +63,7 @@ export const useAuthStore = create<AuthStore>()(
                 email: storedUser.email,
                 username: storedUser.username,
                 fullName: storedUser.fullName,
+                role: storedUser.role, // Adicionado para manter o papel após refresh
                 tenant: storedUser.tenant,
               } as AuthUser : null,
               token: tokenValid ? storedToken : null,

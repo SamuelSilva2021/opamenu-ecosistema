@@ -14,6 +14,7 @@ import {
 import { ResponsiveContainer } from '../../shared/components';
 import { usePlans } from './hooks/usePlans';
 import { PlansList } from './components/PlansList';
+import { PlanFormDialog } from './components/PlanFormDialog';
 import type { SubscriptionPlan } from '../../shared/types';
 
 export function PlansPage() {
@@ -24,6 +25,8 @@ export function PlansPage() {
     totalItems,
     currentPage,
     loadPlans,
+    createPlan,
+    updatePlan,
     deletePlan,
     clearError
   } = usePlans();
@@ -31,6 +34,10 @@ export function PlansPage() {
   const [pageSize, setPageSize] = useState(10);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [planToDelete, setPlanToDelete] = useState<SubscriptionPlan | null>(null);
+  
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingPlan, setEditingPlan] = useState<SubscriptionPlan | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const handlePageChange = (page: number) => {
     loadPlans(page);
@@ -42,13 +49,29 @@ export function PlansPage() {
   };
 
   const handleCreatePlan = () => {
-    // TODO: Implement Create Dialog
-    console.log('Create plan');
+    setEditingPlan(null);
+    setFormOpen(true);
   };
 
   const handleEditPlan = (plan: SubscriptionPlan) => {
-    // TODO: Implement Edit Dialog
-    console.log('Edit plan', plan);
+    setEditingPlan(plan);
+    setFormOpen(true);
+  };
+
+  const handleFormSubmit = async (data: any) => {
+    setSubmitting(true);
+    try {
+      if (editingPlan) {
+        await updatePlan(editingPlan.id, data);
+      } else {
+        await createPlan(data);
+      }
+      setFormOpen(false);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleDeletePlan = (plan: SubscriptionPlan) => {
@@ -99,6 +122,7 @@ export function PlansPage() {
         />
       </Paper>
 
+      {/* Confirmação de Deleção */}
       <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)}>
         <DialogTitle>Remover plano</DialogTitle>
         <DialogContent>
@@ -113,6 +137,15 @@ export function PlansPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Formulário de Criação/Edição */}
+      <PlanFormDialog
+        open={formOpen}
+        onClose={() => setFormOpen(false)}
+        onSubmit={handleFormSubmit}
+        plan={editingPlan}
+        loading={submitting}
+      />
     </ResponsiveContainer>
   );
 }
