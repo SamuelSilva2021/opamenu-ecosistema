@@ -82,6 +82,28 @@ export const useCheckout = (): CheckoutHookReturn => {
     setError(null);
   }, []);
 
+  // Buscar taxa de entrega quando cidade/bairro mudar
+  useEffect(() => {
+    if (checkoutData.isDelivery && checkoutData.city && slug) {
+      const fetchFee = async () => {
+        try {
+          const fee = await orderService.getDeliveryFee(slug, checkoutData.city!, checkoutData.neighborhood);
+          // Só atualiza se o valor for diferente para evitar loops
+          if (fee !== checkoutData.deliveryFee) {
+            updateCheckoutData({ deliveryFee: fee ?? 0 });
+          }
+        } catch (error) {
+          console.error('Error fetching delivery fee:', error);
+        }
+      };
+      
+      const timer = setTimeout(fetchFee, 500); // Debounce
+      return () => clearTimeout(timer);
+    } else if (!checkoutData.isDelivery && checkoutData.deliveryFee !== 0) {
+      updateCheckoutData({ deliveryFee: 0 });
+    }
+  }, [checkoutData.isDelivery, checkoutData.city, checkoutData.neighborhood, slug, checkoutData.deliveryFee, updateCheckoutData]);
+
   const processOrder = useCallback(async (paymentMethodOverride?: string, skipConfirmationNavigation: boolean = false): Promise<Order | null> => {
     try {
       setIsProcessing(true);
@@ -126,7 +148,7 @@ export const useCheckout = (): CheckoutHookReturn => {
         loyaltyPointsUsed: loyaltyPointsUsed > 0 ? loyaltyPointsUsed : undefined,
         loyaltyProgramId: loyaltyPointsUsed > 0 ? loyaltyProgramId : undefined,
         loyaltyDiscount: loyaltyDiscount && loyaltyDiscount > 0 ? loyaltyDiscount : undefined,
-        deliveryFee: checkoutData.isDelivery ? 5.00 : 0,
+        deliveryFee: checkoutData.isDelivery ? (checkoutData.deliveryFee ?? 0) : 0,
         items: cartItems.map(item => ({
           productId: item.product.id,
           quantity: item.quantity,

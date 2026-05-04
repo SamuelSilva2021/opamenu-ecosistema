@@ -245,7 +245,7 @@ const CheckoutPage = ({ onBackToMenu, tenant }: CheckoutPageProps) => {
                 subtotal={subtotal}
                 discount={discount}
                 totalPrice={totalPrice}
-                deliveryFee={checkoutData.isDelivery ? 5.00 : 0}
+                deliveryFee={checkoutData.isDelivery ? (checkoutData.deliveryFee ?? 0) : 0}
                 availableMethods={tenant?.paymentMethods}
                 hasPixIntegration={!!tenant?.pixIntegration}
               />

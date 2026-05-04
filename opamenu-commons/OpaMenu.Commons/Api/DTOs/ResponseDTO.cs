@@ -1,4 +1,4 @@
-﻿using OpaMenu.Commons.Api.Commons;
+using OpaMenu.Commons.Api.Commons;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -89,6 +89,7 @@ namespace OpaMenu.Commons.Api.DTOs
         public string? DataAsSafeJson =>
             JsonUtil.MaskSensitiveDataFromJsonString(DataAsJson);
 
+        [JsonIgnore]
         public Exception? Exception { get; set; }
 
     }

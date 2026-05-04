@@ -19,7 +19,8 @@ import {
   CreditCard,
   Monitor,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Truck
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -86,6 +87,13 @@ const routes = [
     href: "/dashboard/coupons",
     variant: "ghost",
     module: "COUPON",
+  },
+  {
+    title: "Taxas de Entrega",
+    icon: Truck,
+    href: "/dashboard/delivery-areas",
+    variant: "ghost",
+    module: "DELIVERY_AREA",
   },
   {
     title: "Pedidos",

@@ -31,7 +31,8 @@ public class PublicMenuController(
     ICouponService couponService,
     IOrderService orderService,
     ICustomerService customerService,
-    IPaymentService paymentService
+    IPaymentService paymentService,
+    IDeliveryAreaService deliveryAreaService
     ) : BaseController
 {
     private readonly IProductService _productService = productService;
@@ -42,6 +43,7 @@ public class PublicMenuController(
     private readonly IOrderService _orderService = orderService;
     private readonly ICustomerService _customerService = customerService;
     private readonly IPaymentService _paymentService = paymentService;
+    private readonly IDeliveryAreaService _deliveryAreaService = deliveryAreaService;
 
     /// <summary>
     /// Obtém todos os dados da loja (Info, Menu, Categorias) em uma única requisição
@@ -251,4 +253,15 @@ public class PublicMenuController(
 
     #endregion
 
+    #region DELIVERY
+    /// <summary>
+    /// Obtém a taxa de entrega para uma localidade específica
+    /// </summary>
+    [HttpGet("delivery-fee")]
+    public async Task<ActionResult<ResponseDTO<decimal?>>> GetDeliveryFee(string slug, [FromQuery] string city, [FromQuery] string? neighborhood)
+    {
+        var response = await _deliveryAreaService.GetDeliveryFeeAsync(slug, city, neighborhood);
+        return BuildResponse(response);
+    }
+    #endregion
 }

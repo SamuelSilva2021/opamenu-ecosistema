@@ -258,7 +258,11 @@ const CheckoutForm = ({
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-sm font-black text-primary uppercase tracking-tighter block">R$ 5,00</span>
+                    <span className="text-sm font-black text-primary uppercase tracking-tighter block">
+                      {checkoutData.deliveryFee !== undefined && checkoutData.deliveryFee > 0 
+                        ? `R$ ${checkoutData.deliveryFee.toFixed(2).replace('.', ',')}` 
+                        : 'Grátis'}
+                    </span>
                   </div>
                 </div>
                 {checkoutData.isDelivery && (

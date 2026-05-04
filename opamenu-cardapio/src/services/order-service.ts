@@ -101,6 +101,20 @@ export class OrderService {
       return response;
     });
   }
+
+  // Buscar taxa de entrega dinâmica
+  async getDeliveryFee(slug: string, city: string, neighborhood?: string): Promise<number | null> {
+    return withApiErrorHandling(async () => {
+      const params: Record<string, string> = { city };
+      if (neighborhood) params.neighborhood = neighborhood;
+      
+      const response = await httpClient.get<number | null>(
+        `/public/${slug}/delivery-fee`,
+        params
+      );
+      return response;
+    });
+  }
 }
 
 // Instância do serviço

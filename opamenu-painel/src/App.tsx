@@ -19,6 +19,8 @@ import EmployeesPage from '@/features/employees/pages/EmployeesPage'
 import RolesPage from '@/features/employees/pages/RolesPage'
 
 
+import DeliveryAreasPage from '@/features/delivery-areas/pages/DeliveryAreasPage'
+
 function App() {
   return (
     <>
@@ -37,6 +39,7 @@ function App() {
           <Route path="aditionals" element={<AditionalsPage />} />
           <Route path="aditional-groups" element={<AditionalGroupsPage />} />
           <Route path="coupons" element={<CouponsPage />} />
+          <Route path="delivery-areas" element={<DeliveryAreasPage />} />
           <Route path="orders" element={<OrdersPage />} />
           <Route path="customers" element={<CustomersPage />} />
           <Route path="employees" element={<EmployeesPage />} />

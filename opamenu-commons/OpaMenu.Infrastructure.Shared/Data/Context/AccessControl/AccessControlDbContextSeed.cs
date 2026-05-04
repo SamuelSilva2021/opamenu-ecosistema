@@ -47,7 +47,8 @@ public static class AccessControlDbContextSeed
             CreateModule("CUSTOMER", "Clientes", "Gerenciamento de clientes", "/customers"),
             CreateModule("PAYMENT", "Pagamentos", "Gerenciamento de pagamentos", "/payments"),
             CreateModule("COUPON", "Cupons", "Gerenciamento de cupons", "/coupons"),
-            CreateModule("LOYALTY", "Fidelidade", "Programa de fidelidade", "/loyalty")
+            CreateModule("LOYALTY", "Fidelidade", "Programa de fidelidade", "/loyalty"),
+            CreateModule("DELIVERY_AREA", "Taxas de Entrega", "Gerenciamento de taxas de entrega por localidade", "/delivery-areas")
         };
 
         modelBuilder.Entity<ModuleEntity>().HasData(modules);

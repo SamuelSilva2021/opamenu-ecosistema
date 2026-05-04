@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using OpaMenu.Infrastructure.Shared.Data.Context.AccessControl;
@@ -12,9 +13,11 @@ using OpaMenu.Infrastructure.Shared.Data.Context.AccessControl;
 namespace OpaMenu.Infrastructure.Shared.Migrations.AccessControl
 {
     [DbContext(typeof(AccessControlDbContext))]
-    partial class AccessControlDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260504000841_AddDeliveryAreaModuleSeed")]
+    partial class AddDeliveryAreaModuleSeed
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

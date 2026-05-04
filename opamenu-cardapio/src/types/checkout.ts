@@ -13,6 +13,7 @@ export interface CheckoutData {
   isDelivery: boolean;
   notes?: string;
   paymentMethod?: string;
+  deliveryFee?: number;
 }
 
 export interface PaymentMethod {

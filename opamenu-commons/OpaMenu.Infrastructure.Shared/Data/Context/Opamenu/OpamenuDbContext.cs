@@ -38,6 +38,8 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
     public DbSet<CollaboratorEntity> Collaborators { get; set; }
     public DbSet<CashShiftEntity> CashShifts { get; set; }
     public DbSet<CashMovementEntity> CashMovements { get; set; }
+    public DbSet<DeliveryAreaEntity> DeliveryAreas { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.ConfigureWarnings(warnings => warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
@@ -753,7 +755,24 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
             entity.HasIndex(e => e.TenantId).IsUnique();
         });
 
+        // DeliveryArea configuration
+        modelBuilder.Entity<DeliveryAreaEntity>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.City)
+                .IsRequired()
+                .HasMaxLength(100);
+            entity.Property(e => e.Neighborhood)
+                .HasMaxLength(100);
+            entity.Property(e => e.Fee)
+                .IsRequired()
+                .HasPrecision(10, 2);
+            entity.Property(e => e.IsActive)
+                .IsRequired();
+
+            entity.HasIndex(e => new { e.TenantId, e.City, e.Neighborhood });
+        });
+
         modelBuilder.OpamenuSeed();
     }
 }
-
