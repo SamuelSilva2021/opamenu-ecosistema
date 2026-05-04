@@ -488,11 +488,13 @@ public sealed class AuthService(
 
         var modules = await _accessControlDbContext.Modules
             .AsNoTracking()
-            .Where(m => m.Key != null && keys.Contains(m.Key))
+            .Where(m => m.Key != null && keys.Contains(m.Key) && m.IsActive)
             .Select(m => new { m.Id, Key = m.Key! })
             .ToListAsync();
 
-        return modules.ToDictionary(x => x.Key, x => x.Id, StringComparer.OrdinalIgnoreCase);
+        return modules
+            .GroupBy(x => x.Key, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.First().Id, StringComparer.OrdinalIgnoreCase);
     }
 
     private async Task<List<RolePermissionsAggregate>> GetRolePermissionsByRoleAsync(UserAccountEntity user)
