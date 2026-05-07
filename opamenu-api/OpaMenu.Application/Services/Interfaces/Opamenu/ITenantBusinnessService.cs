@@ -13,5 +13,6 @@ namespace OpaMenu.Application.Services.Interfaces.Opamenu
     {
         Task<ResponseDTO<TenantBusinessResponseDto?>> GetTenantBusinessInfoByTenantId();
         Task<ResponseDTO<TenantBusinessResponseDto>> UpdateTenantBusinessInfo(UpdateTenantBusinessRequestDto dto);
+        Task<ResponseDTO<bool>> CheckSlugAvailability(string slug);
     }
 }

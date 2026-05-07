@@ -31,7 +31,8 @@ import { CartProvider } from "@/hooks/use-cart";
 import NotFound from "@/pages/NotFound";
 
 const StorefrontContent = () => {
-  const { slug } = useParams<{ slug: string }>();
+  const { neighborhood, slug: urlSlug } = useParams<{ neighborhood: string; slug: string }>();
+  const slug = `${neighborhood}/${urlSlug}`;
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -499,7 +500,8 @@ const StorefrontContent = () => {
 };
 
 const Index = () => {
-  const { slug } = useParams<{ slug: string }>();
+  const { neighborhood, slug: urlSlug } = useParams<{ neighborhood: string; slug: string }>();
+  const slug = `${neighborhood}/${urlSlug}`;
   return (
     <CustomerProvider slug={slug}>
       <CartProvider slug={slug}>

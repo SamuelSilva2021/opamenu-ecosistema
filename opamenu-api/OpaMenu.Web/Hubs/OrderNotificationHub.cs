@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.SignalR;
 using OpaMenu.Application.Hubs;
+using Microsoft.AspNetCore.Authorization;
+using OpaMenu.Domain.Interfaces;
 
 namespace OpaMenu.Web.Hubs;
 
@@ -10,10 +12,12 @@ namespace OpaMenu.Web.Hubs;
 public class OrderNotificationHub : Hub, IOrderNotificationHub
 {
     private readonly ILogger<OrderNotificationHub> _logger;
+    private readonly ICurrentUserService _currentUserService;
 
-    public OrderNotificationHub(ILogger<OrderNotificationHub> logger)
+    public OrderNotificationHub(ILogger<OrderNotificationHub> logger, ICurrentUserService currentUserService)
     {
         _logger = logger;
+        _currentUserService = currentUserService;
     }
 
     /// <summary>
@@ -58,19 +62,28 @@ public class OrderNotificationHub : Hub, IOrderNotificationHub
     }
 
     /// <summary>
-    /// Administrador se registra para receber notificações de pedidos
+    /// Administrador se registra para receber notificações de pedidos de seu tenant
     /// </summary>
+    [Authorize]
     public async Task JoinAdminGroup()
     {
         var connectionId = Context.ConnectionId;
+        var tenantId = _currentUserService.TenantId;
+
+        if (string.IsNullOrEmpty(tenantId))
+        {
+            _logger.LogWarning("Tentativa de JoinAdminGroup sem TenantId no token: {ConnectionId}", connectionId);
+            return;
+        }
         
-        await Groups.AddToGroupAsync(connectionId, "Administrators");
+        await Groups.AddToGroupAsync(connectionId, $"Tenant_{tenantId}_Admins");
         
-        _logger.LogInformation("Administrador conectado: {ConnectionId}", connectionId);
+        _logger.LogInformation("Administrador conectado ao Tenant {TenantId}: {ConnectionId}", tenantId, connectionId);
         
         await Clients.Caller.SendAsync("JoinedAdminGroup", new
         {
-            Message = "Conectado ao grupo de administradores",
+            TenantId = tenantId,
+            Message = $"Conectado ao grupo de administradores do estabelecimento",
             Timestamp = DateTime.UtcNow
         });
     }
@@ -117,15 +130,20 @@ public class OrderNotificationHub : Hub, IOrderNotificationHub
     /// <summary>
     /// Teste manual de notificação - para debugging
     /// </summary>
+    [Authorize]
     public async Task TestNotification()
     {
         var connectionId = Context.ConnectionId;
-        _logger.LogInformation("🧪 Teste manual de notificação solicitado por: {ConnectionId}", connectionId);
+        var tenantId = _currentUserService.TenantId;
+        
+        if (string.IsNullOrEmpty(tenantId)) return;
+
+        _logger.LogInformation("🧪 Teste manual de notificação solicitado por: {ConnectionId} para Tenant {TenantId}", connectionId, tenantId);
         
         var testData = new
         {
             Type = "NewOrder",
-            OrderId = 999,
+            OrderId = Guid.NewGuid(),
             CustomerName = "Cliente Teste Manual",
             CustomerPhone = "(11) 99999-9999",
             TotalAmount = 50.00,
@@ -135,8 +153,8 @@ public class OrderNotificationHub : Hub, IOrderNotificationHub
             Timestamp = DateTime.UtcNow
         };
         
-        _logger.LogInformation("🧪 Enviando teste para grupo Administrators");
-        await Clients.Group("Administrators").SendAsync("NewOrderReceived", testData);
+        _logger.LogInformation("🧪 Enviando teste para grupo Tenant_{TenantId}_Admins", tenantId);
+        await Clients.Group($"Tenant_{tenantId}_Admins").SendAsync("NewOrderReceived", testData);
         _logger.LogInformation("🧪 Teste enviado!");
     }
 

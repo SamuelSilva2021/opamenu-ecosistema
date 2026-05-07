@@ -247,8 +247,8 @@ export const formatOrderForAPI = (
       productId: item.productId,
       quantity: item.quantity,
       notes: item.notes?.trim() || undefined,
-      addons: item.selectedAddons ? item.selectedAddons.map((addon: SelectedAddon) => ({
-        addonId: addon.addonId,
+      aditionals: item.selectedAddons ? item.selectedAddons.map((addon: SelectedAddon) => ({
+        aditionalId: addon.addonId,
         quantity: addon.quantity
       })) : []
     })),

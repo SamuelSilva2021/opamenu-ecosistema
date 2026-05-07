@@ -26,7 +26,7 @@ public class SignalRNotificationServiceWrapper : INotificationService
         _logger = logger;
     }
 
-    public async Task NotifyNewOrderAsync(OrderResponseDto order)
+    public async Task NotifyNewOrderAsync(OpaMenu.Domain.DTOs.OrderResponseDto order, Guid tenantId)
     {
         try
         {
@@ -48,7 +48,7 @@ public class SignalRNotificationServiceWrapper : INotificationService
             _logger.LogInformation("[WRAPPER] Enviando para grupo 'Administrators': {Notification}", 
                 System.Text.Json.JsonSerializer.Serialize(notification));
 
-            await _hubContext.Clients.Group("Administrators")
+            await _hubContext.Clients.Group($"Tenant_{tenantId}_Admins")
                 .SendAsync("NewOrderReceived", notification);
 
             _logger.LogInformation("[WRAPPER] Notificação enviada com sucesso: Pedido #{OrderId}", order.Id);
@@ -59,13 +59,13 @@ public class SignalRNotificationServiceWrapper : INotificationService
         }
     }
 
-    public async Task NotifyEOrderStatusChangedAsync(Guid orderId, EOrderStatus oldStatus, EOrderStatus newStatus, string? notes = null)
+    public async Task NotifyEOrderStatusChangedAsync(Guid orderId, OpaMenu.Infrastructure.Shared.Enums.Opamenu.EOrderStatus oldStatus, OpaMenu.Infrastructure.Shared.Enums.Opamenu.EOrderStatus newStatus, Guid tenantId, string? notes = null)
     {
         try
         {
             var notification = new
             {
-                Type = "EOrderStatusChanged",
+                Type = "OrderStatusChanged",
                 OrderId = orderId,
                 OldStatus = oldStatus.ToString(),
                 NewStatus = newStatus.ToString(),
@@ -75,10 +75,10 @@ public class SignalRNotificationServiceWrapper : INotificationService
             };
 
             await _hubContext.Clients.Group($"Order_{orderId}")
-                .SendAsync("EOrderStatusUpdated", notification);
+                .SendAsync("OrderStatusChanged", notification);
 
-            await _hubContext.Clients.Group("Administrators")
-                .SendAsync("EOrderStatusChanged", notification);
+            await _hubContext.Clients.Group($"Tenant_{tenantId}_Admins")
+                .SendAsync("OrderStatusChanged", notification);
 
             _logger.LogInformation("Notificação de mudança de status enviada: Pedido #{OrderId} - {OldStatus} â†’ {NewStatus}", 
                 orderId, oldStatus, newStatus);

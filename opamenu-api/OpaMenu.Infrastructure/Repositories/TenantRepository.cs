@@ -100,6 +100,8 @@ public class TenantRepository(MultiTenantDbContext context) : MultiTenantReposit
         return await query.AnyAsync();
     }
 
+    public async Task<bool> DocumentExistsAsync(string document) => await _dbSet.AsNoTracking().AnyAsync(t => t.Document == document);
+
     public Task AddAsync(TenantEntity entity)
     {
         _dbSet.Add(entity);

@@ -17,5 +17,9 @@ export const settingsService = {
   upsertPixConfig: async (data: TenantPaymentConfigDto) => {
     const response = await api.post<TenantPaymentConfigDto>("/tenant-payment-config", data);
     return response.data;
+  },
+  checkSlugAvailability: async (slug: string) => {
+    const response = await api.get<boolean>("/settings/check-slug", { params: { slug } });
+    return response.data;
   }
 };

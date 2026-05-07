@@ -1,4 +1,4 @@
-﻿using OpaMenu.Application.DTOs;
+using OpaMenu.Application.DTOs;
 using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Domain.DTOs;
 using OpaMenu.Domain.DTOs.Order;
@@ -51,9 +51,9 @@ namespace OpaMenu.Application.Services.Interfaces.Opamenu
         Task<ResponseDTO<IEnumerable<OrderResponseDto>>> GetOrdersByCustomerAsync(string customerPhone);
         Task<ResponseDTO<OrderResponseDto>> AcceptOrderAsync(Guid id, int estimatedPreparationMinutes, string? notes = null);
         Task<ResponseDTO<OrderResponseDto>> RejectOrderAsync(Guid id, string reason, string? notes = null, string? rejectedBy = null);
-        Task<ResponseDTO<OrderResponseDto>> CancelOrderAsync(Guid id, CancelOrderRequestDto requestDto);
-        Task<ResponseDTO<OrderResponseDto>> UpdateOrderPaymentMethodAsync(Guid id, UpdateOrderPaymentRequestDto requestDto);
-        Task<ResponseDTO<OrderResponseDto>> UpdateOrderDeliveryTypeAsync(Guid id, UpdateOrderDeliveryTypeRequestDto requestDto);
+        Task<ResponseDTO<OrderResponseDto>> CancelOrderAsync(Guid id, CancelOrderRequestDto requestDto, Guid? tenantId = null);
+        Task<ResponseDTO<OrderResponseDto>> UpdateOrderPaymentMethodAsync(Guid id, UpdateOrderPaymentRequestDto requestDto, Guid? tenantId = null);
+        Task<ResponseDTO<OrderResponseDto>> UpdateOrderDeliveryTypeAsync(Guid id, UpdateOrderDeliveryTypeRequestDto requestDto, Guid? tenantId = null);
 
         /// <summary>
         /// ObtÃ©m o pedido ativo de uma mesa

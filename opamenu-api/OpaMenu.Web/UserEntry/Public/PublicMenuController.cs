@@ -21,7 +21,7 @@ using OpaMenu.Commons.Api.Commons;
 namespace OpaMenu.Web.UserEntry.Public;
 
 [ApiController]
-[Route("api/public/{slug}")]
+[Route("api/public/{neighborhood}/{slug}")]
 [AllowAnonymous]
 public class PublicMenuController(
     IProductService productService, 
@@ -49,8 +49,9 @@ public class PublicMenuController(
     /// Obtém todos os dados da loja (Info, Menu, Categorias) em uma única requisição
     /// </summary>
     [HttpGet("storefront")]
-    public async Task<ActionResult<ResponseDTO<MenuResponseDto>>> GetStorefrontData(string slug)
+    public async Task<ActionResult<ResponseDTO<MenuResponseDto>>> GetStorefrontData(string neighborhood, string slug)
     {
+        slug = $"{neighborhood}/{slug}";
         var response = await _storefrontService.GetStorefrontDataAsync(slug);
         return BuildResponse(response);
     }
@@ -59,8 +60,9 @@ public class PublicMenuController(
     /// Obtém informações detalhadas do tenant (loja)
     /// </summary>
     [HttpGet("info")]
-    public async Task<ActionResult<ResponseDTO<TenantBusinessResponseDto?>>> GetTenantInfo(string slug)
+    public async Task<ActionResult<ResponseDTO<TenantBusinessResponseDto?>>> GetTenantInfo(string neighborhood, string slug)
     {
+        slug = $"{neighborhood}/{slug}";
         var response = await _tenantService.GetTenantBusinessInfoBySlugAsync(slug);
         return BuildResponse(response);
     }
@@ -69,8 +71,9 @@ public class PublicMenuController(
     /// Obtém o menu completo (produtos ativos) para uma loja específica (slug)
     /// </summary>
     [HttpGet("menu")]
-    public async Task<ActionResult<ResponseDTO<MenuResponseDto>>> GetMenu(string slug)
+    public async Task<ActionResult<ResponseDTO<MenuResponseDto>>> GetMenu(string neighborhood, string slug)
     {
+        slug = $"{neighborhood}/{slug}";
         var response = await _productService.GetProductsForMenuBySlugAsync(slug);
         return BuildResponse(response);
     }
@@ -79,8 +82,9 @@ public class PublicMenuController(
     /// Obtém as categorias ativas para uma loja específica (slug)
     /// </summary>
     [HttpGet("categories")]
-    public async Task<ActionResult<ResponseDTO<IEnumerable<CategoryResponseDto>>>> GetCategories(string slug)
+    public async Task<ActionResult<ResponseDTO<IEnumerable<CategoryResponseDto>>>> GetCategories(string neighborhood, string slug)
     {
+        slug = $"{neighborhood}/{slug}";
         var response = await _categoryService.GetActiveCategoriesBySlugAsync(slug);
         return BuildResponse(response);
     }
@@ -89,8 +93,9 @@ public class PublicMenuController(
     /// Obtém produtos de uma categoria específica para uma loja (slug)
     /// </summary>
     [HttpGet("products/by-category/{categoryId}")]
-    public async Task<ActionResult<ResponseDTO<IEnumerable<ProductDto>>>> GetProductsByCategory(string slug, Guid categoryId)
+    public async Task<ActionResult<ResponseDTO<IEnumerable<ProductDto>>>> GetProductsByCategory(string neighborhood, string slug, Guid categoryId)
     {
+        slug = $"{neighborhood}/{slug}";
         var response = await _productService.GetProductsByCategoryAndSlugAsync(categoryId, slug);
         return BuildResponse(response);
     }
@@ -99,8 +104,9 @@ public class PublicMenuController(
     /// Obtém detalhes de um produto específico para uma loja (slug)
     /// </summary>
     [HttpGet("products/{id}")]
-    public async Task<ActionResult<ResponseDTO<ProductDto?>>> GetProduct(string slug, Guid id)
+    public async Task<ActionResult<ResponseDTO<ProductDto?>>> GetProduct(string neighborhood, string slug, Guid id)
     {
+        slug = $"{neighborhood}/{slug}";
         var response = await _productService.GetProductByIdAndSlugAsync(id, slug);
         return BuildResponse(response);
     }
@@ -113,8 +119,9 @@ public class PublicMenuController(
     /// <param name="slug"></param>
     /// <returns></returns>
     [HttpPost("orders")]
-    public async Task<ActionResult<ResponseDTO<OrderResponseDto>>> CreateOrder([FromBody]CreatePublicOrderRequestDto request, [FromRoute] string slug)
+    public async Task<ActionResult<ResponseDTO<OrderResponseDto>>> CreateOrder([FromBody]CreatePublicOrderRequestDto request, string neighborhood, string slug)
     {
+        slug = $"{neighborhood}/{slug}";
         var serviceResponse = await _orderService.CreatePublicOrderAsync(request, slug);
         return BuildResponse(serviceResponse);
     }
@@ -126,15 +133,17 @@ public class PublicMenuController(
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpGet("orders/{id}")]
-    public async Task<ActionResult<ResponseDTO<OrderResponseDto>>> GetOrder(string slug, Guid id)
+    public async Task<ActionResult<ResponseDTO<OrderResponseDto>>> GetOrder(string neighborhood, string slug, Guid id)
     {
+        slug = $"{neighborhood}/{slug}";
         var serviceResponse = await _orderService.GetPublicOrderByIdAsync(slug, id);
         return BuildResponse(serviceResponse);
     }
 
     [HttpGet("orders/customer/{customerId}")]
-    public async Task<ActionResult<ResponseDTO<IEnumerable<OrderResponseDto>>>> GetOrdersByCustomerId(string slug, string customerId)
+    public async Task<ActionResult<ResponseDTO<IEnumerable<OrderResponseDto>>>> GetOrdersByCustomerId(string neighborhood, string slug, string customerId)
     {
+        slug = $"{neighborhood}/{slug}";
         var serviceResponse = await _orderService.GetPublicOrdersByCustomerIdAsync(slug, Guid.Parse(customerId));
         return BuildResponse(serviceResponse);
     }
@@ -145,10 +154,15 @@ public class PublicMenuController(
     /// </summary>
     [HttpPut("orders/{id}/cancel")]
     [Authorize]
-    public async Task<ActionResult<ResponseDTO<OrderResponseDto>>> CancelOrder(Guid id, [FromBody] CancelOrderRequestDto request)
+    public async Task<ActionResult<ResponseDTO<OrderResponseDto>>> CancelOrder(string neighborhood, string slug, Guid id, [FromBody] CancelOrderRequestDto request)
     {
-        // TODO: Validar se pedido pertence ao tenant do slug e ao customer (se auth disponível)
-        var serviceResponse = await _orderService.CancelOrderAsync(id, request);
+        slug = $"{neighborhood}/{slug}";
+        // 1. Validar Tenant
+        var tenantResponse = await _tenantService.GetTenantBusinessInfoBySlugAsync(slug);
+        if (!tenantResponse.Succeeded || tenantResponse.Data == null)
+            return NotFound(StaticResponseBuilder<OrderResponseDto>.BuildError("Restaurante não encontrado"));
+
+        var serviceResponse = await _orderService.CancelOrderAsync(id, request, tenantResponse.Data.Id);
         return BuildResponse(serviceResponse);
     }
 
@@ -156,9 +170,15 @@ public class PublicMenuController(
     /// Atualiza o método de pagamento de um pedido público (apenas se pendente)
     /// </summary>
     [HttpPut("orders/{id}/payment")]
-    public async Task<ActionResult<ResponseDTO<OrderResponseDto>>> UpdatePaymentMethod(string slug, Guid id, [FromBody] UpdateOrderPaymentRequestDto request)
+    public async Task<ActionResult<ResponseDTO<OrderResponseDto>>> UpdatePaymentMethod(string neighborhood, string slug, Guid id, [FromBody] UpdateOrderPaymentRequestDto request)
     {
-        var serviceResponse = await _orderService.UpdateOrderPaymentMethodAsync(id, request);
+        slug = $"{neighborhood}/{slug}";
+        // 1. Validar Tenant
+        var tenantResponse = await _tenantService.GetTenantBusinessInfoBySlugAsync(slug);
+        if (!tenantResponse.Succeeded || tenantResponse.Data == null)
+            return NotFound(StaticResponseBuilder<OrderResponseDto>.BuildError("Restaurante não encontrado"));
+
+        var serviceResponse = await _orderService.UpdateOrderPaymentMethodAsync(id, request, tenantResponse.Data.Id);
         return BuildResponse(serviceResponse);
     }
 
@@ -166,9 +186,15 @@ public class PublicMenuController(
     /// Atualiza o tipo de entrega de um pedido público (apenas se pendente)
     /// </summary>
     [HttpPut("orders/{id}/delivery-type")]
-    public async Task<ActionResult<ResponseDTO<OrderResponseDto>>> UpdateDeliveryType(string slug, Guid id, [FromBody] UpdateOrderDeliveryTypeRequestDto request)
+    public async Task<ActionResult<ResponseDTO<OrderResponseDto>>> UpdateDeliveryType(string neighborhood, string slug, Guid id, [FromBody] UpdateOrderDeliveryTypeRequestDto request)
     {
-        var serviceResponse = await _orderService.UpdateOrderDeliveryTypeAsync(id, request);
+        slug = $"{neighborhood}/{slug}";
+        // 1. Validar Tenant
+        var tenantResponse = await _tenantService.GetTenantBusinessInfoBySlugAsync(slug);
+        if (!tenantResponse.Succeeded || tenantResponse.Data == null)
+            return NotFound(StaticResponseBuilder<OrderResponseDto>.BuildError("Restaurante não encontrado"));
+
+        var serviceResponse = await _orderService.UpdateOrderDeliveryTypeAsync(id, request, tenantResponse.Data.Id);
         return BuildResponse(serviceResponse);
     }
 
@@ -176,8 +202,9 @@ public class PublicMenuController(
     /// Gera um pagamento PIX para um pedido público
     /// </summary>
     [HttpPost("orders/{id}/pix")]
-    public async Task<ActionResult<ResponseDTO<PixResponseDto>>> GeneratePixPayment(string slug, Guid id)
+    public async Task<ActionResult<ResponseDTO<PixResponseDto>>> GeneratePixPayment(string neighborhood, string slug, Guid id)
     {
+        slug = $"{neighborhood}/{slug}";
         // 1. Validar Tenant
         var tenantResponse = await _tenantService.GetTenantBusinessInfoBySlugAsync(slug);
         if (!tenantResponse.Succeeded || tenantResponse.Data == null)
@@ -198,7 +225,10 @@ public class PublicMenuController(
             Description = $"Pedido #{order.Id}"
         };
 
-        var serviceResponse = await _paymentService.GeneratePixAsync(pixRequest, tenantResponse.Data.Id);
+        var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+        var notificationUrl = $"{baseUrl}/api/Payments/webhook/{tenantResponse.Data.Id}/mercadopago";
+
+        var serviceResponse = await _paymentService.GeneratePixAsync(pixRequest, tenantResponse.Data.Id, notificationUrl);
         return BuildResponse(serviceResponse);
     }
 
@@ -210,8 +240,9 @@ public class PublicMenuController(
     [ProducesResponseType(typeof(ResponseDTO<CustomerResponseDto>), 404)]
     [ProducesResponseType(typeof(ResponseDTO<CustomerResponseDto>), 400)]
     [ProducesResponseType(typeof(ResponseDTO<CustomerResponseDto>), 500)]
-    public async Task<ActionResult<ResponseDTO<CustomerResponseDto>>> GetCustomer(string slug, string phoneNumber)
+    public async Task<ActionResult<ResponseDTO<CustomerResponseDto>>> GetCustomer(string neighborhood, string slug, string phoneNumber)
     {
+        slug = $"{neighborhood}/{slug}";
         var serviceResponse = await _customerService.GetPublicCustomer(slug, phoneNumber);
         return BuildResponse(serviceResponse);
     }
@@ -220,8 +251,9 @@ public class PublicMenuController(
     [ProducesResponseType(typeof(ResponseDTO<CustomerResponseDto>), 404)]
     [ProducesResponseType(typeof(ResponseDTO<CustomerResponseDto>), 400)]
     [ProducesResponseType(typeof(ResponseDTO<CustomerResponseDto>), 500)]
-    public async Task<ActionResult<ResponseDTO<CustomerResponseDto>>> CreateCustomer([FromBody] CreateCustomerRequestDto request, [FromRoute] string slug)
+    public async Task<ActionResult<ResponseDTO<CustomerResponseDto>>> CreateCustomer([FromBody] CreateCustomerRequestDto request, string neighborhood, string slug)
     {
+        slug = $"{neighborhood}/{slug}";
         var serviceResponse = await _customerService.CreatePublicCustomerAsync(request, slug);
         return BuildResponse(serviceResponse);
     }
@@ -231,8 +263,9 @@ public class PublicMenuController(
     [ProducesResponseType(typeof(ResponseDTO<CustomerResponseDto>), 404)]
     [ProducesResponseType(typeof(ResponseDTO<CustomerResponseDto>), 400)]
     [ProducesResponseType(typeof(ResponseDTO<CustomerResponseDto>), 500)]
-    public async Task<ActionResult<ResponseDTO<CustomerResponseDto>>> UpdateCustomer([FromBody] UpdateCustomerRequestDto request, [FromRoute] string slug)
+    public async Task<ActionResult<ResponseDTO<CustomerResponseDto>>> UpdateCustomer([FromBody] UpdateCustomerRequestDto request, string neighborhood, string slug)
     {
+        slug = $"{neighborhood}/{slug}";
         var serviceResponse = await _customerService.UpdatePublicCustomerAsync(request, slug);
         return BuildResponse(serviceResponse);
     }
@@ -244,8 +277,9 @@ public class PublicMenuController(
     [ProducesResponseType(typeof(ResponseDTO<CouponDto>), 404)]
     [ProducesResponseType(typeof(ResponseDTO<CouponDto>), 400)]
     [ProducesResponseType(typeof(ResponseDTO<CouponDto>), 500)]
-    public async Task<ActionResult<ResponseDTO<CouponDto>>> ValidateCoupon([FromBody] ValidateCouponRequestDto request, [FromRoute] string slug)
+    public async Task<ActionResult<ResponseDTO<CouponDto>>> ValidateCoupon([FromBody] ValidateCouponRequestDto request, string neighborhood, string slug)
     {
+        slug = $"{neighborhood}/{slug}";
         var serviceReponse = await _couponService.ValidateCouponBySlugAsync(slug, request.Code, request.OrderValue);
         return BuildResponse(serviceReponse);
     }
@@ -258,9 +292,10 @@ public class PublicMenuController(
     /// Obtém a taxa de entrega para uma localidade específica
     /// </summary>
     [HttpGet("delivery-fee")]
-    public async Task<ActionResult<ResponseDTO<decimal?>>> GetDeliveryFee(string slug, [FromQuery] string city, [FromQuery] string? neighborhood)
+    public async Task<ActionResult<ResponseDTO<decimal?>>> GetDeliveryFee(string neighborhood, string slug, [FromQuery] string city, [FromQuery] string? destNeighborhood)
     {
-        var response = await _deliveryAreaService.GetDeliveryFeeAsync(slug, city, neighborhood);
+        slug = $"{neighborhood}/{slug}";
+        var response = await _deliveryAreaService.GetDeliveryFeeAsync(slug, city, destNeighborhood);
         return BuildResponse(response);
     }
     #endregion

@@ -12,7 +12,7 @@ namespace OpaMenu.Application.Services.Interfaces.Opamenu
     public interface IPixPaymentProvider
     {
         EPaymentProvider ProviderType { get; }
-        Task<PixProviderResultDto> CreatePixAsync(PaymentEntity payment);
+        Task<PixProviderResultDto> CreatePixAsync(PaymentEntity payment, string? notificationUrl = null);
         Task<WebhookPaymentResultDto> ProcessWebhookAsync(string payload, string signature);
     }
 

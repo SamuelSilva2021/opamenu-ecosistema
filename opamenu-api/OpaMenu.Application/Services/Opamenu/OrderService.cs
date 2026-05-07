@@ -626,7 +626,7 @@ public class OrderService(
                     // Enviar notificação de novo pedido para administradores
                     try
                     {
-                        await _notificationService.NotifyNewOrderAsync(orderDto);
+                        await _notificationService.NotifyNewOrderAsync(orderDto, tenantId);
                     }
                     catch (Exception notificationEx)
                     {
@@ -919,7 +919,7 @@ public class OrderService(
 
                     try
                     {
-                        await _notificationService.NotifyNewOrderAsync(orderDto);
+                        await _notificationService.NotifyNewOrderAsync(orderDto, tenant.Id);
                     }
                     catch (Exception notificationEx)
                     {
@@ -1043,7 +1043,7 @@ public class OrderService(
             
             try
             {
-                await _notificationService.NotifyEOrderStatusChangedAsync(id, previousStatus, requestDto.Status, requestDto.Notes);
+                await _notificationService.NotifyEOrderStatusChangedAsync(id, previousStatus, requestDto.Status, (Guid)order.TenantId!, requestDto.Notes);
                 
                 switch (requestDto.Status)
                 {
@@ -1346,7 +1346,7 @@ public class OrderService(
 
         return StaticResponseBuilder<OrderResponseDto>.BuildOk(result.Data);
     }
-    public async Task<ResponseDTO<OrderResponseDto>> CancelOrderAsync(Guid id, CancelOrderRequestDto requestDto)
+    public async Task<ResponseDTO<OrderResponseDto>> CancelOrderAsync(Guid id, CancelOrderRequestDto requestDto, Guid? tenantId = null)
     {
         try
         {
@@ -1355,6 +1355,9 @@ public class OrderService(
             var order = await _orderRepository.GetByIdWithIncludesAsync(id, o => o.StatusHistory, o => o.Customer);
             if (order == null)
                 return StaticResponseBuilder<OrderResponseDto>.BuildNotFound(null!);
+
+            if (tenantId.HasValue && order.TenantId != tenantId.Value)
+                return StaticResponseBuilder<OrderResponseDto>.BuildError("Pedido não pertence a este estabelecimento");
 
             if (order.Status != EOrderStatus.Pending)
                 return StaticResponseBuilder<OrderResponseDto>.BuildError("Apenas pedidos pendentes podem ser cancelados pelo cliente.");
@@ -1378,7 +1381,7 @@ public class OrderService(
             var orderDto = _mapper.Map<OrderResponseDto>(order);
 
             // Notificar cancelamento
-            await _notificationService.NotifyEOrderStatusChangedAsync(id, previousStatus, EOrderStatus.Cancelled, requestDto.Reason);
+            await _notificationService.NotifyEOrderStatusChangedAsync(id, previousStatus, EOrderStatus.Cancelled, (Guid)order.TenantId!, requestDto.Reason);
 
             return StaticResponseBuilder<OrderResponseDto>.BuildOk(orderDto);
         }
@@ -1388,13 +1391,16 @@ public class OrderService(
             return StaticResponseBuilder<OrderResponseDto>.BuildError("Erro interno ao cancelar pedido");
         }
     }
-    public async Task<ResponseDTO<OrderResponseDto>> UpdateOrderPaymentMethodAsync(Guid id, UpdateOrderPaymentRequestDto requestDto)
+    public async Task<ResponseDTO<OrderResponseDto>> UpdateOrderPaymentMethodAsync(Guid id, UpdateOrderPaymentRequestDto requestDto, Guid? tenantId = null)
     {
         try
         {
             var order = await _orderRepository.GetByIdWithIncludesAsync(id, o => o.Payments);
             if (order == null)
                 return StaticResponseBuilder<OrderResponseDto>.BuildNotFound(null!);
+
+            if (tenantId.HasValue && order.TenantId != tenantId.Value)
+                return StaticResponseBuilder<OrderResponseDto>.BuildError("Pedido não pertence a este estabelecimento");
 
             if (order.Status != EOrderStatus.Pending)
                 return StaticResponseBuilder<OrderResponseDto>.BuildError("Apenas pedidos pendentes podem ser alterados.");
@@ -1435,13 +1441,16 @@ public class OrderService(
             return StaticResponseBuilder<OrderResponseDto>.BuildError("Erro interno ao atualizar pagamento");
         }
     }
-    public async Task<ResponseDTO<OrderResponseDto>> UpdateOrderDeliveryTypeAsync(Guid id, UpdateOrderDeliveryTypeRequestDto requestDto)
+    public async Task<ResponseDTO<OrderResponseDto>> UpdateOrderDeliveryTypeAsync(Guid id, UpdateOrderDeliveryTypeRequestDto requestDto, Guid? tenantId = null)
     {
         try
         {
             var order = await _orderRepository.GetByIdWithIncludesAsync(id, o => o.Items);
             if (order == null)
                 return StaticResponseBuilder<OrderResponseDto>.BuildNotFound(null!);
+
+            if (tenantId.HasValue && order.TenantId != tenantId.Value)
+                return StaticResponseBuilder<OrderResponseDto>.BuildError("Pedido não pertence a este estabelecimento");
 
             if (order.Status != EOrderStatus.Pending)
                 return StaticResponseBuilder<OrderResponseDto>.BuildError("Apenas pedidos pendentes podem ser alterados.");

@@ -9,7 +9,8 @@ import { CustomerProvider } from '@/hooks/use-customer';
 import { CartProvider } from '@/hooks/use-cart';
 
 const LoyaltyPageContent = () => {
-    const { slug } = useParams<{ slug: string }>();
+    const { neighborhood, slug: urlSlug } = useParams<{ neighborhood: string; slug: string }>();
+    const slug = `${neighborhood}/${urlSlug}`;
     const navigate = useNavigate();
     const { customer } = useCustomer();
     const { tenantBusiness } = useStorefront(slug);
@@ -214,7 +215,8 @@ const LoyaltyPageContent = () => {
 };
 
 const LoyaltyPageWrapper = () => {
-    const { slug } = useParams<{ slug: string }>();
+    const { neighborhood, slug: urlSlug } = useParams<{ neighborhood: string; slug: string }>();
+    const slug = `${neighborhood}/${urlSlug}`;
     return (
         <CustomerProvider slug={slug}>
             <CartProvider slug={slug}>

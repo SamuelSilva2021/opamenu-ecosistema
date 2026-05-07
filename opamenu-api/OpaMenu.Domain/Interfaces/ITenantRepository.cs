@@ -23,6 +23,7 @@ public interface ITenantRepository
     Task<TenantEntity?> GetByIdTrackedAsync(Guid id);
     Task<bool> ExistsAsync(Guid id);
     Task<bool> SlugExistsAsync(string slug, Guid? excludeId = null);
+    Task<bool> DocumentExistsAsync(string document);
     Task AddAsync(TenantEntity entity);
     Task SaveChangesAsync();
 }

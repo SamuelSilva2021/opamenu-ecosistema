@@ -13,7 +13,7 @@ public interface IPaymentService
     Task<IEnumerable<PaymentResponseDto>> GetPaymentsAsync();
     Task<PaymentStatusDto> GetPaymentStatusAsync(Guid paymentId);
 
-    Task<ResponseDTO<PixResponseDto>> GeneratePixAsync(PixRequestDto request, Guid? tenantId = null);
+    Task<ResponseDTO<PixResponseDto>> GeneratePixAsync(PixRequestDto request, Guid? tenantId = null, string? notificationUrl = null);
     Task<ResponseDTO<bool>> ProcessWebhookAsync(Guid tenantId, string provider, string payload, string signature);
 }
 

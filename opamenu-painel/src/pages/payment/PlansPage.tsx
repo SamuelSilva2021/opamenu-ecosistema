@@ -18,7 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 export default function PlansPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { setAccessToken } = useAuthStore();
+  const { setAccessToken, setUser } = useAuthStore();
   
   // Buscar planos
   const { data: plans = [], isLoading } = useQuery({
@@ -29,7 +29,7 @@ export default function PlansPage() {
   // Ativar Plano
   const { mutate: activatePlan, isPending: isActivating } = useMutation({
     mutationFn: authService.activatePlan,
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
         if (response.succeeded) {
             toast({
                 title: "Plano ativado com sucesso!",
@@ -39,6 +39,14 @@ export default function PlansPage() {
             const currentToken = useAuthStore.getState().accessToken;
             if (currentToken) {
                 setAccessToken(currentToken, false);
+                try {
+                  const permissions = await authService.getPermissions();
+                  if (permissions.succeeded) {
+                    setUser(permissions.data);
+                  }
+                } catch (error) {
+                  console.error("Erro ao buscar permissões atualizadas", error);
+                }
             }
             navigate("/dashboard");
         } else {
@@ -89,25 +97,33 @@ export default function PlansPage() {
                 </span>
               </div>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                {plan.features?.map((feature) => (
-                  <li key={feature} className="flex items-center">
-                    <Check className="mr-2 h-4 w-4 text-primary" />
-                    {feature}
-                  </li>
-                ))}
                 <li className="flex items-center">
                     <Check className="mr-2 h-4 w-4 text-primary" />
                     {plan.description}
+                </li>
+                <li className="flex items-center">
+                    <Check className="mr-2 h-4 w-4 text-primary" />
+                    Acesso aos módulos selecionados
                 </li>
               </ul>
             </CardContent>
             <CardFooter>
               <Button 
                 className="w-full" 
-                onClick={() => activatePlan(plan.id)}
+                onClick={() => {
+                  if (plan.price > 0) {
+                    toast({
+                      title: "Redirecionando para o Pagamento...",
+                      description: "Em breve: Integração com Checkout.",
+                    });
+                    navigate(`/checkout/${plan.id}`);
+                  } else {
+                    activatePlan(plan.id);
+                  }
+                }}
                 disabled={isActivating}
               >
-                {isActivating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                {isActivating && plan.price === 0 ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 {plan.price > 0 ? 'Assinar' : 'Ativar Teste Grátis'}
               </Button>
             </CardFooter>

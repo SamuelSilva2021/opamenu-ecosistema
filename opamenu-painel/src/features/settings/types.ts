@@ -60,6 +60,7 @@ export interface UpdateTenantBusinessRequestDto {
   paymentMethods?: string[] | { methods: string[]; pixKey?: string } | any;
   latitude?: number;
   longitude?: number;
+  slug?: string;
 }
 
 export interface BankDetailsDto {

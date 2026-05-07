@@ -27,6 +27,7 @@ namespace OpaMenu.Infrastructure.Filters
                 "/api/subscription", 
                 "/api/payments", 
                 "/api/auth",
+                "/api/plans",
                 "/health"
             };
 

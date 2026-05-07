@@ -1,4 +1,4 @@
-﻿using OpaMenu.Domain.DTOs;
+using OpaMenu.Domain.DTOs;
 using OpaMenu.Domain.DTOs.Product;
 using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
@@ -10,15 +10,12 @@ namespace OpaMenu.Application.Services.Interfaces.Opamenu;
 /// </summary>
 public interface INotificationService
 {
-    /// <summary>
-    /// Notifica administradores sobre novo pedido criado
-    /// </summary>
-    Task NotifyNewOrderAsync(OrderResponseDto order);
+    Task NotifyNewOrderAsync(OpaMenu.Domain.DTOs.OrderResponseDto order, Guid tenantId);
 
     /// <summary>
-    /// Notifica cliente sobre mudanÃ§a de status do pedido
+    /// Notifica cliente sobre mudança de status do pedido
     /// </summary>
-    Task NotifyEOrderStatusChangedAsync(Guid orderId, EOrderStatus oldStatus, EOrderStatus newStatus, string? notes = null);
+    Task NotifyEOrderStatusChangedAsync(Guid orderId, OpaMenu.Infrastructure.Shared.Enums.Opamenu.EOrderStatus oldStatus, OpaMenu.Infrastructure.Shared.Enums.Opamenu.EOrderStatus newStatus, Guid tenantId, string? notes = null);
 
     /// <summary>
     /// Notifica administradores sobre pedido aceito

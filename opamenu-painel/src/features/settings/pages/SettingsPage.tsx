@@ -57,18 +57,6 @@ export default function SettingsPage() {
 
   const canUpdate = can("SETTINGS", "UPDATE");
 
-  // Fetch settings
-  const { data: settings, isLoading } = useQuery({
-    queryKey: ["settings"],
-    queryFn: settingsService.getSettings,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    refetchOnWindowFocus: false,
-  });
-
-  // Local state for complex fields
-  const [openingHours, setOpeningHours] = useState<OpeningHours>({});
-  const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
-
   // Form setup
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -90,6 +78,68 @@ export default function SettingsPage() {
       whatsappNumber: "",
     },
   });
+
+  const watchedName = form.watch("name");
+  const watchedNeighborhood = form.watch("addressNeighborhood");
+
+  const [suggestedSlug, setSuggestedSlug] = useState<string>("");
+  const [isSlugAvailable, setIsSlugAvailable] = useState<boolean | null>(null);
+  const [isCheckingSlug, setIsCheckingSlug] = useState(false);
+
+  const generateSlug = (neighborhood: string, name: string) => {
+    const slugify = (text: string) => 
+      text.toString().toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, '-')
+        .replace(/[^\w\-]+/g, '')
+        .replace(/\-\-+/g, '-')
+        .replace(/^-+/, '')
+        .replace(/-+$/, '');
+    
+    if (!neighborhood || !name) return "";
+    return `${slugify(neighborhood)}/${slugify(name)}`;
+  };
+
+  // Fetch settings
+  const { data: settings, isLoading } = useQuery({
+    queryKey: ["settings"],
+    queryFn: settingsService.getSettings,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false,
+  });
+
+  useEffect(() => {
+    if (watchedNeighborhood && watchedName) {
+      const newSlug = generateSlug(watchedNeighborhood, watchedName);
+      setSuggestedSlug(newSlug);
+    } else {
+      setSuggestedSlug("");
+      setIsSlugAvailable(null);
+    }
+  }, [watchedName, watchedNeighborhood]);
+
+  useEffect(() => {
+    if (suggestedSlug && settings && suggestedSlug !== settings.slug) {
+      setIsCheckingSlug(true);
+      const timeoutId = setTimeout(() => {
+        settingsService.checkSlugAvailability(suggestedSlug)
+          .then(available => setIsSlugAvailable(available))
+          .catch(() => setIsSlugAvailable(null))
+          .finally(() => setIsCheckingSlug(false));
+      }, 500);
+      return () => clearTimeout(timeoutId);
+    } else if (settings && suggestedSlug === settings.slug) {
+      setIsSlugAvailable(true);
+    }
+  }, [suggestedSlug, settings]);
+
+  // Settings fetch foi movido para cima
+
+  // Local state for complex fields
+  const [openingHours, setOpeningHours] = useState<OpeningHours>({});
+  const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
+
+  // Form setup foi movido para o topo do componente
 
   // Reset form when data loads
   useEffect(() => {
@@ -165,6 +215,7 @@ export default function SettingsPage() {
       ...data,
       openingHours: openingHours,
       paymentMethods: paymentInfo as any,
+      slug: suggestedSlug && suggestedSlug !== settings?.slug ? suggestedSlug : undefined,
     };
     mutation.mutate(payload);
   };
@@ -298,9 +349,21 @@ export default function SettingsPage() {
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="name">Nome (Visualização)</Label>
-                          <Input id="name" {...form.register("name")} />
-                          <p className="text-[0.8rem] text-muted-foreground">Nome público da sua loja.</p>
+                          <Label htmlFor="name">Nome Fantasia</Label>
+                          <Input 
+                            id="name" 
+                            {...form.register("name")} 
+                            disabled={!watchedNeighborhood}
+                            placeholder={!watchedNeighborhood ? "Preencha o bairro primeiro" : "Ex: Pizzaria da Liz"}
+                          />
+                          {!watchedNeighborhood && (
+                            <p className="text-[0.8rem] text-orange-500 font-medium flex items-center gap-1">
+                              ⚠️ Primeiro preencha e salve o seu bairro na aba Endereço para liberar o nome da loja.
+                            </p>
+                          )}
+                          {watchedNeighborhood && (
+                            <p className="text-[0.8rem] text-muted-foreground">Nome público da sua loja.</p>
+                          )}
                           {form.formState.errors.name && (
                             <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
                           )}
@@ -327,8 +390,11 @@ export default function SettingsPage() {
                             <Input
                               id="storeUrl"
                               readOnly
-                              value={`${import.meta.env.VITE_MENU_APP_URL || "https://app.opamenu.com.br/"}${settings?.slug || ""}`}
-                              className="bg-muted text-muted-foreground"
+                              value={`${import.meta.env.VITE_MENU_APP_URL || "http://localhost:8080/"}${suggestedSlug || settings?.slug || ""}`}
+                              className={cn(
+                                "bg-muted transition-colors",
+                                isSlugAvailable === false ? "border-red-500 text-red-500 bg-red-50" : "text-muted-foreground"
+                              )}
                             />
                             <Button
                               type="button"
@@ -360,6 +426,12 @@ export default function SettingsPage() {
                               <Facebook className="h-4 w-4" />
                             </Button>
                           </div>
+                          {isSlugAvailable === false && (
+                            <p className="text-sm text-red-500 mt-1">Este link já está em uso. Tente alterar o nome fantasia.</p>
+                          )}
+                          {isCheckingSlug && (
+                            <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin"/> Verificando disponibilidade...</p>
+                          )}
                         </div>
                       </CardContent>
                     </Card>

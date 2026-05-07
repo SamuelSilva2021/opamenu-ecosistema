@@ -23,6 +23,7 @@ namespace OpaMenu.Domain.DTOs.Tenant
         object? PaymentMethods,
         double? Latitude,
         double? Longitude,
-        string? PixKey
+        string? PixKey,
+        [MaxLength(100)] string? Slug
     );
 }

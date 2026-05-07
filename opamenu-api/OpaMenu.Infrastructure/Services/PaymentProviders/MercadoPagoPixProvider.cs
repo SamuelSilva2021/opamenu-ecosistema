@@ -21,7 +21,7 @@ public class MercadoPagoPixProvider(TenantPaymentConfigEntity config, IPixServic
 
     public EPaymentProvider ProviderType => EPaymentProvider.MercadoPago;
 
-    public async Task<PixProviderResultDto> CreatePixAsync(PaymentEntity paymentEntity)
+    public async Task<PixProviderResultDto> CreatePixAsync(PaymentEntity paymentEntity, string? notificationUrl = null)
     {
         try
         {
@@ -53,8 +53,8 @@ public class MercadoPagoPixProvider(TenantPaymentConfigEntity config, IPixServic
                 LastName = payerLastName,
                 Phone = new PhoneRequest
                 {
-                    AreaCode = "11",
-                    Number = "999966550"
+                    AreaCode = "00",
+                    Number = paymentEntity.Order?.CustomerPhone ?? "000000000"
                 },
                 Address = new AddressRequest
                 {
@@ -66,11 +66,9 @@ public class MercadoPagoPixProvider(TenantPaymentConfigEntity config, IPixServic
 
                 ReceiverAddress = new PaymentReceiverAddressRequest
                 {
-                    ZipCode = "12312-123",
-                    StateName = "Rio de Janeiro",
-                    CityName = "Buzios",
-                    StreetName = "Av das Nacoes Unidas",
-                    StreetNumber = 3003
+                    ZipCode = "00000-000",
+                    StreetName = paymentEntity.Order?.DeliveryAddress ?? "N/A",
+                    StreetNumber = 0
                 }
 
             };
@@ -86,12 +84,7 @@ public class MercadoPagoPixProvider(TenantPaymentConfigEntity config, IPixServic
             {
                 Email = payerEmail,
                 FirstName = payerFirstName,
-                LastName = payerLastName,
-                Identification = new IdentificationRequest
-                {
-                    Type = "CPF",
-                    Number = "01234567890",
-                },
+                LastName = payerLastName
             };
 
             var request = new PaymentCreateRequest
@@ -106,7 +99,7 @@ public class MercadoPagoPixProvider(TenantPaymentConfigEntity config, IPixServic
                 ExternalReference = $"{paymentEntity.Id}",
                 Installments = 1, // Pix é sempre à vista (1 parcela)
                 Metadata = null,
-                NotificationUrl = null,
+                NotificationUrl = notificationUrl,
                 Payer = paymentPayerRequest,
                 PaymentMethodId = "pix",
                 StatementDescriptor = null,
@@ -144,20 +137,48 @@ public class MercadoPagoPixProvider(TenantPaymentConfigEntity config, IPixServic
         }
     }
 
-    public Task<WebhookPaymentResultDto> ProcessWebhookAsync(string payload, string signature)
+    public async Task<WebhookPaymentResultDto> ProcessWebhookAsync(string payload, string signature)
     {
-        // TODO: Validar assinatura usando _config.ClientSecret (HMAC SHA256 geralmente)
-        
-        // Simulação de parsing do payload do Mercado Pago
-        // O payload real teria { "data": { "id": "123" }, "action": "payment.created" }
-        
-        return Task.FromResult(new WebhookPaymentResultDto
+        try
         {
-            ProviderPaymentId = "simulated-mp-id", // Deveria extrair do payload
-            NewStatus = EPaymentStatus.Paid,
-            PaidAmount = 0, // Extrair se disponível, ou 0 para pegar do pedido
-            PaidAt = DateTime.UtcNow,
-            RawResponse = payload
-        });
+            // Mercado Pago envia um JSON que pode conter o ID do pagamento em 'data.id' ou ser apenas o ID
+            var json = System.Text.Json.JsonDocument.Parse(payload);
+            string? mpPaymentId = null;
+
+            if (json.RootElement.TryGetProperty("data", out var data) && data.TryGetProperty("id", out var idProp))
+            {
+                mpPaymentId = idProp.GetString() ?? idProp.GetRawText();
+            }
+            else if (json.RootElement.TryGetProperty("id", out var idDirect))
+            {
+                mpPaymentId = idDirect.GetString() ?? idDirect.GetRawText();
+            }
+
+            if (string.IsNullOrEmpty(mpPaymentId))
+                return null!;
+
+            // Para produção, deveríamos consultar o status atual na API do Mercado Pago usando o mpPaymentId
+            // Por enquanto, assumimos que se o webhook chegou e a action é 'payment.updated' ou similar,
+            // vamos considerar como processável.
+            
+            var action = json.RootElement.TryGetProperty("action", out var actionProp) ? actionProp.GetString() : "";
+            
+            // Simplificação para o MVP: se recebemos algo do MP sobre esse ID, consultamos o status (opcional aqui, mas recomendado)
+            // Para este fluxo, vamos retornar o ID para que o PaymentService localize o registro.
+            
+            return new WebhookPaymentResultDto
+            {
+                ProviderPaymentId = mpPaymentId,
+                NewStatus = EPaymentStatus.Paid, // O PaymentService vai validar se realmente mudou
+                PaidAmount = 0,
+                PaidAt = DateTime.UtcNow,
+                RawResponse = payload
+            };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao processar webhook MP: {ex.Message}");
+            return null!;
+        }
     }
 }

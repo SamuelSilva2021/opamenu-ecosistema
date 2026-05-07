@@ -16,8 +16,8 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/:slug" element={<Index />} />
-          <Route path="/:slug/loyalty" element={<LoyaltyPage />} />
+          <Route path="/:neighborhood/:slug" element={<Index />} />
+          <Route path="/:neighborhood/:slug/loyalty" element={<LoyaltyPage />} />
           <Route path="/" element={<NotFound />} /> {/* Ou uma Landing Page */}
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

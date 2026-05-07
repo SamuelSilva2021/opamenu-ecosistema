@@ -62,6 +62,15 @@ public sealed class TenantAdminService(
                 return (StaticResponseBuilder<RegisterTenantResponseDto>.BuildError("Email já cadastrado."), 400);
             }
 
+            if (!string.IsNullOrWhiteSpace(request.Document))
+            {
+                var documentExists = await _tenantRepository.DocumentExistsAsync(request.Document);
+                if (documentExists)
+                {
+                    return (StaticResponseBuilder<RegisterTenantResponseDto>.BuildError("Documento (CNPJ/CPF) já cadastrado em outra loja."), 400);
+                }
+            }
+
             var slug = await GenerateUniqueTenantSlugAsync(request.CompanyName);
             var now = DateTime.UtcNow;
 

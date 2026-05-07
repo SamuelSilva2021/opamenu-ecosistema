@@ -38,5 +38,18 @@ namespace OpaMenu.Web.UserEntry
             var response = await tenantBusinessService.UpdateTenantBusinessInfo(dto);
             return BuildResponse(response);
         }
+
+        /// <summary>
+        /// Verifica se um slug (link do cardápio) está disponível para uso
+        /// </summary>
+        /// <param name="slug"></param>
+        /// <returns></returns>
+        [HttpGet("check-slug")]
+        [MapPermission(MODULE_SETTINGS, OPERATION_SELECT)] // Or anonymous, but here we require settings view perm
+        public async Task<ActionResult> CheckSlugAvailability([FromQuery] string slug)
+        {
+            var response = await tenantBusinessService.CheckSlugAvailability(slug);
+            return BuildResponse(response);
+        }
     }
 }

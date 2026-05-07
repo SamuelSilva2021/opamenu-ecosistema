@@ -15,7 +15,7 @@ public class GerencianetPixProvider(TenantPaymentConfigEntity config, IPixServic
 
     public EPaymentProvider ProviderType => EPaymentProvider.Gerencianet;
 
-    public async Task<PixProviderResultDto> CreatePixAsync(PaymentEntity payment)
+    public async Task<PixProviderResultDto> CreatePixAsync(PaymentEntity payment, string? notificationUrl = null)
     {
         // Geração de PIX Estático (Copia e Cola) usando a chave configurada
         // Em produção, integraria com SDK da Gerencianet para PIX Dinâmico

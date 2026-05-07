@@ -5,18 +5,17 @@ using OpaMenu.Commons.Api.DTOs;
 using OpaMenu.Domain.DTOs.Payments;
 using OpaMenu.Domain.Interfaces;
 using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
+using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
 
 namespace OpaMenu.Application.Services.Opamenu;
 
-/// <summary>
-/// Serviço para gerenciamento de pagamentos
-/// </summary>
 public class PaymentService(
     IRepository<PaymentEntity> paymentRepository,
-    ILogger<PaymentService> logger, 
+    ILogger<PaymentService> logger,
     ICurrentUserService currentUserService,
     IPixProviderResolver providerResolver,
-    IRepository<OrderEntity> orderRepository
+    IRepository<OrderEntity> orderRepository,
+    INotificationService notificationService
     ) : IPaymentService
 {
     private readonly IRepository<PaymentEntity> _paymentRepository = paymentRepository;
@@ -24,6 +23,7 @@ public class PaymentService(
     private readonly ICurrentUserService _currentUserService = currentUserService;
     private readonly IPixProviderResolver _providerResolver = providerResolver;
     private readonly IRepository<OrderEntity> _orderRepository = orderRepository;
+    private readonly INotificationService _notificationService = notificationService;
 
     public async Task<IEnumerable<PaymentResponseDto>> GetPaymentsAsync()
     {
@@ -61,7 +61,7 @@ public class PaymentService(
         };
     }
 
-    public async Task<ResponseDTO<PixResponseDto>> GeneratePixAsync(PixRequestDto request, Guid? tenantId = null)
+    public async Task<ResponseDTO<PixResponseDto>> GeneratePixAsync(PixRequestDto request, Guid? tenantId = null, string? notificationUrl = null)
     {
         try
         {
@@ -91,7 +91,7 @@ public class PaymentService(
             await _paymentRepository.AddAsync(payment);
 
             // Chama o provedor
-            var pixResult = await provider.CreatePixAsync(payment);
+            var pixResult = await provider.CreatePixAsync(payment, notificationUrl);
 
             // Anexa os dados do PIX na entidade
             payment.AttachPixData(
@@ -149,6 +149,25 @@ public class PaymentService(
 
             payment.ProcessWebhookResult(result.NewStatus, result.PaidAt, result.RawResponse);
             await _paymentRepository.UpdateAsync(payment);
+
+            if (result.NewStatus == EPaymentStatus.Paid)
+            {
+                // Notificar sobre pagamento confirmado
+                await _notificationService.SendToGroupAsync($"Tenant_{tenantId}_Admins", "PaymentConfirmed", new
+                {
+                    OrderId = payment.OrderId,
+                    PaymentId = payment.Id,
+                    Amount = payment.Amount,
+                    Timestamp = DateTime.UtcNow
+                });
+
+                await _notificationService.SendToGroupAsync($"Order_{payment.OrderId}", "PaymentConfirmed", new
+                {
+                    OrderId = payment.OrderId,
+                    Status = "Paid",
+                    Timestamp = DateTime.UtcNow
+                });
+            }
             
             return StaticResponseBuilder<bool>.BuildOk(true);
         }

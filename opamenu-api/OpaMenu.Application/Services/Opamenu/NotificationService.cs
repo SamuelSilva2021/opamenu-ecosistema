@@ -28,7 +28,7 @@ public class NotificationService : INotificationService
     /// <summary>
     /// Notifica administradores sobre novo pedido criado
     /// </summary>
-    public async Task NotifyNewOrderAsync(OrderResponseDto order)
+    public async Task NotifyNewOrderAsync(OpaMenu.Domain.DTOs.OrderResponseDto order, Guid tenantId)
     {
         try
         {
@@ -47,8 +47,8 @@ public class NotificationService : INotificationService
                 Timestamp = DateTime.UtcNow
             };
 
-            var groupClients = _hubContext.Clients.Group("Administrators");
-            _logger.LogInformation("Enviando para grupo 'Administrators' - Método: NewOrderReceived");
+            var groupClients = _hubContext.Clients.Group($"Tenant_{tenantId}_Admins");
+            _logger.LogInformation("Enviando para grupo 'Tenant_{TenantId}_Admins' - Método: NewOrderReceived", tenantId);
             
             await groupClients.SendAsync("NewOrderReceived", notification);
 
@@ -62,9 +62,9 @@ public class NotificationService : INotificationService
     }
 
     /// <summary>
-    /// Notifica cliente sobre mudanÃ§a de status do pedido
+    /// Notifica cliente sobre mudança de status do pedido
     /// </summary>
-    public async Task NotifyEOrderStatusChangedAsync(Guid orderId, EOrderStatus oldStatus, EOrderStatus newStatus, string? notes = null)
+    public async Task NotifyEOrderStatusChangedAsync(Guid orderId, OpaMenu.Infrastructure.Shared.Enums.Opamenu.EOrderStatus oldStatus, OpaMenu.Infrastructure.Shared.Enums.Opamenu.EOrderStatus newStatus, Guid tenantId, string? notes = null)
     {
         try
         {
@@ -80,10 +80,10 @@ public class NotificationService : INotificationService
             };
 
             await _hubContext.Clients.Group($"Order_{orderId}")
-                .SendAsync("EOrderStatusUpdated", notification);
+                .SendAsync("OrderStatusChanged", notification);
 
-            await _hubContext.Clients.Group("Administrators")
-                .SendAsync("EOrderStatusChanged", notification);
+            await _hubContext.Clients.Group($"Tenant_{tenantId}_Admins")
+                .SendAsync("OrderStatusChanged", notification);
 
             // TODO: In a real scenario, we would fetch the order to get the CustomerPhone and TenantId
             // For now, this is a placeholder for the WhatsApp integration

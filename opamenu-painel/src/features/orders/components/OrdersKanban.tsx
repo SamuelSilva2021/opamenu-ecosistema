@@ -22,9 +22,9 @@ interface OrdersKanbanProps {
 
 const COLUMNS = [
   { id: OrderStatus.Pending, title: "Recebido", color: "bg-blue-500" },
-  { id: OrderStatus.Confirmed, title: "Confirmado", color: "bg-indigo-500" },
   { id: OrderStatus.Preparing, title: "Em Preparo", color: "bg-orange-500" },
   { id: OrderStatus.Ready, title: "Pronto", color: "bg-green-500" },
+  { id: OrderStatus.OutForDelivery, title: "Saiu para Entrega", color: "bg-purple-500" },
   { id: OrderStatus.Delivered, title: "Entregue/Retirado", color: "bg-slate-500" },
 ];
 

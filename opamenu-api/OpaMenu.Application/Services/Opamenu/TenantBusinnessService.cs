@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using OpaMenu.Domain.DTOs.Tenant;
 using OpaMenu.Domain.Interfaces;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
@@ -43,6 +43,16 @@ public class TenantBusinnessService(
 
             var tenant = await tenantRepository.GetByIdAsync(tenantId.Value);
             if (tenant == null) return StaticResponseBuilder<TenantBusinessResponseDto>.BuildNotFound(null);
+
+            if (!string.IsNullOrEmpty(dto.Slug) && tenant.Slug != dto.Slug)
+            {
+                var slugExists = await tenantRepository.SlugExistsAsync(dto.Slug, tenant.Id);
+                if (slugExists)
+                {
+                    return StaticResponseBuilder<TenantBusinessResponseDto>.BuildError("Este link já está em uso por outro estabelecimento.");
+                }
+                tenant.Slug = dto.Slug;
+            }
 
             if (dto.Name != null) tenant.Name = dto.Name;
             if (dto.Phone != null) tenant.Phone = dto.Phone;
@@ -144,6 +154,22 @@ public class TenantBusinnessService(
         if (obj is JsonElement jsonElement) return jsonElement.ToString();
         if (obj is string str) return str;
         return JsonSerializer.Serialize(obj);
+    }
+
+    public async Task<ResponseDTO<bool>> CheckSlugAvailability(string slug)
+    {
+        try
+        {
+            var tenantId = currentUserService.GetTenantGuid();
+            if (tenantId == null) return StaticResponseBuilder<bool>.BuildError("Tenant não identificado.");
+
+            var slugExists = await tenantRepository.SlugExistsAsync(slug, tenantId.Value);
+            return StaticResponseBuilder<bool>.BuildOk(!slugExists); // true if available (doesn't exist for other tenants)
+        }
+        catch (Exception ex)
+        {
+            return StaticResponseBuilder<bool>.BuildErrorResponse(ex);
+        }
     }
 }
 

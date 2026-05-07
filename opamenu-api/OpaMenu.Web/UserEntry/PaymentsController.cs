@@ -5,6 +5,7 @@ using OpaMenu.Domain.DTOs.Payments;
 using OpaMenu.Infrastructure.Anotations;
 using OpaMenu.Infrastructure.Filters;
 using OpaMenu.Application.Services.Interfaces.Opamenu;
+using OpaMenu.Domain.Interfaces;
 
 namespace OpaMenu.Web.UserEntry;
 
@@ -15,10 +16,11 @@ namespace OpaMenu.Web.UserEntry;
 [Route("api/[controller]")]
 [Authorize]
 [ServiceFilter(typeof(PermissionAuthorizationFilter))]
-public class PaymentsController(IPaymentService paymentService, ILogger<PaymentsController> logger) : BaseController
+public class PaymentsController(IPaymentService paymentService, ILogger<PaymentsController> logger, ICurrentUserService currentUserService) : BaseController
 {
     private readonly IPaymentService _paymentService = paymentService;
     private readonly ILogger<PaymentsController> _logger = logger;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
 
     /// <summary>
     /// Obtém lista de pagamentos
@@ -56,7 +58,20 @@ public class PaymentsController(IPaymentService paymentService, ILogger<Payments
                 return BadRequest(ApiResponse<PixResponseDto>.ErrorResponse("Dados inválidos"));
             }
 
-            var result = await _paymentService.GeneratePixAsync(request);
+            // Construir a URL de Webhook dinamicamente
+            var tenantId = _currentUserService.GetTenantGuid();
+            
+            if (!tenantId.HasValue)
+            {
+                // Se não estiver no contexto (ex: via cardápio público), podemos tentar inferir ou exigir no request
+                // Por enquanto assumimos que o controller está em contexto autenticado ou tenant identificado
+                return BadRequest(ApiResponse<PixResponseDto>.ErrorResponse("Tenant não identificado"));
+            }
+            
+            var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+            var notificationUrl = $"{baseUrl}/api/Payments/webhook/{tenantId}/mercadopago";
+            
+            var result = await _paymentService.GeneratePixAsync(request, tenantId, notificationUrl);
             if (!result.Succeeded)
             {
                 var message = result.Errors?.FirstOrDefault()?.Message ?? result.Exception?.Message ?? "Erro ao gerar PIX";
