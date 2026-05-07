@@ -37,8 +37,9 @@ export default function PlansPage() {
             });
             // Atualizar status no store (remove requiresPayment)
             const currentToken = useAuthStore.getState().accessToken;
-            if (currentToken) {
-                setAccessToken(currentToken, false);
+            const currentRefreshToken = useAuthStore.getState().refreshToken;
+            if (currentToken && currentRefreshToken) {
+                setAccessToken(currentToken, currentRefreshToken, false);
                 try {
                   const permissions = await authService.getPermissions();
                   if (permissions.succeeded) {
