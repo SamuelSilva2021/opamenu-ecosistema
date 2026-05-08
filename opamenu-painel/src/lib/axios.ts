@@ -1,5 +1,6 @@
 import axios, { type AxiosInstance } from 'axios';
 import { useAuthStore } from '@/store/auth.store';
+import { queryClient } from './query-client';
 
 // Service: Business Core
 export const api = axios.create({
@@ -56,7 +57,7 @@ const attachInterceptors = (axiosInstance: AxiosInstance) => {
             return axios(originalRequest);
           }
         } catch (refreshError) {
-          // If refresh fails, logout
+          queryClient.clear();
           useAuthStore.getState().logout();
           return Promise.reject(refreshError);
         }

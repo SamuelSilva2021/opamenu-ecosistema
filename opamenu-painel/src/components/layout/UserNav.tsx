@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/store/auth.store";
+import { queryClient } from "@/lib/query-client";
 import { useNavigate } from "react-router-dom";
 
 export function UserNav() {
@@ -22,6 +23,7 @@ export function UserNav() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    queryClient.clear();
     logout();
     navigate("/login");
   };
