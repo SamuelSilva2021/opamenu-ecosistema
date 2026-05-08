@@ -75,7 +75,7 @@ export function OpaMenuLogo({ className = "", isDark = false, size = "default" }
             {/* Text Logo */}
             <div className="flex flex-col leading-none">
                 <span className={`${getTextSize()} font-bold text-[#F37021]`}>
-                    opa<span className={isDark ? "text-white" : "text-gray-800"}>menu</span>
+                    Opa<span className={isDark ? "text-white" : "text-gray-800"}>menu</span>
                 </span>
                 {!isSmall && (
                     <span className={`${isLarge ? "text-xl mt-2" : "text-[10px] mt-1"} text-gray-500 font-medium tracking-wide`}>CARDÁPIO DIGITAL</span>
