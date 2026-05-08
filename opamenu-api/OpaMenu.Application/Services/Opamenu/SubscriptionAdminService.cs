@@ -57,6 +57,14 @@ public sealed class SubscriptionAdminService(
             var now = DateTime.UtcNow;
             var subscription = await _subscriptionRepository.GetByTenantIdTrackedAsync(tenantId.Value);
 
+            if (plan.IsTrial && subscription != null && subscription.TrialEndsAt.HasValue)
+            {
+                if (subscription.TrialEndsAt.Value <= DateTime.UtcNow)
+                {
+                    return (StaticResponseBuilder<string>.BuildError("O período de teste (trial) já foi utilizado por esta conta e não pode ser renovado."), 400);
+                }
+            }
+
             if (subscription == null)
             {
                 var product = await _productRepository.GetFirstAsync();

@@ -9,7 +9,7 @@ import { OpaMenuLogo } from "@/components/common/OpaMenuLogo";
 import { signalRService } from "@/services/signalr.service";
 
 export default function DashboardLayout() {
-  const { isAuthenticated, accessToken } = useAuthStore();
+  const { isAuthenticated, accessToken, requiresPayment } = useAuthStore();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const signalRInitialized = useRef(false);
 
@@ -25,6 +25,10 @@ export default function DashboardLayout() {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (requiresPayment) {
+    return <Navigate to="/plans" replace />;
   }
 
   return (

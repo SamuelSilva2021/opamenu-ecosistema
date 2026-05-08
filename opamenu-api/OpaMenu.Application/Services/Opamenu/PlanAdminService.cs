@@ -12,11 +12,13 @@ namespace OpaMenu.Application.Services.Opamenu;
 public sealed class PlanAdminService(
     IPlanRepository planRepository,
     IPlanModuleRepository planModuleRepository,
-    ISubscriptionRepository subscriptionRepository) : IPlanAdminService
+    ISubscriptionRepository subscriptionRepository,
+    ICurrentUserService currentUserService) : IPlanAdminService
 {
     private readonly IPlanRepository _planRepository = planRepository;
     private readonly IPlanModuleRepository _planModuleRepository = planModuleRepository;
     private readonly ISubscriptionRepository _subscriptionRepository = subscriptionRepository;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
 
     public async Task<PlanListResponseDto> GetAllAsync(int page, int pageSize, string? name = null, string? status = null)
     {
@@ -129,7 +131,19 @@ public sealed class PlanAdminService(
 
     public async Task<IEnumerable<object>> GetActiveAsync()
     {
-        var plans = await _planRepository.GetAllActiveAsync();
+        var plans = (await _planRepository.GetAllActiveAsync()).ToList();
+
+        var tenantId = _currentUserService.GetTenantGuid();
+        if (tenantId.HasValue)
+        {
+            var subscription = await _subscriptionRepository.GetByTenantIdTrackedAsync(tenantId.Value);
+            if (subscription != null && subscription.TrialEndsAt.HasValue)
+            {
+                // Se o tenant já teve um TrialEndsAt (ou seja, já usou o trial), ocultar os planos Trial
+                plans = plans.Where(p => !p.IsTrial).ToList();
+            }
+        }
+
         return plans.Select(p => new
         {
             Id = p.Id,
@@ -138,7 +152,8 @@ public sealed class PlanAdminService(
             Price = p.Price,
             BillingCycle = p.BillingCycle.ToString(),
             Features = p.Features,
-            IsActive = true
+            IsActive = true,
+            IsTrial = p.IsTrial
         });
     }
 

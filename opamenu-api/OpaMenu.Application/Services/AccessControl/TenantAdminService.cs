@@ -25,7 +25,8 @@ public sealed class TenantAdminService(
     IRolePermissionRepository rolePermissionRepository,
     IAccessControlModuleRepository accessControlModuleRepository,
     IModuleRepository moduleRepository,
-    IAuthService authService) : ITenantAdminService
+    IAuthService authService,
+    OpaMenu.Infrastructure.Shared.Interfaces.ITenantContext tenantContext) : ITenantAdminService
 {
     private readonly ITenantRepository _tenantRepository = tenantRepository;
     private readonly ITenantModuleRepository _tenantModuleRepository = tenantModuleRepository;
@@ -35,6 +36,7 @@ public sealed class TenantAdminService(
     private readonly IAccessControlModuleRepository _accessControlModuleRepository = accessControlModuleRepository;
     private readonly IModuleRepository _moduleRepository = moduleRepository;
     private readonly IAuthService _authService = authService;
+    private readonly OpaMenu.Infrastructure.Shared.Interfaces.ITenantContext _tenantContext = tenantContext;
 
     public async Task<(ResponseDTO<RegisterTenantResponseDto> Body, int StatusCode)> RegisterAsync(RegisterTenantRequestDto request)
     {
@@ -87,6 +89,11 @@ public sealed class TenantAdminService(
                 CreatedAt = now,
                 UpdatedAt = null
             };
+
+            // Hack de Segurança: Sobrescrevemos o contexto do tenant com o recém-gerado ID.
+            // Isso evita a "System.InvalidOperationException: Tentativa de criar entidade com TenantId diferente do contexto atual"
+            // causada por tokens velhos residuais enviados indevidamente pelo Frontend na rota de [AllowAnonymous] Register.
+            _tenantContext.SetTenant(tenant.Id, tenant.Slug, tenant.Domain);
 
             await _tenantRepository.AddAsync(tenant);
             await _tenantRepository.SaveChangesAsync();

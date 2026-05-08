@@ -95,7 +95,8 @@ public sealed class AuthService(
                 SubscriptionStatus = subscription?.Status.ToString(),
                 RequiresPayment = tenant?.Status == ETenantStatus.Pendente ||
                                   tenant?.Status == ETenantStatus.Suspenso ||
-                                  (subscription != null && subscription.Status != ESubscriptionStatus.Ativo && subscription.Status != ESubscriptionStatus.Trial),
+                                  subscription == null ||
+                                  (subscription.Status != ESubscriptionStatus.Ativo && subscription.Status != ESubscriptionStatus.Trial),
                 RedirectToPlanSelection = tenant != null && (subscription == null || (subscription.Status != ESubscriptionStatus.Ativo && subscription.Status != ESubscriptionStatus.Trial))
             };
 
@@ -167,7 +168,8 @@ public sealed class AuthService(
                 SubscriptionStatus = subscription?.Status.ToString(),
                 RequiresPayment = tenant?.Status == ETenantStatus.Pendente ||
                                   tenant?.Status == ETenantStatus.Suspenso ||
-                                  (subscription != null && subscription.Status != ESubscriptionStatus.Ativo && subscription.Status != ESubscriptionStatus.Trial),
+                                  subscription == null ||
+                                  (subscription.Status != ESubscriptionStatus.Ativo && subscription.Status != ESubscriptionStatus.Trial),
                 RedirectToPlanSelection = tenant != null && (subscription == null || (subscription.Status != ESubscriptionStatus.Ativo && subscription.Status != ESubscriptionStatus.Trial))
             };
 
@@ -313,7 +315,10 @@ public sealed class AuthService(
     {
         return await _multiTenantDbContext.Subscriptions
             .AsNoTracking()
-            .Where(s => s.TenantId == tenantId && (s.Status == ESubscriptionStatus.Ativo || s.Status == ESubscriptionStatus.Trial))
+            .Where(s => s.TenantId == tenantId && (
+                s.Status == ESubscriptionStatus.Ativo || 
+                (s.Status == ESubscriptionStatus.Trial && s.TrialEndsAt != null && s.TrialEndsAt > DateTime.UtcNow)
+            ))
             .OrderByDescending(s => s.UpdatedAt)
             .FirstOrDefaultAsync();
     }

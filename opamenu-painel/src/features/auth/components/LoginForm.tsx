@@ -44,7 +44,7 @@ export function LoginForm() {
       }
 
       // 2. Set Token immediately to be available for the next request
-      setAccessToken(loginResponse.data.accessToken, loginResponse.data.refreshToken);
+      setAccessToken(loginResponse.data.accessToken, loginResponse.data.refreshToken, loginResponse.data.requiresPayment);
 
       // 3. Fetch Permissions
       const permissionsResponse = await authService.getPermissions();
@@ -59,7 +59,11 @@ export function LoginForm() {
       setUser(data.permissionsResponse.data);
 
       // 5. Navigate
-      navigate("/dashboard");
+      if (data.loginResponse.data.requiresPayment) {
+        navigate("/plans");
+      } else {
+        navigate("/dashboard");
+      }
     },
     onError: (err) => {
       setAccessToken("", ""); // Clear token if anything fails

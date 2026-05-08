@@ -23,7 +23,7 @@ public sealed class TenantsController(
         var (body, statusCode) = await _tenantAdminService.RegisterAsync(request);
         return statusCode switch
         {
-            200 => Ok(body),
+            200 =>  Ok(body),
             400 => BadRequest(body),
             _ => StatusCode(statusCode, body)
         };
