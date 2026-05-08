@@ -36,7 +36,9 @@ public class TenantRepository(MultiTenantDbContext context) : MultiTenantReposit
         string? filterDomain,
         string? filterEmail,
         string? filterPhone,
-        string? filterStatus)
+        string? filterStatus,
+        string? filterType = null,
+        Guid? filterParentTenantId = null)
     {
         page = page <= 0 ? 1 : page;
         limit = limit <= 0 ? 10 : limit;
@@ -44,34 +46,28 @@ public class TenantRepository(MultiTenantDbContext context) : MultiTenantReposit
         var query = _dbSet.AsNoTracking().AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(filterName))
-        {
             query = query.Where(t => t.Name.Contains(filterName));
-        }
 
         if (!string.IsNullOrWhiteSpace(filterSlug))
-        {
             query = query.Where(t => t.Slug.Contains(filterSlug));
-        }
 
         if (!string.IsNullOrWhiteSpace(filterDomain))
-        {
             query = query.Where(t => t.Domain != null && t.Domain.Contains(filterDomain));
-        }
 
         if (!string.IsNullOrWhiteSpace(filterEmail))
-        {
             query = query.Where(t => t.Email != null && t.Email.Contains(filterEmail));
-        }
 
         if (!string.IsNullOrWhiteSpace(filterPhone))
-        {
             query = query.Where(t => t.Phone != null && t.Phone.Contains(filterPhone));
-        }
 
         if (!string.IsNullOrWhiteSpace(filterStatus))
-        {
             query = query.Where(t => t.Status.ToString() == filterStatus);
-        }
+
+        if (!string.IsNullOrWhiteSpace(filterType))
+            query = query.Where(t => t.Type.ToString() == filterType);
+
+        if (filterParentTenantId.HasValue)
+            query = query.Where(t => t.ParentTenantId == filterParentTenantId.Value);
 
         var total = await query.CountAsync();
         var items = await query

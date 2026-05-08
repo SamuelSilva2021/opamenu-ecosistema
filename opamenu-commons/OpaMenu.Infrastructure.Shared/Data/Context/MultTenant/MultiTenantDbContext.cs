@@ -57,6 +57,8 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context.MultTenant
                 entity.Property(e => e.Slug).HasColumnName("slug").IsRequired();
                 entity.Property(e => e.Domain).HasColumnName("domain");
                 entity.Property(e => e.Status).HasColumnName("status").HasConversion<string>().HasColumnType("varchar(20)");
+                entity.Property(e => e.Type).HasColumnName("type").HasConversion<string>().HasColumnType("varchar(20)").HasDefaultValue(ETenantType.Cliente);
+                entity.Property(e => e.ParentTenantId).HasColumnName("parent_tenant_id");
 
                 entity.Property(e => e.Settings)
                     .HasColumnName("settings")
@@ -113,6 +115,11 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context.MultTenant
                     .HasForeignKey(d => d.ActiveSubscriptionId)
                     .OnDelete(DeleteBehavior.Restrict);
 
+                entity.HasOne(d => d.ParentTenant)
+                    .WithMany(t => t.SubTenants)
+                    .HasForeignKey(d => d.ParentTenantId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
                 entity.HasMany(t => t.Subscriptions)
                     .WithOne(s => s.Tenant)
                     .HasForeignKey(s => s.TenantId)
@@ -166,6 +173,7 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context.MultTenant
                 entity.Property(e => e.MaxStorageGb).HasColumnName("max_storage_gb");
                 entity.Property(e => e.Features).HasColumnName("features").HasColumnType("jsonb");
                 entity.Property(e => e.Status).HasColumnName("status").HasConversion<string>().HasColumnType("varchar(20)");
+                entity.Property(e => e.Category).HasColumnName("category").HasConversion<string>().HasColumnType("varchar(20)").HasDefaultValue(EPlanCategory.Customer);
                 entity.Property(e => e.IsTrial).HasColumnName("is_trial");
                 entity.Property(e => e.TrialPeriodDays).HasColumnName("trial_period_days");
                 entity.Property(e => e.SortOrder).HasColumnName("sort_order");

@@ -12,6 +12,7 @@ public sealed class PlanDto
     public int MaxStorageGb { get; set; }
     public string? Features { get; set; }
     public string Status { get; set; } = string.Empty;
+    public string Category { get; set; } = "Customer";
     public int SortOrder { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }

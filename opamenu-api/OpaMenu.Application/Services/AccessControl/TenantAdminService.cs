@@ -86,6 +86,8 @@ public sealed class TenantAdminService(
                 Status = ETenantStatus.Pendente,
                 Email = email,
                 Phone = null,
+                ParentTenantId = request.ParentTenantId,
+                Type = request.ParentTenantId.HasValue ? ETenantType.Cliente : ETenantType.Cliente, // Padrão Cliente, pode ser mudado depois
                 CreatedAt = now,
                 UpdatedAt = null
             };
@@ -166,12 +168,14 @@ public sealed class TenantAdminService(
         string? filterDomain,
         string? filterEmail,
         string? filterPhone,
-        string? filterStatus)
+        string? filterStatus,
+        string? filterType = null,
+        Guid? filterParentTenantId = null)
     {
         page = page <= 0 ? 1 : page;
         limit = limit <= 0 ? 10 : limit;
 
-        var (items, total) = await _tenantRepository.GetPagedAsync(page, limit, filterName, filterSlug, filterDomain, filterEmail, filterPhone, filterStatus);
+        var (items, total) = await _tenantRepository.GetPagedAsync(page, limit, filterName, filterSlug, filterDomain, filterEmail, filterPhone, filterStatus, filterType, filterParentTenantId);
         var totalPages = (int)Math.Ceiling(total / (double)limit);
 
         return new PagedResultDto<TenantSummaryDto>
@@ -185,6 +189,8 @@ public sealed class TenantAdminService(
                 Status = t.Status.ToString(),
                 Email = t.Email,
                 Phone = t.Phone,
+                Type = t.Type.ToString(),
+                ParentTenantId = t.ParentTenantId,
                 CreatedAt = t.CreatedAt,
                 UpdatedAt = t.UpdatedAt,
                 ActiveSubscriptionId = t.ActiveSubscriptionId
@@ -417,6 +423,8 @@ public sealed class TenantAdminService(
             LegalRepresentativeEmail = tenant.LegalRepresentativeEmail,
             LegalRepresentativePhone = tenant.LegalRepresentativePhone,
             ActiveSubscriptionId = tenant.ActiveSubscriptionId,
+            Type = tenant.Type.ToString(),
+            ParentTenantId = tenant.ParentTenantId,
             CreatedAt = tenant.CreatedAt,
             UpdatedAt = tenant.UpdatedAt,
             Settings = tenant.Settings

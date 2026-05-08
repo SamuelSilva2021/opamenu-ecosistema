@@ -18,7 +18,9 @@ public interface ITenantRepository
         string? filterDomain,
         string? filterEmail,
         string? filterPhone,
-        string? filterStatus);
+        string? filterStatus,
+        string? filterType = null,
+        Guid? filterParentTenantId = null);
 
     Task<TenantEntity?> GetByIdTrackedAsync(Guid id);
     Task<bool> ExistsAsync(Guid id);

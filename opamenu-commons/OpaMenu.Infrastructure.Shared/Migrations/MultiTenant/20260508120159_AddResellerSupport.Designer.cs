@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using OpaMenu.Infrastructure.Shared.Data.Context.MultTenant;
@@ -11,9 +12,11 @@ using OpaMenu.Infrastructure.Shared.Data.Context.MultTenant;
 namespace OpaMenu.Infrastructure.Shared.Migrations.MultiTenant
 {
     [DbContext(typeof(MultiTenantDbContext))]
-    partial class MultiTenantDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260508120159_AddResellerSupport")]
+    partial class AddResellerSupport
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -1,3 +1,5 @@
+using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
+
 namespace OpaMenu.Domain.DTOs.MultiTenant;
 
 public sealed class TenantDto
@@ -35,6 +37,8 @@ public sealed class TenantDto
     public string? LegalRepresentativeEmail { get; set; }
     public string? LegalRepresentativePhone { get; set; }
     public Guid? ActiveSubscriptionId { get; set; }
+    public string? Type { get; set; }
+    public Guid? ParentTenantId { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public Dictionary<string, object> Settings { get; set; } = new();

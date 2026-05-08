@@ -16,7 +16,9 @@ public interface ITenantAdminService
         string? filterDomain,
         string? filterEmail,
         string? filterPhone,
-        string? filterStatus);
+        string? filterStatus,
+        string? filterType = null,
+        Guid? filterParentTenantId = null);
 
     Task<TenantDto?> GetByIdAsync(Guid id);
     Task<(TenantDto? Tenant, bool NotFound, bool BadRequest)> UpdateAsync(Guid id, UpdateTenantRequestDto request);

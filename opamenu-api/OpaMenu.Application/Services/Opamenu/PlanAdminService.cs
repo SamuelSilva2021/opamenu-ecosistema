@@ -59,6 +59,7 @@ public sealed class PlanAdminService(
                 MaxStorageGb = p.MaxStorageGb,
                 Features = p.Features,
                 Status = p.Status.ToString(),
+                Category = p.Category.ToString(),
                 SortOrder = p.SortOrder,
                 CreatedAt = p.CreatedAt,
                 UpdatedAt = p.UpdatedAt,
@@ -116,6 +117,7 @@ public sealed class PlanAdminService(
             MaxStorageGb = plan.MaxStorageGb,
             Features = plan.Features,
             Status = plan.Status.ToString(),
+            Category = plan.Category.ToString(),
             SortOrder = plan.SortOrder,
             CreatedAt = plan.CreatedAt,
             UpdatedAt = plan.UpdatedAt,
@@ -153,7 +155,8 @@ public sealed class PlanAdminService(
             BillingCycle = p.BillingCycle.ToString(),
             Features = p.Features,
             IsActive = true,
-            IsTrial = p.IsTrial
+            IsTrial = p.IsTrial,
+            Category = p.Category.ToString()
         });
     }
 
@@ -164,6 +167,9 @@ public sealed class PlanAdminService(
 
         if (!Enum.TryParse<EPlanStatus>(request.Status, ignoreCase: true, out var status))
             throw new ArgumentException("Status inválido");
+
+        if (!Enum.TryParse<EPlanCategory>(request.Category, ignoreCase: true, out var category))
+            category = EPlanCategory.Customer;
 
         if (await _planRepository.SlugExistsAsync(request.Slug))
             throw new ArgumentException("Slug já existe");
@@ -180,6 +186,7 @@ public sealed class PlanAdminService(
             MaxStorageGb = request.MaxStorageGb,
             Features = request.Features,
             Status = status,
+            Category = category,
             IsTrial = request.IsTrial ?? false,
             TrialPeriodDays = request.TrialPeriodDays ?? 0,
             SortOrder = request.SortOrder,
@@ -231,6 +238,11 @@ public sealed class PlanAdminService(
         {
             if (Enum.TryParse<EPlanStatus>(request.Status, ignoreCase: true, out var st))
                 entity.Status = st;
+        }
+        if (request.Category != null)
+        {
+            if (Enum.TryParse<EPlanCategory>(request.Category, ignoreCase: true, out var cat))
+                entity.Category = cat;
         }
         if (request.SortOrder.HasValue) entity.SortOrder = request.SortOrder.Value;
         if (request.IsTrial.HasValue) entity.IsTrial = request.IsTrial.Value;
@@ -318,6 +330,7 @@ public sealed class PlanAdminService(
             MaxStorageGb = entity.MaxStorageGb,
             Features = entity.Features,
             Status = entity.Status.ToString(),
+            Category = entity.Category.ToString(),
             SortOrder = entity.SortOrder,
             CreatedAt = entity.CreatedAt,
             UpdatedAt = entity.UpdatedAt,

@@ -49,7 +49,7 @@ function App() {
           {/* Adicionar outras rotas filhas aqui, ex: /dashboard/menu, /dashboard/orders */}
         </Route>
 
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>
       <Toaster />
     </>

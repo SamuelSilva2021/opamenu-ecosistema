@@ -84,6 +84,11 @@ namespace OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Plan
         public int SortOrder { get; set; } = 0;
 
         /// <summary>
+        /// Categoria do plano (Cliente Final ou Revenda)
+        /// </summary>
+        public EPlanCategory Category { get; set; } = EPlanCategory.Customer;
+
+        /// <summary>
         /// Data de criação
         /// </summary>
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

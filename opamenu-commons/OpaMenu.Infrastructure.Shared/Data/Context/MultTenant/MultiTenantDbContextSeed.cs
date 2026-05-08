@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Plan;
 using System;
 using System.Collections.Generic;
@@ -24,6 +24,7 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context.MultTenant
                     Description = "Plano gratuito para pequenos negócios",
                     Price = 0m,
                     MaxUsers = 1,
+                    Category = EPlanCategory.Customer,
                     CreatedAt = _seedDate,
                     UpdatedAt = null,
                 },
@@ -35,6 +36,7 @@ namespace OpaMenu.Infrastructure.Shared.Data.Context.MultTenant
                     Description = "Plano profissional para negócios em crescimento",
                     Price = 99.90m,
                     MaxUsers = 10,
+                    Category = EPlanCategory.Customer,
                     CreatedAt = _seedDate,
                     UpdatedAt = null,
                 }

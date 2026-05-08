@@ -11,6 +11,7 @@ public sealed class CreatePlanRequestDto
     public int MaxStorageGb { get; set; }
     public string? Features { get; set; }
     public string Status { get; set; } = string.Empty;
+    public string Category { get; set; } = "Customer";
     public int SortOrder { get; set; }
     public bool? IsTrial { get; set; }
     public int? TrialPeriodDays { get; set; }

@@ -1,4 +1,4 @@
-﻿using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
+using OpaMenu.Infrastructure.Shared.Entities.AccessControl;
 using OpaMenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts;
 using OpaMenu.Infrastructure.Shared.Entities;
 using OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Subscription;
@@ -216,6 +216,16 @@ namespace OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant
         public string? LegalRepresentativePhone { get; set; }
 
         /// <summary>
+        /// Tipo do tenant (Restaurante ou Revenda)
+        /// </summary>
+        public ETenantType Type { get; set; } = ETenantType.Cliente;
+
+        /// <summary>
+        /// ID do tenant pai (caso seja um sub-tenant de uma revenda)
+        /// </summary>
+        public Guid? ParentTenantId { get; set; }
+
+        /// <summary>
         /// ID da assinatura ativa
         /// </summary>
         public Guid? ActiveSubscriptionId { get; set; }
@@ -239,6 +249,16 @@ namespace OpaMenu.Infrastructure.Shared.Entities.MultiTenant.Tenant
         public virtual ICollection<SubscriptionEntity> Subscriptions { get; set; } = [];
         public virtual TenantBusinessEntity? BusinessInfo { get; set; }
         public virtual ICollection<BankDetailsEntity>? BankDetails { get; set; } = [];
+        
+        /// <summary>
+        /// Tenant pai (Revenda)
+        /// </summary>
+        public virtual TenantEntity? ParentTenant { get; set; }
+
+        /// <summary>
+        /// Sub-tenants vinculados a este (caso seja uma revenda)
+        /// </summary>
+        public virtual ICollection<TenantEntity> SubTenants { get; set; } = [];
 
     }
 }
