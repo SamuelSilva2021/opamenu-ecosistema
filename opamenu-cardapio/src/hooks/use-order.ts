@@ -17,7 +17,8 @@ export interface OrderHookReturn {
 }
 
 export const useOrder = (): OrderHookReturn => {
-  const { slug } = useParams<{ slug: string }>();
+  const { neighborhood, slug: urlSlug } = useParams<{ neighborhood: string; slug: string }>();
+  const slug = (neighborhood && urlSlug) ? `${neighborhood}/${urlSlug}` : urlSlug;
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
   const [orderHistory, setOrderHistory] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);

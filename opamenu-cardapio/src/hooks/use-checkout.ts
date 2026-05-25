@@ -42,8 +42,9 @@ const initialCheckoutData: CheckoutData = {
 const CHECKOUT_STORAGE_KEY = 'opamenu-checkout-data';
 
 export const useCheckout = (): CheckoutHookReturn => {
-  const { slug } = useParams<{ slug: string }>();
-  const storageKey = slug ? `${CHECKOUT_STORAGE_KEY}-${slug}` : CHECKOUT_STORAGE_KEY;
+  const { neighborhood, slug: urlSlug } = useParams<{ neighborhood: string; slug: string }>();
+  const slug = (neighborhood && urlSlug) ? `${neighborhood}/${urlSlug}` : urlSlug;
+  const storageKey = slug ? `${CHECKOUT_STORAGE_KEY}-${slug.replace('/', '_')}` : CHECKOUT_STORAGE_KEY;
 
   const [currentStep, setCurrentStep] = useState<CheckoutSteps>(CheckoutSteps.CUSTOMER_INFO);
 

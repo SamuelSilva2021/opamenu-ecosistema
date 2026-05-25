@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn, getErrorMessage } from "@/lib/utils";
 import { usePermission } from "@/hooks/usePermission";
 import { PermissionGate } from "@/components/auth/PermissionGate";
+import { Badge } from "@/components/ui/badge";
 
 import { settingsService } from "../settings.service";
 import { filesService } from "@/services/files.service";
@@ -264,7 +265,7 @@ export default function SettingsPage() {
     { id: "address", label: "Endereço", icon: MapPin },
     { id: "hours", label: "Horários", icon: Clock },
     { id: "payments", label: "Pagamentos", icon: CreditCard },
-    { id: "pix-integration", label: "Integração PIX", icon: QrCode },
+    { id: "pix-integration", label: "Integração PIX", icon: QrCode, disabled: true, badge: "Em breve" },
     { id: "bank-details", label: "Dados Bancários", icon: Landmark },
     { id: "social", label: "Redes Sociais", icon: Share2 },
     { id: "loyalty", label: "Fidelidade", icon: Gift },
@@ -289,17 +290,29 @@ export default function SettingsPage() {
         </div>
       }>
         <div className="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0">
-          <aside className="-mx-4 lg:w-1/5">
+          <aside className="-mx-4 lg:mx-0 lg:w-1/5">
             <nav className="flex space-x-2 lg:flex-col lg:space-x-0 lg:space-y-1">
               {tabs.map((tab) => (
                 <Button
                   key={tab.id}
                   variant={activeTab === tab.id ? "secondary" : "ghost"}
-                  className={cn("justify-start", activeTab === tab.id && "bg-muted hover:bg-muted")}
-                  onClick={() => setActiveTab(tab.id)}
+                  className={cn(
+                    "justify-start w-full relative",
+                    activeTab === tab.id && "bg-muted hover:bg-muted"
+                  )}
+                  onClick={() => !tab.disabled && setActiveTab(tab.id)}
+                  disabled={tab.disabled}
                 >
-                  <tab.icon className="mr-2 h-4 w-4" />
-                  {tab.label}
+                  <tab.icon className="mr-2 h-4 w-4 shrink-0" />
+                  <span className="truncate pr-16">{tab.label}</span>
+                  {tab.badge && (
+                    <Badge
+                      variant="secondary"
+                      className="absolute right-2 text-[10px] px-1.5 py-0.5 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-none font-semibold"
+                    >
+                      {tab.badge}
+                    </Badge>
+                  )}
                 </Button>
               ))}
             </nav>
@@ -537,7 +550,7 @@ export default function SettingsPage() {
                             {method === "PIX" && paymentMethods.includes("PIX") && (
                               <div className="ml-8 animate-in slide-in-from-top-2 duration-300">
                                 <p className="text-sm text-muted-foreground mt-1">
-                                  Para utilizar o PIX, configure sua chave na aba <Button variant="link" className="p-0 h-auto font-bold" onClick={() => setActiveTab("pix-integration")}>Integração PIX</Button>.
+                                  A integração automática do PIX estará disponível em breve.
                                 </p>
                               </div>
                             )}

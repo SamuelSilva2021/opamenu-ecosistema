@@ -41,7 +41,7 @@ export function PixConfigForm() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      provider: "0", // MercadoPago default
+      provider: "2", // Gerencianet (Efí) default
       pixKey: "",
       clientId: "",
       clientSecret: "",
@@ -106,7 +106,6 @@ export function PixConfigForm() {
                 <SelectValue placeholder="Selecione o provedor" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="0">Mercado Pago</SelectItem>
                 <SelectItem value="2">Gerencianet (Efí)</SelectItem>
               </SelectContent>
             </Select>

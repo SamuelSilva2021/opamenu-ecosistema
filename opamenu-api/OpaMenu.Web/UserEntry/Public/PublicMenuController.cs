@@ -150,10 +150,8 @@ public class PublicMenuController(
 
     /// <summary>
     /// Cancela um pedido público (apenas se pendente)
-    /// O cliente precisa estar logado para cancelar o seus pedidos
     /// </summary>
     [HttpPut("orders/{id}/cancel")]
-    [Authorize]
     public async Task<ActionResult<ResponseDTO<OrderResponseDto>>> CancelOrder(string neighborhood, string slug, Guid id, [FromBody] CancelOrderRequestDto request)
     {
         slug = $"{neighborhood}/{slug}";

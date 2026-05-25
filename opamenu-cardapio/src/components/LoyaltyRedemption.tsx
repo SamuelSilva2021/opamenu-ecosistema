@@ -14,7 +14,8 @@ interface LoyaltyRedemptionProps {
 }
 
 export const LoyaltyRedemption = ({ program: initialProgram, customer }: LoyaltyRedemptionProps) => {
-  const { slug } = useParams<{ slug: string }>();
+  const { neighborhood, slug: urlSlug } = useParams<{ neighborhood: string; slug: string }>();
+  const slug = (neighborhood && urlSlug) ? `${neighborhood}/${urlSlug}` : urlSlug;
   const { items, subtotal, applyLoyaltyPoints, removeLoyaltyPoints, loyaltyPointsUsed, loyaltyProgramId, loyaltyDiscount } = useCart();
   const { balance, programs, loading } = useLoyalty(slug, customer.phone);
 

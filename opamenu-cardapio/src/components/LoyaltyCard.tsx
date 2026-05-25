@@ -9,7 +9,8 @@ interface LoyaltyCardProps {
 }
 
 const LoyaltyCard = ({ program, customer }: LoyaltyCardProps) => {
-  const { slug } = useParams<{ slug: string }>();
+  const { neighborhood, slug: urlSlug } = useParams<{ neighborhood: string; slug: string }>();
+  const slug = (neighborhood && urlSlug) ? `${neighborhood}/${urlSlug}` : urlSlug;
 
   return (
     <Card className="border-none shadow-sm bg-primary/5">

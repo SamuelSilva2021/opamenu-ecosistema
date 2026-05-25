@@ -63,8 +63,8 @@ class SignalRService {
   private setupListeners() {
     if (!this.connection) return;
 
-    this.connection.on('EOrderStatusUpdated', (data: any) => {
-      console.log('Evento EOrderStatusUpdated recebido:', data);
+    this.connection.on('OrderStatusChanged', (data: any) => {
+      console.log('Evento OrderStatusChanged recebido:', data);
       const orderId = data?.orderId || data?.OrderId;
       const newStatus = data?.newStatus || data?.NewStatus || data?.status || data?.Status;
       if (orderId && (newStatus !== undefined)) {

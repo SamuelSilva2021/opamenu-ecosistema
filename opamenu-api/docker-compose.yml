@@ -30,7 +30,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Host=postgres;Database=opamenu;Username=postgres;Password=admin;Port=5432;
+      - ConnectionStrings__OpamenuDatabase=Host=postgres;Database=opamenu;Username=postgres;Password=admin;Port=5432;
+      - ConnectionStrings__AccessControlDatabase=Host=postgres;Database=opamenu;Username=postgres;Password=admin;Port=5432;
+      - ConnectionStrings__MultiTenantDatabase=Host=postgres;Database=opamenu;Username=postgres;Password=admin;Port=5432;
       - Jwt__Key=your_super_secret_jwt_key_here_change_in_production
       - Jwt__Issuer=OpamenuApp
       - Jwt__Audience=OpamenuApp  

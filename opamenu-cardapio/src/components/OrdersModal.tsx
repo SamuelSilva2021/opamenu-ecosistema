@@ -48,7 +48,8 @@ interface OrdersModalProps {
 }
 
 export function OrdersModal({ isOpen, onClose }: OrdersModalProps) {
-  const { slug } = useParams<{ slug: string }>();
+  const { neighborhood, slug: urlSlug } = useParams<{ neighborhood: string; slug: string }>();
+  const slug = (neighborhood && urlSlug) ? `${neighborhood}/${urlSlug}` : urlSlug;
   const { customer } = useCustomer();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
