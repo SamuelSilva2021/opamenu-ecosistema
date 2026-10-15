@@ -38,7 +38,8 @@ public class AuthService : IAuthService
             var payload = new
             {
                 usernameOrEmail = email,
-                password
+                password,
+                appIdentifier = "desktop"
             };
 
 

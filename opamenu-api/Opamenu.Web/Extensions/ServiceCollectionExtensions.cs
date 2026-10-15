@@ -105,6 +105,7 @@ public static class ServiceCollectionExtensions
         //services.AddScoped<IWhatsAppService, WhatsAppService>();
 
         services.AddSingleton<OrderAccessTokenService>();
+        services.AddScoped<ITenantModuleGate, Opamenu.Infrastructure.Services.TenantModuleGate>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IAuthenticationService, LocalAuthenticationService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();

@@ -8,10 +8,13 @@ class LoginRequestModel {
   @JsonKey(name: 'usernameOrEmail')
   final String usernameOrEmail;
   final String password;
+  @JsonKey(name: 'appIdentifier')
+  final String appIdentifier;
 
   const LoginRequestModel({
     required this.usernameOrEmail,
     required this.password,
+    this.appIdentifier = 'gestor',
   });
 
   Map<String, dynamic> toJson() => _$LoginRequestModelToJson(this);

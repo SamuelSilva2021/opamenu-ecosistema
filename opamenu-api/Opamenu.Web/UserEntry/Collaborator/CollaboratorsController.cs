@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Opamenu.Application.Services.Interfaces.Opamenu;
 using Opamenu.Commons.Api.DTOs;
 using Opamenu.Domain.DTOs.Collaborator;
+using Opamenu.Infrastructure.Anotations;
+using Opamenu.Infrastructure.Filters;
 using Opamenu.Web.UserEntry.Http;
 
 namespace Opamenu.Web.UserEntry.Collaborator;
@@ -11,6 +13,7 @@ namespace Opamenu.Web.UserEntry.Collaborator;
 [Route("api/collaborators")]
 [Produces("application/json")]
 [Authorize]
+[ServiceFilter(typeof(PermissionAuthorizationFilter))]
 [Tags("Colaboradores")]
 public class CollaboratorsController(ICollaboratorService service) : BaseController
 {
@@ -18,6 +21,7 @@ public class CollaboratorsController(ICollaboratorService service) : BaseControl
 
     [HttpPost]
     [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
+    [MapPermission(MODULE_COLLABORATOR, OPERATION_INSERT)]
     public async Task<ActionResult<ResponseDTO<CollaboratorResponseDto>>> Create([FromBody] CreateCollaboratorRequestDto request)
     {
         var result = await _service.CreateAsync(request);
@@ -26,6 +30,7 @@ public class CollaboratorsController(ICollaboratorService service) : BaseControl
 
     [HttpPut("{id}")]
     [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
+    [MapPermission(MODULE_COLLABORATOR, OPERATION_UPDATE)]
     public async Task<ActionResult<ResponseDTO<CollaboratorResponseDto>>> Update(Guid id, [FromBody] UpdateCollaboratorRequestDto request)
     {
         var result = await _service.UpdateAsync(id, request);
@@ -34,6 +39,7 @@ public class CollaboratorsController(ICollaboratorService service) : BaseControl
 
     [HttpDelete("{id}")]
     [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
+    [MapPermission(MODULE_COLLABORATOR, OPERATION_DELETE)]
     public async Task<ActionResult<ResponseDTO<bool>>> Delete(Guid id)
     {
         var result = await _service.DeleteAsync(id);
@@ -42,6 +48,7 @@ public class CollaboratorsController(ICollaboratorService service) : BaseControl
 
     [HttpGet("{id}")]
     [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
+    [MapPermission(MODULE_COLLABORATOR, OPERATION_SELECT)]
     public async Task<ActionResult<ResponseDTO<CollaboratorResponseDto>>> GetById(Guid id)
     {
         var result = await _service.GetByIdAsync(id);
@@ -50,6 +57,7 @@ public class CollaboratorsController(ICollaboratorService service) : BaseControl
 
     [HttpGet]
     [Authorize(Roles = "ADMIN,SUPER_ADMIN")]
+    [MapPermission(MODULE_COLLABORATOR, OPERATION_SELECT)]
     public async Task<ActionResult<ResponseDTO<IEnumerable<CollaboratorResponseDto>>>> GetAll()
     {
         var result = await _service.GetAllAsync();

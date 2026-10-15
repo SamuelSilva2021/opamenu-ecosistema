@@ -203,6 +203,8 @@ namespace Opamenu.Web.UserEntry
         public const string MODULE_PAYMENT = "PAYMENT";
         public const string MODULE_PDV = "PDV";
         public const string MODULE_DELIVERY_AREA = "DELIVERY_AREA";
+        public const string MODULE_COLLABORATOR = "COLLABORATOR";
+        public const string MODULE_CARDAPIO_DELIVERY = "CARDAPIO_DELIVERY";
         #endregion
     }
 }
