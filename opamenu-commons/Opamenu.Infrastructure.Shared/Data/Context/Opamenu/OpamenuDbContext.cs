@@ -2,11 +2,14 @@ using Microsoft.EntityFrameworkCore;
 using Opamenu.Infrastructure.Shared.Entities.MultiTenant.Tenant;
 using Opamenu.Infrastructure.Shared.Entities.Opamenu;
 using Opamenu.Infrastructure.Shared.Enums.Opamenu;
+using Opamenu.Infrastructure.Shared.Interfaces;
 
 namespace Opamenu.Infrastructure.Shared.Data.Context.Opamenu;
 
-public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbContext(options)
+public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options, ITenantContext? tenantContext = null) : DbContext(options)
 {
+    private readonly ITenantContext _tenantContext = tenantContext ?? new DefaultTenantContext();
+
     public DbSet<CategoryEntity> Categories { get; set; }
     public DbSet<ProductEntity> Products { get; set; }
     public DbSet<ProductImageEntity> ProductImages { get; set; }
@@ -774,5 +777,20 @@ public class OpamenuDbContext(DbContextOptions<OpamenuDbContext> options) : DbCo
         });
 
         modelBuilder.OpamenuSeed();
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes()
+                     .Where(t => t.BaseType == null && !t.IsOwned() && typeof(BaseEntity).IsAssignableFrom(t.ClrType)))
+        {
+            typeof(OpamenuDbContext)
+                .GetMethod(nameof(ApplyTenantFilter), System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+                .MakeGenericMethod(entityType.ClrType)
+                .Invoke(this, [modelBuilder]);
+        }
+    }
+
+    private void ApplyTenantFilter<TEntity>(ModelBuilder modelBuilder) where TEntity : BaseEntity
+    {
+        modelBuilder.Entity<TEntity>().HasQueryFilter(e =>
+            !_tenantContext.HasTenant || e.TenantId == null || e.TenantId == _tenantContext.TenantId);
     }
 }

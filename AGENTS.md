@@ -122,11 +122,7 @@ Seguir o padrão **Conventional Commits**:
 
 ## 7. Navegação de Documentações Internas
 
-Documentos canônicos de especificação e estratégia:
-* 📑 [Índice Geral de Docs](file:///d:/dev/opamenu-ecosistema/DOCS_INDEX.md)
-* 🏛️ [Arquitetura Híbrida & Realtime](file:///d:/dev/opamenu-ecosistema/DOCS_HYBRID_ARCHITECTURE.md)
-* 🚀 [Fases de Unificação de API](file:///d:/dev/opamenu-ecosistema/DOCS_FASES_UNIFICACAO_API.md)
-* 💳 [Operação de Caixa e PDV](file:///d:/dev/opamenu-ecosistema/DOCS_CASH_REGISTER.md)
-* ⭐ [Fidelidade V2](file:///d:/dev/opamenu-ecosistema/DOCS_LOYALTY_V2.md)
-* 🗺️ [Roadmap do Produto](file:///d:/dev/opamenu-ecosistema/ROADMAP.md)
-* 💼 [Estratégia de Negócios](file:///d:/dev/opamenu-ecosistema/BUSINESS_STRATEGY.md)
+A documentação fica junto de cada subprojeto:
+* [Plano de Escalabilidade da API](opamenu-api/docs/Scalability-Improvements-Plan.md)
+* [Docs do Access Control](access-control-web/docs/)
+* [Docs do Cardápio Digital](opamenu-cardapio/docs/)

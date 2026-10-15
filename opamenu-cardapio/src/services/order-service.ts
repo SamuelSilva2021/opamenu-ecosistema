@@ -15,7 +15,26 @@ import {
   EOrderType
 } from '@/types/api';
 
-// Serviço para gerenciar pedidos
+const ORDER_TOKEN_PREFIX = 'opamenu:order-token:';
+
+const saveOrderToken = (orderId: string, token?: string): void => {
+  if (!token) return;
+  try {
+    localStorage.setItem(`${ORDER_TOKEN_PREFIX}${orderId}`, token);
+  } catch {
+    return;
+  }
+};
+
+const orderAccessHeaders = (orderId: string): Record<string, string> | undefined => {
+  try {
+    const token = localStorage.getItem(`${ORDER_TOKEN_PREFIX}${orderId}`);
+    return token ? { 'X-Order-Token': token } : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
 export class OrderService {
   // Criar um novo pedido
   async createOrder(orderData: CreateOrderRequest, slug?: string): Promise<Order> {
@@ -25,7 +44,8 @@ export class OrderService {
         endpoint,
         orderData
       );
-      
+
+      saveOrderToken(response.id, response.accessToken);
       return response;
     });
   }
@@ -35,7 +55,7 @@ export class OrderService {
     return withApiErrorHandling(async () => {
       // Ajuste de endpoint: Assumindo que o endpoint é api/orders/{id}/cancel
       const endpoint = slug ? `/public/${slug}/orders/${orderId}/cancel` : `/orders/${orderId}/cancel`;
-      const response = await httpClient.put<Order>(endpoint, data);
+      const response = await httpClient.put<Order>(endpoint, data, orderAccessHeaders(orderId));
       return response;
     });
   }
@@ -44,7 +64,7 @@ export class OrderService {
   async updatePaymentMethod(orderId: string, data: UpdateOrderPaymentRequest, slug?: string): Promise<Order> {
     return withApiErrorHandling(async () => {
       const endpoint = slug ? `/public/${slug}/orders/${orderId}/payment` : `/orders/${orderId}/payment`;
-      const response = await httpClient.put<Order>(endpoint, data);
+      const response = await httpClient.put<Order>(endpoint, data, orderAccessHeaders(orderId));
       return response;
     });
   }
@@ -53,7 +73,7 @@ export class OrderService {
   async updateDeliveryType(orderId: string, data: UpdateOrderDeliveryTypeRequest, slug?: string): Promise<Order> {
     return withApiErrorHandling(async () => {
       const endpoint = slug ? `/public/${slug}/orders/${orderId}/delivery-type` : `/orders/${orderId}/delivery-type`;
-      const response = await httpClient.put<Order>(endpoint, data);
+      const response = await httpClient.put<Order>(endpoint, data, orderAccessHeaders(orderId));
       return response;
     });
   }
@@ -97,7 +117,7 @@ export class OrderService {
   async generatePixPayment(orderId: string, slug: string): Promise<PixResponseDto> {
     return withApiErrorHandling(async () => {
       const endpoint = API_ENDPOINTS.PUBLIC.PIX(slug, orderId);
-      const response = await httpClient.post<PixResponseDto>(endpoint, {});
+      const response = await httpClient.post<PixResponseDto>(endpoint, {}, orderAccessHeaders(orderId));
       return response;
     });
   }

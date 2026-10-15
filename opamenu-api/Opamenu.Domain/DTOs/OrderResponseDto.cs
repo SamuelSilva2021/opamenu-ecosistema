@@ -23,6 +23,9 @@ namespace Opamenu.Domain.DTOs
         public string? CouponCode { get; set; }
         public decimal Total { get; set; }
         public EOrderStatus Status { get; set; }
+        public string? AccessToken { get; set; }
+        public bool IsPaid { get; set; }
+        public DateTime? PaidAt { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public bool IsDelivery { get; set; }

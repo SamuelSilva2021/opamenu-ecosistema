@@ -293,6 +293,7 @@ export interface UpdateOrderDeliveryTypeRequest {
 
 export interface Order {
   id: string;
+  accessToken?: string;
   orderNumber?: string;
   customerName: string;
   customerPhone: string;

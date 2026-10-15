@@ -29,6 +29,41 @@ builder.Services.AddControllers(options =>
         options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
         options.JsonSerializerOptions.DictionaryKeyPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
     });
+builder.Services.Configure<Microsoft.AspNetCore.Builder.ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddPolicy("public-write", httpContext =>
+    {
+        var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        var slug = $"{httpContext.Request.RouteValues["neighborhood"]}/{httpContext.Request.RouteValues["slug"]}";
+        return System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter($"{ip}|{slug}", _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 20,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        });
+    });
+
+    options.AddPolicy("auth", httpContext =>
+    {
+        var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        return System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(ip, _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 10,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        });
+    });
+});
+
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c =>
@@ -109,6 +144,13 @@ builder.Services.Configure<IISServerOptions>(options =>
     options.MaxRequestBodySize = 52428800;
 });
 
+if (builder.Environment.IsProduction())
+{
+    var productionJwtSecret = Environment.GetEnvironmentVariable("Authentication__JwtSecret");
+    if (string.IsNullOrWhiteSpace(productionJwtSecret) || productionJwtSecret.Length < 32)
+        throw new InvalidOperationException("Authentication__JwtSecret deve ser definido por variável de ambiente com no mínimo 32 caracteres em produção.");
+}
+
 var app = builder.Build();
 
 
@@ -139,28 +181,26 @@ if (app.Environment.IsDevelopment())
         }
     }
 }
-else
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
 if (!app.Environment.IsProduction())
 {
     app.UseHttpsRedirection();
 }
 
+app.UseForwardedHeaders();
 app.UseCors("CorsPolicy");
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseMiddleware<global::Opamenu.Web.Middleware.TenantContextMiddleware>();
 app.UseAuthorization();
 
 app.UseStaticFiles();
 
+var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "wwwroot", "uploads");
+Directory.CreateDirectory(uploadsPath);
+
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(builder.Environment.ContentRootPath, "wwwroot", "uploads")),
+    FileProvider = new PhysicalFileProvider(uploadsPath),
     RequestPath = "/uploads",
     OnPrepareResponse = ctx =>
     {
@@ -178,14 +218,6 @@ app.MapControllers().RequireCors("CorsPolicy");
 app.MapHub<OrderNotificationHub>("/hubs/notifications");
 
 app.MapGet("/health", () => new { Status = "Healthy", Timestamp = DateTime.UtcNow });
-
-app.MapGet("/api/test", () => new { Message = "Test endpoint working", Timestamp = DateTime.UtcNow });
-
-app.MapGet("/signalr/test", () => new { 
-    Message = "SignalR Hub configured", 
-    HubPath = "/hubs/notifications",
-    Timestamp = DateTime.UtcNow 
-});
 
 app.Run();
 

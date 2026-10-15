@@ -104,6 +104,7 @@ public static class ServiceCollectionExtensions
         services.AddHttpClient();
         //services.AddScoped<IWhatsAppService, WhatsAppService>();
 
+        services.AddSingleton<OrderAccessTokenService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IAuthenticationService, LocalAuthenticationService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
@@ -122,7 +123,7 @@ public static class ServiceCollectionExtensions
 
         if (string.IsNullOrEmpty(jwtSecret))
         {
-            throw new InvalidOperationException("JWT Secret nÃ£o configurado");
+            throw new InvalidOperationException("JWT Secret não configurado");
         }
 
         var key = Encoding.UTF8.GetBytes(jwtSecret);

@@ -16,6 +16,7 @@ using Opamenu.Domain.DTOs.Product;
 using Opamenu.Domain.DTOs.Tenant;
 using Opamenu.Domain.DTOs.Payments;
 using Opamenu.Web.UserEntry;
+using Opamenu.Web.Services;
 using Opamenu.Commons.Api.Commons;
 
 namespace Opamenu.Web.UserEntry.Public;
@@ -32,9 +33,24 @@ public class PublicMenuController(
     IOrderService orderService,
     ICustomerService customerService,
     IPaymentService paymentService,
-    IDeliveryAreaService deliveryAreaService
+    IDeliveryAreaService deliveryAreaService,
+    OrderAccessTokenService orderAccessTokenService,
+    ILogger<PublicMenuController> logger
     ) : BaseController
 {
+    private readonly OrderAccessTokenService _orderAccessTokenService = orderAccessTokenService;
+    private readonly ILogger<PublicMenuController> _logger = logger;
+
+    private bool HasOrderAccess(Guid orderId)
+    {
+        var token = Request.Headers["X-Order-Token"].FirstOrDefault();
+        if (_orderAccessTokenService.IsValid(orderId, token))
+            return true;
+
+        _logger.LogWarning("Acesso público negado ao pedido {OrderId}: token ausente ou inválido. IP {Ip}", orderId, HttpContext.Connection.RemoteIpAddress);
+        return false;
+    }
+
     private readonly IProductService _productService = productService;
     private readonly ICategoryService _categoryService = categoryService;
     private readonly ITenantService _tenantService = tenantService;
@@ -119,10 +135,13 @@ public class PublicMenuController(
     /// <param name="slug"></param>
     /// <returns></returns>
     [HttpPost("orders")]
+    [Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("public-write")]
     public async Task<ActionResult<ResponseDTO<OrderResponseDto>>> CreateOrder([FromBody]CreatePublicOrderRequestDto request, string neighborhood, string slug)
     {
         slug = $"{neighborhood}/{slug}";
         var serviceResponse = await _orderService.CreatePublicOrderAsync(request, slug);
+        if (serviceResponse.Succeeded && serviceResponse.Data != null)
+            serviceResponse.Data.AccessToken = _orderAccessTokenService.Generate(serviceResponse.Data.Id);
         return BuildResponse(serviceResponse);
     }
 
@@ -152,8 +171,12 @@ public class PublicMenuController(
     /// Cancela um pedido público (apenas se pendente)
     /// </summary>
     [HttpPut("orders/{id}/cancel")]
+    [Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("public-write")]
     public async Task<ActionResult<ResponseDTO<OrderResponseDto>>> CancelOrder(string neighborhood, string slug, Guid id, [FromBody] CancelOrderRequestDto request)
     {
+        if (!HasOrderAccess(id))
+            return StatusCode(StatusCodes.Status403Forbidden, StaticResponseBuilder<OrderResponseDto>.BuildError("Acesso ao pedido não autorizado"));
+
         slug = $"{neighborhood}/{slug}";
         // 1. Validar Tenant
         var tenantResponse = await _tenantService.GetTenantBusinessInfoBySlugAsync(slug);
@@ -168,8 +191,12 @@ public class PublicMenuController(
     /// Atualiza o método de pagamento de um pedido público (apenas se pendente)
     /// </summary>
     [HttpPut("orders/{id}/payment")]
+    [Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("public-write")]
     public async Task<ActionResult<ResponseDTO<OrderResponseDto>>> UpdatePaymentMethod(string neighborhood, string slug, Guid id, [FromBody] UpdateOrderPaymentRequestDto request)
     {
+        if (!HasOrderAccess(id))
+            return StatusCode(StatusCodes.Status403Forbidden, StaticResponseBuilder<OrderResponseDto>.BuildError("Acesso ao pedido não autorizado"));
+
         slug = $"{neighborhood}/{slug}";
         // 1. Validar Tenant
         var tenantResponse = await _tenantService.GetTenantBusinessInfoBySlugAsync(slug);
@@ -184,8 +211,12 @@ public class PublicMenuController(
     /// Atualiza o tipo de entrega de um pedido público (apenas se pendente)
     /// </summary>
     [HttpPut("orders/{id}/delivery-type")]
+    [Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("public-write")]
     public async Task<ActionResult<ResponseDTO<OrderResponseDto>>> UpdateDeliveryType(string neighborhood, string slug, Guid id, [FromBody] UpdateOrderDeliveryTypeRequestDto request)
     {
+        if (!HasOrderAccess(id))
+            return StatusCode(StatusCodes.Status403Forbidden, StaticResponseBuilder<OrderResponseDto>.BuildError("Acesso ao pedido não autorizado"));
+
         slug = $"{neighborhood}/{slug}";
         // 1. Validar Tenant
         var tenantResponse = await _tenantService.GetTenantBusinessInfoBySlugAsync(slug);
@@ -200,8 +231,12 @@ public class PublicMenuController(
     /// Gera um pagamento PIX para um pedido público
     /// </summary>
     [HttpPost("orders/{id}/pix")]
+    [Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("public-write")]
     public async Task<ActionResult<ResponseDTO<PixResponseDto>>> GeneratePixPayment(string neighborhood, string slug, Guid id)
     {
+        if (!HasOrderAccess(id))
+            return StatusCode(StatusCodes.Status403Forbidden, StaticResponseBuilder<PixResponseDto>.BuildError("Acesso ao pedido não autorizado"));
+
         slug = $"{neighborhood}/{slug}";
         // 1. Validar Tenant
         var tenantResponse = await _tenantService.GetTenantBusinessInfoBySlugAsync(slug);
