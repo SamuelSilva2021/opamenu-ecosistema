@@ -123,7 +123,7 @@ public static class ServiceCollectionExtensions
 
         if (string.IsNullOrEmpty(jwtSecret))
         {
-            throw new InvalidOperationException("JWT Secret nÃ£o configurado");
+            throw new InvalidOperationException("JWT Secret não configurado");
         }
 
         var key = Encoding.UTF8.GetBytes(jwtSecret);

@@ -51,6 +51,12 @@ public class OrderEntity : BaseEntity
     [Column("status")]
     public EOrderStatus Status { get; set; } = EOrderStatus.Pending;
 
+    [Column("is_paid")]
+    public bool IsPaid { get; set; }
+
+    [Column("paid_at")]
+    public DateTime? PaidAt { get; set; }
+
     [MaxLength(1000)]
     [Column("notes")]
     public string? Notes { get; set; }

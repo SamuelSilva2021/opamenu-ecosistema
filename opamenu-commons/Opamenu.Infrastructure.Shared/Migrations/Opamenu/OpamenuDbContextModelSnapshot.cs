@@ -17,7 +17,7 @@ namespace Opamenu.Infrastructure.Shared.Migrations.Opamenu
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.9")
+                .HasAnnotation("ProductVersion", "9.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -906,6 +906,10 @@ namespace Opamenu.Infrastructure.Shared.Migrations.Opamenu
                         .HasColumnType("boolean")
                         .HasColumnName("is_delivery");
 
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_paid");
+
                     b.Property<decimal>("LoyaltyDiscountAmount")
                         .HasColumnType("decimal(10,2)")
                         .HasColumnName("loyalty_discount_amount");
@@ -927,6 +931,10 @@ namespace Opamenu.Infrastructure.Shared.Migrations.Opamenu
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("order_type");
+
+                    b.Property<DateTime?>("PaidAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("paid_at");
 
                     b.Property<int>("QueuePosition")
                         .ValueGeneratedOnAdd()

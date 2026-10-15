@@ -154,14 +154,15 @@ public class PaymentService(
                 return StaticResponseBuilder<bool>.BuildOk(true);
             }
 
-            payment.ProcessWebhookResult(result.NewStatus, result.PaidAt, result.RawResponse);
-            await _paymentRepository.UpdateAsync(payment);
-
             if (result.NewStatus == EPaymentStatus.Paid)
             {
                 var order = await _orderRepository.GetByIdWithIncludesAsync(payment.OrderId, o => o.StatusHistory);
                 if (order != null && order.TenantId == tenantId)
                 {
+                    var paidAt = result.PaidAt ?? DateTime.UtcNow;
+                    order.IsPaid = true;
+                    order.PaidAt = paidAt;
+                    order.UpdatedAt = DateTime.UtcNow;
                     order.StatusHistory.Add(new OrderStatusHistoryEntity
                     {
                         OrderId = order.Id,
@@ -170,10 +171,14 @@ public class PaymentService(
                         Notes = $"Pagamento PIX confirmado (R$ {payment.Amount:N2})",
                         UserId = order.CustomerId
                     });
-                    order.UpdatedAt = DateTime.UtcNow;
-                    await _orderRepository.UpdateAsync(order);
                 }
+            }
 
+            payment.ProcessWebhookResult(result.NewStatus, result.PaidAt, result.RawResponse);
+            await _paymentRepository.UpdateAsync(payment);
+
+            if (result.NewStatus == EPaymentStatus.Paid)
+            {
                 // Notificar sobre pagamento confirmado
                 await _notificationService.SendToGroupAsync($"Tenant_{tenantId}_Admins", "PaymentConfirmed", new
                 {
