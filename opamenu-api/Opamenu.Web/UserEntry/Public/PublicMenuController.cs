@@ -35,11 +35,25 @@ public class PublicMenuController(
     IPaymentService paymentService,
     IDeliveryAreaService deliveryAreaService,
     OrderAccessTokenService orderAccessTokenService,
-    ILogger<PublicMenuController> logger
+    ILogger<PublicMenuController> logger,
+    Opamenu.Domain.Interfaces.ITenantModuleGate tenantModuleGate
     ) : BaseController
 {
     private readonly OrderAccessTokenService _orderAccessTokenService = orderAccessTokenService;
     private readonly ILogger<PublicMenuController> _logger = logger;
+    private readonly Opamenu.Domain.Interfaces.ITenantModuleGate _tenantModuleGate = tenantModuleGate;
+
+    private async Task<bool> IsDeliveryEnabledAsync(string slug)
+    {
+        if (!_tenantModuleGate.Enforced)
+            return true;
+
+        var tenantResponse = await _tenantService.GetTenantBusinessInfoBySlugAsync(slug);
+        if (!tenantResponse.Succeeded || tenantResponse.Data == null)
+            return true;
+
+        return await _tenantModuleGate.HasModuleAsync(tenantResponse.Data.Id, MODULE_CARDAPIO_DELIVERY);
+    }
 
     private bool HasOrderAccess(Guid orderId)
     {
@@ -68,6 +82,9 @@ public class PublicMenuController(
     public async Task<ActionResult<ResponseDTO<MenuResponseDto>>> GetStorefrontData(string neighborhood, string slug)
     {
         slug = $"{neighborhood}/{slug}";
+        if (!await IsDeliveryEnabledAsync(slug))
+            return StatusCode(StatusCodes.Status403Forbidden, StaticResponseBuilder<MenuResponseDto>.BuildError("Este estabelecimento não está disponível no momento."));
+
         var response = await _storefrontService.GetStorefrontDataAsync(slug);
         return BuildResponse(response);
     }
@@ -139,6 +156,9 @@ public class PublicMenuController(
     public async Task<ActionResult<ResponseDTO<OrderResponseDto>>> CreateOrder([FromBody]CreatePublicOrderRequestDto request, string neighborhood, string slug)
     {
         slug = $"{neighborhood}/{slug}";
+        if (!await IsDeliveryEnabledAsync(slug))
+            return StatusCode(StatusCodes.Status403Forbidden, StaticResponseBuilder<OrderResponseDto>.BuildError("Este estabelecimento não está recebendo pedidos online no momento."));
+
         var serviceResponse = await _orderService.CreatePublicOrderAsync(request, slug);
         if (serviceResponse.Succeeded && serviceResponse.Data != null)
             serviceResponse.Data.AccessToken = _orderAccessTokenService.Generate(serviceResponse.Data.Id);

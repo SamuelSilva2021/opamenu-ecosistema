@@ -18,7 +18,7 @@ namespace Opamenu.Infrastructure.Shared.Migrations.AccessControl
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.9")
+                .HasAnnotation("ProductVersion", "9.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -479,6 +479,61 @@ namespace Opamenu.Infrastructure.Shared.Migrations.AccessControl
                             Name = "Taxas de Entrega",
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             Url = "/delivery-areas"
+                        },
+                        new
+                        {
+                            Id = new Guid("17aa0a71-ea05-4848-442e-a5e98ef3e4d6"),
+                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Gerenciamento de colaboradores e entregadores",
+                            IsActive = true,
+                            Key = "COLLABORATOR",
+                            Name = "Colaboradores",
+                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Url = "/collaborators"
+                        },
+                        new
+                        {
+                            Id = new Guid("d02bae9a-5aac-ee67-096c-bc82a33e40a4"),
+                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Cardápio público com pedidos online",
+                            IsActive = true,
+                            Key = "CARDAPIO_DELIVERY",
+                            Name = "Cardápio Digital e Delivery",
+                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Url = "/cardapio"
+                        },
+                        new
+                        {
+                            Id = new Guid("d6733e5d-7e2c-ebab-89f9-609b57cc822d"),
+                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Acesso ao aplicativo gestor",
+                            IsActive = true,
+                            Key = "APP_GESTOR",
+                            Name = "App Gestor",
+                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Url = "/apps/gestor"
+                        },
+                        new
+                        {
+                            Id = new Guid("ed1c0371-3723-3e4d-de63-f22dcc4849bb"),
+                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Acesso ao aplicativo do garçom",
+                            IsActive = true,
+                            Key = "APP_GARCOM",
+                            Name = "App do Garçom",
+                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Url = "/apps/garcom"
+                        },
+                        new
+                        {
+                            Id = new Guid("70c000d9-f2be-c561-2e0b-92fe204d008b"),
+                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Acesso ao PDV desktop",
+                            IsActive = true,
+                            Key = "PDV_DESKTOP",
+                            Name = "PDV Desktop",
+                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Url = "/apps/desktop"
                         });
                 });
 
@@ -912,6 +967,106 @@ namespace Opamenu.Infrastructure.Shared.Migrations.AccessControl
                             ModuleKey = "DELIVERY_AREA",
                             RoleId = new Guid("4534e34a-3a31-ef0c-2a17-b57ea1d45cb6"),
                             UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("7bbf3b21-c5ea-40b3-d4f3-6fe5672d89df"),
+                            Actions = "[\"READ\",\"CREATE\",\"UPDATE\",\"DELETE\"]",
+                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            ModuleKey = "COLLABORATOR",
+                            RoleId = new Guid("724add9f-febd-c615-19db-8e526968da25"),
+                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("a331de75-d5a9-52aa-d39c-868691f7b8c1"),
+                            Actions = "[\"READ\",\"CREATE\",\"UPDATE\",\"DELETE\"]",
+                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            ModuleKey = "COLLABORATOR",
+                            RoleId = new Guid("4534e34a-3a31-ef0c-2a17-b57ea1d45cb6"),
+                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("cc12efd1-ee2c-9452-91b6-9f1a03d4b505"),
+                            Actions = "[\"READ\",\"CREATE\",\"UPDATE\",\"DELETE\"]",
+                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            ModuleKey = "CARDAPIO_DELIVERY",
+                            RoleId = new Guid("724add9f-febd-c615-19db-8e526968da25"),
+                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("a876c989-c280-2770-72d9-166821118d7a"),
+                            Actions = "[\"READ\",\"CREATE\",\"UPDATE\",\"DELETE\"]",
+                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            ModuleKey = "CARDAPIO_DELIVERY",
+                            RoleId = new Guid("4534e34a-3a31-ef0c-2a17-b57ea1d45cb6"),
+                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("f6f32a48-4a00-bdd2-019c-f1b4d3fd7764"),
+                            Actions = "[\"READ\",\"CREATE\",\"UPDATE\",\"DELETE\"]",
+                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            ModuleKey = "APP_GESTOR",
+                            RoleId = new Guid("724add9f-febd-c615-19db-8e526968da25"),
+                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("c84a5232-c300-a26b-2766-287df3ceb0c5"),
+                            Actions = "[\"READ\",\"CREATE\",\"UPDATE\",\"DELETE\"]",
+                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            ModuleKey = "APP_GESTOR",
+                            RoleId = new Guid("4534e34a-3a31-ef0c-2a17-b57ea1d45cb6"),
+                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("6e5a356e-3f16-64a4-97dc-0af9213324ca"),
+                            Actions = "[\"READ\",\"CREATE\",\"UPDATE\",\"DELETE\"]",
+                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            ModuleKey = "APP_GARCOM",
+                            RoleId = new Guid("724add9f-febd-c615-19db-8e526968da25"),
+                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("b895d9ad-7ccb-5000-a687-e39b0dc2fc55"),
+                            Actions = "[\"READ\",\"CREATE\",\"UPDATE\",\"DELETE\"]",
+                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            ModuleKey = "APP_GARCOM",
+                            RoleId = new Guid("4534e34a-3a31-ef0c-2a17-b57ea1d45cb6"),
+                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("cd8cd147-ae8a-c061-3ba1-3c6e577e62bb"),
+                            Actions = "[\"READ\",\"CREATE\",\"UPDATE\",\"DELETE\"]",
+                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            ModuleKey = "PDV_DESKTOP",
+                            RoleId = new Guid("724add9f-febd-c615-19db-8e526968da25"),
+                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("90625223-1075-a0fe-6f15-47df677b87df"),
+                            Actions = "[\"READ\",\"CREATE\",\"UPDATE\",\"DELETE\"]",
+                            CreatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            ModuleKey = "PDV_DESKTOP",
+                            RoleId = new Guid("4534e34a-3a31-ef0c-2a17-b57ea1d45cb6"),
+                            UpdatedAt = new DateTime(2026, 1, 20, 0, 0, 0, 0, DateTimeKind.Utc)
                         });
                 });
 
@@ -1155,6 +1310,9 @@ namespace Opamenu.Infrastructure.Shared.Migrations.AccessControl
                         .HasColumnType("character varying(255)")
                         .HasColumnName("name");
 
+                    b.Property<Guid?>("ParentTenantId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Phone")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
@@ -1178,6 +1336,9 @@ namespace Opamenu.Infrastructure.Shared.Migrations.AccessControl
                         .HasColumnType("integer")
                         .HasColumnName("status");
 
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -1187,6 +1348,8 @@ namespace Opamenu.Infrastructure.Shared.Migrations.AccessControl
                         .HasColumnType("character varying(255)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ParentTenantId");
 
                     b.ToTable("tenants", null, t =>
                         {
@@ -1272,6 +1435,15 @@ namespace Opamenu.Infrastructure.Shared.Migrations.AccessControl
                     b.Navigation("Role");
                 });
 
+            modelBuilder.Entity("Opamenu.Infrastructure.Shared.Entities.MultiTenant.Tenant.TenantEntity", b =>
+                {
+                    b.HasOne("Opamenu.Infrastructure.Shared.Entities.MultiTenant.Tenant.TenantEntity", "ParentTenant")
+                        .WithMany("SubTenants")
+                        .HasForeignKey("ParentTenantId");
+
+                    b.Navigation("ParentTenant");
+                });
+
             modelBuilder.Entity("Opamenu.Infrastructure.Shared.Entities.AccessControl.AccessGroupEntity", b =>
                 {
                     b.Navigation("AccountAccessGroups");
@@ -1299,6 +1471,11 @@ namespace Opamenu.Infrastructure.Shared.Migrations.AccessControl
             modelBuilder.Entity("Opamenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts.UserAccountEntity", b =>
                 {
                     b.Navigation("AccountAccessGroups");
+                });
+
+            modelBuilder.Entity("Opamenu.Infrastructure.Shared.Entities.MultiTenant.Tenant.TenantEntity", b =>
+                {
+                    b.Navigation("SubTenants");
                 });
 #pragma warning restore 612, 618
         }

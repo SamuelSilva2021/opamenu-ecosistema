@@ -48,7 +48,12 @@ public static class AccessControlDbContextSeed
             CreateModule("PAYMENT", "Pagamentos", "Gerenciamento de pagamentos", "/payments"),
             CreateModule("COUPON", "Cupons", "Gerenciamento de cupons", "/coupons"),
             CreateModule("LOYALTY", "Fidelidade", "Programa de fidelidade", "/loyalty"),
-            CreateModule("DELIVERY_AREA", "Taxas de Entrega", "Gerenciamento de taxas de entrega por localidade", "/delivery-areas")
+            CreateModule("DELIVERY_AREA", "Taxas de Entrega", "Gerenciamento de taxas de entrega por localidade", "/delivery-areas"),
+            CreateModule("COLLABORATOR", "Colaboradores", "Gerenciamento de colaboradores e entregadores", "/collaborators"),
+            CreateModule("CARDAPIO_DELIVERY", "Cardápio Digital e Delivery", "Cardápio público com pedidos online", "/cardapio"),
+            CreateModule("APP_GESTOR", "App Gestor", "Acesso ao aplicativo gestor", "/apps/gestor"),
+            CreateModule("APP_GARCOM", "App do Garçom", "Acesso ao aplicativo do garçom", "/apps/garcom"),
+            CreateModule("PDV_DESKTOP", "PDV Desktop", "Acesso ao PDV desktop", "/apps/desktop")
         };
 
         modelBuilder.Entity<ModuleEntity>().HasData(modules);

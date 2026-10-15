@@ -149,6 +149,12 @@ if (builder.Environment.IsProduction())
     var productionJwtSecret = Environment.GetEnvironmentVariable("Authentication__JwtSecret");
     if (string.IsNullOrWhiteSpace(productionJwtSecret) || productionJwtSecret.Length < 32)
         throw new InvalidOperationException("Authentication__JwtSecret deve ser definido por variável de ambiente com no mínimo 32 caracteres em produção.");
+
+    foreach (var cloudinaryKey in new[] { "Cloudinary:CloudName", "Cloudinary:ApiKey", "Cloudinary:ApiSecret" })
+    {
+        if (string.IsNullOrWhiteSpace(builder.Configuration[cloudinaryKey]))
+            throw new InvalidOperationException($"{cloudinaryKey} deve estar configurado em produção; as imagens não podem ficar no disco do container.");
+    }
 }
 
 var app = builder.Build();

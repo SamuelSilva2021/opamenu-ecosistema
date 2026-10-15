@@ -29,8 +29,17 @@ public sealed class AuthService(
     MultiTenantDbContext multiTenantDbContext,
     IDistributedCache cache,
     IConfiguration configuration,
-    ILogger<AuthService> logger) : IAuthService
+    ILogger<AuthService> logger,
+    Opamenu.Domain.Interfaces.ITenantModuleGate tenantModuleGate) : IAuthService
 {
+    private static readonly Dictionary<string, string> AppModules = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["gestor"] = "APP_GESTOR",
+        ["garcom"] = "APP_GARCOM",
+        ["desktop"] = "PDV_DESKTOP"
+    };
+
+    private readonly Opamenu.Domain.Interfaces.ITenantModuleGate _tenantModuleGate = tenantModuleGate;
     private readonly AccessControlDbContext _accessControlDbContext = accessControlDbContext;
     private readonly MultiTenantDbContext _multiTenantDbContext = multiTenantDbContext;
     private readonly IDistributedCache _cache = cache;
@@ -63,6 +72,16 @@ public sealed class AuthService(
             }
 
             var tenant = await GetTenantAsync(user.TenantId);
+
+            if (tenant != null &&
+                !string.IsNullOrWhiteSpace(request.AppIdentifier) &&
+                AppModules.TryGetValue(request.AppIdentifier.Trim(), out var appModule) &&
+                !await _tenantModuleGate.HasModuleAsync(tenant.Id, appModule))
+            {
+                _logger.LogWarning("Login recusado: tenant {TenantId} não possui o módulo {Module} no plano.", tenant.Id, appModule);
+                return StaticResponseBuilder<LoginResponseDto>.BuildError("Seu plano não inclui este aplicativo.");
+            }
+
             var roles = await GetRoleCodesAsync(user);
             var refreshToken = GenerateRefreshToken();
 

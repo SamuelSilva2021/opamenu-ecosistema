@@ -34,6 +34,7 @@ class AuthRemoteDataSource implements AuthRemoteDataSourceContract {
       body: {
         'usernameOrEmail': usernameOrEmail,
         'password': password,
+        'appIdentifier': 'garcom',
       },
     );
 

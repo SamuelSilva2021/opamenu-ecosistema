@@ -10,4 +10,5 @@ Map<String, dynamic> _$LoginRequestModelToJson(LoginRequestModel instance) =>
     <String, dynamic>{
       'usernameOrEmail': instance.usernameOrEmail,
       'password': instance.password,
+      'appIdentifier': instance.appIdentifier,
     };
