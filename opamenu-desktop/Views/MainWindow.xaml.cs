@@ -1,7 +1,7 @@
 using System.Windows;
-using OpaMenu.Desktop.ViewModels;
+using Opamenu.Desktop.ViewModels;
 
-namespace OpaMenu.Desktop.Views;
+namespace Opamenu.Desktop.Views;
 
 public partial class MainWindow : Window
 {

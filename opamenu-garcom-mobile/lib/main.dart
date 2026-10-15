@@ -4,5 +4,5 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'src/app/opamenu_garcom_app.dart';
 
 void main() {
-  runApp(const ProviderScope(child: OpaMenuGarcomApp()));
+  runApp(const ProviderScope(child: OpamenuGarcomApp()));
 }

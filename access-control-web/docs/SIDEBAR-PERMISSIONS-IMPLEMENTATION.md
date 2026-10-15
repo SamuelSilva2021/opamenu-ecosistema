@@ -40,4 +40,4 @@ ModuleKey.TENANT_MODULE → "TENANT_MODULE"
 
 ---
 
-**Nota**: Este documento reflete a versão final (v2.0) do sistema de controle de acesso do ecossistema OpaMenu.
+**Nota**: Este documento reflete a versão final (v2.0) do sistema de controle de acesso do ecossistema Opamenu.

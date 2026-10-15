@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using OpaMenu.Desktop.Models.Data;
+using Opamenu.Desktop.Models.Data;
 
 #nullable disable
 
-namespace OpaMenu.Desktop.Migrations
+namespace Opamenu.Desktop.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     [Migration("20260410170208_PrintEngine")]
@@ -20,7 +20,7 @@ namespace OpaMenu.Desktop.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.10");
 
-            modelBuilder.Entity("OpaMenu.Desktop.Models.Entities.LocalOrderEntity", b =>
+            modelBuilder.Entity("Opamenu.Desktop.Models.Entities.LocalOrderEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -95,7 +95,7 @@ namespace OpaMenu.Desktop.Migrations
                     b.ToTable("LocalOrders");
                 });
 
-            modelBuilder.Entity("OpaMenu.Desktop.Models.Entities.LocalOrderItemEntity", b =>
+            modelBuilder.Entity("Opamenu.Desktop.Models.Entities.LocalOrderItemEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -133,7 +133,7 @@ namespace OpaMenu.Desktop.Migrations
                     b.ToTable("LocalOrderItems");
                 });
 
-            modelBuilder.Entity("OpaMenu.Desktop.Models.Entities.PrintJobEntity", b =>
+            modelBuilder.Entity("Opamenu.Desktop.Models.Entities.PrintJobEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -174,7 +174,7 @@ namespace OpaMenu.Desktop.Migrations
                     b.ToTable("PrintJobs");
                 });
 
-            modelBuilder.Entity("OpaMenu.Desktop.Models.Entities.PrinterMappingEntity", b =>
+            modelBuilder.Entity("Opamenu.Desktop.Models.Entities.PrinterMappingEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -212,9 +212,9 @@ namespace OpaMenu.Desktop.Migrations
                     b.ToTable("PrinterMappings");
                 });
 
-            modelBuilder.Entity("OpaMenu.Desktop.Models.Entities.LocalOrderItemEntity", b =>
+            modelBuilder.Entity("Opamenu.Desktop.Models.Entities.LocalOrderItemEntity", b =>
                 {
-                    b.HasOne("OpaMenu.Desktop.Models.Entities.LocalOrderEntity", "LocalOrder")
+                    b.HasOne("Opamenu.Desktop.Models.Entities.LocalOrderEntity", "LocalOrder")
                         .WithMany()
                         .HasForeignKey("LocalOrderId")
                         .OnDelete(DeleteBehavior.Cascade)

@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace OpaMenu.Desktop.ViewModels.Dialogs;
+namespace Opamenu.Desktop.ViewModels.Dialogs;
 
 public sealed partial class DialogHostViewModel : ObservableObject
 {

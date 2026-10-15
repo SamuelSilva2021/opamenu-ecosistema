@@ -2,7 +2,7 @@ import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
-import { OpaMenuLogo } from "@/components/common/OpaMenuLogo";
+import { OpamenuLogo } from "@/components/common/OpamenuLogo";
 import { hasPermission } from "@/lib/permissions";
 import {
   LayoutDashboard,
@@ -182,7 +182,7 @@ function SidebarContent({ isCollapsed }: { isCollapsed?: boolean }) {
               </svg>
             </div>
           ) : (
-            <OpaMenuLogo isDark />
+            <OpamenuLogo isDark />
           )}
         </div>
       </div>

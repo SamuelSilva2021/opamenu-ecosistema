@@ -1,8 +1,8 @@
 using System.Threading;
 using System.Threading.Tasks;
-using OpaMenu.Desktop.Models.Printing;
+using Opamenu.Desktop.Models.Printing;
 
-namespace OpaMenu.Desktop.Services.Implementation.Printing;
+namespace Opamenu.Desktop.Services.Implementation.Printing;
 
 internal interface IPrintTransport
 {

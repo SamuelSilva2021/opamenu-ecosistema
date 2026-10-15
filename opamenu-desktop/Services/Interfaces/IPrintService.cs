@@ -1,9 +1,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using OpaMenu.Desktop.Models.Printing;
+using Opamenu.Desktop.Models.Printing;
 
-namespace OpaMenu.Desktop.Services.Interfaces;
+namespace Opamenu.Desktop.Services.Interfaces;
 
 public interface IPrintService
 {

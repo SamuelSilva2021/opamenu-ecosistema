@@ -1,6 +1,6 @@
-using OpaMenu.Desktop.Models.Enums;
+using Opamenu.Desktop.Models.Enums;
 
-namespace OpaMenu.Desktop.Models.Printing;
+namespace Opamenu.Desktop.Models.Printing;
 
 public sealed record PrinterMapping(
     EPrintDestination Destination,

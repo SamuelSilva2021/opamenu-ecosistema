@@ -1,8 +1,8 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using OpaMenu.Desktop.Models.Enums;
+using Opamenu.Desktop.Models.Enums;
 
-namespace OpaMenu.Desktop.Models.Entities;
+namespace Opamenu.Desktop.Models.Entities;
 
 public class PrinterMappingEntity
 {

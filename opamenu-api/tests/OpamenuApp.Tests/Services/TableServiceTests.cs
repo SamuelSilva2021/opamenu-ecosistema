@@ -1,11 +1,11 @@
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Moq;
-using OpaMenu.Application.Services.Interfaces;
-using OpaMenu.Application.Services.Interfaces.Opamenu;
-using OpaMenu.Domain.DTOs.Table;
-using OpaMenu.Domain.Interfaces;
-using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
+using Opamenu.Application.Services.Interfaces;
+using Opamenu.Application.Services.Interfaces.Opamenu;
+using Opamenu.Domain.DTOs.Table;
+using Opamenu.Domain.Interfaces;
+using Opamenu.Infrastructure.Shared.Entities.Opamenu;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -19,7 +19,7 @@ public class TableServiceTests
     private readonly Mock<ICurrentUserService> _mockCurrentUserService = new();
     private readonly Mock<IMapper> _mockMapper = new();
     private readonly Mock<IUrlBuilderService> _mockUrlBuilderService = new();
-    private readonly Mock<ILogger<OpaMenu.Application.Services.Opamenu.TableService>> _mockLogger = new();
+    private readonly Mock<ILogger<global::Opamenu.Application.Services.Opamenu.TableService>> _mockLogger = new();
 
     private readonly Guid _tenantId = Guid.NewGuid();
 
@@ -50,10 +50,10 @@ public class TableServiceTests
                 Name = "Mesa 01",
                 Capacity = 4,
                 IsActive = true,
-                Tabs = Array.Empty<OpaMenu.Domain.DTOs.Tab.TabResponseDto>()
+                Tabs = Array.Empty<global::Opamenu.Domain.DTOs.Tab.TabResponseDto>()
             });
 
-        var service = new OpaMenu.Application.Services.Opamenu.TableService(
+        var service = new global::Opamenu.Application.Services.Opamenu.TableService(
             _mockTableRepository.Object,
             _mockCurrentUserService.Object,
             _mockMapper.Object,
@@ -102,11 +102,11 @@ public class TableServiceTests
                     Name = "Mesa 01",
                     Capacity = 4,
                     IsActive = true,
-                    Tabs = Array.Empty<OpaMenu.Domain.DTOs.Tab.TabResponseDto>()
+                    Tabs = Array.Empty<global::Opamenu.Domain.DTOs.Tab.TabResponseDto>()
                 }
             });
 
-        var service = new OpaMenu.Application.Services.Opamenu.TableService(
+        var service = new global::Opamenu.Application.Services.Opamenu.TableService(
             _mockTableRepository.Object,
             _mockCurrentUserService.Object,
             _mockMapper.Object,

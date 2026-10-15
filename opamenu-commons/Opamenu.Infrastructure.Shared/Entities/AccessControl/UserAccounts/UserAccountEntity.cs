@@ -1,0 +1,100 @@
+﻿using Opamenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts.Enum;
+using Opamenu.Infrastructure.Shared.Entities.Opamenu;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Opamenu.Infrastructure.Shared.Entities.AccessControl.UserAccounts
+{
+    /// <summary>
+    /// Entidade que representa um usuário no sistema de controle de acesso
+    /// </summary>
+    public class UserAccountEntity: BaseEntity
+    {
+        /// <summary>
+        /// Nome de usuário (username)
+        /// </summary>
+        [Required]
+        [MaxLength(100)]
+        public string Username { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Email do usuário
+        /// </summary>
+        [Required]
+        [MaxLength(255)]
+        public string Email { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Hash da senha
+        /// </summary>
+        [Required]
+        public string PasswordHash { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Primeiro nome do usuário
+        /// </summary>
+        [MaxLength(100)]
+        public string FirstName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Sobrenome do usuário
+        /// </summary>
+        [MaxLength(100)]
+        public string LastName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Número de telefone
+        /// </summary>
+        [MaxLength(20)]
+        public string? PhoneNumber { get; set; }
+
+        /// <summary>
+        /// Se o usuário está ativo
+        /// </summary>
+        public EUserAccountStatus Status { get; set; } = EUserAccountStatus.Ativo;
+
+        /// <summary>
+        /// Se o email foi verificado
+        /// </summary>
+        public bool IsEmailVerified { get; set; } = false;
+
+        /// <summary>
+        /// Data de exclusão (soft delete)
+        /// </summary>
+        public DateTime? DeletedAt { get; set; }
+
+        /// <summary>
+        /// Última data de login
+        /// </summary>
+        public DateTime? LastLoginAt { get; set; }
+
+        /// <summary>
+        /// Token para reset de senha
+        /// </summary>
+        public string? PasswordResetToken { get; set; }
+
+        /// <summary>
+        /// Data de expiração do token de reset de senha
+        /// </summary>
+        public DateTime? PasswordResetExpiresAt { get; set; }
+
+        /// <summary>
+        /// Tenant ao qual o usuário pertence - removido navigation property (tabela está em outro banco)
+        /// </summary>
+        // public TenantEntity? Tenant { get; set; }
+        /// <summary>
+        /// ID do Perfil (Role) do usuário
+        /// </summary>
+        public Guid? RoleId { get; set; }
+
+        public virtual RoleEntity? Role { get; set; }
+
+        // Navigation properties
+        public virtual ICollection<AccountAccessGroupEntity> AccountAccessGroups { get; set; } = [];
+    }
+}
+

@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace OpaMenu.Desktop.ViewModels.Components;
+namespace Opamenu.Desktop.ViewModels.Components;
 
 public partial class PaymentEntry : ObservableObject
 {

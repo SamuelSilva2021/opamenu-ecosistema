@@ -1,0 +1,146 @@
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Opamenu.Domain.DTOs.Loyalty;
+using Opamenu.Infrastructure.Authentication;
+using Opamenu.Domain.Interfaces;
+using Opamenu.Infrastructure.Anotations;
+using Opamenu.Infrastructure.Filters;
+using Opamenu.Application.Services.Interfaces.Opamenu;
+using Opamenu.Commons.Api.DTOs;
+
+namespace Opamenu.Web.UserEntry.Loyalty;
+
+[Route("api/loyalty")]
+[ApiController]
+[ServiceFilter(typeof(PermissionAuthorizationFilter))]
+public class LoyaltyController(
+    ILoyaltyService loyaltyService,
+    ICurrentUserService currentUserService
+    ) : BaseController
+{
+    private readonly ILoyaltyService _loyaltyService = loyaltyService;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+
+    /// <summary>
+    /// Obtém o programa de fidelidade do tenant atual
+    /// </summary>
+    [HttpGet("program")]
+    [Authorize]
+    [MapPermission(MODULE_LOYALTY, OPERATION_SELECT)]
+    public async Task<ActionResult<ResponseDTO<LoyaltyProgramDto>>> GetProgram()
+    {
+        var tenantId = _currentUserService.GetTenantGuid();
+        if (!tenantId.HasValue)
+            return Unauthorized();
+
+        var response = await _loyaltyService.GetProgramAsync(tenantId.Value);
+        return BuildResponse(response);
+    }
+
+    /// <summary>
+    /// Obtém todos os programas de fidelidade do tenant atual
+    /// </summary>
+    [HttpGet("programs")]
+    [Authorize]
+    [MapPermission(MODULE_LOYALTY, OPERATION_SELECT)]
+    public async Task<ActionResult<ResponseDTO<IEnumerable<LoyaltyProgramDto>>>> GetAllPrograms()
+    {
+        var tenantId = _currentUserService.GetTenantGuid();
+        if (!tenantId.HasValue)
+            return Unauthorized();
+
+        var response = await _loyaltyService.GetAllProgramsAsync(tenantId.Value);
+        return BuildResponse(response);
+    }
+
+    /// <summary>
+    /// Cria um novo programa de fidelidade
+    /// </summary>
+    [HttpPost("program")]
+    [Authorize]
+    [MapPermission(MODULE_LOYALTY, OPERATION_INSERT)]
+    public async Task<ActionResult> InsertProgram([FromBody] CreateLoyaltyProgramDto dto)
+    {
+        var tenantId = _currentUserService.GetTenantGuid();
+        if (!tenantId.HasValue)
+            return Unauthorized();
+
+        var response = await _loyaltyService.CreateProgramAsync(tenantId.Value, dto);
+        return BuildResponse(response);
+    }
+
+    /// <summary>
+    /// Atualiza um programa de fidelidade existente
+    /// </summary>
+    [HttpPut("program/{id}")]
+    [Authorize]
+    [MapPermission(MODULE_LOYALTY, OPERATION_UPDATE)]
+    public async Task<ActionResult> UpdateProgram(Guid id, [FromBody] CreateLoyaltyProgramDto dto)
+    {
+        var tenantId = _currentUserService.GetTenantGuid();
+        if (!tenantId.HasValue)
+            return Unauthorized();
+
+        var response = await _loyaltyService.UpdateProgramAsync(tenantId.Value, id, dto);
+        return BuildResponse(response);
+    }
+
+    [HttpPatch("program/{id}/toggle-status")]
+    [Authorize]
+    [MapPermission(MODULE_LOYALTY, OPERATION_UPDATE)]
+    public async Task<ActionResult> ToggleProgramStatus(Guid id, [FromQuery] bool status)
+    {
+        var tenantId = _currentUserService.GetTenantGuid();
+        if (!tenantId.HasValue)
+            return Unauthorized();
+        var response = await _loyaltyService.ToggleStatus(tenantId.Value, id, status);
+        return BuildResponse(response);
+    }
+
+    [HttpDelete("program/{id}")]
+    [Authorize]
+    [MapPermission(MODULE_LOYALTY, OPERATION_DELETE)]
+    public async Task<ActionResult> DeleteProgram(Guid id)
+    {
+        var tenantId = _currentUserService.GetTenantGuid();
+        if (!tenantId.HasValue)
+            return Unauthorized();
+        var response = await _loyaltyService.DeleteProgramAsync(tenantId.Value, id);
+        return BuildResponse(response);
+    }
+
+    /// <summary>
+    /// Obtém o saldo de um cliente (Requer autenticação do tenant para consultar clientes, ou lógica pública futura)
+    /// Por enquanto, vamos permitir que o tenant consulte o saldo de um cliente específico via telefone
+    /// </summary>
+    [HttpGet("balance/{phone}")]
+    [Authorize]
+    [MapPermission(MODULE_LOYALTY, OPERATION_SELECT)]
+    public async Task<ActionResult> GetCustomerBalance(string phone)
+    {
+        var tenantId = _currentUserService.GetTenantGuid();
+        if (!tenantId.HasValue)
+            return Unauthorized();
+
+        var response = await _loyaltyService.GetCustomerBalanceAsync(tenantId.Value, phone);
+        return BuildResponse(response);
+    }
+
+    /// <summary>
+    /// Resgata pontos de um programa específico
+    /// </summary>
+    [HttpPost("redeem")]
+    [Authorize]
+    [MapPermission(MODULE_LOYALTY, OPERATION_UPDATE)]
+    public async Task<ActionResult> RedeemPoints([FromBody] RedeemLoyaltyPointsDto dto)
+    {
+        var tenantId = _currentUserService.GetTenantGuid();
+        if (!tenantId.HasValue)
+            return Unauthorized();
+
+        var response = await _loyaltyService.RedeemPointsAsync(tenantId.Value, dto);
+        return BuildResponse(response);
+    }
+}

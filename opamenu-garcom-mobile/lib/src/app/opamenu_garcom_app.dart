@@ -5,12 +5,12 @@ import '../features/auth/presentation/pages/auth_gate.dart';
 import '../features/auth/presentation/providers/auth_controller_provider.dart';
 import 'app_theme.dart';
 
-class OpaMenuGarcomApp extends ConsumerWidget {
+class OpamenuGarcomApp extends ConsumerWidget {
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   static final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
 
-  const OpaMenuGarcomApp({super.key});
+  const OpamenuGarcomApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -23,7 +23,7 @@ class OpaMenuGarcomApp extends ConsumerWidget {
     });
 
     return MaterialApp(
-      title: 'OpaMenu Garçom',
+      title: 'Opamenu Garçom',
       theme: AppTheme.light(),
       home: const AuthGate(),
       navigatorKey: navigatorKey,

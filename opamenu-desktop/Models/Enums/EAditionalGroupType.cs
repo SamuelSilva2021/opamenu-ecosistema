@@ -1,4 +1,4 @@
-namespace OpaMenu.Desktop.Models.Enums;
+namespace Opamenu.Desktop.Models.Enums;
 
 public enum EAditionalGroupType
 {

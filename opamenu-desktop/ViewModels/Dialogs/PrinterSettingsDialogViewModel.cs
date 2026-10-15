@@ -1,14 +1,14 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using OpaMenu.Desktop.Models.Enums;
-using OpaMenu.Desktop.Models.Printing;
-using OpaMenu.Desktop.Services.Interfaces;
+using Opamenu.Desktop.Models.Enums;
+using Opamenu.Desktop.Models.Printing;
+using Opamenu.Desktop.Services.Interfaces;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace OpaMenu.Desktop.ViewModels.Dialogs;
+namespace Opamenu.Desktop.ViewModels.Dialogs;
 
 public sealed partial class PrinterSettingsDialogViewModel : DialogViewModelBase
 {

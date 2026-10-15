@@ -15,7 +15,7 @@ import {
 import { authService } from "@/features/auth/auth.service";
 import { useAuthStore } from "@/store/auth.store";
 import { useToast } from "@/hooks/use-toast";
-import { OpaMenuLogo } from "@/components/common/OpaMenuLogo";
+import { OpamenuLogo } from "@/components/common/OpamenuLogo";
 import { cn } from "@/lib/utils";
 
 export default function PlansPage() {
@@ -123,7 +123,7 @@ export default function PlansPage() {
         "fixed top-0 w-full z-50 transition-all duration-300 px-6 py-4 flex items-center justify-between",
         scrolled ? "bg-white/80 backdrop-blur-md shadow-sm border-b" : "bg-transparent"
       )}>
-        <OpaMenuLogo size="small" />
+        <OpamenuLogo size="small" />
         
         <div className="hidden md:flex items-center gap-8 font-medium">
           <a href="#beneficios" className="hover:text-[#F37021] transition-colors">Benefícios</a>
@@ -368,7 +368,7 @@ export default function PlansPage() {
       {/* Footer */}
       <footer className="py-12 bg-white border-t border-zinc-100">
         <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
-          <OpaMenuLogo size="small" />
+          <OpamenuLogo size="small" />
           <div className="flex gap-8 text-gray-500 text-sm font-medium">
             <a href="#" className="hover:text-[#F37021]">Termos</a>
             <a href="#" className="hover:text-[#F37021]">Privacidade</a>

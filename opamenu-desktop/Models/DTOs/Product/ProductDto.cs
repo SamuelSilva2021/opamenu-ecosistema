@@ -1,9 +1,9 @@
-using OpaMenu.Desktop.Models.DTOs.Aditional;
+using Opamenu.Desktop.Models.DTOs.Aditional;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace OpaMenu.Desktop.Models.DTOs.Product;
+namespace Opamenu.Desktop.Models.DTOs.Product;
 
 public class ProductDto
 {

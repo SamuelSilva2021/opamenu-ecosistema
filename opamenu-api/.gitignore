@@ -72,5 +72,5 @@ appsettings.Production.json
 # Uploads folder
 /OpamenuApp.Web/wwwroot/uploads
 /docs/Scalability-Improvements-Plan.md
-/OpaMenu.Web/appsettings.json
-/OpaMenu.Web/wwwroot/uploads
+/Opamenu.Web/appsettings.json
+/Opamenu.Web/wwwroot/uploads

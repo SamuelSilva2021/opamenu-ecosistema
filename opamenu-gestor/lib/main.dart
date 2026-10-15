@@ -9,11 +9,11 @@ import 'core/theme/app_theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('pt_BR', null);
-  runApp(const ProviderScope(child: OpaMenuGestorApp()));
+  runApp(const ProviderScope(child: OpamenuGestorApp()));
 }
 
-class OpaMenuGestorApp extends ConsumerWidget {
-  const OpaMenuGestorApp({super.key});
+class OpamenuGestorApp extends ConsumerWidget {
+  const OpamenuGestorApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

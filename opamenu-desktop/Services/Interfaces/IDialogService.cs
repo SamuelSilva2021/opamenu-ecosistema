@@ -1,7 +1,7 @@
-using OpaMenu.Desktop.ViewModels.Dialogs;
+using Opamenu.Desktop.ViewModels.Dialogs;
 using System.Threading.Tasks;
 
-namespace OpaMenu.Desktop.Services.Interfaces;
+namespace Opamenu.Desktop.Services.Interfaces;
 
 public interface IDialogService
 {

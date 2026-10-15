@@ -2,7 +2,7 @@ import { LoginForm } from "@/features/auth/components/LoginForm";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
-import { OpaMenuLogo } from "@/components/common/OpaMenuLogo";
+import { OpamenuLogo } from "@/components/common/OpamenuLogo";
 export default function LoginPage() {
   return (
     <div className="container relative min-h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0">
@@ -10,7 +10,7 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-zinc-900" />
 
         <div className="relative z-20 flex flex-1 items-center justify-center">
-          <OpaMenuLogo size="large" isDark />
+          <OpamenuLogo size="large" isDark />
         </div>
       </div>
       <div className="lg:p-8">

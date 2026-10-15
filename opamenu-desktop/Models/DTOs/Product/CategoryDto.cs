@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
 
-namespace OpaMenu.Desktop.Models.DTOs.Product;
+namespace Opamenu.Desktop.Models.DTOs.Product;
 
 public class CategoryDto
 {

@@ -143,7 +143,7 @@ class CatalogPage extends ConsumerWidget {
                     final state =
                         ref.read(AddTabItemsControllerProvider.provider);
                     final messenger =
-                        OpaMenuGarcomApp.scaffoldMessengerKey.currentState;
+                        OpamenuGarcomApp.scaffoldMessengerKey.currentState;
                     if (state.hasError) {
                       final error = state.error;
                       final message = error is Failure
@@ -212,7 +212,7 @@ class CatalogPage extends ConsumerWidget {
             onPressed: () {
               final quantity = int.tryParse(quantityText.trim()) ?? 0;
               if (quantity < 1 || quantity > 99) {
-                OpaMenuGarcomApp.scaffoldMessengerKey.currentState?.showSnackBar(
+                OpamenuGarcomApp.scaffoldMessengerKey.currentState?.showSnackBar(
                   const SnackBar(content: Text('Quantidade inválida')),
                 );
                 return;

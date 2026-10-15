@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.3.11312.210
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpaMenu.Infrastructure.Shared", "OpaMenu.Infrastructure.Shared\OpaMenu.Infrastructure.Shared.csproj", "{3CB6A2B8-DF6D-3109-E986-8CF8D3B99D83}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Opamenu.Infrastructure.Shared", "Opamenu.Infrastructure.Shared\Opamenu.Infrastructure.Shared.csproj", "{3CB6A2B8-DF6D-3109-E986-8CF8D3B99D83}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpaMenu.Commons", "OpaMenu.Commons\OpaMenu.Commons.csproj", "{EB76641C-8E38-4A31-869B-0409E439A9D6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Opamenu.Commons", "Opamenu.Commons\Opamenu.Commons.csproj", "{EB76641C-8E38-4A31-869B-0409E439A9D6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpaMenu.DatabaseMigrator", "OpaMenu.DatabaseMigrator\OpaMenu.DatabaseMigrator.csproj", "{A5C5E5F3-9B3E-4F1F-9C4D-8F2A1F5E7B10}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Opamenu.DatabaseMigrator", "Opamenu.DatabaseMigrator\Opamenu.DatabaseMigrator.csproj", "{A5C5E5F3-9B3E-4F1F-9C4D-8F2A1F5E7B10}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

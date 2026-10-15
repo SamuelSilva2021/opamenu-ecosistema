@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OpaMenu.Desktop.Models.DTOs.AccessControl
+namespace Opamenu.Desktop.Models.DTOs.AccessControl
 {
     public class UserPermissionsDTO
     {

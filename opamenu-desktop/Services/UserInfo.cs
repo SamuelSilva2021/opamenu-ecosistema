@@ -1,11 +1,11 @@
-﻿using OpaMenu.Desktop.Models.DTOs.AccessControl;
+﻿using Opamenu.Desktop.Models.DTOs.AccessControl;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OpaMenu.Desktop.Services
+namespace Opamenu.Desktop.Services
 {
     /// <summary>
     /// Informações básicas do usuário autenticado

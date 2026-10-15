@@ -1,12 +1,12 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using OpaMenu.Desktop.Services.Interfaces;
+using Opamenu.Desktop.Services.Interfaces;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OpaMenu.Desktop.Services.Implementation;
+namespace Opamenu.Desktop.Services.Implementation;
 
 public sealed class PrintBackgroundService : BackgroundService
 {

@@ -2,9 +2,9 @@ using System;
 using System.Windows;
 using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
-using OpaMenu.Desktop.ViewModels;
+using Opamenu.Desktop.ViewModels;
 
-namespace OpaMenu.Desktop.Views;
+namespace Opamenu.Desktop.Views;
 
 public partial class LoginWindow : Window
 {

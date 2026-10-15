@@ -1,6 +1,6 @@
 using System.Windows.Controls;
 
-namespace OpaMenu.Desktop.Views;
+namespace Opamenu.Desktop.Views;
 
 public partial class TableDetailsView : UserControl
 {

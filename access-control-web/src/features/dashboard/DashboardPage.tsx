@@ -26,7 +26,7 @@ export const DashboardPage = () => {
     <ResponsiveContainer>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 700 }}>
-          Painel de Controle OpaMenu
+          Painel de Controle Opamenu
         </Typography>
         <Typography variant="body1" color="text.secondary">
           Bem-vindo, {user?.fullName}. Veja o resumo do ecossistema hoje.

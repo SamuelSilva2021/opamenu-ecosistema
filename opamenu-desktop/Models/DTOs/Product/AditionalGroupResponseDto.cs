@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using OpaMenu.Desktop.Models.Enums;
+using Opamenu.Desktop.Models.Enums;
 
-namespace OpaMenu.Desktop.Models.DTOs.Aditional;
+namespace Opamenu.Desktop.Models.DTOs.Aditional;
 
 public class AditionalGroupResponseDto
 {

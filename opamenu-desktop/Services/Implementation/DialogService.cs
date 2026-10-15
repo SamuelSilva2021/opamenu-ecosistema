@@ -1,9 +1,9 @@
-using OpaMenu.Desktop.Services.Interfaces;
-using OpaMenu.Desktop.ViewModels.Dialogs;
+using Opamenu.Desktop.Services.Interfaces;
+using Opamenu.Desktop.ViewModels.Dialogs;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace OpaMenu.Desktop.Services.Implementation;
+namespace Opamenu.Desktop.Services.Implementation;
 
 public sealed class DialogService : IDialogService
 {

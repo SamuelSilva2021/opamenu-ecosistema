@@ -1,13 +1,13 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using OpaMenu.Desktop.Models.DTOs.Tables;
-using OpaMenu.Desktop.Services.Interfaces;
+using Opamenu.Desktop.Models.DTOs.Tables;
+using Opamenu.Desktop.Services.Interfaces;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace OpaMenu.Desktop.ViewModels.Screens;
+namespace Opamenu.Desktop.ViewModels.Screens;
 
 public sealed partial class TablesScreenViewModel : ObservableObject
 {

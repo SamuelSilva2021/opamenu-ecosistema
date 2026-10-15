@@ -1,11 +1,11 @@
 using CommunityToolkit.Mvvm.ComponentModel;
-using OpaMenu.Desktop.Models.DTOs.Aditional;
-using OpaMenu.Desktop.Models.Enums;
+using Opamenu.Desktop.Models.DTOs.Aditional;
+using Opamenu.Desktop.Models.Enums;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace OpaMenu.Desktop.ViewModels.Components;
+namespace Opamenu.Desktop.ViewModels.Components;
 
 public partial class SelectableAditionalGroup : ObservableObject
 {

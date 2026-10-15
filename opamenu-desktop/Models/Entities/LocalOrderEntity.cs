@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace OpaMenu.Desktop.Models.Entities;
+namespace Opamenu.Desktop.Models.Entities;
 
 /// <summary>
 /// Representa a tabela LocalOrders no SQLite para funcionamento offline.

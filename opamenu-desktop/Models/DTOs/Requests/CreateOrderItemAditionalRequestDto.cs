@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace OpaMenu.Desktop.Models.DTOs.Requests
+namespace Opamenu.Desktop.Models.DTOs.Requests
 {
     public class CreateOrderItemAditionalRequestDto
     {

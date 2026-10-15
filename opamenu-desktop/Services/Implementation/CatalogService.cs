@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Configuration;
-using OpaMenu.Desktop.Models.DTOs.Api;
-using OpaMenu.Desktop.Models.DTOs.Product;
-using OpaMenu.Desktop.Services.Interfaces;
+using Opamenu.Desktop.Models.DTOs.Api;
+using Opamenu.Desktop.Models.DTOs.Product;
+using Opamenu.Desktop.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -9,7 +9,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 
-namespace OpaMenu.Desktop.Services.Implementation;
+namespace Opamenu.Desktop.Services.Implementation;
 
 public class CatalogService : ICatalogService
 {

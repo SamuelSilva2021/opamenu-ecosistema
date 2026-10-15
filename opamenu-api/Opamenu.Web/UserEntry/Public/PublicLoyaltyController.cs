@@ -1,0 +1,70 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Opamenu.Application.Services.Interfaces.Opamenu;
+using Opamenu.Commons.Api.Commons;
+using Opamenu.Commons.Api.DTOs;
+using Opamenu.Domain.DTOs.Loyalty;
+using Opamenu.Domain.Interfaces;
+
+namespace Opamenu.Web.UserEntry.Public;
+
+[ApiController]
+[Route("api/public/{slug}/loyalty")]
+[AllowAnonymous]
+public class PublicLoyaltyController(
+    ILoyaltyService loyaltyService,
+    ITenantService tenantService
+    ) : BaseController
+{
+    private readonly ILoyaltyService _loyaltyService = loyaltyService;
+    private readonly ITenantService _tenantService = tenantService;
+
+    /// <summary>
+    /// Obtém todos os programas de fidelidade ativos para uma loja específica (slug)
+    /// </summary>
+    [HttpGet("programs")]
+    public async Task<ActionResult<ResponseDTO<IEnumerable<LoyaltyProgramDto>>>> GetPublicPrograms(string slug)
+    {
+        var tenantResponse = await _tenantService.GetTenantBusinessInfoBySlugAsync(slug);
+        if (!tenantResponse.Succeeded || tenantResponse.Data == null)
+            return NotFound(StaticResponseBuilder<IEnumerable<LoyaltyProgramDto>>.BuildError("Restaurante não encontrado"));
+
+        var response = await _loyaltyService.GetAllProgramsAsync(tenantResponse.Data.Id);
+        
+        // Filtrar apenas programas ativos para o público
+        if (response.Succeeded && response.Data != null)
+        {
+            response.Data = response.Data.Where(p => p.IsActive);
+        }
+
+        return BuildResponse(response);
+    }
+
+    /// <summary>
+    /// Obtém o saldo de fidelidade de um cliente para uma loja específica (slug)
+    /// </summary>
+    [HttpGet("balance/{phone}")]
+    public async Task<ActionResult<ResponseDTO<CustomerLoyaltySummaryDto>>> GetPublicCustomerBalance(string slug, string phone)
+    {
+        var tenantResponse = await _tenantService.GetTenantBusinessInfoBySlugAsync(slug);
+        if (!tenantResponse.Succeeded || tenantResponse.Data == null)
+            return NotFound(StaticResponseBuilder<CustomerLoyaltySummaryDto>.BuildError("Restaurante não encontrado"));
+
+        var response = await _loyaltyService.GetCustomerBalanceAsync(tenantResponse.Data.Id, phone);
+        return BuildResponse(response);
+    }
+
+    /// <summary>
+    /// Resgata pontos de um programa específico (Público/Checkout)
+    /// </summary>
+    [HttpPost("redeem")]
+    public async Task<ActionResult> RedeemPublicPoints(string slug, [FromBody] RedeemLoyaltyPointsDto dto)
+    {
+        var tenantResponse = await _tenantService.GetTenantBusinessInfoBySlugAsync(slug);
+        if (!tenantResponse.Succeeded || tenantResponse.Data == null)
+            return NotFound(StaticResponseBuilder<bool>.BuildError("Restaurante não encontrado"));
+
+        var response = await _loyaltyService.RedeemPointsAsync(tenantResponse.Data.Id, dto);
+        return BuildResponse(response);
+    }
+}

@@ -1,4 +1,4 @@
-namespace OpaMenu.Desktop.Services;
+namespace Opamenu.Desktop.Services;
 
 public class TokenStore
 {

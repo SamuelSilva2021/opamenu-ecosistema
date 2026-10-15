@@ -1,9 +1,9 @@
-using OpaMenu.Desktop.Models.Enums;
+using Opamenu.Desktop.Models.Enums;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace OpaMenu.Desktop.Models.DTOs.Requests;
+namespace Opamenu.Desktop.Models.DTOs.Requests;
 
 public class CreateOrderRequestDto
 {

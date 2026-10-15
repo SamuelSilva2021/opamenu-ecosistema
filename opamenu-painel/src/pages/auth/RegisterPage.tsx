@@ -1,6 +1,6 @@
 import { RegisterForm } from "@/features/auth/components/RegisterForm";
 import { Link } from "react-router-dom";
-import { OpaMenuLogo } from "@/components/common/OpaMenuLogo";
+import { OpamenuLogo } from "@/components/common/OpamenuLogo";
 
 export default function RegisterPage() {
   return (
@@ -8,7 +8,7 @@ export default function RegisterPage() {
       <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
         <div className="absolute inset-0 bg-zinc-900" />
         <div className="relative z-20 flex flex-1 items-center justify-center">
-          <OpaMenuLogo size="large" isDark />
+          <OpamenuLogo size="large" isDark />
         </div>
       </div>
       <div className="lg:p-8">

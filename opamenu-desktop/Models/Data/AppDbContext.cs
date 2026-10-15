@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using OpaMenu.Desktop.Models.Entities;
+using Opamenu.Desktop.Models.Entities;
 using System;
 using System.IO;
 
-namespace OpaMenu.Desktop.Models.Data;
+namespace Opamenu.Desktop.Models.Data;
 
 /// <summary>
 /// Contexto do Entity Framework Core que irá gerenciar o banco de dados local SQLite
@@ -32,10 +32,10 @@ public class AppDbContext : DbContext
     {
         if (!optionsBuilder.IsConfigured)
         {
-            // Cria um diretório de dados locais do aplicativo (ex: AppData/Roaming/OpaMenuDesktop)
+            // Cria um diretório de dados locais do aplicativo (ex: AppData/Roaming/OpamenuDesktop)
             var folder = Environment.SpecialFolder.LocalApplicationData;
             var path = Environment.GetFolderPath(folder);
-            var appDataPath = Path.Join(path, "OpaMenuDesktop");
+            var appDataPath = Path.Join(path, "OpamenuDesktop");
 
             if (!Directory.Exists(appDataPath))
             {

@@ -1,7 +1,7 @@
 using System;
-using OpaMenu.Desktop.Models.Enums;
+using Opamenu.Desktop.Models.Enums;
 
-namespace OpaMenu.Desktop.Models.Entities;
+namespace Opamenu.Desktop.Models.Entities;
 
 /// <summary>
 /// Modelo base para tabelas que precisam de suporte Offline-First.

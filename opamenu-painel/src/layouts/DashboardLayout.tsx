@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sidebar, MobileSidebar } from "@/components/layout/Sidebar";
-import { OpaMenuLogo } from "@/components/common/OpaMenuLogo";
+import { OpamenuLogo } from "@/components/common/OpamenuLogo";
 import { signalRService } from "@/services/signalr.service";
 
 export default function DashboardLayout() {
@@ -48,7 +48,7 @@ export default function DashboardLayout() {
             </Button>
             <div className="md:hidden flex items-center gap-2">
               <MobileSidebar />
-              <OpaMenuLogo size="small" />
+              <OpamenuLogo size="small" />
             </div>
           </div>
 

@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 
-namespace OpaMenu.Desktop.Models.DTOs;
+namespace Opamenu.Desktop.Models.DTOs;
 
 public partial class CartItemDto : ObservableObject
 {

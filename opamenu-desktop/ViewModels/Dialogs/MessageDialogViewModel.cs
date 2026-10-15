@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.Input;
 
-namespace OpaMenu.Desktop.ViewModels.Dialogs;
+namespace Opamenu.Desktop.ViewModels.Dialogs;
 
 public sealed partial class MessageDialogViewModel : DialogViewModelBase
 {

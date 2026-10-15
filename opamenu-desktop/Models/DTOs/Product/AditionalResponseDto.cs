@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
 
-namespace OpaMenu.Desktop.Models.DTOs.Aditional;
+namespace Opamenu.Desktop.Models.DTOs.Aditional;
 
 public class AditionalResponseDto
 {
