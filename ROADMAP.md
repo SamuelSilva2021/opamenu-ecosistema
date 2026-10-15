@@ -1,6 +1,6 @@
-# Roadmap MVP: OpaMenu Delivery Otimizado
+# Roadmap MVP: Opamenu Delivery Otimizado
 
-Este roadmap foca em transformar o OpaMenu em um competidor de elite, priorizando a experiência de delivery e automação para o lojista.
+Este roadmap foca em transformar o Opamenu em um competidor de elite, priorizando a experiência de delivery e automação para o lojista.
 
 ---
 

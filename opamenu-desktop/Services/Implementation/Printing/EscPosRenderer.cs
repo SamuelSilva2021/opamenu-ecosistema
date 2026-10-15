@@ -1,13 +1,13 @@
-using OpaMenu.Desktop.Models.DTOs.Printing;
-using OpaMenu.Desktop.Models.Enums;
-using OpaMenu.Desktop.Models.Printing;
+using Opamenu.Desktop.Models.DTOs.Printing;
+using Opamenu.Desktop.Models.Enums;
+using Opamenu.Desktop.Models.Printing;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 
-namespace OpaMenu.Desktop.Services.Implementation.Printing;
+namespace Opamenu.Desktop.Services.Implementation.Printing;
 
 internal sealed class EscPosRenderer
 {

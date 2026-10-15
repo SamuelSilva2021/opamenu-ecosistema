@@ -22,7 +22,7 @@ export const Sidebar = () => {
           <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-900/20">
             <Building2 size={18} strokeWidth={2.5} />
           </div>
-          <span className="text-lg font-bold text-white tracking-tight">OpaMenu <span className="text-blue-500 font-light">Org</span></span>
+          <span className="text-lg font-bold text-white tracking-tight">Opamenu <span className="text-blue-500 font-light">Org</span></span>
         </div>
       </div>
       

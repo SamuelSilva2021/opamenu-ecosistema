@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 
-namespace OpaMenu.Desktop.ViewModels.Dialogs;
+namespace Opamenu.Desktop.ViewModels.Dialogs;
 
 public abstract class DialogViewModelBase : ObservableObject
 {

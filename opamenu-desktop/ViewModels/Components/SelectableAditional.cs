@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
-using OpaMenu.Desktop.Models.DTOs.Aditional;
+using Opamenu.Desktop.Models.DTOs.Aditional;
 
-namespace OpaMenu.Desktop.ViewModels.Components;
+namespace Opamenu.Desktop.ViewModels.Components;
 
 public partial class SelectableAditional : ObservableObject
 {

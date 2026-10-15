@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using OpaMenu.Desktop.Models.DTOs.Product;
+using Opamenu.Desktop.Models.DTOs.Product;
 
-namespace OpaMenu.Desktop.Services.Interfaces;
+namespace Opamenu.Desktop.Services.Interfaces;
 
 public interface ICatalogService
 {

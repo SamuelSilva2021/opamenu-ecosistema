@@ -1,0 +1,52 @@
+using Microsoft.EntityFrameworkCore;
+using Opamenu.Domain.Interfaces;
+using Opamenu.Infrastructure.Shared.Data.Context.Opamenu;
+using Opamenu.Infrastructure.Shared.Entities.Opamenu;
+using Opamenu.Infrastructure.Shared.Enums.Opamenu;
+
+namespace Opamenu.Infrastructure.Repositories;
+
+public class CustomerLoyaltyRepository(OpamenuDbContext context) : OpamenuRepository<CustomerLoyaltyBalanceEntity>(context), ICustomerLoyaltyRepository
+{
+    public async Task<CustomerLoyaltyBalanceEntity?> GetByCustomerAndTenantAsync(Guid customerId, Guid tenantId)
+    {
+        return await _dbSet
+            .Include(b => b.Transactions.OrderByDescending(t => t.CreatedAt).Take(20))
+            .FirstOrDefaultAsync(b => b.CustomerId == customerId && b.TenantId == tenantId);
+    }
+
+    public async Task<CustomerLoyaltyBalanceEntity?> GetByCustomerAndProgramAsync(Guid customerId, Guid programId)
+    {
+        return await _dbSet
+            .Include(b => b.Transactions.OrderByDescending(t => t.CreatedAt).Take(20))
+            .FirstOrDefaultAsync(b => b.CustomerId == customerId && b.LoyaltyProgramId == programId);
+    }
+
+    public async Task<IEnumerable<CustomerLoyaltyBalanceEntity>> GetAllBalancesAsync(Guid customerId, Guid tenantId)
+    {
+        return await _dbSet
+            .Include(b => b.LoyaltyProgram)
+            .Include(b => b.Transactions.OrderByDescending(t => t.CreatedAt).Take(5))
+            .Where(b => b.CustomerId == customerId && b.TenantId == tenantId)
+            .ToListAsync();
+    }
+
+    public async Task AddTransactionAsync(LoyaltyTransactionEntity transaction)
+    {
+        await _context.Set<LoyaltyTransactionEntity>().AddAsync(transaction);
+    }
+
+    public async Task<bool> TransactionExistsAsync(Guid orderId, ELoyaltyTransactionType type, Guid? programId = null)
+    {
+        var query = _context.Set<LoyaltyTransactionEntity>()
+            .AsNoTracking()
+            .Where(t => t.OrderId == orderId && t.Type == type);
+
+        if (programId.HasValue)
+        {
+            query = query.Where(t => t.CustomerLoyaltyBalance.LoyaltyProgramId == programId.Value);
+        }
+
+        return await query.AnyAsync();
+    }
+}

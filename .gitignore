@@ -34,8 +34,8 @@ docker-compose.override.yml
 *.log
 scripts/AccessControl.sql
 opamenu-business/scripts/generate-admin.sql
-/opamenu-commons/OpaMenu.Infrastructure.Shared/appsettings.Production.json
-/opamenu-commons/OpaMenu.DatabaseMigrator/appsettings.json
-/opamenu-commons/OpaMenu.Infrastructure.Shared/appsettings.json
+/opamenu-commons/Opamenu.Infrastructure.Shared/appsettings.Production.json
+/opamenu-commons/Opamenu.DatabaseMigrator/appsettings.json
+/opamenu-commons/Opamenu.Infrastructure.Shared/appsettings.json
 /.agent/skills
 /.agents/skills

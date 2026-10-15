@@ -1,4 +1,4 @@
-# 📄 Plano de Negócios: Estratégia de Precificação OpaMenu
+# 📄 Plano de Negócios: Estratégia de Precificação Opamenu
 
 **Data:** 05 de Fevereiro de 2026
 **Documento:** Estratégia de Monetização SaaS
@@ -7,7 +7,7 @@
 ---
 
 ## 1. Sumário Executivo
-Este documento apresenta a estratégia de precificação para o ecossistema **OpaMenu**, considerando sua infraestrutura multi-tenant, integração de pagamentos Pix (Automático) e o diferencial competitivo de possuir um aplicativo gestor nativo em Flutter.
+Este documento apresenta a estratégia de precificação para o ecossistema **Opamenu**, considerando sua infraestrutura multi-tenant, integração de pagamentos Pix (Automático) e o diferencial competitivo de possuir um aplicativo gestor nativo em Flutter.
 
 ## 2. Análise de Maturidade do Produto
 
@@ -36,7 +36,7 @@ Propomos um modelo de assinatura mensal (SaaS) dividido em três níveis, permit
 
 ## 4. Comparativo Competitivo (Benchmark 2024/2025)
 
-| Recurso | OpaMenu | Anota AI | InstaDelivery |
+| Recurso | Opamenu | Anota AI | InstaDelivery |
 | :--- | :---: | :---: | :---: |
 | App Gestor Premium | ✅ | ❌ (Web) | ✅ (Básico) |
 | Pix Conciliação | ✅ | ✅ | ✅ |
@@ -59,4 +59,4 @@ Para cada 100 lojistas, estima-se o seguinte custo de infraestrutura básica:
 3. **Dashboards Gerenciais:** Refinar o módulo de estatísticas no App Flutter para aumentar o valor percebido.
 
 ---
-*Documento gerado para Samuel Silva - Ecossistema OpaMenu.*
+*Documento gerado para Samuel Silva - Ecossistema Opamenu.*

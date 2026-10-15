@@ -4,11 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Moq;
-using OpaMenu.Application.Services.Opamenu;
-using OpaMenu.Domain.DTOs.Loyalty;
-using OpaMenu.Domain.Interfaces;
-using OpaMenu.Infrastructure.Shared.Entities.Opamenu;
-using OpaMenu.Infrastructure.Shared.Enums.Opamenu;
+using Opamenu.Application.Services.Opamenu;
+using Opamenu.Domain.DTOs.Loyalty;
+using Opamenu.Domain.Interfaces;
+using Opamenu.Infrastructure.Shared.Entities.Opamenu;
+using Opamenu.Infrastructure.Shared.Enums.Opamenu;
 using Xunit;
 
 namespace OpamenuApp.Tests.Services

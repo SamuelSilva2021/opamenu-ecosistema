@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace OpaMenu.Desktop.Migrations
+namespace Opamenu.Desktop.Migrations
 {
     /// <inheritdoc />
     public partial class PrintEngine : Migration

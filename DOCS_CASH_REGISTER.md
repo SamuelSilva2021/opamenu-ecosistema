@@ -1,6 +1,6 @@
-# 💰 Sistema de Controle de Caixa (PDV) OpaMenu
+# 💰 Sistema de Controle de Caixa (PDV) Opamenu
 
-O sistema de Controle de Caixa do OpaMenu permite uma gestão financeira precisa e auditável de cada terminal de venda, vinculando turnos de trabalho a usuários específicos e registrando cada movimentação de entrada e saída.
+O sistema de Controle de Caixa do Opamenu permite uma gestão financeira precisa e auditável de cada terminal de venda, vinculando turnos de trabalho a usuários específicos e registrando cada movimentação de entrada e saída.
 
 ## 🚀 Fluxo de Trabalho do Usuário
 
@@ -35,8 +35,8 @@ Ao final do expediente, o encerramento também é feito diretamente pela tela de
 - **CashMovement (Movimentação)**: Registros atômicos de cada transação vinculados a um turno.
 
 ### Localização no Código
-- **Backend API**: `OpaMenu.Web/UserEntry/CashRegister/CashRegisterController.cs`
-- **Lógica de Negócio**: `OpaMenu.Application/Services/Opamenu/CashRegisterService.cs`
+- **Backend API**: `Opamenu.Web/UserEntry/CashRegister/CashRegisterController.cs`
+- **Lógica de Negócio**: `Opamenu.Application/Services/Opamenu/CashRegisterService.cs`
 - **Frontend (React)**: `src/features/cash-register/`
 
 ### Segurança e Multitenancy

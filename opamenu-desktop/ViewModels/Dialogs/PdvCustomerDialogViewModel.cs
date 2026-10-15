@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.Input;
-using OpaMenu.Desktop.ViewModels.Screens;
+using Opamenu.Desktop.ViewModels.Screens;
 
-namespace OpaMenu.Desktop.ViewModels.Dialogs;
+namespace Opamenu.Desktop.ViewModels.Dialogs;
 
 public sealed partial class PdvCustomerDialogViewModel : DialogViewModelBase
 {

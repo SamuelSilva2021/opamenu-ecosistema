@@ -1,6 +1,6 @@
 # Correções para o lançamento
 
-Este documento é o **checklist crítico** para colocar o OpaMenu em produção com segurança e previsibilidade operacional.
+Este documento é o **checklist crítico** para colocar o Opamenu em produção com segurança e previsibilidade operacional.
 
 ## Meta (Definition of Done)
 - Nenhum endpoint público permite alteração de pedido sem validação de vínculo (tenant/cliente).
@@ -16,10 +16,10 @@ Este documento é o **checklist crítico** para colocar o OpaMenu em produção 
 - Rotas públicas permitem atualizar dados de um pedido apenas com `orderId`, sem validação forte de vínculo com `slug/tenant` e/ou “dono” do pedido.
 
 **Onde aparece**
-- Controller público: [PublicMenuController.cs](file:///d:/dev/opamenu-ecosistema/opamenu-api/OpaMenu.Web/UserEntry/Public/PublicMenuController.cs)
-- Atualização de pagamento: [UpdateOrderPaymentMethodAsync](file:///d:/dev/opamenu-ecosistema/opamenu-api/OpaMenu.Application/Services/Opamenu/OrderService.cs#L1391-L1437)
-- Atualização de entrega: [UpdateOrderDeliveryTypeAsync](file:///d:/dev/opamenu-ecosistema/opamenu-api/OpaMenu.Application/Services/Opamenu/OrderService.cs#L1438-L1496)
-- Há TODO explícito indicando falta de validação: [PublicMenuController.cs](file:///d:/dev/opamenu-ecosistema/opamenu-api/OpaMenu.Web/UserEntry/Public/PublicMenuController.cs#L140-L151)
+- Controller público: [PublicMenuController.cs](file:///d:/dev/opamenu-ecosistema/opamenu-api/Opamenu.Web/UserEntry/Public/PublicMenuController.cs)
+- Atualização de pagamento: [UpdateOrderPaymentMethodAsync](file:///d:/dev/opamenu-ecosistema/opamenu-api/Opamenu.Application/Services/Opamenu/OrderService.cs#L1391-L1437)
+- Atualização de entrega: [UpdateOrderDeliveryTypeAsync](file:///d:/dev/opamenu-ecosistema/opamenu-api/Opamenu.Application/Services/Opamenu/OrderService.cs#L1438-L1496)
+- Há TODO explícito indicando falta de validação: [PublicMenuController.cs](file:///d:/dev/opamenu-ecosistema/opamenu-api/Opamenu.Web/UserEntry/Public/PublicMenuController.cs#L140-L151)
 
 **Risco/impacto**
 - Fraude e caos operacional: qualquer pessoa que obtenha um `orderId` consegue alterar forma de pagamento/entrega.
@@ -46,8 +46,8 @@ Este documento é o **checklist crítico** para colocar o OpaMenu em produção 
 - Hub permite entrada em grupo admin sem validação robusta.
 
 **Onde aparece**
-- Hub: [OrderNotificationHub.cs](file:///d:/dev/opamenu-ecosistema/opamenu-api/OpaMenu.Web/Hubs/OrderNotificationHub.cs#L60-L76)
-- Pipeline: [Program.cs](file:///d:/dev/opamenu-ecosistema/opamenu-api/OpaMenu.Web/Program.cs#L189-L205)
+- Hub: [OrderNotificationHub.cs](file:///d:/dev/opamenu-ecosistema/opamenu-api/Opamenu.Web/Hubs/OrderNotificationHub.cs#L60-L76)
+- Pipeline: [Program.cs](file:///d:/dev/opamenu-ecosistema/opamenu-api/Opamenu.Web/Program.cs#L189-L205)
 
 **Risco/impacto**
 - Vazamento de eventos (novos pedidos/status) para usuários não autorizados.
@@ -70,7 +70,7 @@ Este documento é o **checklist crítico** para colocar o OpaMenu em produção 
 - Backend emite evento com nome diferente do que os apps escutam.
 
 **Onde aparece**
-- Backend emite: `EOrderStatusChanged`: [SignalRNotificationServiceWrapper.cs](file:///d:/dev/opamenu-ecosistema/opamenu-api/OpaMenu.Web/Services/SignalRNotificationServiceWrapper.cs#L62-L85)
+- Backend emite: `EOrderStatusChanged`: [SignalRNotificationServiceWrapper.cs](file:///d:/dev/opamenu-ecosistema/opamenu-api/Opamenu.Web/Services/SignalRNotificationServiceWrapper.cs#L62-L85)
 - Painel escuta: `OrderStatusChanged`: [signalr.service.ts](file:///d:/dev/opamenu-ecosistema/opamenu-painel/src/services/signalr.service.ts#L119-L131)
 - Gestor escuta: `OrderStatusChanged`: [signalr_service.dart](file:///d:/dev/opamenu-ecosistema/opamenu-gestor/lib/core/infrastructure/services/signalr_service.dart#L58-L82)
 
@@ -92,7 +92,7 @@ Este documento é o **checklist crítico** para colocar o OpaMenu em produção 
 - Backend e painel possuem listas diferentes/ordem diferente de status.
 
 **Onde aparece**
-- Backend: [EOrderStatus.cs](file:///d:/dev/opamenu-ecosistema/opamenu-commons/OpaMenu.Infrastructure.Shared/Enums/Opamenu/EOrderStatus.cs#L6-L16)
+- Backend: [EOrderStatus.cs](file:///d:/dev/opamenu-ecosistema/opamenu-commons/Opamenu.Infrastructure.Shared/Enums/Opamenu/EOrderStatus.cs#L6-L16)
 - Painel: [types.ts](file:///d:/dev/opamenu-ecosistema/opamenu-painel/src/features/orders/types.ts#L1-L10)
 
 **Risco/impacto**
@@ -114,9 +114,9 @@ Este documento é o **checklist crítico** para colocar o OpaMenu em produção 
 - Webhook atualiza `PaymentEntity`, mas não garante atualização do `OrderEntity`.
 
 **Onde aparece**
-- Provider: [MercadoPagoPixProvider.cs](file:///d:/dev/opamenu-ecosistema/opamenu-api/OpaMenu.Infrastructure/Services/PaymentProviders/MercadoPagoPixProvider.cs#L53-L121)
-- Webhook: [PaymentsController.cs](file:///d:/dev/opamenu-ecosistema/opamenu-api/OpaMenu.Web/UserEntry/PaymentsController.cs#L79-L112)
-- Processamento: [PaymentService.cs](file:///d:/dev/opamenu-ecosistema/opamenu-api/OpaMenu.Application/Services/Opamenu/PaymentService.cs#L126-L160)
+- Provider: [MercadoPagoPixProvider.cs](file:///d:/dev/opamenu-ecosistema/opamenu-api/Opamenu.Infrastructure/Services/PaymentProviders/MercadoPagoPixProvider.cs#L53-L121)
+- Webhook: [PaymentsController.cs](file:///d:/dev/opamenu-ecosistema/opamenu-api/Opamenu.Web/UserEntry/PaymentsController.cs#L79-L112)
+- Processamento: [PaymentService.cs](file:///d:/dev/opamenu-ecosistema/opamenu-api/Opamenu.Application/Services/Opamenu/PaymentService.cs#L126-L160)
 
 **Risco/impacto**
 - PIX pago e pedido não entra em produção, ou produção sem pagamento confirmado.
@@ -138,7 +138,7 @@ Este documento é o **checklist crítico** para colocar o OpaMenu em produção 
 
 **Onde aparece**
 - Backend exige `ConnectionStrings:OpamenuDatabase`, `AccessControlDatabase`, `MultiTenantDatabase`:
-  - [ServiceCollectionExtensions.cs](file:///d:/dev/opamenu-ecosistema/opamenu-api/OpaMenu.Web/Extensions/ServiceCollectionExtensions.cs#L39-L86)
+  - [ServiceCollectionExtensions.cs](file:///d:/dev/opamenu-ecosistema/opamenu-api/Opamenu.Web/Extensions/ServiceCollectionExtensions.cs#L39-L86)
 - Compose usa `ConnectionStrings__DefaultConnection` e `Jwt__Key`:
   - [docker-compose.yml](file:///d:/dev/opamenu-ecosistema/opamenu-api/docker-compose.yml#L24-L38)
 

@@ -1,11 +1,11 @@
 using CommunityToolkit.Mvvm.Input;
-using OpaMenu.Desktop.Models.DTOs.Pdv;
-using OpaMenu.Desktop.ViewModels;
-using OpaMenu.Desktop.Services.Interfaces;
+using Opamenu.Desktop.Models.DTOs.Pdv;
+using Opamenu.Desktop.ViewModels;
+using Opamenu.Desktop.Services.Interfaces;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
-namespace OpaMenu.Desktop.ViewModels.Dialogs;
+namespace Opamenu.Desktop.ViewModels.Dialogs;
 
 public sealed partial class CashDialogViewModel : DialogViewModelBase
 {

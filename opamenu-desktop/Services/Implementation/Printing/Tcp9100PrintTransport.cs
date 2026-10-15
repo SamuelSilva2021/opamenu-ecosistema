@@ -1,10 +1,10 @@
-using OpaMenu.Desktop.Models.Printing;
+using Opamenu.Desktop.Models.Printing;
 using System;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OpaMenu.Desktop.Services.Implementation.Printing;
+namespace Opamenu.Desktop.Services.Implementation.Printing;
 
 internal sealed class Tcp9100PrintTransport : IPrintTransport
 {

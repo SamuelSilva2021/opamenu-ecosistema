@@ -1,10 +1,10 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using OpaMenu.Desktop.Models.DTOs;
-using OpaMenu.Desktop.Models.DTOs.Requests;
-using OpaMenu.Desktop.Models.Enums;
+using Opamenu.Desktop.Models.DTOs;
+using Opamenu.Desktop.Models.DTOs.Requests;
+using Opamenu.Desktop.Models.Enums;
 using Microsoft.EntityFrameworkCore;
-using OpaMenu.Desktop.Services;
+using Opamenu.Desktop.Services;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -15,19 +15,19 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows;
-using OpaMenu.Desktop.Services.Interfaces;
+using Opamenu.Desktop.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
-using OpaMenu.Desktop.Models.DTOs.Aditional;
-using OpaMenu.Desktop.Models.DTOs.Product;
-using OpaMenu.Desktop.Models.DTOs.Pdv;
-using OpaMenu.Desktop.Models.Data;
-using OpaMenu.Desktop.Models.Entities;
-using OpaMenu.Desktop.Models.DTOs.Tables;
-using OpaMenu.Desktop.ViewModels.Screens;
-using OpaMenu.Desktop.ViewModels.Components;
-using OpaMenu.Desktop.ViewModels.Dialogs;
+using Opamenu.Desktop.Models.DTOs.Aditional;
+using Opamenu.Desktop.Models.DTOs.Product;
+using Opamenu.Desktop.Models.DTOs.Pdv;
+using Opamenu.Desktop.Models.Data;
+using Opamenu.Desktop.Models.Entities;
+using Opamenu.Desktop.Models.DTOs.Tables;
+using Opamenu.Desktop.ViewModels.Screens;
+using Opamenu.Desktop.ViewModels.Components;
+using Opamenu.Desktop.ViewModels.Dialogs;
 
-namespace OpaMenu.Desktop.ViewModels;
+namespace Opamenu.Desktop.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {

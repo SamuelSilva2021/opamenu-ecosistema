@@ -1,6 +1,6 @@
-# 🏆 Sistema de Fidelidade OpaMenu v2
+# 🏆 Sistema de Fidelidade Opamenu v2
 
-O sistema de fidelidade do OpaMenu é uma engine de regras flexível que permite aos restaurantes gerenciar múltiplos programas de recompensas simultâneos, com segmentação por itens e tipos de acúmulo dinâmicos.
+O sistema de fidelidade do Opamenu é uma engine de regras flexível que permite aos restaurantes gerenciar múltiplos programas de recompensas simultâneos, com segmentação por itens e tipos de acúmulo dinâmicos.
 
 ## 🛠️ Arquitetura Técnica
 

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace OpaMenu.Desktop.Models.DTOs.AccessControl;
+namespace Opamenu.Desktop.Models.DTOs.AccessControl;
 
 /// <summary>
 /// Mapeamento da propriedade 'data' da resposta de Login da API de Autenticação.

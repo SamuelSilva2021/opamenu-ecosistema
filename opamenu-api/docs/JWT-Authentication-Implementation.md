@@ -1,4 +1,4 @@
-# Implementação de Autenticação JWT - OpaMenu API
+# Implementação de Autenticação JWT - Opamenu API
 
 ## 📋 Resumo
 
@@ -234,14 +234,14 @@ Authentication__JwtAudience=opamenu-ecosystem
 ## 📚 Arquivos Modificados
 
 ### Criados/Modificados:
-- `OpaMenu.Web/appsettings.json` - Configuração JWT
-- `OpaMenu.Web/appsettings.Development.json` - Configuração JWT dev
-- `OpaMenu.Web/Program.cs` - Pipeline de autenticação
-- `OpaMenu.Web/Extensions/ServiceCollectionExtensions.cs` - Extensões JWT
-- `OpaMenu.Domain/Interfaces/IAuthenticationService.cs` - Interface
-- `OpaMenu.Infrastructure/Authentication/LocalAuthenticationService.cs` - Implementação
-- `OpaMenu.Infrastructure/Authentication/AuthService.cs` - Emissão de tokens e refresh tokens
-- `OpaMenu.Infrastructure/Authentication/CurrentUserService.cs` - Serviço de usuário
+- `Opamenu.Web/appsettings.json` - Configuração JWT
+- `Opamenu.Web/appsettings.Development.json` - Configuração JWT dev
+- `Opamenu.Web/Program.cs` - Pipeline de autenticação
+- `Opamenu.Web/Extensions/ServiceCollectionExtensions.cs` - Extensões JWT
+- `Opamenu.Domain/Interfaces/IAuthenticationService.cs` - Interface
+- `Opamenu.Infrastructure/Authentication/LocalAuthenticationService.cs` - Implementação
+- `Opamenu.Infrastructure/Authentication/AuthService.cs` - Emissão de tokens e refresh tokens
+- `Opamenu.Infrastructure/Authentication/CurrentUserService.cs` - Serviço de usuário
 
 ## ✅ Status da Implementação
 

@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace OpaMenu.Desktop.Services.Implementation.Printing;
+namespace Opamenu.Desktop.Services.Implementation.Printing;
 
 internal static class WindowsRawPrinter
 {
@@ -9,7 +9,7 @@ internal static class WindowsRawPrinter
     private sealed class DOCINFO
     {
         [MarshalAs(UnmanagedType.LPWStr)]
-        public string pDocName = "OpaMenu";
+        public string pDocName = "Opamenu";
 
         [MarshalAs(UnmanagedType.LPWStr)]
         public string pOutputFile = string.Empty;

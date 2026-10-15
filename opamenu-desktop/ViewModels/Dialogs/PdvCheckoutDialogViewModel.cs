@@ -1,10 +1,10 @@
 using CommunityToolkit.Mvvm.Input;
-using OpaMenu.Desktop.ViewModels.Components;
-using OpaMenu.Desktop.ViewModels.Screens;
+using Opamenu.Desktop.ViewModels.Components;
+using Opamenu.Desktop.ViewModels.Screens;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
-namespace OpaMenu.Desktop.ViewModels.Dialogs;
+namespace Opamenu.Desktop.ViewModels.Dialogs;
 
 public sealed partial class PdvCheckoutDialogViewModel : DialogViewModelBase
 {

@@ -1,0 +1,184 @@
+using Microsoft.EntityFrameworkCore;
+using Opamenu.Domain.Interfaces;
+using Opamenu.Infrastructure.Repositories;
+using Opamenu.Infrastructure.Shared.Data.Context;
+using Opamenu.Infrastructure.Shared.Data.Context.Opamenu;
+using Opamenu.Infrastructure.Shared.Entities;
+using Opamenu.Infrastructure.Shared.Entities.Opamenu;
+using Opamenu.Infrastructure.Shared.Enums.Opamenu;
+using System.Drawing.Printing;
+
+namespace Opamenu.Infrastructure.Repositories;
+
+public class OrderRepository(OpamenuDbContext context) : OpamenuRepository<OrderEntity>(context), IOrderRepository
+{
+
+    /// <summary>
+    /// Obtém pedidos ativos que contêm um produto específico (filtra por status para evitar lixo de pedidos antigos)
+    /// </summary>
+    /// <param name="productId">ID do produto</param>
+    /// <returns>Coleção de pedidos ativos</returns>
+    public async Task<IEnumerable<OrderEntity>> GetActiveOrdersWithProductAsync(Guid productId)
+    {
+        return await _dbSet
+            .Where(o =>o.Status != EOrderStatus.Cancelled && 
+                       o.Status != EOrderStatus.Delivered &&
+                       o.Items.Any(i => i.ProductId == productId))
+            .Include(o => o.Items)
+            .ThenInclude(i => i.Product)
+            .Include(o => o.StatusHistory)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
+    }
+    /// <summary>
+    /// Obtém pedidos por ID do cliente e ID do tenant, ordenados por data de criação (mais recentes primeiro)
+    /// </summary>
+    /// <param name="tenantId"></param>
+    /// <param name="customerId"></param>
+    /// <returns></returns>
+    public async Task<IEnumerable<OrderEntity>> GetByCustomerIdAndTenantIdAsync(Guid tenantId, Guid customerId)
+    {
+        return await _dbSet
+            .Where(o => o.TenantId == tenantId &&
+                        o.CustomerId == customerId)
+            .Include(o => o.Items)
+            .ThenInclude(i => i.Product)
+            .Include(o => o.StatusHistory)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// Obtém pedidos por status (filtra apenas do dia atual se não for Pending)
+    /// </summary>
+    /// <param name="status">Status do pedido</param>
+    /// <returns>Coleção de pedidos com o status especificado</returns>
+    public async Task<IEnumerable<OrderEntity>> GetOrdersByStatusAsync(EOrderStatus status)
+    {
+        var query = _dbSet.Where(o => o.Status == status);
+
+        // Se o status for finalizado (Delivered/Cancelled/Rejected), filtra pelo dia atual
+        if (status == EOrderStatus.Delivered || status == EOrderStatus.Cancelled || status == EOrderStatus.Rejected)
+        {
+            var today = DateTime.UtcNow.Date;
+            query = query.Where(o => o.CreatedAt >= today);
+        }
+        
+        // Se for status de produção (Ready/Preparing), também foca no dia atual para evitar lixo antigo
+        if (status == EOrderStatus.Ready || status == EOrderStatus.Preparing || status == EOrderStatus.OutForDelivery)
+        {
+            var today = DateTime.UtcNow.Date;
+            query = query.Where(o => o.CreatedAt >= today);
+        }
+
+        return await query
+            .Include(o => o.Items)
+            .ThenInclude(i => i.Product)
+            .Include(o => o.StatusHistory)
+            .Include(o => o.Driver) // Inclui dados do Colaborador
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
+    }
+    
+    /// <summary>
+    /// Obtém pedidos por período de criação
+    /// </summary>
+    /// <param name="startDate">Data inicial</param>
+    /// <param name="endDate">Data final</param>
+    /// <returns>Coleção de pedidos do período</returns>    
+    public async Task<IEnumerable<OrderEntity>> GetOrdersByDateRangeAsync(Guid tenantId, DateTime startDate, DateTime endDate)
+    {
+        return await _dbSet
+            .Where(o => o.TenantId == tenantId &&
+                       o.CreatedAt >= startDate && 
+                       o.CreatedAt <= endDate)
+            .Include(o => o.Items)
+            .ThenInclude(i => i.Product)
+            .Include(o => o.StatusHistory)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
+    }
+    
+    /// <summary>
+    /// Obtém pedidos de delivery do board (ativos e os finalizados hoje)
+    /// </summary>
+    public async Task<IEnumerable<OrderEntity>> GetDeliveryBoardOrdersAsync(Guid tenantId, DateTime todayStart, DateTime todayEnd)
+    {
+        return await _dbSet
+            .Where(o => o.TenantId == tenantId && 
+                        o.OrderType == EOrderType.Delivery &&
+                        (
+                            (o.Status != EOrderStatus.Delivered && o.Status != EOrderStatus.Cancelled && o.Status != EOrderStatus.Rejected) ||
+                            (o.CreatedAt >= todayStart && o.CreatedAt <= todayEnd)
+                        ))
+            .Include(o => o.Items)
+                .ThenInclude(i => i.Product)
+            .Include(o => o.StatusHistory)
+            .Include(o => o.Driver)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
+    }
+    
+    /// <summary>
+    /// Obtém pedidos ativos que contêm um ProductAditionalGroup específico
+    /// </summary>
+    /// <param name="productAditionalGroupId">ID do ProductAditionalGroup</param>
+    /// <returns>Coleção de pedidos ativos com o ProductAditionalGroup</returns>    
+    public async Task<IEnumerable<OrderEntity>> GetActiveOrdersWithProductAditionalGroupAsync(Guid productAditionalGroupId)
+    {
+        return await _dbSet
+            .Where(o => o.Status != EOrderStatus.Cancelled && 
+                       o.Status != EOrderStatus.Delivered &&
+                       o.Items.Any(i => i.Aditionals.Any(a => a.Aditional.AditionalGroupId == productAditionalGroupId)))
+            .Include(o => o.Items)
+                .ThenInclude(i => i.Product)
+            .Include(o => o.Items)
+                .ThenInclude(i => i.Aditionals)
+                    .ThenInclude(a => a.Aditional)
+            .Include(o => o.StatusHistory)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<OrderEntity>> GetPagedByTenantIdWithDetailsAsync(Guid tenantId, int pageNumber, int pageSize)
+    {
+        return await _dbSet
+            .Where(o => o.TenantId == tenantId)
+            .Include(o => o.Items)
+                .ThenInclude(i => i.Product)
+            .Include(o => o.StatusHistory)
+            .Include(o => o.Rejection)
+            .OrderByDescending(o => o.CreatedAt)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    public async Task<int?> GetLastOrderNumberAsync(Guid tenantId, DateTime date)
+    {
+        return await _dbSet
+            .Where(o => o.TenantId == tenantId && 
+                        o.CreatedAt.Date == date.Date)
+            .MaxAsync(o => (int?)o.OrderNumber);
+    }
+
+    public async Task<OrderEntity?> GetByIdForLoyaltyAsync(Guid id, Guid tenantId)
+    {
+        return await _dbSet
+            .Where(o => o.Id == id && o.TenantId == tenantId)
+            .Include(o => o.Items)
+                .ThenInclude(i => i.Product)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<IEnumerable<OrderEntity>> GetByTabIdAsync(Guid tenantId, Guid tabId)
+    {
+        return await _dbSet
+            .Where(o => o.TenantId == tenantId && o.TabId == tabId)
+            .Include(o => o.Items)
+            .ThenInclude(i => i.Product)
+            .Include(o => o.Payments)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
+    }
+}

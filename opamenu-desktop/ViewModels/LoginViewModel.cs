@@ -1,11 +1,11 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using OpaMenu.Desktop.Services.Interfaces;
+using Opamenu.Desktop.Services.Interfaces;
 using System;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 
-namespace OpaMenu.Desktop.ViewModels;
+namespace Opamenu.Desktop.ViewModels;
 
 public partial class LoginViewModel : ObservableObject
 {

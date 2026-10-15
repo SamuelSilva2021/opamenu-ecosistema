@@ -89,7 +89,7 @@ export const LoginPage = () => {
               Central de Comando
             </Typography>
             <Typography variant="h6" align="center" sx={{ opacity: 0.9, mb: 4 }}>
-              Gestão Estratégica do Ecossistema OpaMenu
+              Gestão Estratégica do Ecossistema Opamenu
             </Typography>
     
           </Box>

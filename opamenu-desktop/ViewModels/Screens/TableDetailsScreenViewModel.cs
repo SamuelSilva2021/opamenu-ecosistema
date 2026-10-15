@@ -1,12 +1,12 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
-using OpaMenu.Desktop.Models.DTOs.Printing;
-using OpaMenu.Desktop.Models.DTOs.Tables;
-using OpaMenu.Desktop.Models.Enums;
-using OpaMenu.Desktop.Models.Printing;
-using OpaMenu.Desktop.Services.Interfaces;
-using OpaMenu.Desktop.ViewModels.Dialogs;
+using Opamenu.Desktop.Models.DTOs.Printing;
+using Opamenu.Desktop.Models.DTOs.Tables;
+using Opamenu.Desktop.Models.Enums;
+using Opamenu.Desktop.Models.Printing;
+using Opamenu.Desktop.Services.Interfaces;
+using Opamenu.Desktop.ViewModels.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -14,7 +14,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace OpaMenu.Desktop.ViewModels.Screens;
+namespace Opamenu.Desktop.ViewModels.Screens;
 
 public sealed partial class TableDetailsScreenViewModel : ObservableObject
 {

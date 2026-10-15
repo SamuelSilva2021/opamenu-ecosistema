@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using OpaMenu.Desktop.Models.DTOs.Tables;
+using Opamenu.Desktop.Models.DTOs.Tables;
 
-namespace OpaMenu.Desktop.Models.DTOs.Printing;
+namespace Opamenu.Desktop.Models.DTOs.Printing;
 
 public sealed class TabBillPrintPayload
 {

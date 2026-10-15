@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace OpaMenu.Desktop.Models.DTOs.Api;
+namespace Opamenu.Desktop.Models.DTOs.Api;
 
 public class ApiErrorDto
 {

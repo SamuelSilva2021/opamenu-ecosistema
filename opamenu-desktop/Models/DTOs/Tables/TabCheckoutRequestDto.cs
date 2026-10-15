@@ -1,7 +1,7 @@
-using OpaMenu.Desktop.Models.Enums;
+using Opamenu.Desktop.Models.Enums;
 using System.Text.Json.Serialization;
 
-namespace OpaMenu.Desktop.Models.DTOs.Tables;
+namespace Opamenu.Desktop.Models.DTOs.Tables;
 
 public class TabCheckoutRequestDto
 {

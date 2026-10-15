@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
 
-namespace OpaMenu.Desktop.Models.DTOs.Tables;
+namespace Opamenu.Desktop.Models.DTOs.Tables;
 
 public class OrderItemAditionalDto
 {

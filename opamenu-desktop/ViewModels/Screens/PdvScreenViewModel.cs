@@ -1,15 +1,15 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using OpaMenu.Desktop.Models.Data;
-using OpaMenu.Desktop.Models.DTOs;
-using OpaMenu.Desktop.Models.DTOs.Aditional;
-using OpaMenu.Desktop.Models.DTOs.Product;
-using OpaMenu.Desktop.Models.DTOs.Requests;
-using OpaMenu.Desktop.Models.Entities;
-using OpaMenu.Desktop.Models.Enums;
-using OpaMenu.Desktop.Services.Interfaces;
-using OpaMenu.Desktop.ViewModels.Components;
-using OpaMenu.Desktop.ViewModels.Dialogs;
+using Opamenu.Desktop.Models.Data;
+using Opamenu.Desktop.Models.DTOs;
+using Opamenu.Desktop.Models.DTOs.Aditional;
+using Opamenu.Desktop.Models.DTOs.Product;
+using Opamenu.Desktop.Models.DTOs.Requests;
+using Opamenu.Desktop.Models.Entities;
+using Opamenu.Desktop.Models.Enums;
+using Opamenu.Desktop.Services.Interfaces;
+using Opamenu.Desktop.ViewModels.Components;
+using Opamenu.Desktop.ViewModels.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -23,7 +23,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace OpaMenu.Desktop.ViewModels.Screens;
+namespace Opamenu.Desktop.ViewModels.Screens;
 
 public sealed partial class PdvScreenViewModel : ObservableObject
 {

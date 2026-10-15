@@ -195,7 +195,7 @@ export function ProductFormDialog({ open, product, onClose, onSuccess }: Product
                     required
                     error={!!errors.name}
                     helperText={errors.name?.message}
-                    placeholder="Ex: OpaMenu POS"
+                    placeholder="Ex: Opamenu POS"
                   />
                   <TextField
                     {...register('slug')}

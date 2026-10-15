@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace OpaMenu.Desktop.Migrations
+namespace Opamenu.Desktop.Migrations
 {
     public partial class Phase2Checkout : Migration
     {

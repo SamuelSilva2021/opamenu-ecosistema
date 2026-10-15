@@ -1,6 +1,6 @@
 # Análise de Mercado: Sistemas de PDV para Restaurantes
 
-Esta documentação compila as melhores práticas de UI/UX, telas e funcionalidades baseadas nos sistemas de gestão de restaurantes líderes de mercado (como Square, Toast, Lightspeed, e no Brasil: Consumer, Saipos, e KCMS). O objetivo é guiar o desenvolvimento do **OpaMenu Desktop**.
+Esta documentação compila as melhores práticas de UI/UX, telas e funcionalidades baseadas nos sistemas de gestão de restaurantes líderes de mercado (como Square, Toast, Lightspeed, e no Brasil: Consumer, Saipos, e KCMS). O objetivo é guiar o desenvolvimento do **Opamenu Desktop**.
 
 ---
 
@@ -84,7 +84,7 @@ A maioria dos sistemas de mercado separa a operação do "chão de loja" (PDV) d
 
 ---
 
-## 4. Próximos Passos sugeridos para o OpaMenu Desktop
+## 4. Próximos Passos sugeridos para o Opamenu Desktop
 
 Considerando a base que já construímos (Login + Estrutura do PDV com categorias e carrinho):
 
@@ -98,4 +98,4 @@ Considerando a base que já construímos (Login + Estrutura do PDV com categoria
    * Tela de Abertura/Fechamento de Caixa, Sangria e Suprimento.
 
 ---
-*Documento gerado como referência de arquitetura de produto para o ecossistema OpaMenu.*
+*Documento gerado como referência de arquitetura de produto para o ecossistema Opamenu.*

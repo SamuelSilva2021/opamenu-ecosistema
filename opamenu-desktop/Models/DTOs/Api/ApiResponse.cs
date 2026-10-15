@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace OpaMenu.Desktop.Models.DTOs.Api;
+namespace Opamenu.Desktop.Models.DTOs.Api;
 
 /// <summary>
-/// Envelope de resposta padrão do ecossistema OpaMenu
+/// Envelope de resposta padrão do ecossistema Opamenu
 /// Baseado na classe ResponseDTO do Authenticator.API
 /// </summary>
 public class ApiResponse<T>

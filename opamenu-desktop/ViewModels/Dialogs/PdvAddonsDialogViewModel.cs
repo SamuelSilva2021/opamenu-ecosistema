@@ -1,8 +1,8 @@
 using CommunityToolkit.Mvvm.Input;
-using OpaMenu.Desktop.ViewModels.Screens;
+using Opamenu.Desktop.ViewModels.Screens;
 using System.Threading.Tasks;
 
-namespace OpaMenu.Desktop.ViewModels.Dialogs;
+namespace Opamenu.Desktop.ViewModels.Dialogs;
 
 public sealed partial class PdvAddonsDialogViewModel : DialogViewModelBase
 {
@@ -16,7 +16,7 @@ public sealed partial class PdvAddonsDialogViewModel : DialogViewModelBase
     public override string Title => _pdv.ProductToConfigure == null ? "Personalizar" : $"Personalizar: {_pdv.ProductToConfigure.Name}";
 
     public object? ProductToConfigure => _pdv.ProductToConfigure;
-    public System.Collections.ObjectModel.ObservableCollection<OpaMenu.Desktop.ViewModels.Components.SelectableAditionalGroup> AddonGroups => _pdv.AddonGroups;
+    public System.Collections.ObjectModel.ObservableCollection<Opamenu.Desktop.ViewModels.Components.SelectableAditionalGroup> AddonGroups => _pdv.AddonGroups;
 
     public string ItemNotes
     {

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace OpaMenu.Desktop.Models.DTOs.Requests;
+namespace Opamenu.Desktop.Models.DTOs.Requests;
 
 public class CloseCashShiftRequestDto
 {

@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
-using OpaMenu.Desktop.Models.DTOs.Pdv;
-using OpaMenu.Desktop.Models.Enums;
+using Opamenu.Desktop.Models.DTOs.Pdv;
+using Opamenu.Desktop.Models.Enums;
 
-namespace OpaMenu.Desktop.Services.Interfaces;
+namespace Opamenu.Desktop.Services.Interfaces;
 
 public interface ICashRegisterService
 {

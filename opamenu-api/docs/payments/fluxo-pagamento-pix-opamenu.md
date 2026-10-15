@@ -1,9 +1,9 @@
 
-# Fluxo de Pagamento PIX — OpaMenu (SaaS Multitenant)
+# Fluxo de Pagamento PIX — Opamenu (SaaS Multitenant)
 
 ## Visão Geral
 
-Este documento descreve o fluxo completo de pagamento via **PIX** no OpaMenu, um sistema de cardápio digital SaaS **multitenant**.
+Este documento descreve o fluxo completo de pagamento via **PIX** no Opamenu, um sistema de cardápio digital SaaS **multitenant**.
 
 O objetivo é garantir:
 - Isolamento por tenant

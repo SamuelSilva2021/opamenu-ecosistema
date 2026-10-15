@@ -1,3 +1,3 @@
-namespace OpaMenu.Desktop.ViewModels.Components;
+namespace Opamenu.Desktop.ViewModels.Components;
 
 public record PaymentBreakdownItem(string Method, decimal Amount);

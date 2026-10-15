@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Configuration;
-using OpaMenu.Desktop.Models.DTOs.Api;
-using OpaMenu.Desktop.Models.DTOs.Pdv;
-using OpaMenu.Desktop.Models.DTOs.Requests;
-using OpaMenu.Desktop.Models.Enums;
-using OpaMenu.Desktop.Services.Interfaces;
+using Opamenu.Desktop.Models.DTOs.Api;
+using Opamenu.Desktop.Models.DTOs.Pdv;
+using Opamenu.Desktop.Models.DTOs.Requests;
+using Opamenu.Desktop.Models.Enums;
+using Opamenu.Desktop.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +13,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace OpaMenu.Desktop.Services.Implementation;
+namespace Opamenu.Desktop.Services.Implementation;
 
 public class CashRegisterService : ICashRegisterService
 {

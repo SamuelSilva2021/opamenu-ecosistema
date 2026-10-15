@@ -1,8 +1,8 @@
 using System;
 using System.Text.Json.Serialization;
-using OpaMenu.Desktop.Models.Enums;
+using Opamenu.Desktop.Models.Enums;
 
-namespace OpaMenu.Desktop.Models.DTOs.Pdv;
+namespace Opamenu.Desktop.Models.DTOs.Pdv;
 
 public class CashMovementDto
 {

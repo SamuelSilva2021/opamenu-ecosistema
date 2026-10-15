@@ -20,9 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\OpaMenu.Infrastructure\OpaMenu.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\OpaMenu.Application\OpaMenu.Application.csproj" />
-    <ProjectReference Include="..\..\OpaMenu.Domain\OpaMenu.Domain.csproj" /> 
+    <ProjectReference Include="..\..\Opamenu.Infrastructure\Opamenu.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Opamenu.Application\Opamenu.Application.csproj" />
+    <ProjectReference Include="..\..\Opamenu.Domain\Opamenu.Domain.csproj" /> 
   </ItemGroup>
 
 </Project>

@@ -14,7 +14,7 @@ Para reduzir custo de infraestrutura no MVP, a estratégia é **consolidar toda 
   - multi-tenant (tenant, produtos do tenant)
   - RBAC (usuários, roles, módulos, permissões)
   - planos e assinaturas (incluindo habilitação de módulos por tenant)
-  - domínio operacional do OpaMenu (pedidos, pagamentos, etc.)
+  - domínio operacional do Opamenu (pedidos, pagamentos, etc.)
 
 ## Princípios (para não “virar um monolito caótico”)
 - Manter **fronteiras internas** claras (pastas/namespaces e contratos) para futura extração.
@@ -51,8 +51,8 @@ O `opamenu-authentication` possui:
 O `opamenu-api` hoje:
 
 - Valida JWT localmente e faz refresh via serviço externo:
-  - [ExternalAuthenticationService.cs](file:///d:/dev/opamenu-ecosistema/opamenu-api/OpaMenu.Infrastructure/Authentication/ExternalAuthenticationService.cs)
-  - [AuthController.cs](file:///d:/dev/opamenu-ecosistema/opamenu-api/OpaMenu.Web/UserEntry/Auth/AuthController.cs)
+  - [ExternalAuthenticationService.cs](file:///d:/dev/opamenu-ecosistema/opamenu-api/Opamenu.Infrastructure/Authentication/ExternalAuthenticationService.cs)
+  - [AuthController.cs](file:///d:/dev/opamenu-ecosistema/opamenu-api/Opamenu.Web/UserEntry/Auth/AuthController.cs)
 
 ### Estratégia recomendada (mínimo risco)
 1) **Trazer o código do `opamenu-authentication` para dentro do `opamenu-api` sem “reescrever tudo”**

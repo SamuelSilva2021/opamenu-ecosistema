@@ -1,15 +1,15 @@
 using Microsoft.EntityFrameworkCore;
-using OpaMenu.Desktop.Models.Data;
-using OpaMenu.Desktop.Models.Entities;
-using OpaMenu.Desktop.Models.Enums;
-using OpaMenu.Desktop.Models.Printing;
-using OpaMenu.Desktop.Services.Implementation.Printing;
-using OpaMenu.Desktop.Services.Interfaces;
+using Opamenu.Desktop.Models.Data;
+using Opamenu.Desktop.Models.Entities;
+using Opamenu.Desktop.Models.Enums;
+using Opamenu.Desktop.Models.Printing;
+using Opamenu.Desktop.Services.Implementation.Printing;
+using Opamenu.Desktop.Services.Interfaces;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OpaMenu.Desktop.Services.Implementation;
+namespace Opamenu.Desktop.Services.Implementation;
 
 public sealed class PrintService : IPrintService
 {

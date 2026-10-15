@@ -5,14 +5,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using OpaMenu.Desktop.Models.Data;
-using OpaMenu.Desktop.Services;
-using OpaMenu.Desktop.Services.Implementation;
-using OpaMenu.Desktop.Services.Interfaces;
-using OpaMenu.Desktop.ViewModels;
-using OpaMenu.Desktop.Views;
+using Opamenu.Desktop.Models.Data;
+using Opamenu.Desktop.Services;
+using Opamenu.Desktop.Services.Implementation;
+using Opamenu.Desktop.Services.Interfaces;
+using Opamenu.Desktop.ViewModels;
+using Opamenu.Desktop.Views;
 
-namespace OpaMenu.Desktop;
+namespace Opamenu.Desktop;
 
 public partial class App : Application
 {

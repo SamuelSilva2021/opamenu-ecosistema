@@ -80,4 +80,4 @@ src/
 
 ---
 
-**🎯 Objetivo**: Garantir um sistema de permissões rápido, legível e de fácil manutenção para o ecossistema OpaMenu.
+**🎯 Objetivo**: Garantir um sistema de permissões rápido, legível e de fácil manutenção para o ecossistema Opamenu.
