@@ -109,6 +109,13 @@ builder.Services.Configure<IISServerOptions>(options =>
     options.MaxRequestBodySize = 52428800;
 });
 
+if (builder.Environment.IsProduction())
+{
+    var productionJwtSecret = Environment.GetEnvironmentVariable("Authentication__JwtSecret");
+    if (string.IsNullOrWhiteSpace(productionJwtSecret) || productionJwtSecret.Length < 32)
+        throw new InvalidOperationException("Authentication__JwtSecret deve ser definido por variável de ambiente com no mínimo 32 caracteres em produção.");
+}
+
 var app = builder.Build();
 
 
@@ -139,12 +146,6 @@ if (app.Environment.IsDevelopment())
         }
     }
 }
-else
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
 if (!app.Environment.IsProduction())
 {
     app.UseHttpsRedirection();
@@ -178,14 +179,6 @@ app.MapControllers().RequireCors("CorsPolicy");
 app.MapHub<OrderNotificationHub>("/hubs/notifications");
 
 app.MapGet("/health", () => new { Status = "Healthy", Timestamp = DateTime.UtcNow });
-
-app.MapGet("/api/test", () => new { Message = "Test endpoint working", Timestamp = DateTime.UtcNow });
-
-app.MapGet("/signalr/test", () => new { 
-    Message = "SignalR Hub configured", 
-    HubPath = "/hubs/notifications",
-    Timestamp = DateTime.UtcNow 
-});
 
 app.Run();
 

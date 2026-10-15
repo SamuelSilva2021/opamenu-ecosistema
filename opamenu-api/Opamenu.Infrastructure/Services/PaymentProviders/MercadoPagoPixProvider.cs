@@ -30,9 +30,7 @@ public class MercadoPagoPixProvider(TenantPaymentConfigEntity config, IPixServic
             if (string.IsNullOrEmpty(accessToken))
                 throw new Exception("Access Token não configurado para Mercado Pago.");
 
-            MercadoPagoConfig.AccessToken = accessToken;
-
-            var requestOptions = new RequestOptions();
+            var requestOptions = new RequestOptions { AccessToken = accessToken };
             requestOptions.CustomHeaders.Add("x-idempotency-key", $"pgto_{paymentEntity.Id}");
 
             var payerEmail = !string.IsNullOrEmpty(paymentEntity.Order?.CustomerEmail) ? paymentEntity.Order.CustomerEmail : "cliente@opamenu.com.br";
@@ -161,8 +159,7 @@ public class MercadoPagoPixProvider(TenantPaymentConfigEntity config, IPixServic
             if (string.IsNullOrEmpty(accessToken) || !long.TryParse(mpPaymentId, out var mpId))
                 return null!;
 
-            MercadoPagoConfig.AccessToken = accessToken;
-            var mpPayment = await new PaymentClient().GetAsync(mpId);
+            var mpPayment = await new PaymentClient().GetAsync(mpId, new RequestOptions { AccessToken = accessToken });
 
             var newStatus = mpPayment.Status switch
             {
