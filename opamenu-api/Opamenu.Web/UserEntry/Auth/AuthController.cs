@@ -21,6 +21,7 @@ public class AuthController : ControllerBase
 
     [HttpPost("login")]
     [AllowAnonymous]
+    [Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("auth")]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
     {
         var result = await _authService.LoginAsync(request);
@@ -33,6 +34,7 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    [Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("auth")]
     [HttpPost("login-access-control")]
     [AllowAnonymous]
     public async Task<IActionResult> LoginAccessControl([FromBody] LoginRequestDto request)

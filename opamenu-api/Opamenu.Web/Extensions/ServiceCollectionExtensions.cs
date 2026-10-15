@@ -104,6 +104,7 @@ public static class ServiceCollectionExtensions
         services.AddHttpClient();
         //services.AddScoped<IWhatsAppService, WhatsAppService>();
 
+        services.AddSingleton<OrderAccessTokenService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IAuthenticationService, LocalAuthenticationService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
